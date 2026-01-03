@@ -1,0 +1,91 @@
+# prek (pre-commit) configuration for Rust project
+# https://prek.j178.dev/
+#
+# Install: uv tool install prek
+# Setup: prek install
+# Run: prek run --all-files
+
+minimum_prek_version: '0.2.23'
+fail_fast: false
+
+# Exclude auto-generated files
+exclude: |
+  (?x)^(
+    target/.*|
+    Cargo\.lock
+  )$
+
+repos:
+  # ============================================
+  # Built-in hooks (Rust-native, fastest)
+  # ============================================
+  - repo: builtin
+    hooks:
+      # Whitespace and line ending fixes
+      - id: trailing-whitespace
+        args: ['--markdown-linebreak-ext=md']
+
+      - id: end-of-file-fixer
+
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+      # File validation
+      - id: check-toml
+
+      - id: check-yaml
+        args: ['--allow-multiple-documents']
+
+      # Safety checks
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+
+      - id: check-merge-conflict
+
+      - id: check-case-conflict
+
+  # ============================================
+  # Rust toolchain hooks (local)
+  # ============================================
+  - repo: local
+    hooks:
+      # Format first (priority 0)
+      - id: cargo-fmt
+        name: cargo fmt
+        description: Format Rust code with rustfmt
+        entry: cargo fmt --all --
+        language: system
+        types: [rust]
+        pass_filenames: false
+        priority: 0
+
+      # Lint (priority 10, parallel with cargo-check)
+      - id: cargo-clippy
+        name: cargo clippy
+        description: Lint Rust code with Clippy
+        entry: cargo clippy --all-targets --all-features -- -D warnings
+        language: system
+        types: [rust]
+        pass_filenames: false
+        priority: 10
+
+      # Type check (priority 10, parallel with cargo-clippy)
+      - id: cargo-check
+        name: cargo check
+        description: Check Rust code compiles
+        entry: cargo check --all-targets --all-features
+        language: system
+        types: [rust]
+        pass_filenames: false
+        priority: 10
+
+      # Test on push only (slower)
+      - id: cargo-test
+        name: cargo test
+        description: Run Rust tests
+        entry: cargo test --all-features
+        language: system
+        types: [rust]
+        pass_filenames: false
+        stages: [pre-push]
+        priority: 0

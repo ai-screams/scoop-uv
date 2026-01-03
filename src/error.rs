@@ -26,7 +26,9 @@ pub enum ScoopError {
     InvalidPythonVersion { version: String },
 
     /// uv not found
-    #[error("uv is not installed. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh")]
+    #[error(
+        "uv is not installed. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    )]
     UvNotFound,
 
     /// uv command failed
