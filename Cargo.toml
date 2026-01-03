@@ -6,7 +6,7 @@ rust-version = "1.85"
 authors = ["Hanyul"]
 description = "Scoop up your Python environments — pyenv-style workflow powered by uv"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/hanyul/scoop"
+repository = "https://github.com/ai-screams/scoop"
 keywords = ["python", "virtualenv", "uv", "pyenv", "environment"]
 categories = ["command-line-utilities", "development-tools"]
 

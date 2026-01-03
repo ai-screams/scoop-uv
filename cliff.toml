@@ -86,5 +86,5 @@ commit_parsers = [
 tag_pattern = "v[0-9].*"
 
 [remote.github]
-owner = "hanyul"
+owner = "ai-screams"
 repo = "scoop"
