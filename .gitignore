@@ -1,0 +1,171 @@
+# ==============================================================================
+# OS
+# ==============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ==============================================================================
+# IDE / Editors
+# ==============================================================================
+
+# JetBrains (RustRover, CLion, IntelliJ, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws
+cmake-build-*/
+out/
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+tags
+[._]*.un~
+
+# Emacs
+\#*\#
+.#*
+*.elc
+*~
+auto-save-list
+tramp
+.\#*
+*.~undo-tree~
+.projectile
+.dir-locals.el
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# ==============================================================================
+# Rust / Cargo
+# ==============================================================================
+
+# Build artifacts
+/target/
+debug/
+release/
+
+# Backup files (rustfmt)
+**/*.rs.bk
+
+# Cargo lock - INCLUDE for binary projects (do NOT ignore)
+# Cargo.lock
+
+# Coverage tools
+*.profraw
+*.profdata
+*.gcda
+*.gcno
+lcov.info
+tarpaulin-report.*
+coverage/
+htmlcov/
+
+# Benchmarks output
+criterion/
+
+# ==============================================================================
+# Project Specific
+# ==============================================================================
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Local cargo config (uncomment if needed)
+# .cargo/config.toml
+
+# ==============================================================================
+# Build / Release
+# ==============================================================================
+
+# Distribution
+dist/
+pkg/
+
+# Archives
+*.tar.gz
+*.zip
+*.tgz
+
+# ==============================================================================
+# Security
+# ==============================================================================
+
+# Private keys
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Credentials
+credentials.json
+secrets.json
+*.secret
+
+# ==============================================================================
+# Misc
+# ==============================================================================
+
+# Backup files
+*.bak
+*.backup
+*.orig
+*.tmp
+*.temp
+
+# Patch files
+*.patch
+*.diff
+
+# Core dumps
+core
+core.*
