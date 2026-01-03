@@ -8,12 +8,10 @@ use crate::error::{Result, ScoopError};
 /// Regex for valid environment names
 /// - Must start with a letter
 /// - Can contain letters, numbers, hyphens, and underscores
-static ENV_NAME_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^[a-zA-Z][a-zA-Z0-9_-]*$").unwrap());
+static ENV_NAME_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z][a-zA-Z0-9_-]*$").unwrap());
 
 /// Regex for Python version strings
-static VERSION_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^\d+(\.\d+)*([a-z]\d+)?$").unwrap());
+static VERSION_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^\d+(\.\d+)*([a-z]\d+)?$").unwrap());
 
 /// Reserved names that cannot be used as environment names
 const RESERVED_NAMES: &[&str] = &[
@@ -103,8 +101,7 @@ pub fn validate_env_name(name: &str) -> Result<()> {
 /// Check if a string is a valid Python version
 pub fn is_valid_python_version(version: &str) -> bool {
     // Accept formats like: 3, 3.12, 3.12.0, 3.12.0a1, 3.12.0rc1
-    VERSION_REGEX.is_match(version)
-        || version.chars().all(|c| c.is_ascii_digit() || c == '.')
+    VERSION_REGEX.is_match(version) || version.chars().all(|c| c.is_ascii_digit() || c == '.')
 }
 
 /// Normalize a Python version string

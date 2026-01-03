@@ -65,16 +65,19 @@ mod tests {
 
     #[test]
     fn test_scoop_home_default() {
-        std::env::remove_var(SCOOP_HOME_ENV);
+        // SAFETY: Test runs in a single thread, no concurrent access
+        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
         let home = scoop_home().unwrap();
         assert!(home.ends_with(".scoop"));
     }
 
     #[test]
     fn test_scoop_home_env() {
-        std::env::set_var(SCOOP_HOME_ENV, "/tmp/test-scoop");
+        // SAFETY: Test runs in a single thread, no concurrent access
+        unsafe { std::env::set_var(SCOOP_HOME_ENV, "/tmp/test-scoop") };
         let home = scoop_home().unwrap();
         assert_eq!(home, PathBuf::from("/tmp/test-scoop"));
-        std::env::remove_var(SCOOP_HOME_ENV);
+        // SAFETY: Test runs in a single thread, no concurrent access
+        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
     }
 }
