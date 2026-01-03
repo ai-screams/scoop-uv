@@ -58,4 +58,20 @@ pub enum ScoopError {
     /// Shell not supported
     #[error("Shell '{shell}' is not supported")]
     UnsupportedShell { shell: String },
+
+    /// Python version not installed
+    #[error("Python {version} is not installed. Install it with: scoop install {version}")]
+    PythonNotInstalled { version: String },
+
+    /// Python installation failed
+    #[error("Failed to install Python {version}: {message}")]
+    PythonInstallFailed { version: String, message: String },
+
+    /// Python uninstallation failed
+    #[error("Failed to uninstall Python {version}: {message}")]
+    PythonUninstallFailed { version: String, message: String },
+
+    /// No Python versions available
+    #[error("No Python versions available matching '{pattern}'")]
+    NoPythonVersions { pattern: String },
 }
