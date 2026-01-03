@@ -11,7 +11,7 @@ pub fn execute() -> Result<()> {
     PATH="${{PATH#$VIRTUAL_ENV/bin:}}"
     export PATH
     unset VIRTUAL_ENV
-    unset SCOOP_ACTIVE
+    unset UVENV_ACTIVE
 fi"#
     );
 

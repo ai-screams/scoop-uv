@@ -15,7 +15,7 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
             output.info(&format!("Removing existing environment '{name}'..."));
             service.delete(name)?;
         } else {
-            return Err(crate::error::ScoopError::VirtualenvExists {
+            return Err(crate::error::UvenvError::VirtualenvExists {
                 name: name.to_string(),
             });
         }
@@ -30,7 +30,7 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
     output.success(&format!("Created virtual environment '{name}'"));
     output.info(&format!("Location: {}", path.display()));
     output.info(&format!(
-        "Activate with: scoop use {name}  # or: source {}/bin/activate",
+        "Activate with: uvenv use {name}  # or: source {}/bin/activate",
         paths::virtualenv_path(name)?.display()
     ));
 

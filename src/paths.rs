@@ -1,42 +1,42 @@
-//! Path utilities for scoop
+//! Path utilities for uvenv
 
 use std::path::PathBuf;
 
-use crate::error::{Result, ScoopError};
+use crate::error::{Result, UvenvError};
 
-/// Environment variable for scoop home directory
-pub const SCOOP_HOME_ENV: &str = "SCOOP_HOME";
+/// Environment variable for uvenv home directory
+pub const UVENV_HOME_ENV: &str = "UVENV_HOME";
 
-/// Default scoop home directory name
-const SCOOP_HOME_DIR: &str = ".scoop";
+/// Default uvenv home directory name
+const UVENV_HOME_DIR: &str = ".uvenv";
 
 /// Version file name
-pub const VERSION_FILE: &str = ".scoop-version";
+pub const VERSION_FILE: &str = ".uvenv-version";
 
-/// Get the scoop home directory (~/.scoop or $SCOOP_HOME)
-pub fn scoop_home() -> Result<PathBuf> {
-    if let Ok(home) = std::env::var(SCOOP_HOME_ENV) {
+/// Get the uvenv home directory (~/.uvenv or $UVENV_HOME)
+pub fn uvenv_home() -> Result<PathBuf> {
+    if let Ok(home) = std::env::var(UVENV_HOME_ENV) {
         return Ok(PathBuf::from(home));
     }
 
     dirs::home_dir()
-        .map(|h| h.join(SCOOP_HOME_DIR))
-        .ok_or(ScoopError::HomeNotFound)
+        .map(|h| h.join(UVENV_HOME_DIR))
+        .ok_or(UvenvError::HomeNotFound)
 }
 
-/// Get the virtualenvs directory (~/.scoop/virtualenvs)
+/// Get the virtualenvs directory (~/.uvenv/virtualenvs)
 pub fn virtualenvs_dir() -> Result<PathBuf> {
-    Ok(scoop_home()?.join("virtualenvs"))
+    Ok(uvenv_home()?.join("virtualenvs"))
 }
 
-/// Get the pythons directory (~/.scoop/pythons)
+/// Get the pythons directory (~/.uvenv/pythons)
 pub fn pythons_dir() -> Result<PathBuf> {
-    Ok(scoop_home()?.join("pythons"))
+    Ok(uvenv_home()?.join("pythons"))
 }
 
-/// Get the global version file path (~/.scoop/version)
+/// Get the global version file path (~/.uvenv/version)
 pub fn global_version_file() -> Result<PathBuf> {
-    Ok(scoop_home()?.join("version"))
+    Ok(uvenv_home()?.join("version"))
 }
 
 /// Get the local version file path in the given directory
@@ -64,20 +64,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_scoop_home_default() {
+    fn test_uvenv_home_default() {
         // SAFETY: Test runs in a single thread, no concurrent access
-        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
-        let home = scoop_home().unwrap();
-        assert!(home.ends_with(".scoop"));
+        unsafe { std::env::remove_var(UVENV_HOME_ENV) };
+        let home = uvenv_home().unwrap();
+        assert!(home.ends_with(".uvenv"));
     }
 
     #[test]
-    fn test_scoop_home_env() {
+    fn test_uvenv_home_env() {
         // SAFETY: Test runs in a single thread, no concurrent access
-        unsafe { std::env::set_var(SCOOP_HOME_ENV, "/tmp/test-scoop") };
-        let home = scoop_home().unwrap();
-        assert_eq!(home, PathBuf::from("/tmp/test-scoop"));
+        unsafe { std::env::set_var(UVENV_HOME_ENV, "/tmp/test-uvenv") };
+        let home = uvenv_home().unwrap();
+        assert_eq!(home, PathBuf::from("/tmp/test-uvenv"));
         // SAFETY: Test runs in a single thread, no concurrent access
-        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
+        unsafe { std::env::remove_var(UVENV_HOME_ENV) };
     }
 }

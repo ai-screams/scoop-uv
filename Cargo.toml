@@ -1,13 +1,13 @@
 [package]
-name = "scoop"
+name = "uvenv"
 version = "0.0.1"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Hanyul <Hanyul.Ryu@hanyul.xyz>"]
-description = "Scoop up your Python environments — pyenv-style workflow powered by uv"
+description = "Swift as dambi, powered by uv — pyenv-style Python environment manager"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/ai-screams/scoop"
-homepage = "https://github.com/ai-screams/scoop"
+repository = "https://github.com/ai-screams/uvenv"
+homepage = "https://github.com/ai-screams/uvenv"
 readme = "README.md"
 keywords = ["python", "virtualenv", "uv", "pyenv", "environment"]
 categories = ["command-line-utilities", "development-tools"]

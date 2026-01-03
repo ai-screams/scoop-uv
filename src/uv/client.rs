@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::error::{Result, ScoopError};
+use crate::error::{Result, UvenvError};
 
 /// Client for interacting with the uv CLI
 pub struct UvClient {
@@ -14,7 +14,7 @@ pub struct UvClient {
 impl UvClient {
     /// Create a new UvClient, finding uv in PATH
     pub fn new() -> Result<Self> {
-        let path = which::which("uv").map_err(|_| ScoopError::UvNotFound)?;
+        let path = which::which("uv").map_err(|_| UvenvError::UvNotFound)?;
         Ok(Self { path })
     }
 
@@ -28,13 +28,13 @@ impl UvClient {
         let output = Command::new(&self.path)
             .arg("--version")
             .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
+            .map_err(|e| UvenvError::UvCommandFailed {
                 command: "uv --version".to_string(),
                 message: e.to_string(),
             })?;
 
         if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
+            return Err(UvenvError::UvCommandFailed {
                 command: "uv --version".to_string(),
                 message: String::from_utf8_lossy(&output.stderr).to_string(),
             });
@@ -51,13 +51,13 @@ impl UvClient {
             .arg("--python")
             .arg(python_version)
             .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
+            .map_err(|e| UvenvError::UvCommandFailed {
                 command: format!("uv venv {} --python {}", path.display(), python_version),
                 message: e.to_string(),
             })?;
 
         if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
+            return Err(UvenvError::UvCommandFailed {
                 command: format!("uv venv {} --python {}", path.display(), python_version),
                 message: String::from_utf8_lossy(&output.stderr).to_string(),
             });
@@ -73,13 +73,13 @@ impl UvClient {
             .arg("install")
             .arg(version)
             .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
+            .map_err(|e| UvenvError::UvCommandFailed {
                 command: format!("uv python install {version}"),
                 message: e.to_string(),
             })?;
 
         if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
+            return Err(UvenvError::UvCommandFailed {
                 command: format!("uv python install {version}"),
                 message: String::from_utf8_lossy(&output.stderr).to_string(),
             });
@@ -95,13 +95,13 @@ impl UvClient {
             .arg("python")
             .arg("list")
             .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
+            .map_err(|e| UvenvError::UvCommandFailed {
                 command: "uv python list".to_string(),
                 message: e.to_string(),
             })?;
 
         if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
+            return Err(UvenvError::UvCommandFailed {
                 command: "uv python list".to_string(),
                 message: String::from_utf8_lossy(&output.stderr).to_string(),
             });

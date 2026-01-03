@@ -87,4 +87,4 @@ tag_pattern = "v[0-9].*"
 
 [remote.github]
 owner = "ai-screams"
-repo = "scoop"
+repo = "uvenv"
