@@ -169,3 +169,8 @@ secrets.json
 # Core dumps
 core
 core.*
+
+
+# Added by cargo
+
+/target
