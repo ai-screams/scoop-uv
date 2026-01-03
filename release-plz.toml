@@ -1,0 +1,31 @@
+# release-plz configuration
+# https://release-plz.dev/docs/config
+
+[workspace]
+# Use git-cliff for changelog generation
+changelog_config = "cliff.toml"
+
+# Automatically update CHANGELOG.md
+changelog_update = true
+
+# Update dependency versions
+dependencies_update = true
+
+# Create git tags
+git_tag_enable = true
+
+# Create GitHub releases
+git_release_enable = true
+
+# Release PR labels
+pr_labels = ["release"]
+
+# Enable semantic versioning check
+semver_check = true
+
+# Don't allow dirty working directory
+allow_dirty = false
+publish_allow_dirty = false
+
+# Release PR is not a draft
+pr_draft = false
