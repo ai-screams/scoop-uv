@@ -28,8 +28,8 @@ body = """
     {% for commit in commits %}
         - {% if commit.scope %}**{{ commit.scope }}:** {% endif %}\
             {{ commit.message | upper_first }}\
-            {% if commit.github.pr_number %} \
-                ([#{{ commit.github.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.github.pr_number }}))\
+            {% if commit.remote.pr_number %} \
+                ([#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}))\
             {% endif %}\
     {% endfor %}
 {% endfor %}
@@ -87,4 +87,4 @@ tag_pattern = "v[0-9].*"
 
 [remote.github]
 owner = "ai-screams"
-repo = "scoop"
+repo = "scoop-uv"
