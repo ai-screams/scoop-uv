@@ -38,7 +38,12 @@ fn main() -> Result<()> {
             no_link,
         } => scoop_uv::cli::commands::use_env(&output, &name, global, no_link),
         Commands::Remove { name, force } => scoop_uv::cli::commands::remove(&output, &name, force),
-        Commands::Install { version } => scoop_uv::cli::commands::install(&output, &version),
+        Commands::Install { python_version } => {
+            scoop_uv::cli::commands::install(&output, &python_version)
+        }
+        Commands::Uninstall { python_version } => {
+            scoop_uv::cli::commands::uninstall(&output, &python_version)
+        }
         Commands::Init { shell } => scoop_uv::cli::commands::init(shell),
         Commands::Completions { shell } => scoop_uv::cli::commands::completions(shell),
         Commands::Resolve => scoop_uv::cli::commands::resolve(),

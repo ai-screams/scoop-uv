@@ -1,5 +1,7 @@
 //! Remove command
 
+use dialoguer::Confirm;
+
 use crate::core::VirtualenvService;
 use crate::error::Result;
 use crate::output::Output;
@@ -9,13 +11,22 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
     let service = VirtualenvService::auto()?;
 
     // Verify environment exists
-    service.get_path(name)?;
+    let path = service.get_path(name)?;
 
     if !force {
-        // TODO: Add confirmation prompt with dialoguer
-        output.warn(&format!(
-            "Are you sure you want to remove '{name}'? Use --force to skip this prompt."
-        ));
+        // Show what will be deleted
+        output.info(&format!("Environment path: {}", path.display()));
+
+        let confirmed = Confirm::new()
+            .with_prompt(format!("Remove virtual environment '{name}'?"))
+            .default(false)
+            .interact()
+            .unwrap_or(false);
+
+        if !confirmed {
+            output.info("Cancelled");
+            return Ok(());
+        }
     }
 
     output.info(&format!("Removing virtual environment '{name}'..."));

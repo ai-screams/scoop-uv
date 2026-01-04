@@ -2,4 +2,4 @@
 
 mod client;
 
-pub use client::UvClient;
+pub use client::{PythonInfo, UvClient};

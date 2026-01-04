@@ -2,7 +2,9 @@
 
 # 🍨 scoop
 
-**Swift as dambi, powered by uv — pyenv-style Python environment manager**
+> ⚠️ **Work in Progress** — Under active development. API may change.
+
+**One scoop, endless envs — pyenv-style Python environment manager powered by uv**
 
 <!-- Hero Badges -->
 [![CI](https://img.shields.io/github/actions/workflow/status/ai-screams/scoop-uv/ci.yml?style=for-the-badge&logo=github&label=CI)](https://github.com/ai-screams/scoop-uv/actions/workflows/ci.yml)
