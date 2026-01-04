@@ -14,9 +14,10 @@ pub fn execute(name: &str) -> Result<()> {
     let bin_path = paths::virtualenv_bin(name)?;
 
     // Output activation script for eval
-    println!("export VIRTUAL_ENV='{}'", venv_path.display());
-    println!("export PATH='{}:$PATH'", bin_path.display());
-    println!("export SCOOP_ACTIVE='{name}'");
+    // Use double quotes so $PATH expands in shell
+    println!("export VIRTUAL_ENV=\"{}\"", venv_path.display());
+    println!("export PATH=\"{}:$PATH\"", bin_path.display());
+    println!("export SCOOP_ACTIVE=\"{}\"", name);
     println!("unset PYTHONHOME");
 
     Ok(())
