@@ -1,0 +1,63 @@
+# cargo-deny configuration
+# https://embarkstudios.github.io/cargo-deny/
+
+# ====================
+# Advisories - Security vulnerabilities
+# ====================
+[advisories]
+version = 2
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+
+# How to handle advisories
+ignore = []
+
+# ====================
+# Licenses
+# ====================
+[licenses]
+version = 2
+# SPDX license expressions we accept
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "CC0-1.0",
+    "BSL-1.0",
+]
+
+# Confidence threshold for license detection
+confidence-threshold = 0.8
+
+# ====================
+# Bans - Crate restrictions
+# ====================
+[bans]
+# Lint level for multiple versions of the same crate
+multiple-versions = "warn"
+
+# Lint level for wildcard dependencies
+wildcards = "deny"
+
+# Allow specific duplicates if needed
+# skip = []
+
+# ====================
+# Sources
+# ====================
+[sources]
+# Lint level for crates from unknown registries
+unknown-registry = "deny"
+
+# Lint level for crates from git repositories
+unknown-git = "warn"
+
+# Allow specific git sources if needed
+allow-git = []

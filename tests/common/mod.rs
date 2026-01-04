@@ -3,26 +3,26 @@
 use std::path::PathBuf;
 use tempfile::TempDir;
 
-/// Test fixture for scoop tests
+/// Test fixture for uvenv tests
 pub struct TestFixture {
     /// Temporary directory
     pub temp_dir: TempDir,
-    /// SCOOP_HOME path
-    pub scoop_home: PathBuf,
+    /// UVENV_HOME path
+    pub uvenv_home: PathBuf,
 }
 
 impl TestFixture {
     /// Create a new test fixture
     pub fn new() -> Self {
         let temp_dir = TempDir::new().expect("Failed to create temp dir");
-        let scoop_home = temp_dir.path().join(".scoop");
+        let uvenv_home = temp_dir.path().join(".uvenv");
 
-        // Set SCOOP_HOME for tests
-        std::env::set_var("SCOOP_HOME", &scoop_home);
+        // Set UVENV_HOME for tests
+        std::env::set_var("UVENV_HOME", &uvenv_home);
 
         Self {
             temp_dir,
-            scoop_home,
+            uvenv_home,
         }
     }
 }
@@ -30,7 +30,7 @@ impl TestFixture {
 impl Drop for TestFixture {
     fn drop(&mut self) {
         // Clean up environment
-        std::env::remove_var("SCOOP_HOME");
+        std::env::remove_var("UVENV_HOME");
     }
 }
 

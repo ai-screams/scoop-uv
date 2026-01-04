@@ -1,14 +1,25 @@
 [package]
-name = "scoop"
-version = "0.1.0"
+name = "uvenv"
+version = "0.0.1"
 edition = "2024"
 rust-version = "1.85"
-authors = ["Hanyul"]
-description = "Scoop up your Python environments — pyenv-style workflow powered by uv"
+authors = ["Hanyul <Hanyul.Ryu@hanyul.xyz>"]
+description = "Swift as dambi, powered by uv — pyenv-style Python environment manager"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/hanyul/scoop"
+repository = "https://github.com/ai-screams/uvenv"
+homepage = "https://github.com/ai-screams/uvenv"
+readme = "README.md"
 keywords = ["python", "virtualenv", "uv", "pyenv", "environment"]
 categories = ["command-line-utilities", "development-tools"]
+exclude = [
+    ".github/",
+    ".docs/",
+    ".gitignore",
+    ".prek.yaml",
+    "cliff.toml",
+    "deny.toml",
+    "release-plz.toml",
+]
 
 [dependencies]
 # CLI
@@ -29,13 +40,13 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Terminal UI
 owo-colors = "4.0"
-console = "0.15"
+console = "0.16.2"
 indicatif = "0.18"
 dialoguer = "0.12"
 
 # Utilities
 dirs = "6.0"
-which = "6.0"
+which = "8.0.0"
 regex = "1.11"
 once_cell = "1.19"
 chrono = { version = "0.4", features = ["serde", "std", "clock"], default-features = false }

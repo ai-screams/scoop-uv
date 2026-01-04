@@ -1,14 +1,14 @@
-//! Error types for scoop
+//! Error types for uvenv
 
 use std::path::PathBuf;
 use thiserror::Error;
 
-/// Result type alias using ScoopError
-pub type Result<T> = std::result::Result<T, ScoopError>;
+/// Result type alias using UvenvError
+pub type Result<T> = std::result::Result<T, UvenvError>;
 
-/// Main error type for scoop
+/// Main error type for uvenv
 #[derive(Error, Debug)]
-pub enum ScoopError {
+pub enum UvenvError {
     /// Virtual environment not found
     #[error("Virtual environment '{name}' not found")]
     VirtualenvNotFound { name: String },
