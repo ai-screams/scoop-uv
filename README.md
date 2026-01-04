@@ -94,6 +94,10 @@ echo 'eval "$(scoop init bash)"' >> ~/.bashrc
 echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
 ```
 
+This enables:
+- Auto-activation when entering directories with `.scoop-version`
+- Tab completion for commands, environments, and options
+
 ---
 
 ## Commands
