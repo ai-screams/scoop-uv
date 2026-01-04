@@ -129,6 +129,15 @@ _scoop() {
                         _describe 'environment' envs
                     fi
                     ;;
+                install)
+                    if [[ $cur == -* ]]; then
+                        local opts=(
+                            '--latest:Install latest stable Python'
+                            '--stable:Install oldest fully-supported Python'
+                        )
+                        _describe 'option' opts
+                    fi
+                    ;;
                 uninstall)
                     local has_ver=false
                     for w in "${words[@]:2}"; do

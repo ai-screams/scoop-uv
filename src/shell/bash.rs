@@ -93,7 +93,10 @@ _scoop_complete() {
             remove)
                 COMPREPLY=($(compgen -W "--force --help" -- "$cur"))
                 ;;
-            install|uninstall)
+            install)
+                COMPREPLY=($(compgen -W "--latest --stable --help" -- "$cur"))
+                ;;
+            uninstall)
                 COMPREPLY=($(compgen -W "--help" -- "$cur"))
                 ;;
             init|completions)
