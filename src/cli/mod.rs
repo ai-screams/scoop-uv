@@ -91,9 +91,17 @@ pub enum Commands {
 
     /// Install a Python version
     Install {
-        /// Python version to install (e.g., 3.12, 3.13, latest, stable)
+        /// Python version to install (e.g., 3.12, 3.13)
         #[arg(name = "VERSION")]
-        python_version: String,
+        python_version: Option<String>,
+
+        /// Install latest stable Python (default if no version specified)
+        #[arg(long)]
+        latest: bool,
+
+        /// Install oldest fully-supported Python (more stable)
+        #[arg(long)]
+        stable: bool,
     },
 
     /// Uninstall a Python version

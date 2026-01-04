@@ -74,4 +74,8 @@ pub enum ScoopError {
     /// No Python versions available
     #[error("No Python versions available matching '{pattern}'")]
     NoPythonVersions { pattern: String },
+
+    /// Invalid argument combination
+    #[error("{message}")]
+    InvalidArgument { message: String },
 }

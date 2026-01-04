@@ -39,9 +39,11 @@ fn main() -> Result<()> {
             no_link: _, // explicit option, same as default (no symlink)
         } => scoop_uv::cli::commands::use_env(&output, &name, global, link),
         Commands::Remove { name, force } => scoop_uv::cli::commands::remove(&output, &name, force),
-        Commands::Install { python_version } => {
-            scoop_uv::cli::commands::install(&output, &python_version)
-        }
+        Commands::Install {
+            python_version,
+            latest,
+            stable,
+        } => scoop_uv::cli::commands::install(&output, python_version.as_deref(), latest, stable),
         Commands::Uninstall { python_version } => {
             scoop_uv::cli::commands::uninstall(&output, &python_version)
         }
