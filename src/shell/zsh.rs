@@ -9,6 +9,24 @@ scoop() {
     local command="${1:-}"
 
     case "$command" in
+        use)
+            command scoop "$@"
+            local ret=$?
+            if [[ $ret -eq 0 ]]; then
+                shift  # remove 'use'
+                local name=""
+                for arg in "$@"; do
+                    case "$arg" in
+                        -*) ;;  # skip options
+                        *) name="$arg"; break ;;
+                    esac
+                done
+                if [[ -n "$name" ]]; then
+                    eval "$(command scoop activate "$name")"
+                fi
+            fi
+            return $ret
+            ;;
         activate|deactivate)
             eval "$(command scoop "$@")"
             ;;
