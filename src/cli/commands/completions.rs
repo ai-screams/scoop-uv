@@ -17,7 +17,7 @@ pub fn execute(shell: ShellType) -> Result<()> {
         ShellType::Powershell => Shell::PowerShell,
     };
 
-    generate(shell, &mut cmd, "uvenv", &mut std::io::stdout());
+    generate(shell, &mut cmd, "scoop", &mut std::io::stdout());
 
     Ok(())
 }

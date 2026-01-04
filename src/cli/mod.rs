@@ -4,9 +4,9 @@ pub mod commands;
 
 use clap::{ArgAction, Parser, Subcommand};
 
-/// uvenv - Python virtual environment manager powered by uv
+/// scoop - Python virtual environment manager powered by uv
 #[derive(Parser, Debug)]
-#[command(name = "uvenv")]
+#[command(name = "scoop")]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 pub struct Cli {

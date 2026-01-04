@@ -1,10 +1,10 @@
-//! uvenv - Python virtual environment manager powered by uv
+//! scoop - Python virtual environment manager powered by uv
 
 use clap::Parser;
 use color_eyre::eyre::Result;
 
-use uvenv::cli::{Cli, Commands};
-use uvenv::output::Output;
+use scoop_uv::cli::{Cli, Commands};
+use scoop_uv::output::Output;
 
 fn main() -> Result<()> {
     // Initialize error handling
@@ -26,24 +26,24 @@ fn main() -> Result<()> {
 
     // Execute command
     let result = match cli.command {
-        Commands::List => uvenv::cli::commands::list(&output),
+        Commands::List => scoop_uv::cli::commands::list(&output),
         Commands::Create {
             name,
             python,
             force,
-        } => uvenv::cli::commands::create(&output, &name, &python, force),
+        } => scoop_uv::cli::commands::create(&output, &name, &python, force),
         Commands::Use {
             name,
             global,
             no_link,
-        } => uvenv::cli::commands::use_env(&output, &name, global, no_link),
-        Commands::Remove { name, force } => uvenv::cli::commands::remove(&output, &name, force),
-        Commands::Install { version } => uvenv::cli::commands::install(&output, &version),
-        Commands::Init { shell } => uvenv::cli::commands::init(shell),
-        Commands::Completions { shell } => uvenv::cli::commands::completions(shell),
-        Commands::Resolve => uvenv::cli::commands::resolve(),
-        Commands::Activate { name } => uvenv::cli::commands::activate(&name),
-        Commands::Deactivate => uvenv::cli::commands::deactivate(),
+        } => scoop_uv::cli::commands::use_env(&output, &name, global, no_link),
+        Commands::Remove { name, force } => scoop_uv::cli::commands::remove(&output, &name, force),
+        Commands::Install { version } => scoop_uv::cli::commands::install(&output, &version),
+        Commands::Init { shell } => scoop_uv::cli::commands::init(shell),
+        Commands::Completions { shell } => scoop_uv::cli::commands::completions(shell),
+        Commands::Resolve => scoop_uv::cli::commands::resolve(),
+        Commands::Activate { name } => scoop_uv::cli::commands::activate(&name),
+        Commands::Deactivate => scoop_uv::cli::commands::deactivate(),
     };
 
     // Handle errors

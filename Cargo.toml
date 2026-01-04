@@ -1,13 +1,13 @@
 [package]
-name = "uvenv"
+name = "scoop-uv"
 version = "0.0.1"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Hanyul <Hanyul.Ryu@hanyul.xyz>"]
-description = "Swift as dambi, powered by uv — pyenv-style Python environment manager"
+description = "Scoop up your Python envs — pyenv-style workflow powered by uv"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/ai-screams/uvenv"
-homepage = "https://github.com/ai-screams/uvenv"
+repository = "https://github.com/ai-screams/scoop"
+homepage = "https://github.com/ai-screams/scoop"
 readme = "README.md"
 keywords = ["python", "virtualenv", "uv", "pyenv", "environment"]
 categories = ["command-line-utilities", "development-tools"]
@@ -20,6 +20,10 @@ exclude = [
     "deny.toml",
     "release-plz.toml",
 ]
+
+[[bin]]
+name = "scoop"
+path = "src/main.rs"
 
 [dependencies]
 # CLI

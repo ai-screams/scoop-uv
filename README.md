@@ -1,4 +1,4 @@
-# uvenv
+# scoop
 
 > Swift as dambi, powered by uv — pyenv-style Python environment manager
 
@@ -8,17 +8,17 @@
 
 ---
 
-## What is uvenv?
+## What is scoop?
 
-**uvenv** is a centralized Python virtual environment manager using [uv](https://github.com/astral-sh/uv) as its backend.
+**scoop** is a centralized Python virtual environment manager using [uv](https://github.com/astral-sh/uv) as its backend.
 
 It combines pyenv-virtualenv's workflow with uv's speed.
 
 ```
-Problem                            uvenv Solution
+Problem                            scoop Solution
 ─────────────────────────────────────────────────────
-.venv scattered across projects    ~/.uvenv/virtualenvs/ centralized
-Manual source .venv/bin/activate   uvenv activate or auto-activate
+.venv scattered across projects    ~/.scoop/virtualenvs/ centralized
+Manual source .venv/bin/activate   scoop activate or auto-activate
 pyenv-virtualenv is slow           uv-based, 100x+ faster
 ```
 
@@ -28,10 +28,10 @@ pyenv-virtualenv is slow           uv-based, 100x+ faster
 
 ```bash
 # Create a virtual environment
-uvenv create myproject 3.12
+scoop create myproject 3.12
 
 # Activate
-uvenv use myproject        # Set for current directory
+scoop use myproject        # Set for current directory
 cd ~/projects/myproject    # Auto-activates
 (myproject) $
 
@@ -39,8 +39,8 @@ cd ~/projects/myproject    # Auto-activates
 pip install requests       # or uv pip install
 
 # Manage
-uvenv list                 # List all environments
-uvenv remove myproject     # Delete
+scoop list                 # List all environments
+scoop remove myproject     # Delete
 ```
 
 ---
@@ -49,17 +49,17 @@ uvenv remove myproject     # Delete
 
 ```bash
 # Coming soon
-cargo install uvenv
+cargo install scoop-uv
 ```
 
 ### Shell Setup
 
 ```bash
 # Bash
-echo 'eval "$(uvenv init bash)"' >> ~/.bashrc
+echo 'eval "$(scoop init bash)"' >> ~/.bashrc
 
 # Zsh
-echo 'eval "$(uvenv init zsh)"' >> ~/.zshrc
+echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
 ```
 
 ---
@@ -70,23 +70,23 @@ echo 'eval "$(uvenv init zsh)"' >> ~/.zshrc
 
 | Command | Description |
 |---------|-------------|
-| `uvenv create <name> <version>` | Create virtual environment |
-| `uvenv use <name>` | Set local environment (.uvenv-version + .venv symlink) |
-| `uvenv use <name> --global` | Set global default environment |
-| `uvenv list` | List all virtual environments |
-| `uvenv remove <name>` | Delete virtual environment |
+| `scoop create <name> <version>` | Create virtual environment |
+| `scoop use <name>` | Set local environment (.scoop-version + .venv symlink) |
+| `scoop use <name> --global` | Set global default environment |
+| `scoop list` | List all virtual environments |
+| `scoop remove <name>` | Delete virtual environment |
 
 ### Python Version Management
 
 | Command | Description |
 |---------|-------------|
-| `uvenv install` | Install latest Python (same as `--latest`) |
-| `uvenv install --latest` | Install latest stable Python |
-| `uvenv install --stable` | Install oldest fully-supported Python (more stable) |
-| `uvenv install 3.12` | Install latest patch of 3.12.x |
-| `uvenv install 3.12.3` | Install exact version 3.12.3 |
-| `uvenv uninstall <version>` | Remove installed Python version |
-| `uvenv list --pythons` | List installed Python versions |
+| `scoop install` | Install latest Python (same as `--latest`) |
+| `scoop install --latest` | Install latest stable Python |
+| `scoop install --stable` | Install oldest fully-supported Python (more stable) |
+| `scoop install 3.12` | Install latest patch of 3.12.x |
+| `scoop install 3.12.3` | Install exact version 3.12.3 |
+| `scoop uninstall <version>` | Remove installed Python version |
+| `scoop list --pythons` | List installed Python versions |
 
 > **Note:** Python versions are managed by [uv](https://github.com/astral-sh/uv) and downloaded automatically when needed.
 
@@ -94,7 +94,7 @@ echo 'eval "$(uvenv init zsh)"' >> ~/.zshrc
 
 | Command | Description |
 |---------|-------------|
-| `uvenv init <shell>` | Output shell initialization script |
+| `scoop init <shell>` | Output shell initialization script |
 
 ---
 
@@ -109,8 +109,8 @@ echo 'eval "$(uvenv init zsh)"' >> ~/.zshrc
 
 ```bash
 # Clone
-git clone https://github.com/ai-screams/uvenv.git
-cd uvenv
+git clone https://github.com/ai-screams/scoop.git
+cd scoop
 
 # Install prek (pre-commit alternative)
 uv tool install prek

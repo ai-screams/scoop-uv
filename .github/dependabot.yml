@@ -31,6 +31,9 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "ci(deps)"
+    ignore:
+      # rust-toolchain uses Rust versions as tags (e.g., @1.85), not semver
+      - dependency-name: "dtolnay/rust-toolchain"
     groups:
       # Group all GitHub Actions into a single PR
       github-actions:

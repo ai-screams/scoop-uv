@@ -11,7 +11,7 @@ pub fn execute(output: &Output) -> Result<()> {
 
     if envs.is_empty() {
         output.info("No virtual environments found");
-        output.info("Create one with: uvenv create <name> --python <version>");
+        output.info("Create one with: scoop create <name> --python <version>");
         return Ok(());
     }
 

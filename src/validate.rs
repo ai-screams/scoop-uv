@@ -1,9 +1,9 @@
-//! Validation utilities for uvenv
+//! Validation utilities for scoop
 
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-use crate::error::{Result, UvenvError};
+use crate::error::{Result, ScoopError};
 
 /// Regex for valid environment names
 /// - Must start with a letter
@@ -61,35 +61,35 @@ pub fn is_valid_env_name(name: &str) -> bool {
 /// Validate an environment name, returning an error if invalid
 pub fn validate_env_name(name: &str) -> Result<()> {
     if name.is_empty() {
-        return Err(UvenvError::InvalidEnvName {
+        return Err(ScoopError::InvalidEnvName {
             name: name.to_string(),
             reason: "name cannot be empty".to_string(),
         });
     }
 
     if name.len() > MAX_ENV_NAME_LENGTH {
-        return Err(UvenvError::InvalidEnvName {
+        return Err(ScoopError::InvalidEnvName {
             name: name.to_string(),
             reason: format!("name exceeds maximum length of {MAX_ENV_NAME_LENGTH} characters"),
         });
     }
 
     if RESERVED_NAMES.contains(&name.to_lowercase().as_str()) {
-        return Err(UvenvError::InvalidEnvName {
+        return Err(ScoopError::InvalidEnvName {
             name: name.to_string(),
             reason: "name is reserved".to_string(),
         });
     }
 
     if VERSION_REGEX.is_match(name) {
-        return Err(UvenvError::InvalidEnvName {
+        return Err(ScoopError::InvalidEnvName {
             name: name.to_string(),
             reason: "name looks like a version string (must start with a letter)".to_string(),
         });
     }
 
     if !ENV_NAME_REGEX.is_match(name) {
-        return Err(UvenvError::InvalidEnvName {
+        return Err(ScoopError::InvalidEnvName {
             name: name.to_string(),
             reason: "name must start with a letter and contain only letters, numbers, hyphens, and underscores".to_string(),
         });

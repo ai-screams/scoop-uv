@@ -4,7 +4,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::core::Metadata;
-use crate::error::{Result, UvenvError};
+use crate::error::{Result, ScoopError};
 use crate::paths;
 use crate::uv::UvClient;
 use crate::validate;
@@ -73,7 +73,7 @@ impl VirtualenvService {
         let path = paths::virtualenv_path(name)?;
 
         if path.exists() {
-            return Err(UvenvError::VirtualenvExists {
+            return Err(ScoopError::VirtualenvExists {
                 name: name.to_string(),
             });
         }
@@ -99,7 +99,7 @@ impl VirtualenvService {
         let path = paths::virtualenv_path(name)?;
 
         if !path.exists() {
-            return Err(UvenvError::VirtualenvNotFound {
+            return Err(ScoopError::VirtualenvNotFound {
                 name: name.to_string(),
             });
         }
@@ -118,7 +118,7 @@ impl VirtualenvService {
     pub fn get_path(&self, name: &str) -> Result<PathBuf> {
         let path = paths::virtualenv_path(name)?;
         if !path.exists() {
-            return Err(UvenvError::VirtualenvNotFound {
+            return Err(ScoopError::VirtualenvNotFound {
                 name: name.to_string(),
             });
         }

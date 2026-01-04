@@ -15,7 +15,7 @@ pub struct Metadata {
     /// Creation timestamp
     pub created_at: DateTime<Utc>,
 
-    /// Version of uvenv that created this environment
+    /// Version of scoop that created this environment
     pub created_by: String,
 
     /// Version of uv used
@@ -29,11 +29,11 @@ impl Metadata {
             name,
             python_version,
             created_at: Utc::now(),
-            created_by: format!("uvenv {}", env!("CARGO_PKG_VERSION")),
+            created_by: format!("scoop {}", env!("CARGO_PKG_VERSION")),
             uv_version,
         }
     }
 
     /// Metadata file name
-    pub const FILE_NAME: &'static str = ".uvenv-metadata.json";
+    pub const FILE_NAME: &'static str = ".scoop-metadata.json";
 }

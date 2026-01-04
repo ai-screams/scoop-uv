@@ -1,42 +1,42 @@
-//! Path utilities for uvenv
+//! Path utilities for scoop
 
 use std::path::PathBuf;
 
-use crate::error::{Result, UvenvError};
+use crate::error::{Result, ScoopError};
 
-/// Environment variable for uvenv home directory
-pub const UVENV_HOME_ENV: &str = "UVENV_HOME";
+/// Environment variable for scoop home directory
+pub const SCOOP_HOME_ENV: &str = "SCOOP_HOME";
 
-/// Default uvenv home directory name
-const UVENV_HOME_DIR: &str = ".uvenv";
+/// Default scoop home directory name
+const SCOOP_HOME_DIR: &str = ".scoop";
 
 /// Version file name
-pub const VERSION_FILE: &str = ".uvenv-version";
+pub const VERSION_FILE: &str = ".scoop-version";
 
-/// Get the uvenv home directory (~/.uvenv or $UVENV_HOME)
-pub fn uvenv_home() -> Result<PathBuf> {
-    if let Ok(home) = std::env::var(UVENV_HOME_ENV) {
+/// Get the scoop home directory (~/.scoop or $SCOOP_HOME)
+pub fn scoop_home() -> Result<PathBuf> {
+    if let Ok(home) = std::env::var(SCOOP_HOME_ENV) {
         return Ok(PathBuf::from(home));
     }
 
     dirs::home_dir()
-        .map(|h| h.join(UVENV_HOME_DIR))
-        .ok_or(UvenvError::HomeNotFound)
+        .map(|h| h.join(SCOOP_HOME_DIR))
+        .ok_or(ScoopError::HomeNotFound)
 }
 
-/// Get the virtualenvs directory (~/.uvenv/virtualenvs)
+/// Get the virtualenvs directory (~/.scoop/virtualenvs)
 pub fn virtualenvs_dir() -> Result<PathBuf> {
-    Ok(uvenv_home()?.join("virtualenvs"))
+    Ok(scoop_home()?.join("virtualenvs"))
 }
 
-/// Get the pythons directory (~/.uvenv/pythons)
+/// Get the pythons directory (~/.scoop/pythons)
 pub fn pythons_dir() -> Result<PathBuf> {
-    Ok(uvenv_home()?.join("pythons"))
+    Ok(scoop_home()?.join("pythons"))
 }
 
-/// Get the global version file path (~/.uvenv/version)
+/// Get the global version file path (~/.scoop/version)
 pub fn global_version_file() -> Result<PathBuf> {
-    Ok(uvenv_home()?.join("version"))
+    Ok(scoop_home()?.join("version"))
 }
 
 /// Get the local version file path in the given directory
@@ -62,22 +62,29 @@ pub fn virtualenv_python(name: &str) -> Result<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
+
+    /// Mutex to synchronize tests that manipulate SCOOP_HOME environment variable.
+    /// Environment variables are process-global state, so concurrent access causes race conditions.
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
-    fn test_uvenv_home_default() {
-        // SAFETY: Test runs in a single thread, no concurrent access
-        unsafe { std::env::remove_var(UVENV_HOME_ENV) };
-        let home = uvenv_home().unwrap();
-        assert!(home.ends_with(".uvenv"));
+    fn test_scoop_home_default() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        // SAFETY: Protected by ENV_LOCK mutex
+        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
+        let home = scoop_home().unwrap();
+        assert!(home.ends_with(".scoop"));
     }
 
     #[test]
-    fn test_uvenv_home_env() {
-        // SAFETY: Test runs in a single thread, no concurrent access
-        unsafe { std::env::set_var(UVENV_HOME_ENV, "/tmp/test-uvenv") };
-        let home = uvenv_home().unwrap();
-        assert_eq!(home, PathBuf::from("/tmp/test-uvenv"));
-        // SAFETY: Test runs in a single thread, no concurrent access
-        unsafe { std::env::remove_var(UVENV_HOME_ENV) };
+    fn test_scoop_home_env() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        // SAFETY: Protected by ENV_LOCK mutex
+        unsafe { std::env::set_var(SCOOP_HOME_ENV, "/tmp/test-scoop") };
+        let home = scoop_home().unwrap();
+        assert_eq!(home, PathBuf::from("/tmp/test-scoop"));
+        // SAFETY: Protected by ENV_LOCK mutex
+        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
     }
 }

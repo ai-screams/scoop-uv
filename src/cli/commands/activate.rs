@@ -16,7 +16,7 @@ pub fn execute(name: &str) -> Result<()> {
     // Output activation script for eval
     println!("export VIRTUAL_ENV='{}'", venv_path.display());
     println!("export PATH='{}:$PATH'", bin_path.display());
-    println!("export UVENV_ACTIVE='{name}'");
+    println!("export SCOOP_ACTIVE='{name}'");
     println!("unset PYTHONHOME");
 
     Ok(())
