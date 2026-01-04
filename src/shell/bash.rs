@@ -59,5 +59,46 @@ fi
 
 # Run hook on startup
 _scoop_hook
+
+# Bash completion for scoop
+_scoop_complete() {
+    local cur prev
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "$prev" in
+        use|remove|activate)
+            COMPREPLY=($(compgen -W "$(command scoop list --bare 2>/dev/null)" -- "$cur"))
+            return
+            ;;
+        uninstall)
+            COMPREPLY=($(compgen -W "$(command scoop list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
+            return
+            ;;
+        scoop)
+            COMPREPLY=($(compgen -W "list create use remove install uninstall init completions activate deactivate" -- "$cur"))
+            return
+            ;;
+    esac
+
+    # Handle options
+    if [[ "$cur" == -* ]]; then
+        case "$prev" in
+            list)
+                COMPREPLY=($(compgen -W "--pythons --help" -- "$cur"))
+                ;;
+            create)
+                COMPREPLY=($(compgen -W "--force --help" -- "$cur"))
+                ;;
+            use)
+                COMPREPLY=($(compgen -W "--global --link --no-link --help" -- "$cur"))
+                ;;
+            remove)
+                COMPREPLY=($(compgen -W "--force --help" -- "$cur"))
+                ;;
+        esac
+    fi
+}
+complete -F _scoop_complete scoop
 "#
 }

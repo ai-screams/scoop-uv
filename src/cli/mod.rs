@@ -36,7 +36,15 @@ pub struct Cli {
 pub enum Commands {
     /// List all virtual environments
     #[command(alias = "ls")]
-    List,
+    List {
+        /// Show installed Python versions instead of virtualenvs
+        #[arg(long)]
+        pythons: bool,
+
+        /// Output names only, one per line (for scripting/completion)
+        #[arg(long, hide = true)]
+        bare: bool,
+    },
 
     /// Create a new virtual environment
     Create {

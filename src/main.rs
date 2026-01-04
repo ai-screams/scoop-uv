@@ -26,7 +26,7 @@ fn main() -> Result<()> {
 
     // Execute command
     let result = match cli.command {
-        Commands::List => scoop_uv::cli::commands::list(&output),
+        Commands::List { pythons, bare } => scoop_uv::cli::commands::list(&output, pythons, bare),
         Commands::Create {
             name,
             python,
