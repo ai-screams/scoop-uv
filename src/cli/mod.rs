@@ -61,8 +61,12 @@ pub enum Commands {
         #[arg(short, long)]
         global: bool,
 
-        /// Don't create .venv symlink
-        #[arg(long)]
+        /// Create .venv symlink to the virtual environment
+        #[arg(long, conflicts_with = "no_link")]
+        link: bool,
+
+        /// Do not create .venv symlink (default behavior, explicit)
+        #[arg(long, conflicts_with = "link")]
         no_link: bool,
     },
 

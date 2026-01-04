@@ -9,7 +9,7 @@ use crate::error::Result;
 use crate::output::Output;
 
 /// Execute the use command
-pub fn execute(output: &Output, name: &str, global: bool, no_link: bool) -> Result<()> {
+pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<()> {
     let service = VirtualenvService::auto()?;
 
     // Verify environment exists
@@ -25,8 +25,8 @@ pub fn execute(output: &Output, name: &str, global: bool, no_link: bool) -> Resu
         VersionService::set_local(&cwd, name)?;
         output.success(&format!("Set local environment to '{name}'"));
 
-        // Create .venv symlink unless disabled
-        if !no_link {
+        // Create .venv symlink only if --link flag is provided
+        if link {
             let venv_link = cwd.join(".venv");
             create_venv_symlink(&venv_link, &venv_path, output)?;
         }
