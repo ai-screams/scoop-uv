@@ -103,7 +103,8 @@ echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
 | Command | Description |
 |---------|-------------|
 | `scoop create <name> <version>` | Create virtual environment |
-| `scoop use <name>` | Set local environment (.scoop-version + .venv symlink) |
+| `scoop use <name>` | Set local environment (.scoop-version) + **instant activation** |
+| `scoop use <name> --link` | Same as above, also creates .venv symlink |
 | `scoop use <name> --global` | Set global default environment |
 | `scoop list` | List all virtual environments |
 | `scoop remove <name>` | Delete virtual environment |
