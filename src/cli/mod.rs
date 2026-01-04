@@ -43,8 +43,8 @@ pub enum Commands {
         /// Name of the virtual environment
         name: String,
 
-        /// Python version to use
-        #[arg(short, long, default_value = "3")]
+        /// Python version to use (e.g., 3.12, 3.11.8)
+        #[arg(default_value = "3")]
         python: String,
 
         /// Overwrite existing environment
@@ -79,8 +79,16 @@ pub enum Commands {
 
     /// Install a Python version
     Install {
-        /// Python version to install
-        version: String,
+        /// Python version to install (e.g., 3.12, 3.13, latest, stable)
+        #[arg(name = "VERSION")]
+        python_version: String,
+    },
+
+    /// Uninstall a Python version
+    Uninstall {
+        /// Python version to uninstall
+        #[arg(name = "VERSION")]
+        python_version: String,
     },
 
     /// Output shell initialization script

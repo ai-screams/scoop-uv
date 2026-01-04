@@ -9,6 +9,7 @@ mod install;
 mod list;
 mod remove;
 mod resolve;
+mod uninstall;
 mod use_env;
 
 pub use activate::execute as activate;
@@ -20,4 +21,5 @@ pub use install::execute as install;
 pub use list::execute as list;
 pub use remove::execute as remove;
 pub use resolve::execute as resolve;
+pub use uninstall::execute as uninstall;
 pub use use_env::execute as use_env;
