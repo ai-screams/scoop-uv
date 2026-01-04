@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🐿️ scoop
+# 🍨 scoop
 
 **Swift as dambi, powered by uv — pyenv-style Python environment manager**
 
