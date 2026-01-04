@@ -109,7 +109,7 @@ echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
 
 ```bash
 # Clone
-git clone https://github.com/ai-screams/scoop.git
+git clone https://github.com/ai-screams/scoop-uv.git
 cd scoop
 
 # Install prek (pre-commit alternative)
