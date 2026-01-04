@@ -9,6 +9,24 @@ scoop() {
     local command="${1:-}"
 
     case "$command" in
+        use)
+            command scoop "$@"
+            local ret=$?
+            if [[ $ret -eq 0 ]]; then
+                shift  # remove 'use'
+                local name=""
+                for arg in "$@"; do
+                    case "$arg" in
+                        -*) ;;  # skip options
+                        *) name="$arg"; break ;;
+                    esac
+                done
+                if [[ -n "$name" ]]; then
+                    eval "$(command scoop activate "$name")"
+                fi
+            fi
+            return $ret
+            ;;
         activate|deactivate)
             eval "$(command scoop "$@")"
             ;;
@@ -38,5 +56,61 @@ fi
 
 # Run hook on startup
 _scoop_hook
+
+# Zsh completion for scoop
+_scoop() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        '1: :->command' \
+        '*: :->args'
+
+    case $state in
+        command)
+            local commands=(
+                'list:List all virtual environments'
+                'create:Create a new virtual environment'
+                'use:Set local environment for current directory'
+                'remove:Remove a virtual environment'
+                'install:Install a Python version'
+                'uninstall:Uninstall a Python version'
+                'init:Output shell initialization script'
+                'completions:Output shell completion script'
+                'activate:Activate a virtual environment'
+                'deactivate:Deactivate current virtual environment'
+            )
+            _describe 'command' commands
+            ;;
+        args)
+            case $line[1] in
+                use|remove|activate)
+                    local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                    [[ ${#envs} -gt 0 ]] && _describe 'environment' envs
+                    ;;
+                uninstall)
+                    local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
+                    [[ ${#pythons} -gt 0 ]] && _describe 'python version' pythons
+                    ;;
+                list)
+                    _arguments '--pythons[Show installed Python versions]'
+                    ;;
+                create)
+                    _arguments '--force[Overwrite existing environment]'
+                    ;;
+                use)
+                    _arguments \
+                        '--global[Set as global default]' \
+                        '--link[Create .venv symlink]' \
+                        '--no-link[Do not create .venv symlink]'
+                    ;;
+                remove)
+                    _arguments '--force[Skip confirmation]'
+                    ;;
+            esac
+            ;;
+    esac
+}
+compdef _scoop scoop
 "#
 }
