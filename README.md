@@ -1,10 +1,41 @@
-# scoop
+<div align="center">
 
-> Swift as dambi, powered by uv — pyenv-style Python environment manager
+# 🐿️ scoop
 
-[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
-[![Rust](https://img.shields.io/badge/rust-1.85+-orange.svg)](https://www.rust-lang.org/)
-[![uv](https://img.shields.io/badge/powered%20by-uv-blueviolet.svg)](https://github.com/astral-sh/uv)
+**Swift as dambi, powered by uv — pyenv-style Python environment manager**
+
+<!-- Hero Badges -->
+[![CI](https://img.shields.io/github/actions/workflow/status/ai-screams/scoop-uv/ci.yml?style=for-the-badge&logo=github&label=CI)](https://github.com/ai-screams/scoop-uv/actions/workflows/ci.yml)
+[![Security](https://img.shields.io/github/actions/workflow/status/ai-screams/scoop-uv/security.yml?style=for-the-badge&logo=github&label=Security)](https://github.com/ai-screams/scoop-uv/actions/workflows/security.yml)
+[![Crates.io](https://img.shields.io/crates/v/scoop-uv?style=for-the-badge&logo=rust&color=orange)](https://crates.io/crates/scoop-uv)
+[![Downloads](https://img.shields.io/crates/d/scoop-uv?style=for-the-badge&logo=rust&color=blue)](https://crates.io/crates/scoop-uv)
+
+<!-- Docs & Quality -->
+[![docs.rs](https://img.shields.io/docsrs/scoop-uv?style=flat-square&logo=docs.rs&label=docs.rs)](https://docs.rs/scoop-uv)
+[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue?style=flat-square&logo=rust)](https://www.rust-lang.org/)
+[![License](https://img.shields.io/crates/l/scoop-uv?style=flat-square)](LICENSE-MIT)
+[![dependency status](https://deps.rs/repo/github/ai-screams/scoop-uv/status.svg)](https://deps.rs/repo/github/ai-screams/scoop-uv)
+
+<!-- GitHub Stats -->
+[![Stars](https://img.shields.io/github/stars/ai-screams/scoop-uv?style=flat-square&logo=github&label=Stars)](https://github.com/ai-screams/scoop-uv/stargazers)
+[![Forks](https://img.shields.io/github/forks/ai-screams/scoop-uv?style=flat-square&logo=github&label=Forks)](https://github.com/ai-screams/scoop-uv/network/members)
+[![Issues](https://img.shields.io/github/issues/ai-screams/scoop-uv?style=flat-square&logo=github&label=Issues)](https://github.com/ai-screams/scoop-uv/issues)
+[![PRs](https://img.shields.io/github/issues-pr/ai-screams/scoop-uv?style=flat-square&logo=github&label=PRs)](https://github.com/ai-screams/scoop-uv/pulls)
+[![Contributors](https://img.shields.io/github/contributors/ai-screams/scoop-uv?style=flat-square&logo=github)](https://github.com/ai-screams/scoop-uv/graphs/contributors)
+
+<!-- Activity -->
+[![Last Commit](https://img.shields.io/github/last-commit/ai-screams/scoop-uv?style=flat-square&logo=github)](https://github.com/ai-screams/scoop-uv/commits/main)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/ai-screams/scoop-uv?style=flat-square&logo=github)](https://github.com/ai-screams/scoop-uv/pulse)
+[![Repo Size](https://img.shields.io/github/repo-size/ai-screams/scoop-uv?style=flat-square&logo=github)](https://github.com/ai-screams/scoop-uv)
+[![Top Language](https://img.shields.io/github/languages/top/ai-screams/scoop-uv?style=flat-square&logo=rust&color=orange)](https://github.com/ai-screams/scoop-uv)
+
+<!-- Project Identity -->
+[![Rust](https://img.shields.io/badge/rust-1.85+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
+[![Powered by uv](https://img.shields.io/badge/powered%20by-uv-blueviolet?style=flat-square&logo=python)](https://github.com/astral-sh/uv)
+[![Maintained](https://img.shields.io/badge/maintained-yes-green?style=flat-square)](https://github.com/ai-screams/scoop-uv)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/ai-screams/scoop-uv/pulls)
+
+</div>
 
 ---
 
@@ -48,7 +79,6 @@ scoop remove myproject     # Delete
 ## Installation
 
 ```bash
-# Coming soon
 cargo install scoop-uv
 ```
 
@@ -110,7 +140,7 @@ echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
 ```bash
 # Clone
 git clone https://github.com/ai-screams/scoop-uv.git
-cd scoop
+cd scoop-uv
 
 # Install prek (pre-commit alternative)
 uv tool install prek
