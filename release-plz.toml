@@ -20,8 +20,8 @@ git_release_enable = true
 # Release PR labels
 pr_labels = ["release"]
 
-# Enable semantic versioning check
-semver_check = true
+# Disable semantic versioning check (v0.x allows breaking changes in minor)
+semver_check = false
 
 # Don't allow dirty working directory
 allow_dirty = false
