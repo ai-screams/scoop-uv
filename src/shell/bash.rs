@@ -9,6 +9,24 @@ scoop() {
     local command="${1:-}"
 
     case "$command" in
+        use)
+            command scoop "$@"
+            local ret=$?
+            if [[ $ret -eq 0 ]]; then
+                shift  # remove 'use'
+                local name=""
+                for arg in "$@"; do
+                    case "$arg" in
+                        -*) ;;  # skip options
+                        *) name="$arg"; break ;;
+                    esac
+                done
+                if [[ -n "$name" ]]; then
+                    eval "$(command scoop activate "$name")"
+                fi
+            fi
+            return $ret
+            ;;
         activate|deactivate)
             eval "$(command scoop "$@")"
             ;;
@@ -41,5 +59,86 @@ fi
 
 # Run hook on startup
 _scoop_hook
+
+# Bash completion for scoop
+_scoop_complete() {
+    local cur cmd i
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    # Get subcommand (COMP_WORDS[1])
+    cmd=""
+    if [[ ${COMP_CWORD} -ge 1 ]]; then
+        cmd="${COMP_WORDS[1]}"
+    fi
+
+    # First argument: complete subcommands
+    if [[ ${COMP_CWORD} -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "list create use remove install uninstall init completions activate deactivate" -- "$cur"))
+        return
+    fi
+
+    # Option completion (starts with -)
+    if [[ "$cur" == -* ]]; then
+        case "$cmd" in
+            list)
+                COMPREPLY=($(compgen -W "--pythons --help" -- "$cur"))
+                ;;
+            create)
+                COMPREPLY=($(compgen -W "--force --help" -- "$cur"))
+                ;;
+            use)
+                COMPREPLY=($(compgen -W "--global --link --no-link --help" -- "$cur"))
+                ;;
+            remove)
+                COMPREPLY=($(compgen -W "--force --help" -- "$cur"))
+                ;;
+            install|uninstall)
+                COMPREPLY=($(compgen -W "--help" -- "$cur"))
+                ;;
+            init|completions)
+                COMPREPLY=($(compgen -W "--help" -- "$cur"))
+                ;;
+        esac
+        return
+    fi
+
+    # Argument completion (by subcommand)
+    case "$cmd" in
+        use|remove|activate)
+            # Check if env name already provided
+            local has_arg=false
+            for ((i=2; i<COMP_CWORD; i++)); do
+                if [[ "${COMP_WORDS[i]}" != -* ]]; then
+                    has_arg=true
+                    break
+                fi
+            done
+            if [[ "$has_arg" == false ]]; then
+                COMPREPLY=($(compgen -W "$(command scoop list --bare 2>/dev/null)" -- "$cur"))
+            fi
+            ;;
+        uninstall)
+            COMPREPLY=($(compgen -W "$(command scoop list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
+            ;;
+        init|completions)
+            COMPREPLY=($(compgen -W "bash zsh fish powershell" -- "$cur"))
+            ;;
+        create)
+            # First arg: name, second arg: python version
+            local arg_count=0
+            for ((i=2; i<COMP_CWORD; i++)); do
+                if [[ "${COMP_WORDS[i]}" != -* ]]; then
+                    ((arg_count++))
+                fi
+            done
+            if [[ $arg_count -eq 1 ]]; then
+                # Second positional arg: python version
+                COMPREPLY=($(compgen -W "$(command scoop list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
+            fi
+            ;;
+    esac
+}
+complete -F _scoop_complete scoop
 "#
 }

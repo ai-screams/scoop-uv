@@ -36,7 +36,15 @@ pub struct Cli {
 pub enum Commands {
     /// List all virtual environments
     #[command(alias = "ls")]
-    List,
+    List {
+        /// Show installed Python versions instead of virtualenvs
+        #[arg(long)]
+        pythons: bool,
+
+        /// Output names only, one per line (for scripting/completion)
+        #[arg(long, hide = true)]
+        bare: bool,
+    },
 
     /// Create a new virtual environment
     Create {
@@ -61,8 +69,12 @@ pub enum Commands {
         #[arg(short, long)]
         global: bool,
 
-        /// Don't create .venv symlink
-        #[arg(long)]
+        /// Create .venv symlink to the virtual environment
+        #[arg(long, conflicts_with = "no_link")]
+        link: bool,
+
+        /// Do not create .venv symlink (default behavior, explicit)
+        #[arg(long, conflicts_with = "link")]
         no_link: bool,
     },
 
