@@ -61,6 +61,7 @@ _scoop_hook
 _scoop() {
     local curcontext="$curcontext" state line
     typeset -A opt_args
+    local cur="${words[$CURRENT]}"
 
     _arguments -C \
         '1: :->command' \
@@ -84,28 +85,84 @@ _scoop() {
             ;;
         args)
             case $line[1] in
-                use|remove|activate)
-                    local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
-                    [[ ${#envs} -gt 0 ]] && _describe 'environment' envs
-                    ;;
-                uninstall)
-                    local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
-                    [[ ${#pythons} -gt 0 ]] && _describe 'python version' pythons
-                    ;;
-                list)
-                    _arguments '--pythons[Show installed Python versions]'
-                    ;;
-                create)
-                    _arguments '--force[Overwrite existing environment]'
-                    ;;
                 use)
-                    _arguments \
-                        '--global[Set as global default]' \
-                        '--link[Create .venv symlink]' \
-                        '--no-link[Do not create .venv symlink]'
+                    if [[ $cur == -* ]]; then
+                        local opts=(
+                            '--global:Set as global default'
+                            '--link:Create .venv symlink'
+                            '--no-link:Do not create .venv symlink'
+                        )
+                        _describe 'option' opts
+                    else
+                        local has_env=false
+                        for w in "${words[@]:2}"; do
+                            [[ $w != -* && -n $w ]] && has_env=true && break
+                        done
+                        if [[ $has_env == false ]]; then
+                            local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                            _describe 'environment' envs
+                        fi
+                    fi
                     ;;
                 remove)
-                    _arguments '--force[Skip confirmation]'
+                    if [[ $cur == -* ]]; then
+                        local opts=('--force:Skip confirmation')
+                        _describe 'option' opts
+                    else
+                        local has_env=false
+                        for w in "${words[@]:2}"; do
+                            [[ $w != -* && -n $w ]] && has_env=true && break
+                        done
+                        if [[ $has_env == false ]]; then
+                            local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                            _describe 'environment' envs
+                        fi
+                    fi
+                    ;;
+                activate)
+                    local has_env=false
+                    for w in "${words[@]:2}"; do
+                        [[ $w != -* && -n $w ]] && has_env=true && break
+                    done
+                    if [[ $has_env == false ]]; then
+                        local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                        _describe 'environment' envs
+                    fi
+                    ;;
+                uninstall)
+                    local has_ver=false
+                    for w in "${words[@]:2}"; do
+                        [[ $w != -* && -n $w ]] && has_ver=true && break
+                    done
+                    if [[ $has_ver == false ]]; then
+                        local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
+                        _describe 'python version' pythons
+                    fi
+                    ;;
+                list)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--pythons:Show installed Python versions')
+                        _describe 'option' opts
+                    fi
+                    ;;
+                create)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--force:Overwrite existing environment')
+                        _describe 'option' opts
+                    else
+                        local pos_count=0
+                        for w in "${words[@]:2}"; do
+                            [[ $w != -* && -n $w ]] && ((pos_count++))
+                        done
+                        if [[ $pos_count -eq 1 ]]; then
+                            local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
+                            _describe 'python version' pythons
+                        fi
+                    fi
+                    ;;
+                init|completions)
+                    local shells=('bash:Bash shell' 'zsh:Zsh shell' 'fish:Fish shell' 'powershell:PowerShell')
+                    _describe 'shell' shells
                     ;;
             esac
             ;;
