@@ -145,6 +145,7 @@ impl VirtualenvService {
 mod tests {
     use super::*;
     use crate::test_utils::{create_mock_venv, with_temp_scoop_home};
+    use serial_test::serial;
 
     /// Helper to get VirtualenvService, skipping test if uv not available.
     /// Returns None if uv is not installed, allowing graceful test skip.
@@ -194,6 +195,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_list_empty_when_no_venvs_dir() {
         with_temp_scoop_home(|_temp_dir| {
             let service = require_uv!();
@@ -203,6 +205,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_list_returns_envs_sorted() {
         with_temp_scoop_home(|temp_dir| {
             // Arrange: Create mock venvs in reverse alphabetical order
@@ -223,6 +226,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_list_reads_python_version_from_metadata() {
         with_temp_scoop_home(|temp_dir| {
             create_mock_venv(temp_dir, "withversion", Some("3.12.1"));
@@ -240,6 +244,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_exists_returns_false_for_nonexistent() {
         with_temp_scoop_home(|_temp_dir| {
             let service = require_uv!();
@@ -248,6 +253,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_exists_returns_true_for_existing() {
         with_temp_scoop_home(|temp_dir| {
             create_mock_venv(temp_dir, "exists", None);
@@ -258,6 +264,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_get_path_returns_error_for_nonexistent() {
         with_temp_scoop_home(|_temp_dir| {
             let service = require_uv!();
@@ -270,6 +277,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_get_path_returns_path_for_existing() {
         with_temp_scoop_home(|temp_dir| {
             create_mock_venv(temp_dir, "myenv", None);
@@ -282,6 +290,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_delete_removes_directory() {
         with_temp_scoop_home(|temp_dir| {
             create_mock_venv(temp_dir, "todelete", Some("3.12"));
@@ -295,6 +304,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_delete_returns_error_for_nonexistent() {
         with_temp_scoop_home(|temp_dir| {
             // Arrange: Create virtualenvs dir but not the specific venv
@@ -312,6 +322,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_list_ignores_files() {
         with_temp_scoop_home(|temp_dir| {
             let venvs_dir = temp_dir.path().join("virtualenvs");

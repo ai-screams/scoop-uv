@@ -106,9 +106,11 @@ pub fn create_mock_venv(temp_dir: &TempDir, name: &str, python_version: Option<&
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
     use std::path::PathBuf;
 
     #[test]
+    #[serial]
     fn test_with_temp_scoop_home_sets_env() {
         with_temp_scoop_home(|temp_dir| {
             let scoop_home = std::env::var(SCOOP_HOME_ENV).unwrap();
@@ -117,6 +119,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_with_temp_scoop_home_cleans_up() {
         with_temp_scoop_home(|_| {
             // Do nothing
@@ -126,6 +129,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_create_mock_venv_creates_directory() {
         with_temp_scoop_home(|temp_dir| {
             create_mock_venv(temp_dir, "testenv", None);
@@ -136,6 +140,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_create_mock_venv_with_metadata() {
         with_temp_scoop_home(|temp_dir| {
             create_mock_venv(temp_dir, "withversion", Some("3.12"));

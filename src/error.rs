@@ -239,4 +239,91 @@ mod tests {
         let debug_str = format!("{:?}", err);
         assert!(debug_str.contains("HomeNotFound"));
     }
+
+    // ==========================================================================
+    // IO Error Propagation Tests
+    // ==========================================================================
+
+    #[test]
+    fn test_io_error_not_found() {
+        let io_err = io::Error::new(io::ErrorKind::NotFound, "file not found");
+        let err: ScoopError = io_err.into();
+        assert!(matches!(err, ScoopError::Io(_)));
+        assert!(err.to_string().contains("file not found"));
+    }
+
+    #[test]
+    fn test_io_error_permission_denied() {
+        let io_err = io::Error::new(io::ErrorKind::PermissionDenied, "access denied");
+        let err: ScoopError = io_err.into();
+        assert!(matches!(err, ScoopError::Io(_)));
+        assert!(err.to_string().contains("access denied"));
+    }
+
+    #[test]
+    fn test_io_error_already_exists() {
+        let io_err = io::Error::new(io::ErrorKind::AlreadyExists, "file exists");
+        let err: ScoopError = io_err.into();
+        assert!(matches!(err, ScoopError::Io(_)));
+    }
+
+    #[test]
+    fn test_io_error_preserves_kind() {
+        let original = io::Error::new(io::ErrorKind::TimedOut, "operation timed out");
+        let err: ScoopError = original.into();
+
+        if let ScoopError::Io(inner) = err {
+            assert_eq!(inner.kind(), io::ErrorKind::TimedOut);
+        } else {
+            panic!("Expected ScoopError::Io");
+        }
+    }
+
+    #[test]
+    fn test_json_error_details() {
+        // Invalid JSON syntax
+        let json_err: serde_json::Error =
+            serde_json::from_str::<serde_json::Value>("{ invalid }").expect_err("should fail");
+        let err: ScoopError = json_err.into();
+        assert!(matches!(err, ScoopError::Json(_)));
+
+        // The error message should contain useful info
+        let msg = err.to_string();
+        assert!(msg.contains("JSON"));
+    }
+
+    #[test]
+    fn test_result_type_alias() {
+        // Verify that Result<T> is an alias for std::result::Result<T, ScoopError>
+        fn returns_result() -> Result<i32> {
+            Ok(42)
+        }
+
+        fn returns_error() -> Result<i32> {
+            Err(ScoopError::HomeNotFound)
+        }
+
+        assert_eq!(returns_result().unwrap(), 42);
+        assert!(returns_error().is_err());
+    }
+
+    #[test]
+    fn test_error_source_chain() {
+        use std::error::Error;
+
+        // IO error should have source
+        let io_err = io::Error::new(io::ErrorKind::NotFound, "original error");
+        let err: ScoopError = io_err.into();
+
+        // ScoopError::Io wraps the original error
+        if let ScoopError::Io(inner) = &err {
+            assert!(inner.source().is_none()); // Simple io::Error has no source
+        }
+
+        // JSON error should also work
+        let json_err: serde_json::Error =
+            serde_json::from_str::<serde_json::Value>("invalid").expect_err("should fail");
+        let err: ScoopError = json_err.into();
+        assert!(err.source().is_some()); // JSON error has source
+    }
 }

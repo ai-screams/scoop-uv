@@ -11,7 +11,9 @@ use crate::error::{Result, ScoopError};
 static ENV_NAME_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z][a-zA-Z0-9_-]*$").unwrap());
 
 /// Regex for Python version strings
-static VERSION_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^\d+(\.\d+)*([a-z]\d+)?$").unwrap());
+/// Supports: 3, 3.12, 3.12.0, 3.12.0a1, 3.12.0b2, 3.12.0rc1
+static VERSION_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^\d+(\.\d+)*((a|b|rc)\d+)?$").unwrap());
 
 /// Reserved names that cannot be used as environment names
 const RESERVED_NAMES: &[&str] = &[
@@ -390,6 +392,103 @@ mod tests {
 
         let too_long = "a".repeat(65);
         assert!(!is_valid_env_name(&too_long));
+    }
+
+    // ==========================================================================
+    // Boundary Value Tests
+    // ==========================================================================
+
+    #[test]
+    fn test_env_name_boundary_values() {
+        // Minimum valid length (1 character)
+        assert!(is_valid_env_name("a"));
+        assert!(is_valid_env_name("Z"));
+
+        // Just below max length (63 characters)
+        let just_under = "a".repeat(63);
+        assert!(is_valid_env_name(&just_under));
+
+        // Exactly at max length (64 characters)
+        let at_max = "a".repeat(64);
+        assert!(is_valid_env_name(&at_max));
+
+        // Just above max length (65 characters)
+        let just_over = "a".repeat(65);
+        assert!(!is_valid_env_name(&just_over));
+
+        // Way over max length
+        let way_over = "a".repeat(1000);
+        assert!(!is_valid_env_name(&way_over));
+    }
+
+    #[test]
+    fn test_env_name_whitespace_handling() {
+        // Whitespace-only names must be rejected
+        assert!(!is_valid_env_name(" "));
+        assert!(!is_valid_env_name("  "));
+        assert!(!is_valid_env_name("\t"));
+        assert!(!is_valid_env_name("\n"));
+        assert!(!is_valid_env_name(" \t\n "));
+
+        // Names with leading/trailing whitespace
+        assert!(!is_valid_env_name(" myenv"));
+        assert!(!is_valid_env_name("myenv "));
+        assert!(!is_valid_env_name(" myenv "));
+    }
+
+    #[test]
+    fn test_python_version_boundary_values() {
+        // Single digit major version
+        assert!(is_valid_python_version("3"));
+        assert!(is_valid_python_version("2"));
+
+        // Two digit major version (future-proofing)
+        assert!(is_valid_python_version("12"));
+        assert!(is_valid_python_version("99"));
+
+        // Very long version string
+        assert!(is_valid_python_version("3.12.0"));
+        assert!(is_valid_python_version("3.12.999"));
+
+        // Pre-release versions
+        assert!(is_valid_python_version("3.12.0a1"));
+        assert!(is_valid_python_version("3.12.0b99"));
+        assert!(is_valid_python_version("3.12.0rc1"));
+    }
+
+    #[test]
+    fn test_reserved_names_case_insensitivity() {
+        // All reserved names should be rejected regardless of case
+        for reserved in ["activate", "deactivate", "list", "create", "remove", "use"] {
+            assert!(
+                !is_valid_env_name(reserved),
+                "lowercase '{}' should be rejected",
+                reserved
+            );
+            assert!(
+                !is_valid_env_name(&reserved.to_uppercase()),
+                "uppercase '{}' should be rejected",
+                reserved
+            );
+
+            // Mixed case
+            let mixed: String = reserved
+                .chars()
+                .enumerate()
+                .map(|(i, c)| {
+                    if i % 2 == 0 {
+                        c.to_uppercase().next().unwrap()
+                    } else {
+                        c
+                    }
+                })
+                .collect();
+            assert!(
+                !is_valid_env_name(&mixed),
+                "mixed case '{}' should be rejected",
+                mixed
+            );
+        }
     }
 
     // ==========================================================================
