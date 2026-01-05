@@ -65,6 +65,7 @@ predicates = "3.1"
 tempfile = "3.10"
 serial_test = "3.2"
 proptest = "1.5"
+insta = { version = "1.40", features = ["yaml"] }
 
 [profile.release]
 lto = true

@@ -262,6 +262,284 @@ fn test_list_pythons_bare() {
         .success();
 }
 
+// =============================================================================
+// Error Case Tests
+// =============================================================================
+
+mod error_cases {
+    use super::*;
+
+    #[test]
+    fn test_create_empty_name() {
+        let fixture = TestFixture::new();
+
+        // Empty name should fail with clear error
+        scoop_cmd(&fixture.scoop_home)
+            .args(["create", ""])
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_create_name_with_spaces() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home)
+            .args(["create", "my env"])
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("Invalid"));
+    }
+
+    #[test]
+    fn test_create_name_with_special_chars() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home)
+            .args(["create", "my@env"])
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_create_path_traversal_attempt() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home)
+            .args(["create", "../etc/passwd"])
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_use_without_env_name() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home).arg("use").assert().failure();
+    }
+
+    #[test]
+    fn test_activate_without_env_name() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home)
+            .arg("activate")
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_remove_without_env_name() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home)
+            .arg("remove")
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_init_without_shell() {
+        Command::cargo_bin("scoop")
+            .unwrap()
+            .arg("init")
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_completions_without_shell() {
+        Command::cargo_bin("scoop")
+            .unwrap()
+            .arg("completions")
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_uninstall_without_version() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home)
+            .arg("uninstall")
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_invalid_subcommand_suggestion() {
+        // Test that invalid subcommand gives helpful error
+        Command::cargo_bin("scoop")
+            .unwrap()
+            .arg("craete") // typo
+            .assert()
+            .failure();
+    }
+
+    #[test]
+    fn test_help_for_subcommand() {
+        // Each subcommand should support --help
+        for subcmd in ["list", "create", "remove", "use", "install"] {
+            Command::cargo_bin("scoop")
+                .unwrap()
+                .args([subcmd, "--help"])
+                .assert()
+                .success();
+        }
+    }
+}
+
+// =============================================================================
+// Snapshot Tests
+// =============================================================================
+
+mod snapshots {
+    use super::*;
+
+    #[test]
+    fn test_version_output_snapshot() {
+        let output = Command::cargo_bin("scoop")
+            .unwrap()
+            .arg("--version")
+            .output()
+            .unwrap();
+
+        // Version format should be "scoop X.Y.Z"
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        // Use regex-like check since version changes
+        assert!(stdout.starts_with("scoop "));
+        // Verify semver format (X.Y.Z)
+        let version_part = stdout.trim().strip_prefix("scoop ").unwrap();
+        let parts: Vec<&str> = version_part.split('.').collect();
+        assert_eq!(parts.len(), 3, "Version should be semver format");
+        for part in parts {
+            assert!(
+                part.chars().all(|c| c.is_ascii_digit()),
+                "Version parts should be numeric"
+            );
+        }
+    }
+
+    #[test]
+    fn test_help_structure_snapshot() {
+        let output = Command::cargo_bin("scoop")
+            .unwrap()
+            .arg("--help")
+            .output()
+            .unwrap();
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+
+        // Verify help structure has expected sections
+        insta::assert_snapshot!(
+            "help_structure",
+            format!(
+                "Has Usage: {}\nHas Commands: {}\nHas Options: {}",
+                stdout.contains("Usage:"),
+                stdout.contains("Commands:"),
+                stdout.contains("Options:")
+            )
+        );
+    }
+
+    #[test]
+    fn test_list_subcommands_present() {
+        let output = Command::cargo_bin("scoop")
+            .unwrap()
+            .arg("--help")
+            .output()
+            .unwrap();
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+
+        // All essential subcommands should be in help
+        let subcommands = [
+            "list",
+            "create",
+            "remove",
+            "use",
+            "activate",
+            "deactivate",
+            "install",
+        ];
+        let present: Vec<_> = subcommands
+            .iter()
+            .map(|cmd| format!("{}: {}", cmd, stdout.contains(cmd)))
+            .collect();
+
+        insta::assert_snapshot!("subcommands_present", present.join("\n"));
+    }
+
+    #[test]
+    fn test_init_bash_structure() {
+        let output = Command::cargo_bin("scoop")
+            .unwrap()
+            .args(["init", "bash"])
+            .output()
+            .unwrap();
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+
+        // Verify bash script structure
+        insta::assert_snapshot!(
+            "init_bash_structure",
+            format!(
+                "Has scoop function: {}\nHas hook function: {}\nHas completion: {}\nHas PROMPT_COMMAND: {}",
+                stdout.contains("scoop()"),
+                stdout.contains("_scoop_hook()"),
+                stdout.contains("_scoop_complete()"),
+                stdout.contains("PROMPT_COMMAND")
+            )
+        );
+    }
+
+    #[test]
+    fn test_init_zsh_structure() {
+        let output = Command::cargo_bin("scoop")
+            .unwrap()
+            .args(["init", "zsh"])
+            .output()
+            .unwrap();
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+
+        // Verify zsh script structure
+        insta::assert_snapshot!(
+            "init_zsh_structure",
+            format!(
+                "Has scoop function: {}\nHas hook function: {}\nHas completion: {}\nHas chpwd hook: {}",
+                stdout.contains("scoop()"),
+                stdout.contains("_scoop_hook()"),
+                stdout.contains("_scoop()"),
+                stdout.contains("add-zsh-hook chpwd")
+            )
+        );
+    }
+
+    #[test]
+    fn test_error_message_format() {
+        let fixture = TestFixture::new();
+
+        let output = scoop_cmd(&fixture.scoop_home)
+            .args(["activate", "nonexistent"])
+            .output()
+            .unwrap();
+
+        let stderr = String::from_utf8_lossy(&output.stderr);
+
+        // Error messages should have consistent format
+        insta::assert_snapshot!(
+            "error_format",
+            format!(
+                "Contains 'error': {}\nContains env name: {}\nContains 'not found': {}",
+                stderr.to_lowercase().contains("error"),
+                stderr.contains("nonexistent"),
+                stderr.contains("not found")
+            )
+        );
+    }
+}
+
 // Tests requiring uv and Python - mark as #[ignore]
 mod requires_uv {
     use super::*;

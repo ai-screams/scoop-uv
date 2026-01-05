@@ -1,0 +1,8 @@
+---
+source: tests/cli.rs
+assertion_line: 307
+expression: "format!(\"Has Usage: {}\\nHas Commands: {}\\nHas Options: {}\",\nstdout.contains(\"Usage:\"), stdout.contains(\"Commands:\"),\nstdout.contains(\"Options:\"))"
+---
+Has Usage: true
+Has Commands: true
+Has Options: true

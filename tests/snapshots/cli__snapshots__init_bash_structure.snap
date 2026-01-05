@@ -1,0 +1,9 @@
+---
+source: tests/cli.rs
+assertion_line: 346
+expression: "format!(\"Has scoop function: {}\\nHas hook function: {}\\nHas completion: {}\\nHas PROMPT_COMMAND: {}\",\nstdout.contains(\"scoop()\"), stdout.contains(\"_scoop_hook()\"),\nstdout.contains(\"_scoop_complete()\"), stdout.contains(\"PROMPT_COMMAND\"))"
+---
+Has scoop function: true
+Has hook function: true
+Has completion: true
+Has PROMPT_COMMAND: true

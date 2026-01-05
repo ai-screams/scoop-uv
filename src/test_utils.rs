@@ -103,6 +103,106 @@ pub fn create_mock_venv(temp_dir: &TempDir, name: &str, python_version: Option<&
     }
 }
 
+// =============================================================================
+// Test Helper Macros
+// =============================================================================
+
+/// Assert that an environment name is valid.
+///
+/// # Examples
+///
+/// ```ignore
+/// assert_valid_env!("myenv");
+/// assert_valid_env!("my-project");
+/// ```
+#[macro_export]
+macro_rules! assert_valid_env {
+    ($name:expr) => {
+        assert!(
+            $crate::validate::is_valid_env_name($name),
+            "Expected '{}' to be a valid env name",
+            $name
+        );
+    };
+}
+
+/// Assert that an environment name is invalid.
+///
+/// # Examples
+///
+/// ```ignore
+/// assert_invalid_env!("123");
+/// assert_invalid_env!("activate");
+/// ```
+#[macro_export]
+macro_rules! assert_invalid_env {
+    ($name:expr) => {
+        assert!(
+            !$crate::validate::is_valid_env_name($name),
+            "Expected '{}' to be an invalid env name",
+            $name
+        );
+    };
+}
+
+/// Assert that a Python version is valid.
+///
+/// # Examples
+///
+/// ```ignore
+/// assert_valid_version!("3.12");
+/// assert_valid_version!("3.12.0");
+/// ```
+#[macro_export]
+macro_rules! assert_valid_version {
+    ($version:expr) => {
+        assert!(
+            $crate::validate::is_valid_python_version($version),
+            "Expected '{}' to be a valid Python version",
+            $version
+        );
+    };
+}
+
+/// Assert that a Python version is invalid.
+///
+/// # Examples
+///
+/// ```ignore
+/// assert_invalid_version!("abc");
+/// assert_invalid_version!("");
+/// ```
+#[macro_export]
+macro_rules! assert_invalid_version {
+    ($version:expr) => {
+        assert!(
+            !$crate::validate::is_valid_python_version($version),
+            "Expected '{}' to be an invalid Python version",
+            $version
+        );
+    };
+}
+
+/// Assert that an error matches a specific variant.
+///
+/// # Examples
+///
+/// ```ignore
+/// let err = ScoopError::VirtualenvNotFound { name: "test".to_string() };
+/// assert_error_variant!(err, ScoopError::VirtualenvNotFound { .. });
+/// ```
+#[macro_export]
+macro_rules! assert_error_variant {
+    ($err:expr, $variant:pat) => {
+        assert!(
+            matches!($err, $variant),
+            "Expected error variant {}, got {:?}",
+            stringify!($variant),
+            $err
+        );
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -239,5 +339,50 @@ mod tests {
             assert!(json.contains("created_at"));
             assert!(json.contains("created_by"));
         }
+    }
+
+    // ==========================================================================
+    // Macro Tests
+    // ==========================================================================
+
+    #[test]
+    fn test_assert_valid_env_macro() {
+        assert_valid_env!("myenv");
+        assert_valid_env!("my-project");
+        assert_valid_env!("test_env");
+    }
+
+    #[test]
+    fn test_assert_invalid_env_macro() {
+        assert_invalid_env!("123");
+        assert_invalid_env!("activate");
+        assert_invalid_env!("");
+    }
+
+    #[test]
+    fn test_assert_valid_version_macro() {
+        assert_valid_version!("3");
+        assert_valid_version!("3.12");
+        assert_valid_version!("3.12.0");
+    }
+
+    #[test]
+    fn test_assert_invalid_version_macro() {
+        assert_invalid_version!("");
+        assert_invalid_version!("abc");
+        assert_invalid_version!("v3.12");
+    }
+
+    #[test]
+    fn test_assert_error_variant_macro() {
+        use crate::error::ScoopError;
+
+        let err = ScoopError::VirtualenvNotFound {
+            name: "test".to_string(),
+        };
+        assert_error_variant!(err, ScoopError::VirtualenvNotFound { .. });
+
+        let err = ScoopError::HomeNotFound;
+        assert_error_variant!(err, ScoopError::HomeNotFound);
     }
 }
