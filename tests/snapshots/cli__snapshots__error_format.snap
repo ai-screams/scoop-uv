@@ -1,8 +1,0 @@
----
-source: tests/cli.rs
-assertion_line: 387
-expression: "format!(\"Contains 'error': {}\\nContains env name: {}\\nContains 'not found': {}\",\nstderr.to_lowercase().contains(\"error\"), stderr.contains(\"nonexistent\"),\nstderr.contains(\"not found\"))"
----
-Contains 'error': false
-Contains env name: true
-Contains 'not found': true

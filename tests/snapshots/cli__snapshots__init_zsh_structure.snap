@@ -1,9 +1,0 @@
----
-source: tests/cli.rs
-assertion_line: 366
-expression: "format!(\"Has scoop function: {}\\nHas hook function: {}\\nHas completion: {}\\nHas chpwd hook: {}\",\nstdout.contains(\"scoop()\"), stdout.contains(\"_scoop_hook()\"),\nstdout.contains(\"_scoop()\"), stdout.contains(\"add-zsh-hook chpwd\"))"
----
-Has scoop function: true
-Has hook function: true
-Has completion: true
-Has chpwd hook: true

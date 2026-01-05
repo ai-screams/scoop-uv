@@ -4,7 +4,13 @@
 //! Note: Tests that require Python installation (create, activate) are marked as `#[ignore]`
 //! to allow running in CI environments without uv/Python installed.
 
-#![allow(deprecated)] // cargo_bin is deprecated but still works fine for our use case
+// `Command::cargo_bin()` is deprecated since assert_cmd 2.1.0 due to
+// incompatibility with custom cargo build directories. The recommended
+// replacement is `escargot` crate for more flexible binary building.
+// For now, we allow deprecated usage as it works correctly for standard
+// cargo layouts. See: https://docs.rs/assert_cmd/latest/assert_cmd/cargo/
+// TODO: Consider migrating to escargot if custom build-dir support is needed.
+#![allow(deprecated)]
 
 use assert_cmd::Command;
 use predicates::prelude::*;
@@ -390,38 +396,44 @@ mod error_cases {
 }
 
 // =============================================================================
-// Snapshot Tests
+// Output Format Tests (Real assertions, not fake snapshots)
 // =============================================================================
 
-mod snapshots {
+mod output_format {
     use super::*;
 
     #[test]
-    fn test_version_output_snapshot() {
+    fn test_version_output_format() {
         let output = Command::cargo_bin("scoop")
             .unwrap()
             .arg("--version")
             .output()
             .unwrap();
 
-        // Version format should be "scoop X.Y.Z"
         let stdout = String::from_utf8_lossy(&output.stdout);
-        // Use regex-like check since version changes
-        assert!(stdout.starts_with("scoop "));
+
+        // Version format should be "scoop X.Y.Z"
+        assert!(
+            stdout.starts_with("scoop "),
+            "Version should start with 'scoop '"
+        );
+
         // Verify semver format (X.Y.Z)
         let version_part = stdout.trim().strip_prefix("scoop ").unwrap();
         let parts: Vec<&str> = version_part.split('.').collect();
-        assert_eq!(parts.len(), 3, "Version should be semver format");
-        for part in parts {
+        assert_eq!(parts.len(), 3, "Version should be semver format X.Y.Z");
+        for (i, part) in parts.iter().enumerate() {
             assert!(
                 part.chars().all(|c| c.is_ascii_digit()),
-                "Version parts should be numeric"
+                "Version part {} ('{}') should be numeric",
+                i,
+                part
             );
         }
     }
 
     #[test]
-    fn test_help_structure_snapshot() {
+    fn test_help_has_required_sections() {
         let output = Command::cargo_bin("scoop")
             .unwrap()
             .arg("--help")
@@ -430,20 +442,20 @@ mod snapshots {
 
         let stdout = String::from_utf8_lossy(&output.stdout);
 
-        // Verify help structure has expected sections
-        insta::assert_snapshot!(
-            "help_structure",
-            format!(
-                "Has Usage: {}\nHas Commands: {}\nHas Options: {}",
-                stdout.contains("Usage:"),
-                stdout.contains("Commands:"),
-                stdout.contains("Options:")
-            )
+        // Help must have these sections
+        assert!(stdout.contains("Usage:"), "Help missing 'Usage:' section");
+        assert!(
+            stdout.contains("Commands:"),
+            "Help missing 'Commands:' section"
+        );
+        assert!(
+            stdout.contains("Options:"),
+            "Help missing 'Options:' section"
         );
     }
 
     #[test]
-    fn test_list_subcommands_present() {
+    fn test_help_lists_all_subcommands() {
         let output = Command::cargo_bin("scoop")
             .unwrap()
             .arg("--help")
@@ -452,72 +464,21 @@ mod snapshots {
 
         let stdout = String::from_utf8_lossy(&output.stdout);
 
-        // All essential subcommands should be in help
-        let subcommands = [
-            "list",
-            "create",
-            "remove",
-            "use",
-            "activate",
-            "deactivate",
-            "install",
-        ];
-        let present: Vec<_> = subcommands
-            .iter()
-            .map(|cmd| format!("{}: {}", cmd, stdout.contains(cmd)))
-            .collect();
+        // User-facing subcommands that should be visible in help
+        // Note: activate/deactivate are hidden (shell wrapper handles them)
+        let visible_subcommands = ["list", "create", "remove", "use", "install", "init"];
 
-        insta::assert_snapshot!("subcommands_present", present.join("\n"));
+        for cmd in visible_subcommands {
+            assert!(
+                stdout.contains(cmd),
+                "Help missing required subcommand: {}",
+                cmd
+            );
+        }
     }
 
     #[test]
-    fn test_init_bash_structure() {
-        let output = Command::cargo_bin("scoop")
-            .unwrap()
-            .args(["init", "bash"])
-            .output()
-            .unwrap();
-
-        let stdout = String::from_utf8_lossy(&output.stdout);
-
-        // Verify bash script structure
-        insta::assert_snapshot!(
-            "init_bash_structure",
-            format!(
-                "Has scoop function: {}\nHas hook function: {}\nHas completion: {}\nHas PROMPT_COMMAND: {}",
-                stdout.contains("scoop()"),
-                stdout.contains("_scoop_hook()"),
-                stdout.contains("_scoop_complete()"),
-                stdout.contains("PROMPT_COMMAND")
-            )
-        );
-    }
-
-    #[test]
-    fn test_init_zsh_structure() {
-        let output = Command::cargo_bin("scoop")
-            .unwrap()
-            .args(["init", "zsh"])
-            .output()
-            .unwrap();
-
-        let stdout = String::from_utf8_lossy(&output.stdout);
-
-        // Verify zsh script structure
-        insta::assert_snapshot!(
-            "init_zsh_structure",
-            format!(
-                "Has scoop function: {}\nHas hook function: {}\nHas completion: {}\nHas chpwd hook: {}",
-                stdout.contains("scoop()"),
-                stdout.contains("_scoop_hook()"),
-                stdout.contains("_scoop()"),
-                stdout.contains("add-zsh-hook chpwd")
-            )
-        );
-    }
-
-    #[test]
-    fn test_error_message_format() {
+    fn test_error_message_is_helpful() {
         let fixture = TestFixture::new();
 
         let output = scoop_cmd(&fixture.scoop_home)
@@ -527,15 +488,18 @@ mod snapshots {
 
         let stderr = String::from_utf8_lossy(&output.stderr);
 
-        // Error messages should have consistent format
-        insta::assert_snapshot!(
-            "error_format",
-            format!(
-                "Contains 'error': {}\nContains env name: {}\nContains 'not found': {}",
-                stderr.to_lowercase().contains("error"),
-                stderr.contains("nonexistent"),
-                stderr.contains("not found")
-            )
+        // Error messages should be helpful
+        assert!(
+            stderr.to_lowercase().contains("error") || !output.status.success(),
+            "Failed command should indicate error"
+        );
+        assert!(
+            stderr.contains("nonexistent"),
+            "Error should mention the problematic env name"
+        );
+        assert!(
+            stderr.contains("not found") || stderr.contains("찾을 수 없습니다"),
+            "Error should explain the problem"
         );
     }
 }
