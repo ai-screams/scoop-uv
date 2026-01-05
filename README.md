@@ -16,7 +16,7 @@
 [![docs.rs](https://img.shields.io/docsrs/scoop-uv?style=flat-square&logo=docs.rs&label=docs.rs)](https://docs.rs/scoop-uv)
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/crates/l/scoop-uv?style=flat-square)](LICENSE-MIT)
-[![dependency status](https://deps.rs/repo/github/ai-screams/scoop-uv/status.svg)](https://deps.rs/repo/github/ai-screams/scoop-uv)
+[![Dependencies](https://img.shields.io/librariesio/release/cargo/scoop-uv?style=flat-square&label=dependencies)](https://libraries.io/cargo/scoop-uv)
 
 <!-- GitHub Stats -->
 [![Stars](https://img.shields.io/github/stars/ai-screams/scoop-uv?style=flat-square&logo=github&label=Stars)](https://github.com/ai-screams/scoop-uv/stargazers)
