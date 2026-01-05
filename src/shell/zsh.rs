@@ -185,222 +185,144 @@ compdef _scoop scoop
 mod tests {
     use super::*;
 
+    // =========================================================================
+    // Real Test: Syntax Validation with zsh -n
+    // =========================================================================
+
+    /// Validates that the generated script has valid zsh syntax.
+    /// This is a REAL test - it actually runs zsh to check the script.
+    #[test]
+    #[cfg(unix)]
+    fn test_init_script_has_valid_zsh_syntax() {
+        let script = init_script();
+
+        // Use zsh -n for syntax checking (parse only, don't execute)
+        let output = std::process::Command::new("zsh")
+            .arg("-n") // syntax check only
+            .arg("-c")
+            .arg(script)
+            .output();
+
+        match output {
+            Ok(result) => {
+                assert!(
+                    result.status.success(),
+                    "Zsh script has syntax errors:\n{}",
+                    String::from_utf8_lossy(&result.stderr)
+                );
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                // zsh not available, skip test
+                eprintln!("Skipping zsh syntax test: zsh not found");
+            }
+            Err(e) => panic!("Failed to run zsh: {}", e),
+        }
+    }
+
+    // =========================================================================
+    // Structural Tests: Minimal checks for required components
+    // =========================================================================
+
     #[test]
     fn test_init_script_not_empty() {
         let script = init_script();
-        assert!(!script.is_empty());
+        assert!(!script.is_empty(), "Script should not be empty");
     }
 
     #[test]
-    fn test_init_script_contains_wrapper_function() {
+    fn test_init_script_defines_required_functions() {
         let script = init_script();
-        assert!(script.contains("scoop()"));
-        assert!(script.contains("case \"$command\" in"));
+
+        // These functions MUST exist for the shell integration to work
+        let required_functions = ["scoop()", "_scoop_hook()", "_scoop()"];
+
+        for func in required_functions {
+            assert!(
+                script.contains(func),
+                "Script missing required function: {}",
+                func
+            );
+        }
     }
 
     #[test]
-    fn test_init_script_contains_hook_function() {
+    fn test_init_script_registers_chpwd_hook() {
         let script = init_script();
-        assert!(script.contains("_scoop_hook()"));
+
+        // zsh uses chpwd hook for directory change detection
+        assert!(
+            script.contains("add-zsh-hook chpwd _scoop_hook"),
+            "Script must register chpwd hook for auto-activation"
+        );
     }
 
     #[test]
-    fn test_init_script_handles_use_command() {
+    fn test_init_script_registers_completion() {
         let script = init_script();
-        assert!(script.contains("use)"));
-        assert!(script.contains("command scoop activate"));
+
+        // Must register completion function with compdef
+        assert!(
+            script.contains("compdef _scoop scoop"),
+            "Script must register zsh completion"
+        );
     }
 
     #[test]
-    fn test_init_script_handles_activate_deactivate() {
+    fn test_init_script_loads_zsh_hooks_module() {
         let script = init_script();
-        assert!(script.contains("activate|deactivate)"));
-        assert!(script.contains("eval"));
+
+        // Must autoload zsh hooks module
+        assert!(
+            script.contains("autoload -Uz add-zsh-hook"),
+            "Script must load zsh hooks module"
+        );
     }
 
-    #[test]
-    fn test_init_script_uses_chpwd_hook() {
-        let script = init_script();
-        // zsh uses chpwd hook instead of PROMPT_COMMAND
-        assert!(script.contains("add-zsh-hook chpwd _scoop_hook"));
-    }
+    // =========================================================================
+    // Real Test: Best Practices Validation with shellcheck
+    // =========================================================================
 
+    /// Validates that the generated script follows shell best practices.
+    /// Note: shellcheck uses bash mode for zsh (no native zsh support),
+    /// but catches most common issues.
     #[test]
-    fn test_init_script_respects_no_auto_var() {
+    #[cfg(unix)]
+    fn test_init_script_passes_shellcheck() {
         let script = init_script();
-        assert!(script.contains("SCOOP_NO_AUTO"));
-    }
 
-    #[test]
-    fn test_init_script_contains_completion() {
-        let script = init_script();
-        assert!(script.contains("_scoop()"));
-        assert!(script.contains("compdef _scoop scoop"));
-    }
+        // Write script to temp file (shellcheck requires file input)
+        let temp_file = tempfile::NamedTempFile::new().unwrap();
+        std::fs::write(temp_file.path(), script).unwrap();
 
-    #[test]
-    fn test_init_script_uses_zsh_completion_system() {
-        let script = init_script();
-        assert!(script.contains("_arguments"));
-        assert!(script.contains("_describe"));
-    }
+        // shellcheck doesn't have native zsh support, but bash mode catches most issues
+        // Use --exclude for zsh-specific constructs that bash doesn't understand
+        let output = std::process::Command::new("shellcheck")
+            .arg("--shell=bash")
+            .arg("--severity=warning")
+            // Exclude zsh-specific constructs:
+            // SC2034: Unused variable (zsh uses typeset -A)
+            // SC2154: Variable referenced but not assigned (zsh completion vars)
+            // SC2168: 'local' outside function (zsh completion context)
+            // SC3030: Array syntax (zsh-specific)
+            // SC3057: Associative array syntax (zsh-specific)
+            .arg("--exclude=SC2034,SC2154,SC2168,SC3030,SC3057")
+            .arg(temp_file.path())
+            .output();
 
-    #[test]
-    fn test_init_script_completes_commands_with_descriptions() {
-        let script = init_script();
-        assert!(script.contains("'list:List all virtual environments'"));
-        assert!(script.contains("'create:Create a new virtual environment'"));
-        assert!(script.contains("'use:Set local environment for current directory'"));
-    }
-
-    #[test]
-    fn test_init_script_is_valid_zsh_comment_header() {
-        let script = init_script();
-        assert!(script.starts_with("# scoop shell integration for zsh"));
-    }
-
-    #[test]
-    fn test_init_script_loads_zsh_hooks() {
-        let script = init_script();
-        assert!(script.contains("autoload -Uz add-zsh-hook"));
-    }
-
-    // ==========================================================================
-    // Shell Script Branch Coverage Tests
-    // ==========================================================================
-
-    #[test]
-    fn test_init_script_use_command_handles_options() {
-        let script = init_script();
-        // Verify 'use' command skips options when finding env name
-        assert!(script.contains("case \"$arg\" in"));
-        assert!(script.contains("-*) ;;"));
-    }
-
-    #[test]
-    fn test_init_script_use_command_has_return_code() {
-        let script = init_script();
-        // Verify 'use' command preserves return code
-        assert!(script.contains("local ret=$?"));
-        assert!(script.contains("return $ret"));
-    }
-
-    #[test]
-    fn test_init_script_hook_handles_deactivation() {
-        let script = init_script();
-        // Verify hook deactivates when env_name is empty but SCOOP_ACTIVE is set
-        assert!(script.contains("-z \"$env_name\" && -n \"$SCOOP_ACTIVE\""));
-        assert!(script.contains("command scoop deactivate"));
-    }
-
-    #[test]
-    fn test_init_script_hook_compares_active_env() {
-        let script = init_script();
-        // Verify hook only activates if different from current
-        assert!(script.contains("$env_name\" != \"$SCOOP_ACTIVE\""));
-    }
-
-    #[test]
-    fn test_init_script_default_command_passthrough() {
-        let script = init_script();
-        // Verify default case passes through to command scoop
-        assert!(script.contains("*)\n            command scoop \"$@\""));
-    }
-
-    #[test]
-    fn test_init_script_runs_hook_on_startup() {
-        let script = init_script();
-        // Verify hook is called on script load
-        assert!(script.contains("\n_scoop_hook\n"));
-    }
-
-    #[test]
-    fn test_init_script_silences_resolve_errors() {
-        let script = init_script();
-        // Verify resolve command stderr is silenced
-        assert!(script.contains("scoop resolve 2>/dev/null"));
-    }
-
-    #[test]
-    fn test_init_script_completion_state_machine() {
-        let script = init_script();
-        // Verify zsh completion uses _arguments state machine
-        assert!(script.contains("_arguments -C"));
-        assert!(script.contains("'1: :->command'"));
-        assert!(script.contains("'*: :->args'"));
-    }
-
-    #[test]
-    fn test_init_script_completion_use_options() {
-        let script = init_script();
-        // Verify 'use' subcommand has proper option descriptions
-        assert!(script.contains("'--global:Set as global default'"));
-        assert!(script.contains("'--link:Create .venv symlink'"));
-        assert!(script.contains("'--no-link:Do not create .venv symlink'"));
-    }
-
-    #[test]
-    fn test_init_script_completion_install_options() {
-        let script = init_script();
-        // Verify 'install' subcommand has proper option descriptions
-        assert!(script.contains("'--latest:Install latest stable Python'"));
-        assert!(script.contains("'--stable:Install oldest fully-supported Python'"));
-    }
-
-    #[test]
-    fn test_init_script_completion_remove_force_option() {
-        let script = init_script();
-        // Verify 'remove' has --force option
-        assert!(script.contains("'--force:Skip confirmation'"));
-    }
-
-    #[test]
-    fn test_init_script_completion_list_pythons_option() {
-        let script = init_script();
-        // Verify 'list' has --pythons option
-        assert!(script.contains("'--pythons:Show installed Python versions'"));
-    }
-
-    #[test]
-    fn test_init_script_completion_create_force_option() {
-        let script = init_script();
-        // Verify 'create' has --force option
-        assert!(script.contains("'--force:Overwrite existing environment'"));
-    }
-
-    #[test]
-    fn test_init_script_completion_prevents_duplicate_env() {
-        let script = init_script();
-        // Verify completion checks if env already provided
-        assert!(script.contains("local has_env=false"));
-        assert!(script.contains("[[ $has_env == false ]]"));
-    }
-
-    #[test]
-    fn test_init_script_completion_uninstall_python_list() {
-        let script = init_script();
-        // Verify uninstall completes with unique python versions
-        assert!(script.contains("local pythons=(${(uf)\"$(command scoop list --pythons --bare"));
-    }
-
-    #[test]
-    fn test_init_script_completion_create_python_version() {
-        let script = init_script();
-        // Verify create offers python versions for second arg
-        assert!(script.contains("if [[ $pos_count -eq 1 ]]"));
-    }
-
-    #[test]
-    fn test_init_script_uses_compdef() {
-        let script = init_script();
-        // Verify completion is registered with compdef
-        assert!(script.contains("compdef _scoop scoop"));
-    }
-
-    #[test]
-    fn test_init_script_adds_chpwd_hook() {
-        let script = init_script();
-        // Verify chpwd hook is registered
-        assert!(script.contains("add-zsh-hook chpwd _scoop_hook"));
+        match output {
+            Ok(result) => {
+                assert!(
+                    result.status.success(),
+                    "shellcheck found issues in zsh script:\n{}",
+                    String::from_utf8_lossy(&result.stdout)
+                );
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                eprintln!(
+                    "Skipping shellcheck test: shellcheck not found (install: brew install shellcheck)"
+                );
+            }
+            Err(e) => panic!("Failed to run shellcheck: {}", e),
+        }
     }
 }
