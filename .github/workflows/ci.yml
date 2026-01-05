@@ -102,3 +102,39 @@ jobs:
 
       - name: Check MSRV compatibility
         run: cargo check --all-features
+
+  # ====================
+  # ShellCheck (embedded shell script linting)
+  # ====================
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "shellcheck"
+
+      - name: Build binary
+        run: cargo build
+
+      - name: Extract shell scripts
+        run: |
+          ./target/debug/scoop init bash > /tmp/bash_init.sh
+          ./target/debug/scoop init zsh > /tmp/zsh_init.sh
+
+      - name: ShellCheck bash script
+        run: shellcheck --shell=bash --severity=warning /tmp/bash_init.sh
+
+      - name: ShellCheck zsh script
+        run: |
+          # zsh-specific constructs need exclusions (shellcheck lacks native zsh support)
+          shellcheck --shell=bash --severity=warning \
+            --exclude=SC2034,SC2154,SC2168,SC3030,SC3057 \
+            /tmp/zsh_init.sh
