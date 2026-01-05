@@ -137,7 +137,7 @@ jobs:
       - name: ShellCheck zsh script
         run: |
           # zsh-specific constructs need exclusions (shellcheck lacks native zsh support)
-          # SC2207: COMPREPLY pattern (also used in zsh completion)
+          # SC1087: $line[1] array syntax, SC2206/SC2296: ${(f)...} expansion flags
           shellcheck --shell=bash --severity=warning \
-            --exclude=SC2034,SC2154,SC2168,SC2207,SC3030,SC3057 \
+            --exclude=SC1087,SC2034,SC2154,SC2168,SC2206,SC2207,SC2296,SC3030,SC3057 \
             /tmp/zsh_init.sh

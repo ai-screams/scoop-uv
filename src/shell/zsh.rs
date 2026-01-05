@@ -300,13 +300,16 @@ mod tests {
             .arg("--shell=bash")
             .arg("--severity=warning")
             // Exclude zsh-specific constructs:
+            // SC1087: $line[1] array syntax (zsh doesn't require braces)
             // SC2034: Unused variable (zsh uses typeset -A)
             // SC2154: Variable referenced but not assigned (zsh completion vars)
             // SC2168: 'local' outside function (zsh completion context)
+            // SC2206: Quote to prevent word splitting (zsh handles this differently)
             // SC2207: COMPREPLY=($(compgen ...)) is standard completion idiom
+            // SC2296: ${(f)...} parameter expansion flags (zsh-specific)
             // SC3030: Array syntax (zsh-specific)
             // SC3057: Associative array syntax (zsh-specific)
-            .arg("--exclude=SC2034,SC2154,SC2168,SC2207,SC3030,SC3057")
+            .arg("--exclude=SC1087,SC2034,SC2154,SC2168,SC2206,SC2207,SC2296,SC3030,SC3057")
             .arg(temp_file.path())
             .output();
 
