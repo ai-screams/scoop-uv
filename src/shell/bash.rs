@@ -253,6 +253,8 @@ mod tests {
         let output = std::process::Command::new("shellcheck")
             .arg("--shell=bash")
             .arg("--severity=warning") // Only warnings and above
+            // SC2207: COMPREPLY=($(compgen ...)) is standard bash completion idiom
+            .arg("--exclude=SC2207")
             .arg(temp_file.path())
             .output();
 

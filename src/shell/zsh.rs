@@ -303,9 +303,10 @@ mod tests {
             // SC2034: Unused variable (zsh uses typeset -A)
             // SC2154: Variable referenced but not assigned (zsh completion vars)
             // SC2168: 'local' outside function (zsh completion context)
+            // SC2207: COMPREPLY=($(compgen ...)) is standard completion idiom
             // SC3030: Array syntax (zsh-specific)
             // SC3057: Associative array syntax (zsh-specific)
-            .arg("--exclude=SC2034,SC2154,SC2168,SC3030,SC3057")
+            .arg("--exclude=SC2034,SC2154,SC2168,SC2207,SC3030,SC3057")
             .arg(temp_file.path())
             .output();
 

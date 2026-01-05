@@ -130,11 +130,14 @@ jobs:
           ./target/debug/scoop init zsh > /tmp/zsh_init.sh
 
       - name: ShellCheck bash script
-        run: shellcheck --shell=bash --severity=warning /tmp/bash_init.sh
+        run: |
+          # SC2207: COMPREPLY=($(compgen ...)) is standard bash completion idiom
+          shellcheck --shell=bash --severity=warning --exclude=SC2207 /tmp/bash_init.sh
 
       - name: ShellCheck zsh script
         run: |
           # zsh-specific constructs need exclusions (shellcheck lacks native zsh support)
+          # SC2207: COMPREPLY pattern (also used in zsh completion)
           shellcheck --shell=bash --severity=warning \
-            --exclude=SC2034,SC2154,SC2168,SC3030,SC3057 \
+            --exclude=SC2034,SC2154,SC2168,SC2207,SC3030,SC3057 \
             /tmp/zsh_init.sh
