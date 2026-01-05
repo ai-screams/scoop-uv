@@ -94,30 +94,11 @@ pub fn virtualenv_activate(name: &str) -> Result<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Mutex;
-    use tempfile::TempDir;
-
-    /// Mutex to synchronize tests that manipulate SCOOP_HOME environment variable.
-    /// Environment variables are process-global state, so concurrent access causes race conditions.
-    static ENV_LOCK: Mutex<()> = Mutex::new(());
-
-    fn with_temp_scoop_home<F, T>(f: F) -> T
-    where
-        F: FnOnce(&TempDir) -> T,
-    {
-        let _guard = ENV_LOCK.lock().unwrap();
-        let temp_dir = TempDir::new().unwrap();
-        // SAFETY: Protected by ENV_LOCK mutex
-        unsafe { std::env::set_var(SCOOP_HOME_ENV, temp_dir.path()) };
-        let result = f(&temp_dir);
-        // SAFETY: Protected by ENV_LOCK mutex
-        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
-        result
-    }
+    use crate::test_utils::{ENV_LOCK, with_temp_scoop_home};
 
     #[test]
     fn test_scoop_home_default() {
-        let _guard = ENV_LOCK.lock().unwrap();
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         // SAFETY: Protected by ENV_LOCK mutex
         unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
         let home = scoop_home().unwrap();
@@ -126,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_scoop_home_env() {
-        let _guard = ENV_LOCK.lock().unwrap();
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         // SAFETY: Protected by ENV_LOCK mutex
         unsafe { std::env::set_var(SCOOP_HOME_ENV, "/tmp/test-scoop") };
         let home = scoop_home().unwrap();

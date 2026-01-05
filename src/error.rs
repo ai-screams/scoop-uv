@@ -79,3 +79,164 @@ pub enum ScoopError {
     #[error("{message}")]
     InvalidArgument { message: String },
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io;
+
+    #[test]
+    fn test_virtualenv_not_found_message() {
+        let err = ScoopError::VirtualenvNotFound {
+            name: "myenv".to_string(),
+        };
+        assert_eq!(err.to_string(), "Virtual environment 'myenv' not found");
+    }
+
+    #[test]
+    fn test_virtualenv_exists_message() {
+        let err = ScoopError::VirtualenvExists {
+            name: "existing".to_string(),
+        };
+        assert_eq!(
+            err.to_string(),
+            "Virtual environment 'existing' already exists"
+        );
+    }
+
+    #[test]
+    fn test_invalid_env_name_message() {
+        let err = ScoopError::InvalidEnvName {
+            name: "123bad".to_string(),
+            reason: "must start with a letter".to_string(),
+        };
+        assert!(err.to_string().contains("123bad"));
+        assert!(err.to_string().contains("must start with a letter"));
+    }
+
+    #[test]
+    fn test_invalid_python_version_message() {
+        let err = ScoopError::InvalidPythonVersion {
+            version: "abc".to_string(),
+        };
+        assert_eq!(err.to_string(), "Invalid Python version 'abc'");
+    }
+
+    #[test]
+    fn test_uv_not_found_contains_install_hint() {
+        let err = ScoopError::UvNotFound;
+        let msg = err.to_string();
+        assert!(msg.contains("uv is not installed"));
+        assert!(msg.contains("curl"));
+        assert!(msg.contains("astral.sh"));
+    }
+
+    #[test]
+    fn test_uv_command_failed_message() {
+        let err = ScoopError::UvCommandFailed {
+            command: "venv".to_string(),
+            message: "Python not found".to_string(),
+        };
+        assert!(err.to_string().contains("uv command failed"));
+        assert!(err.to_string().contains("Python not found"));
+    }
+
+    #[test]
+    fn test_path_error_message() {
+        let err = ScoopError::PathError("invalid UTF-8".to_string());
+        assert_eq!(err.to_string(), "Path error: invalid UTF-8");
+    }
+
+    #[test]
+    fn test_home_not_found_message() {
+        let err = ScoopError::HomeNotFound;
+        assert!(err.to_string().contains("home directory"));
+    }
+
+    #[test]
+    fn test_io_error_conversion() {
+        let io_err = io::Error::new(io::ErrorKind::NotFound, "file missing");
+        let err: ScoopError = io_err.into();
+        assert!(matches!(err, ScoopError::Io(_)));
+        assert!(err.to_string().contains("file missing"));
+    }
+
+    #[test]
+    fn test_json_error_conversion() {
+        let json_str = "{ invalid json }";
+        let json_err: serde_json::Error =
+            serde_json::from_str::<serde_json::Value>(json_str).expect_err("should fail");
+        let err: ScoopError = json_err.into();
+        assert!(matches!(err, ScoopError::Json(_)));
+    }
+
+    #[test]
+    fn test_version_file_not_found_message() {
+        let err = ScoopError::VersionFileNotFound {
+            path: PathBuf::from("/some/path"),
+        };
+        assert!(err.to_string().contains("/some/path"));
+        assert!(err.to_string().contains("parent directories"));
+    }
+
+    #[test]
+    fn test_unsupported_shell_message() {
+        let err = ScoopError::UnsupportedShell {
+            shell: "fish".to_string(),
+        };
+        assert_eq!(err.to_string(), "Shell 'fish' is not supported");
+    }
+
+    #[test]
+    fn test_python_not_installed_contains_hint() {
+        let err = ScoopError::PythonNotInstalled {
+            version: "3.13".to_string(),
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("3.13"));
+        assert!(msg.contains("scoop install"));
+    }
+
+    #[test]
+    fn test_python_install_failed_message() {
+        let err = ScoopError::PythonInstallFailed {
+            version: "3.12".to_string(),
+            message: "network error".to_string(),
+        };
+        assert!(err.to_string().contains("3.12"));
+        assert!(err.to_string().contains("network error"));
+    }
+
+    #[test]
+    fn test_python_uninstall_failed_message() {
+        let err = ScoopError::PythonUninstallFailed {
+            version: "3.11".to_string(),
+            message: "in use".to_string(),
+        };
+        assert!(err.to_string().contains("3.11"));
+        assert!(err.to_string().contains("in use"));
+    }
+
+    #[test]
+    fn test_no_python_versions_message() {
+        let err = ScoopError::NoPythonVersions {
+            pattern: "2.7".to_string(),
+        };
+        assert!(err.to_string().contains("2.7"));
+    }
+
+    #[test]
+    fn test_invalid_argument_message() {
+        let err = ScoopError::InvalidArgument {
+            message: "Cannot use --stable and --latest together".to_string(),
+        };
+        assert_eq!(err.to_string(), "Cannot use --stable and --latest together");
+    }
+
+    #[test]
+    fn test_error_is_debug() {
+        let err = ScoopError::HomeNotFound;
+        let debug_str = format!("{:?}", err);
+        assert!(debug_str.contains("HomeNotFound"));
+    }
+}

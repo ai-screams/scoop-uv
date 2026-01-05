@@ -145,3 +145,78 @@ _scoop_complete() {
 complete -F _scoop_complete scoop
 "#
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_init_script_not_empty() {
+        let script = init_script();
+        assert!(!script.is_empty());
+    }
+
+    #[test]
+    fn test_init_script_contains_wrapper_function() {
+        let script = init_script();
+        assert!(script.contains("scoop()"));
+        assert!(script.contains("case \"$command\" in"));
+    }
+
+    #[test]
+    fn test_init_script_contains_hook_function() {
+        let script = init_script();
+        assert!(script.contains("_scoop_hook()"));
+    }
+
+    #[test]
+    fn test_init_script_handles_use_command() {
+        let script = init_script();
+        assert!(script.contains("use)"));
+        assert!(script.contains("command scoop activate"));
+    }
+
+    #[test]
+    fn test_init_script_handles_activate_deactivate() {
+        let script = init_script();
+        assert!(script.contains("activate|deactivate)"));
+        assert!(script.contains("eval"));
+    }
+
+    #[test]
+    fn test_init_script_sets_prompt_command() {
+        let script = init_script();
+        assert!(script.contains("PROMPT_COMMAND"));
+        assert!(script.contains("_scoop_hook"));
+    }
+
+    #[test]
+    fn test_init_script_respects_no_auto_var() {
+        let script = init_script();
+        assert!(script.contains("SCOOP_NO_AUTO"));
+    }
+
+    #[test]
+    fn test_init_script_contains_completion() {
+        let script = init_script();
+        assert!(script.contains("_scoop_complete()"));
+        assert!(script.contains("complete -F _scoop_complete scoop"));
+    }
+
+    #[test]
+    fn test_init_script_completes_subcommands() {
+        let script = init_script();
+        assert!(script.contains("list"));
+        assert!(script.contains("create"));
+        assert!(script.contains("use"));
+        assert!(script.contains("remove"));
+        assert!(script.contains("install"));
+        assert!(script.contains("uninstall"));
+    }
+
+    #[test]
+    fn test_init_script_is_valid_bash_comment_header() {
+        let script = init_script();
+        assert!(script.starts_with("# scoop shell integration for bash"));
+    }
+}

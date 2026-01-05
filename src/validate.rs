@@ -391,4 +391,77 @@ mod tests {
         let too_long = "a".repeat(65);
         assert!(!is_valid_env_name(&too_long));
     }
+
+    // ==========================================================================
+    // Security Tests: Path Traversal and Injection Prevention
+    // ==========================================================================
+
+    #[test]
+    fn test_env_name_path_traversal_rejected() {
+        // Path traversal attempts must be rejected
+        assert!(!is_valid_env_name("../"));
+        assert!(!is_valid_env_name(".."));
+        assert!(!is_valid_env_name("../etc"));
+        assert!(!is_valid_env_name("../../../etc/passwd"));
+        assert!(!is_valid_env_name("foo/../bar"));
+        assert!(!is_valid_env_name("foo/.."));
+    }
+
+    #[test]
+    fn test_env_name_hidden_file_rejected() {
+        // Hidden file/directory names (starting with .) must be rejected
+        assert!(!is_valid_env_name(".hidden"));
+        assert!(!is_valid_env_name("."));
+        assert!(!is_valid_env_name(".."));
+        assert!(!is_valid_env_name(".gitignore"));
+        assert!(!is_valid_env_name(".env"));
+    }
+
+    #[test]
+    fn test_env_name_absolute_path_rejected() {
+        // Absolute paths must be rejected
+        assert!(!is_valid_env_name("/etc/passwd"));
+        assert!(!is_valid_env_name("/tmp/evil"));
+        assert!(!is_valid_env_name("/"));
+    }
+
+    #[test]
+    fn test_env_name_special_chars_rejected() {
+        // Special shell characters must be rejected
+        assert!(!is_valid_env_name("env;ls"));
+        assert!(!is_valid_env_name("env|cat"));
+        assert!(!is_valid_env_name("env&bg"));
+        assert!(!is_valid_env_name("env`cmd`"));
+        assert!(!is_valid_env_name("env$(cmd)"));
+        assert!(!is_valid_env_name("env>file"));
+        assert!(!is_valid_env_name("env<file"));
+        assert!(!is_valid_env_name("env\nwhoami"));
+        assert!(!is_valid_env_name("env\twhoami"));
+    }
+
+    #[test]
+    fn test_env_name_null_byte_rejected() {
+        // Null bytes must be rejected (C string terminator attack)
+        assert!(!is_valid_env_name("env\0hidden"));
+        assert!(!is_valid_env_name("\0"));
+    }
+
+    #[test]
+    fn test_env_name_unicode_rejected() {
+        // Unicode homoglyphs and non-ASCII must be rejected
+        assert!(!is_valid_env_name("еnv")); // Cyrillic 'е' (U+0435) looks like 'e'
+        assert!(!is_valid_env_name("환경")); // Korean
+        assert!(!is_valid_env_name("環境")); // Chinese
+        assert!(!is_valid_env_name("env™"));
+        assert!(!is_valid_env_name("env🐍")); // Emoji
+    }
+
+    #[test]
+    fn test_validate_env_name_path_traversal_error_message() {
+        // Verify error message is helpful for security-related rejections
+        let result = validate_env_name("../etc");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("must start with a letter"));
+    }
 }
