@@ -264,4 +264,143 @@ mod tests {
         let script = init_script();
         assert!(script.contains("autoload -Uz add-zsh-hook"));
     }
+
+    // ==========================================================================
+    // Shell Script Branch Coverage Tests
+    // ==========================================================================
+
+    #[test]
+    fn test_init_script_use_command_handles_options() {
+        let script = init_script();
+        // Verify 'use' command skips options when finding env name
+        assert!(script.contains("case \"$arg\" in"));
+        assert!(script.contains("-*) ;;"));
+    }
+
+    #[test]
+    fn test_init_script_use_command_has_return_code() {
+        let script = init_script();
+        // Verify 'use' command preserves return code
+        assert!(script.contains("local ret=$?"));
+        assert!(script.contains("return $ret"));
+    }
+
+    #[test]
+    fn test_init_script_hook_handles_deactivation() {
+        let script = init_script();
+        // Verify hook deactivates when env_name is empty but SCOOP_ACTIVE is set
+        assert!(script.contains("-z \"$env_name\" && -n \"$SCOOP_ACTIVE\""));
+        assert!(script.contains("command scoop deactivate"));
+    }
+
+    #[test]
+    fn test_init_script_hook_compares_active_env() {
+        let script = init_script();
+        // Verify hook only activates if different from current
+        assert!(script.contains("$env_name\" != \"$SCOOP_ACTIVE\""));
+    }
+
+    #[test]
+    fn test_init_script_default_command_passthrough() {
+        let script = init_script();
+        // Verify default case passes through to command scoop
+        assert!(script.contains("*)\n            command scoop \"$@\""));
+    }
+
+    #[test]
+    fn test_init_script_runs_hook_on_startup() {
+        let script = init_script();
+        // Verify hook is called on script load
+        assert!(script.contains("\n_scoop_hook\n"));
+    }
+
+    #[test]
+    fn test_init_script_silences_resolve_errors() {
+        let script = init_script();
+        // Verify resolve command stderr is silenced
+        assert!(script.contains("scoop resolve 2>/dev/null"));
+    }
+
+    #[test]
+    fn test_init_script_completion_state_machine() {
+        let script = init_script();
+        // Verify zsh completion uses _arguments state machine
+        assert!(script.contains("_arguments -C"));
+        assert!(script.contains("'1: :->command'"));
+        assert!(script.contains("'*: :->args'"));
+    }
+
+    #[test]
+    fn test_init_script_completion_use_options() {
+        let script = init_script();
+        // Verify 'use' subcommand has proper option descriptions
+        assert!(script.contains("'--global:Set as global default'"));
+        assert!(script.contains("'--link:Create .venv symlink'"));
+        assert!(script.contains("'--no-link:Do not create .venv symlink'"));
+    }
+
+    #[test]
+    fn test_init_script_completion_install_options() {
+        let script = init_script();
+        // Verify 'install' subcommand has proper option descriptions
+        assert!(script.contains("'--latest:Install latest stable Python'"));
+        assert!(script.contains("'--stable:Install oldest fully-supported Python'"));
+    }
+
+    #[test]
+    fn test_init_script_completion_remove_force_option() {
+        let script = init_script();
+        // Verify 'remove' has --force option
+        assert!(script.contains("'--force:Skip confirmation'"));
+    }
+
+    #[test]
+    fn test_init_script_completion_list_pythons_option() {
+        let script = init_script();
+        // Verify 'list' has --pythons option
+        assert!(script.contains("'--pythons:Show installed Python versions'"));
+    }
+
+    #[test]
+    fn test_init_script_completion_create_force_option() {
+        let script = init_script();
+        // Verify 'create' has --force option
+        assert!(script.contains("'--force:Overwrite existing environment'"));
+    }
+
+    #[test]
+    fn test_init_script_completion_prevents_duplicate_env() {
+        let script = init_script();
+        // Verify completion checks if env already provided
+        assert!(script.contains("local has_env=false"));
+        assert!(script.contains("[[ $has_env == false ]]"));
+    }
+
+    #[test]
+    fn test_init_script_completion_uninstall_python_list() {
+        let script = init_script();
+        // Verify uninstall completes with unique python versions
+        assert!(script.contains("local pythons=(${(uf)\"$(command scoop list --pythons --bare"));
+    }
+
+    #[test]
+    fn test_init_script_completion_create_python_version() {
+        let script = init_script();
+        // Verify create offers python versions for second arg
+        assert!(script.contains("if [[ $pos_count -eq 1 ]]"));
+    }
+
+    #[test]
+    fn test_init_script_uses_compdef() {
+        let script = init_script();
+        // Verify completion is registered with compdef
+        assert!(script.contains("compdef _scoop scoop"));
+    }
+
+    #[test]
+    fn test_init_script_adds_chpwd_hook() {
+        let script = init_script();
+        // Verify chpwd hook is registered
+        assert!(script.contains("add-zsh-hook chpwd _scoop_hook"));
+    }
 }

@@ -157,4 +157,87 @@ mod tests {
             assert!(content.contains("\"3.12\""));
         });
     }
+
+    // ==========================================================================
+    // Concurrency Tests
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn test_multiple_mock_venvs_sequential() {
+        with_temp_scoop_home(|temp_dir| {
+            // Create multiple venvs sequentially
+            for i in 0..5 {
+                let name = format!("env{}", i);
+                create_mock_venv(temp_dir, &name, Some("3.12"));
+            }
+
+            // Verify all exist
+            for i in 0..5 {
+                let name = format!("env{}", i);
+                let path = temp_dir.path().join("virtualenvs").join(&name);
+                assert!(path.exists(), "env{} should exist", i);
+            }
+        });
+    }
+
+    #[test]
+    fn test_env_lock_prevents_concurrent_modification() {
+        use std::sync::Arc;
+        use std::thread;
+
+        let counter = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let mut handles = vec![];
+
+        // Spawn multiple threads that all try to acquire the lock
+        for _ in 0..4 {
+            let counter = Arc::clone(&counter);
+            let handle = thread::spawn(move || {
+                let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+                // Increment counter while holding lock
+                let current = counter.load(std::sync::atomic::Ordering::SeqCst);
+                // Small delay to increase chance of race condition if lock doesn't work
+                thread::yield_now();
+                counter.store(current + 1, std::sync::atomic::Ordering::SeqCst);
+            });
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.join().expect("Thread should not panic");
+        }
+
+        // All increments should have happened
+        assert_eq!(
+            counter.load(std::sync::atomic::Ordering::SeqCst),
+            4,
+            "All threads should have incremented"
+        );
+    }
+
+    #[test]
+    fn test_metadata_serialization_is_deterministic() {
+        use crate::core::Metadata;
+
+        // Create same metadata multiple times and verify JSON is consistent
+        let mut jsons = Vec::new();
+        for _ in 0..3 {
+            let meta = Metadata::new(
+                "test".to_string(),
+                "3.12".to_string(),
+                Some("1.0".to_string()),
+            );
+            // Note: created_at will differ, so we check structure only
+            let json = serde_json::to_string(&meta).unwrap();
+            assert!(json.contains("\"name\":\"test\""));
+            assert!(json.contains("\"python_version\":\"3.12\""));
+            jsons.push(json);
+        }
+
+        // All should have same structure (excluding timestamps)
+        for json in &jsons {
+            assert!(json.contains("created_at"));
+            assert!(json.contains("created_by"));
+        }
+    }
 }

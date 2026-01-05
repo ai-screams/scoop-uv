@@ -326,4 +326,138 @@ mod tests {
         let err: ScoopError = json_err.into();
         assert!(err.source().is_some()); // JSON error has source
     }
+
+    // ==========================================================================
+    // Error Message Quality Tests
+    // ==========================================================================
+
+    #[test]
+    fn test_error_messages_are_user_friendly() {
+        // All error messages should be complete sentences or clear phrases
+        let errors = vec![
+            ScoopError::VirtualenvNotFound {
+                name: "test".to_string(),
+            },
+            ScoopError::VirtualenvExists {
+                name: "test".to_string(),
+            },
+            ScoopError::HomeNotFound,
+            ScoopError::UvNotFound,
+        ];
+
+        for err in errors {
+            let msg = err.to_string();
+            // Messages should not be empty
+            assert!(!msg.is_empty(), "Error message should not be empty");
+            // Messages should not start with lowercase (except for special cases)
+            let first_char = msg.chars().next().unwrap();
+            assert!(
+                first_char.is_uppercase() || first_char == 'u', // 'uv' is valid
+                "Error message should start with uppercase: {}",
+                msg
+            );
+        }
+    }
+
+    #[test]
+    fn test_error_messages_include_context() {
+        // Errors with context should include that context in the message
+        let err = ScoopError::VirtualenvNotFound {
+            name: "myenv".to_string(),
+        };
+        assert!(
+            err.to_string().contains("myenv"),
+            "Error should include the env name"
+        );
+
+        let err = ScoopError::InvalidPythonVersion {
+            version: "abc".to_string(),
+        };
+        assert!(
+            err.to_string().contains("abc"),
+            "Error should include the invalid version"
+        );
+
+        let err = ScoopError::UnsupportedShell {
+            shell: "fish".to_string(),
+        };
+        assert!(
+            err.to_string().contains("fish"),
+            "Error should include the shell name"
+        );
+    }
+
+    #[test]
+    fn test_error_messages_suggest_solutions() {
+        // UvNotFound should include installation instructions
+        let err = ScoopError::UvNotFound;
+        let msg = err.to_string();
+        assert!(
+            msg.contains("curl") || msg.contains("install"),
+            "UvNotFound should suggest installation"
+        );
+
+        // PythonNotInstalled should suggest install command
+        let err = ScoopError::PythonNotInstalled {
+            version: "3.13".to_string(),
+        };
+        let msg = err.to_string();
+        assert!(
+            msg.contains("scoop install"),
+            "PythonNotInstalled should suggest scoop install"
+        );
+    }
+
+    #[test]
+    fn test_error_messages_no_sensitive_info() {
+        // Ensure error messages don't leak sensitive paths or info
+        let err = ScoopError::PathError("test path error".to_string());
+        let msg = err.to_string();
+        // Should not contain home directory patterns
+        assert!(
+            !msg.contains("/Users/") && !msg.contains("/home/"),
+            "Error should not leak full paths"
+        );
+    }
+
+    #[test]
+    fn test_invalid_env_name_provides_reason() {
+        let err = ScoopError::InvalidEnvName {
+            name: "123".to_string(),
+            reason: "must start with a letter".to_string(),
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("123"), "Should include the invalid name");
+        assert!(
+            msg.contains("must start with a letter"),
+            "Should include the reason"
+        );
+    }
+
+    #[test]
+    fn test_uv_command_failed_includes_details() {
+        let err = ScoopError::UvCommandFailed {
+            command: "venv".to_string(),
+            message: "Python 3.15 not found".to_string(),
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("failed"), "Should indicate failure");
+        assert!(
+            msg.contains("Python 3.15 not found"),
+            "Should include the error message"
+        );
+    }
+
+    #[test]
+    fn test_version_file_not_found_shows_path() {
+        let err = ScoopError::VersionFileNotFound {
+            path: PathBuf::from("/project/dir"),
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("/project/dir"), "Should include the path");
+        assert!(
+            msg.contains("parent directories"),
+            "Should mention parent directory search"
+        );
+    }
 }

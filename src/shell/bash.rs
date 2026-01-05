@@ -219,4 +219,114 @@ mod tests {
         let script = init_script();
         assert!(script.starts_with("# scoop shell integration for bash"));
     }
+
+    // ==========================================================================
+    // Shell Script Branch Coverage Tests
+    // ==========================================================================
+
+    #[test]
+    fn test_init_script_use_command_handles_options() {
+        let script = init_script();
+        // Verify 'use' command skips options when finding env name
+        assert!(script.contains("case \"$arg\" in"));
+        assert!(script.contains("-*) ;;"));
+    }
+
+    #[test]
+    fn test_init_script_use_command_has_return_code() {
+        let script = init_script();
+        // Verify 'use' command preserves return code
+        assert!(script.contains("local ret=$?"));
+        assert!(script.contains("return $ret"));
+    }
+
+    #[test]
+    fn test_init_script_hook_handles_deactivation() {
+        let script = init_script();
+        // Verify hook deactivates when env_name is empty but SCOOP_ACTIVE is set
+        assert!(script.contains("-z \"$env_name\" && -n \"$SCOOP_ACTIVE\""));
+        assert!(script.contains("command scoop deactivate"));
+    }
+
+    #[test]
+    fn test_init_script_hook_compares_active_env() {
+        let script = init_script();
+        // Verify hook only activates if different from current
+        assert!(script.contains("$env_name\" != \"$SCOOP_ACTIVE\""));
+    }
+
+    #[test]
+    fn test_init_script_prompt_command_appends() {
+        let script = init_script();
+        // Verify PROMPT_COMMAND is appended if already set
+        assert!(script.contains("PROMPT_COMMAND=\"_scoop_hook;$PROMPT_COMMAND\""));
+    }
+
+    #[test]
+    fn test_init_script_runs_hook_on_startup() {
+        let script = init_script();
+        // Verify hook is called on script load
+        assert!(script.contains("\n_scoop_hook\n"));
+    }
+
+    #[test]
+    fn test_init_script_default_command_passthrough() {
+        let script = init_script();
+        // Verify default case passes through to command scoop
+        assert!(script.contains("*)\n            command scoop \"$@\""));
+    }
+
+    #[test]
+    fn test_init_script_completion_handles_options() {
+        let script = init_script();
+        // Verify completion handles option arguments starting with -
+        assert!(script.contains("if [[ \"$cur\" == -* ]]"));
+    }
+
+    #[test]
+    fn test_init_script_completion_per_subcommand() {
+        let script = init_script();
+        // Verify subcommand-specific option completions
+        assert!(
+            script.contains("list)\n                COMPREPLY=($(compgen -W \"--pythons --help\"")
+        );
+        assert!(script.contains(
+            "use)\n                COMPREPLY=($(compgen -W \"--global --link --no-link --help\""
+        ));
+        assert!(script.contains(
+            "install)\n                COMPREPLY=($(compgen -W \"--latest --stable --help\""
+        ));
+    }
+
+    #[test]
+    fn test_init_script_completion_env_list() {
+        let script = init_script();
+        // Verify completion fetches env list for use/remove/activate
+        assert!(script.contains("use|remove|activate)"));
+        assert!(script.contains("command scoop list --bare"));
+    }
+
+    #[test]
+    fn test_init_script_completion_create_python_version() {
+        let script = init_script();
+        // Verify create completion offers python versions for second arg
+        assert!(script.contains("if [[ $arg_count -eq 1 ]]"));
+        assert!(script.contains("--pythons --bare"));
+    }
+
+    #[test]
+    fn test_init_script_completion_shell_types() {
+        let script = init_script();
+        // Verify init/completions complete with shell types
+        assert!(script.contains(
+            "init|completions)\n            COMPREPLY=($(compgen -W \"bash zsh fish powershell\""
+        ));
+    }
+
+    #[test]
+    fn test_init_script_silences_resolve_errors() {
+        let script = init_script();
+        // Verify resolve command stderr is silenced
+        assert!(script.contains("scoop resolve 2>/dev/null"));
+    }
 }

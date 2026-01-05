@@ -43,7 +43,26 @@ const RESERVED_NAMES: &[&str] = &[
 /// Maximum length for environment names
 const MAX_ENV_NAME_LENGTH: usize = 64;
 
-/// Check if a string is a valid environment name
+/// Check if a string is a valid environment name.
+///
+/// Valid names must:
+/// - Start with a letter (a-z, A-Z)
+/// - Contain only letters, numbers, hyphens, and underscores
+/// - Not be a reserved name (e.g., "activate", "list")
+/// - Not look like a version string (e.g., "3.12")
+/// - Be at most 64 characters long
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::validate::is_valid_env_name;
+///
+/// assert!(is_valid_env_name("myenv"));
+/// assert!(is_valid_env_name("my-project_v2"));
+/// assert!(!is_valid_env_name("3.12"));      // looks like version
+/// assert!(!is_valid_env_name("activate"));  // reserved name
+/// assert!(!is_valid_env_name("123env"));    // starts with digit
+/// ```
 pub fn is_valid_env_name(name: &str) -> bool {
     if name.is_empty() || name.len() > MAX_ENV_NAME_LENGTH {
         return false;
@@ -60,7 +79,25 @@ pub fn is_valid_env_name(name: &str) -> bool {
     ENV_NAME_REGEX.is_match(name)
 }
 
-/// Validate an environment name, returning an error if invalid
+/// Validate an environment name, returning an error if invalid.
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::validate::validate_env_name;
+///
+/// assert!(validate_env_name("myenv").is_ok());
+/// assert!(validate_env_name("test-project").is_ok());
+///
+/// // Invalid names return errors
+/// assert!(validate_env_name("").is_err());
+/// assert!(validate_env_name("123").is_err());
+/// assert!(validate_env_name("list").is_err());
+/// ```
+///
+/// # Errors
+///
+/// Returns [`ScoopError::InvalidEnvName`] if the name is invalid.
 pub fn validate_env_name(name: &str) -> Result<()> {
     if name.is_empty() {
         return Err(ScoopError::InvalidEnvName {
@@ -100,7 +137,25 @@ pub fn validate_env_name(name: &str) -> Result<()> {
     Ok(())
 }
 
-/// Check if a string is a valid Python version
+/// Check if a string is a valid Python version.
+///
+/// Accepts formats like: 3, 3.12, 3.12.0, 3.12.0a1, 3.12.0rc1
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::validate::is_valid_python_version;
+///
+/// assert!(is_valid_python_version("3"));
+/// assert!(is_valid_python_version("3.12"));
+/// assert!(is_valid_python_version("3.12.0"));
+/// assert!(is_valid_python_version("3.12.0a1"));
+/// assert!(is_valid_python_version("3.12.0rc1"));
+///
+/// assert!(!is_valid_python_version(""));
+/// assert!(!is_valid_python_version("abc"));
+/// assert!(!is_valid_python_version("v3.12"));
+/// ```
 pub fn is_valid_python_version(version: &str) -> bool {
     if version.is_empty() {
         return false;
@@ -139,17 +194,51 @@ pub fn validate_python_version(version: &str) -> Result<()> {
     Ok(())
 }
 
-/// Parsed Python version components
+/// Parsed Python version components.
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::validate::PythonVersion;
+///
+/// let v = PythonVersion::parse("3.12.0").unwrap();
+/// assert_eq!(v.major, 3);
+/// assert_eq!(v.minor, Some(12));
+/// assert_eq!(v.patch, Some(0));
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PythonVersion {
+    /// Major version number (e.g., 3 in "3.12.0")
     pub major: u32,
+    /// Minor version number (e.g., 12 in "3.12.0")
     pub minor: Option<u32>,
+    /// Patch version number (e.g., 0 in "3.12.0")
     pub patch: Option<u32>,
+    /// Pre-release suffix (e.g., "a1", "rc1")
     pub suffix: Option<String>,
 }
 
 impl PythonVersion {
-    /// Parse a version string into components
+    /// Parse a version string into components.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use scoop_uv::validate::PythonVersion;
+    ///
+    /// // Parse major.minor.patch
+    /// let v = PythonVersion::parse("3.12.0").unwrap();
+    /// assert_eq!(v.major, 3);
+    /// assert_eq!(v.minor, Some(12));
+    ///
+    /// // Parse with pre-release suffix (suffix in minor position)
+    /// let v = PythonVersion::parse("3.13a1").unwrap();
+    /// assert_eq!(v.suffix, Some("a1".to_string()));
+    ///
+    /// // Returns None for invalid versions
+    /// assert!(PythonVersion::parse("").is_none());
+    /// assert!(PythonVersion::parse("latest").is_none());
+    /// ```
     pub fn parse(version: &str) -> Option<Self> {
         let trimmed = version.trim();
         if trimmed.is_empty() {
@@ -232,7 +321,20 @@ impl std::fmt::Display for PythonVersion {
     }
 }
 
-/// Check if a version string is a special alias (latest, stable)
+/// Check if a version string is a special alias (latest, stable).
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::validate::is_version_alias;
+///
+/// assert!(is_version_alias("latest"));
+/// assert!(is_version_alias("stable"));
+/// assert!(is_version_alias("LATEST"));  // case-insensitive
+///
+/// assert!(!is_version_alias("3.12"));
+/// assert!(!is_version_alias("beta"));
+/// ```
 pub fn is_version_alias(version: &str) -> bool {
     matches!(version.trim().to_lowercase().as_str(), "latest" | "stable")
 }
@@ -562,5 +664,123 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(err.to_string().contains("must start with a letter"));
+    }
+}
+
+// =============================================================================
+// Property-based Tests
+// =============================================================================
+
+#[cfg(test)]
+mod proptests {
+    use super::*;
+    use proptest::prelude::*;
+
+    // Strategy for generating valid environment names
+    fn valid_env_name_strategy() -> impl Strategy<Value = String> {
+        // Start with a letter, followed by 0-62 alphanumeric/dash/underscore chars
+        "[a-zA-Z][a-zA-Z0-9_-]{0,62}".prop_filter("not reserved", |s| {
+            !super::RESERVED_NAMES.contains(&s.to_lowercase().as_str())
+        })
+    }
+
+    // Strategy for generating valid Python versions
+    fn valid_python_version_strategy() -> impl Strategy<Value = String> {
+        prop_oneof![
+            // Major only: 2, 3, etc.
+            (1u32..20).prop_map(|m| m.to_string()),
+            // Major.minor: 3.12, 3.13, etc.
+            (2u32..4, 0u32..20).prop_map(|(m, n)| format!("{}.{}", m, n)),
+            // Major.minor.patch: 3.12.0, 3.12.1, etc.
+            (2u32..4, 0u32..20, 0u32..100).prop_map(|(m, n, p)| format!("{}.{}.{}", m, n, p)),
+            // With pre-release: 3.12.0a1, 3.12.0b2, 3.12.0rc1
+            (
+                2u32..4,
+                0u32..20,
+                0u32..10,
+                prop_oneof!["a", "b", "rc"],
+                1u32..10
+            )
+                .prop_map(|(m, n, p, pre, num)| format!("{}.{}.{}{}{}", m, n, p, pre, num)),
+        ]
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(500))]
+
+        // Property: Valid env names should always pass validation
+        #[test]
+        fn prop_valid_env_names_accepted(name in valid_env_name_strategy()) {
+            prop_assert!(is_valid_env_name(&name), "Valid name '{}' was rejected", name);
+            prop_assert!(validate_env_name(&name).is_ok(), "validate_env_name failed for '{}'", name);
+        }
+
+        // Property: Names starting with digits should always be rejected
+        #[test]
+        fn prop_digit_prefix_rejected(
+            digit in "[0-9]",
+            rest in "[a-zA-Z0-9_-]{0,10}"
+        ) {
+            let name = format!("{}{}", digit, rest);
+            prop_assert!(!is_valid_env_name(&name), "Digit-prefixed '{}' was accepted", name);
+        }
+
+        // Property: Names with path separators should always be rejected
+        #[test]
+        fn prop_path_separators_rejected(
+            prefix in "[a-zA-Z]{1,5}",
+            suffix in "[a-zA-Z]{1,5}"
+        ) {
+            let with_slash = format!("{}/{}", prefix, suffix);
+            let with_backslash = format!("{}\\{}", prefix, suffix);
+            let with_dots = format!("{}/../{}", prefix, suffix);
+
+            prop_assert!(!is_valid_env_name(&with_slash), "Path '{}' was accepted", with_slash);
+            prop_assert!(!is_valid_env_name(&with_backslash), "Path '{}' was accepted", with_backslash);
+            prop_assert!(!is_valid_env_name(&with_dots), "Path '{}' was accepted", with_dots);
+        }
+
+        // Property: Valid Python versions should always pass
+        #[test]
+        fn prop_valid_python_versions_accepted(version in valid_python_version_strategy()) {
+            prop_assert!(
+                is_valid_python_version(&version),
+                "Valid version '{}' was rejected", version
+            );
+        }
+
+        // Property: Python version parsing roundtrip
+        #[test]
+        fn prop_python_version_parse_roundtrip(
+            major in 2u32..4,
+            minor in 0u32..20,
+            patch in 0u32..100
+        ) {
+            let version_str = format!("{}.{}.{}", major, minor, patch);
+            let parsed = PythonVersion::parse(&version_str);
+            prop_assert!(parsed.is_some(), "Failed to parse '{}'", version_str);
+
+            let pv = parsed.unwrap();
+            prop_assert_eq!(pv.major, major);
+            prop_assert_eq!(pv.minor, Some(minor));
+            prop_assert_eq!(pv.patch, Some(patch));
+        }
+
+        // Property: Empty strings should always be invalid
+        #[test]
+        fn prop_empty_always_invalid(spaces in " {0,10}") {
+            prop_assert!(!is_valid_env_name(&spaces));
+            prop_assert!(!is_valid_python_version(&spaces));
+        }
+
+        // Property: Reserved names should always be rejected (case-insensitive)
+        #[test]
+        fn prop_reserved_names_rejected(
+            reserved in prop::sample::select(super::RESERVED_NAMES.to_vec()),
+            upper in prop::bool::ANY
+        ) {
+            let name = if upper { reserved.to_uppercase() } else { reserved.to_string() };
+            prop_assert!(!is_valid_env_name(&name), "Reserved '{}' was accepted", name);
+        }
     }
 }
