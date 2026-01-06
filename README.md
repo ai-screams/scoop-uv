@@ -45,39 +45,100 @@
 
 ## What is scoop?
 
-**scoop** is a centralized Python virtual environment manager using [uv](https://github.com/astral-sh/uv) as its backend.
+**scoop** scoops up uv's blazing speed — centralizing all your Python virtual environments in one place.
 
-```
-Problem                            scoop Solution
-─────────────────────────────────────────────────────
-.venv scattered across projects    ~/.scoop/virtualenvs/ centralized
-Manual source .venv/bin/activate   scoop activate or auto-activate
-pyenv-virtualenv is slow           uv-based, 100x+ faster
-```
+> 🍨 Like an ice cream parlor — all flavors (envs) in one freezer (`~/.scoop/`),
+> served instantly with a single scoop.
+
+| Problem                            | scoop Solution                      |
+|------------------------------------|-------------------------------------|
+| `.venv` scattered across projects  | `~/.scoop/virtualenvs/` centralized |
+| Manual `source .venv/bin/activate` | Auto-activate on directory entry    |
+| pyenv-virtualenv is slow           | uv-powered, 100x+ faster            |
 
 ---
 
 ## Installation
 
+### Prerequisites
+
+| Dependency | Install | Why |
+|------------|---------|-----|
+| **uv** | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | Python installation backend |
+| **Rust** | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` | Build from source |
+
+### Install scoop
+
 ```bash
 cargo install scoop-uv
 ```
 
-### Shell Setup
+<details>
+<summary>💡 <code>scoop: command not found</code>?</summary>
 
-Add to your shell configuration:
+Cargo installs binaries to `~/.cargo/bin`. Ensure it's in your PATH:
 
 ```bash
-# Bash (~/.bashrc)
-eval "$(scoop init bash)"
-
-# Zsh (~/.zshrc)
-eval "$(scoop init zsh)"
+# Add to ~/.zshrc or ~/.bashrc
+export PATH="$HOME/.cargo/bin:$PATH"
 ```
 
-This enables:
-- Auto-activation when entering directories with `.scoop-version`
-- Tab completion for commands, environments, and options
+Or restart your terminal after installing Rust.
+
+</details>
+
+### Shell Setup
+
+#### Step 1: Add to your shell config
+
+**Zsh** (macOS default):
+
+```bash
+echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**Bash**:
+
+```bash
+echo 'eval "$(scoop init bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### Step 2: Verify
+
+```bash
+scoop --version
+# → scoop 0.x.x 🍨
+```
+
+#### What this enables
+
+- ✅ **Auto-activation** — enter a directory with `.scoop-version`, environment activates
+- ✅ **Tab completion** — commands, environments, Python versions
+- ✅ **Shell wrapper** — `scoop activate/deactivate` works correctly
+
+#### Using with pyenv
+
+Add scoop **after** pyenv in your rc file:
+
+```bash
+# ~/.zshrc (order matters!)
+eval "$(pyenv init -)"       # 1. pyenv first
+eval "$(scoop init zsh)"     # 2. scoop second
+```
+
+#### Options
+
+| Variable | Effect |
+|----------|--------|
+| `SCOOP_NO_AUTO=1` | Disable auto-activation |
+| `SCOOP_HOME=/path` | Custom scoop directory (default: `~/.scoop`) |
+
+```bash
+# Example: disable auto-activation
+echo 'export SCOOP_NO_AUTO=1' >> ~/.zshrc
+```
 
 ---
 
@@ -103,18 +164,18 @@ scoop remove myproject     # Delete environment
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `scoop create <name> [version]` | Create virtual environment |
-| `scoop use <name>` | Set local environment (auto-activates) |
-| `scoop use <name> --link` | Also create `.venv` symlink for IDE |
-| `scoop use <name> --global` | Set global default |
-| `scoop list` | List environments |
-| `scoop list --pythons` | List installed Python versions |
-| `scoop remove <name>` | Delete environment |
-| `scoop install [version]` | Install Python (default: latest) |
-| `scoop install --stable` | Install oldest supported Python |
-| `scoop uninstall <version>` | Remove Python version |
+| Command                         | Description                            |
+|---------------------------------|----------------------------------------|
+| `scoop create <name> [version]` | Create virtual environment             |
+| `scoop use <name>`              | Set local environment (auto-activates) |
+| `scoop use <name> --link`       | Also create `.venv` symlink for IDE    |
+| `scoop use <name> --global`     | Set global default                     |
+| `scoop list`                    | List environments                      |
+| `scoop list --pythons`          | List installed Python versions         |
+| `scoop remove <name>`           | Delete environment                     |
+| `scoop install [version]`       | Install Python (default: latest)       |
+| `scoop install --stable`        | Install oldest supported Python        |
+| `scoop uninstall <version>`     | Remove Python version                  |
 
 For complete command reference, see [docs/commands.md](docs/commands.md).
 
@@ -156,6 +217,9 @@ If you find this project useful, consider buying me a coffee!
 
 This project stands on the shoulders of giants:
 
-- **[uv](https://github.com/astral-sh/uv)** by [Astral](https://astral.sh) — The blazing-fast Python package manager that powers scoop's backend. Without uv's incredible speed and reliability, scoop wouldn't exist. Thank you to Charlie Marsh and the entire Astral team for revolutionizing Python tooling.
+- **[uv](https://github.com/astral-sh/uv)** by [Astral](https://astral.sh) — The blazing-fast Python package manager
+  that powers scoop's backend. Without uv's incredible speed and reliability, scoop wouldn't exist. Thank you to Charlie
+  Marsh and the entire Astral team for revolutionizing Python tooling.
 
-- **[pyenv](https://github.com/pyenv/pyenv)** — The original inspiration for scoop's workflow. pyenv taught us how environment management should feel.
+- **[pyenv](https://github.com/pyenv/pyenv)** — The original inspiration for scoop's workflow. pyenv taught us how
+  environment management should feel.
