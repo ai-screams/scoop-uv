@@ -1,0 +1,96 @@
+name: "🍦 Feature Request"
+description: "Suggest a new flavor for scoop!"
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🍨 Got an idea for a new flavor?
+
+        We love hearing your ideas! Before submitting, please:
+        - Search [existing issues](https://github.com/ai-screams/scoop-uv/issues) to avoid duplicates
+        - Check the [roadmap](https://github.com/ai-screams/scoop-uv/issues?q=label%3Aroadmap) for planned features
+
+        > *"Every great flavor started as a wild idea!"*
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "🤔 Problem or motivation"
+      description: "What problem does this solve? Why do you need this?"
+      placeholder: |
+        I'm always frustrated when...
+        It would save time if...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: "💡 Proposed solution"
+      description: "How do you envision this feature working?"
+      placeholder: |
+        I'd love to be able to run `scoop ...` and have it...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "🔄 Alternatives considered"
+      description: "Have you tried any workarounds? Other approaches?"
+      placeholder: |
+        I've tried using X but...
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: "📦 Feature scope"
+      description: "What area does this feature affect?"
+      options:
+        - CLI commands
+        - Shell integration (bash/zsh)
+        - Auto-activation
+        - Python version management
+        - Virtual environment management
+        - Tab completion
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "⭐ How important is this to you?"
+      options:
+        - "Nice to have 🍦"
+        - "Would use regularly 🍨"
+        - "Critical for my workflow 🧊"
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: "📝 Example usage"
+      description: "Show us how you'd use this feature"
+      render: shell
+      placeholder: |
+        $ scoop new-command --flag
+        Expected output...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "📎 Additional context"
+      description: "Screenshots, mockups, references to similar tools"
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: "🙋 Contribution"
+      description: "Would you like to help implement this?"
+      options:
+        - label: "I'd be willing to submit a PR for this feature"

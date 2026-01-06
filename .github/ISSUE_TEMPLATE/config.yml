@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "🔒 Security Vulnerability"
+    url: https://github.com/ai-screams/scoop-uv/security/advisories/new
+    about: "Please report security issues privately via GitHub Security Advisory"
+  - name: "❓ Question & Discussion"
+    url: https://github.com/ai-screams/scoop-uv/discussions
+    about: "Ask questions and discuss ideas in GitHub Discussions"
+  - name: "📖 Documentation"
+    url: https://github.com/ai-screams/scoop-uv#readme
+    about: "Check the README and docs before asking"
