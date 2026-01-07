@@ -1,8 +1,6 @@
 <div align="center">
 
 <img src="assets/logo/logo-with-text.png" width="180" alt="scoop logo">
-&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="assets/community/ferris/scoop-ferris.png" width="140" alt="scoop ferris">
 
 # 🍨 scoop
 
@@ -10,14 +8,16 @@
 
 **One scoop, endless envs — pyenv-style Python environment manager powered by uv**
 
-<!-- Hero Badges -->
 [![CI](https://img.shields.io/github/actions/workflow/status/ai-screams/scoop-uv/ci.yml?style=for-the-badge&logo=github&label=CI)](https://github.com/ai-screams/scoop-uv/actions/workflows/ci.yml)
-[![Security](https://img.shields.io/github/actions/workflow/status/ai-screams/scoop-uv/security.yml?style=for-the-badge&logo=github&label=Security)](https://github.com/ai-screams/scoop-uv/actions/workflows/security.yml)
 [![Crates.io](https://img.shields.io/crates/v/scoop-uv?style=for-the-badge&logo=rust&color=orange)](https://crates.io/crates/scoop-uv)
 [![Downloads](https://img.shields.io/crates/d/scoop-uv?style=for-the-badge&logo=rust&color=blue)](https://crates.io/crates/scoop-uv)
+[![docs.rs](https://img.shields.io/docsrs/scoop-uv?style=for-the-badge&logo=docs.rs&label=docs)](https://docs.rs/scoop-uv)
 
-<!-- Docs & Quality -->
-[![docs.rs](https://img.shields.io/docsrs/scoop-uv?style=flat-square&logo=docs.rs&label=docs.rs)](https://docs.rs/scoop-uv)
+<details>
+<summary>🍨 More badges</summary>
+
+<!-- Quality & Coverage -->
+[![Security](https://img.shields.io/github/actions/workflow/status/ai-screams/scoop-uv/security.yml?style=flat-square&logo=github&label=Security)](https://github.com/ai-screams/scoop-uv/actions/workflows/security.yml)
 [![Coverage](https://codecov.io/gh/ai-screams/scoop-uv/graph/badge.svg)](https://codecov.io/gh/ai-screams/scoop-uv)
 [![MSRV](https://img.shields.io/badge/MSRV-1.85-blue?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/crates/l/scoop-uv?style=flat-square)](LICENSE-MIT)
@@ -43,16 +43,18 @@
 [![Maintained](https://img.shields.io/badge/maintained-yes-green?style=flat-square)](https://github.com/ai-screams/scoop-uv)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/ai-screams/scoop-uv/pulls)
 
+</details>
+
 </div>
 
 ---
 
-## What is scoop?
+## What is scoop? 🍨
 
 **scoop** scoops up uv's blazing speed — centralizing all your Python virtual environments in one place.
 
 > 🍨 Like an ice cream parlor — all flavors (envs) in one freezer (`~/.scoop/`),
-> served instantly with a single scoop.
+> served instantly with a single scoop. 🍨 is our signature!
 
 | Problem                            | scoop Solution                      |
 |------------------------------------|-------------------------------------|
@@ -62,7 +64,7 @@
 
 ---
 
-## Installation
+## Installation 🍨
 
 ### Prerequisites
 
@@ -146,7 +148,7 @@ echo 'export SCOOP_NO_AUTO=1' >> ~/.zshrc
 
 ---
 
-## Quick Start
+## Quick Start 🍨
 
 ```bash
 # Install Python
@@ -166,7 +168,7 @@ scoop remove myproject     # Delete environment
 
 ---
 
-## Commands
+## Commands 🍨
 
 | Command                         | Description                            |
 |---------------------------------|----------------------------------------|
@@ -185,10 +187,10 @@ For complete command reference, see [docs/commands.md](docs/commands.md).
 
 ---
 
-## Documentation
+## Documentation 🍨
 
-- [Command Reference](docs/commands.md) - Complete command documentation
-- [Development Guide](docs/DEVELOPMENT.md) - Contributing and development setup
+- [Command Reference](docs/commands.md) — Complete command documentation
+- [Development Guide](docs/DEVELOPMENT.md) — Contributing and development setup
 
 ---
 
@@ -209,7 +211,7 @@ additional terms or conditions.
 
 ---
 
-## Support
+## Support 🍨
 
 If you find this project useful, consider buying me a coffee!
 
@@ -217,7 +219,7 @@ If you find this project useful, consider buying me a coffee!
 
 ---
 
-## Acknowledgments
+## Acknowledgments 🍨
 
 This project stands on the shoulders of giants:
 
@@ -237,3 +239,18 @@ This project stands on the shoulders of giants:
 
 - **[Rust](https://www.rust-lang.org/)** — The language that makes scoop fast, safe, and reliable. Thank you to the
   Rust team and Ferris 🦀 for proving that systems programming can be both powerful and enjoyable.
+
+---
+
+<div align="center">
+
+<img src="assets/community/ferris/scoop-ferris.png" width="160" alt="scoop ferris">
+
+*I built scoop because I needed it — and now it's yours too.* 🍨
+
+*Grab a scoop, enjoy the flavor, and if you have thoughts to share,*
+*the door to the ice cream parlor is always open.*
+
+**[Issues](https://github.com/ai-screams/scoop-uv/issues)** · **[Discussions](https://github.com/ai-screams/scoop-uv/discussions)** · **[PRs Welcome](https://github.com/ai-screams/scoop-uv/pulls)**
+
+</div>
