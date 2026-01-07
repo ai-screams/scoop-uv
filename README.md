@@ -229,6 +229,9 @@ This project stands on the shoulders of giants:
   The original inspiration for scoop's workflow. pyenv taught us how Python version management should feel,
   and pyenv-virtualenv showed us how to centralize virtual environments elegantly.
 
+- **[virtualenv](https://github.com/pypa/virtualenv)** by [PyPA](https://www.pypa.io/) — The pioneer of Python virtual
+  environments. Thank you to Ian Bicking for the original concept that changed how we isolate Python projects.
+
 - **[Python](https://www.python.org/)** — The language that made programming accessible to everyone. scoop exists to
   make Python development even more delightful. Thank you to Guido van Rossum and the Python community.
 
