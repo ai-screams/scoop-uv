@@ -225,8 +225,9 @@ This project stands on the shoulders of giants:
   that powers scoop's backend. Without uv's incredible speed and reliability, scoop wouldn't exist. Thank you to Charlie
   Marsh and the entire Astral team for revolutionizing Python tooling.
 
-- **[pyenv](https://github.com/pyenv/pyenv)** — The original inspiration for scoop's workflow. pyenv taught us how
-  environment management should feel.
+- **[pyenv](https://github.com/pyenv/pyenv)** & **[pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv)** —
+  The original inspiration for scoop's workflow. pyenv taught us how Python version management should feel,
+  and pyenv-virtualenv showed us how to centralize virtual environments elegantly.
 
 - **[Python](https://www.python.org/)** — The language that made programming accessible to everyone. scoop exists to
   make Python development even more delightful. Thank you to Guido van Rossum and the Python community.
