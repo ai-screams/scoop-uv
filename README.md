@@ -1,5 +1,9 @@
 <div align="center">
 
+<img src="assets/logo/logo-with-text.png" width="180" alt="scoop logo">
+&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="assets/community/ferris/scoop-ferris.png" width="140" alt="scoop ferris">
+
 # 🍨 scoop
 
 > ⚠️ **Work in Progress** — Under active development. API may change.
@@ -223,3 +227,9 @@ This project stands on the shoulders of giants:
 
 - **[pyenv](https://github.com/pyenv/pyenv)** — The original inspiration for scoop's workflow. pyenv taught us how
   environment management should feel.
+
+- **[Python](https://www.python.org/)** — The language that made programming accessible to everyone. scoop exists to
+  make Python development even more delightful. Thank you to Guido van Rossum and the Python community.
+
+- **[Rust](https://www.rust-lang.org/)** — The language that makes scoop fast, safe, and reliable. Thank you to the
+  Rust team and Ferris 🦀 for proving that systems programming can be both powerful and enjoyable.
