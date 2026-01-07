@@ -94,13 +94,15 @@ _scoop() {
                         )
                         _describe 'option' opts
                     else
+                        # Check if env name already provided (exclude current word being typed)
                         local has_env=false
-                        for w in "${words[@]:2}"; do
+                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                        for w in "${prev_args[@]}"; do
                             [[ $w != -* && -n $w ]] && has_env=true && break
                         done
                         if [[ $has_env == false ]]; then
                             local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
-                            _describe 'environment' envs
+                            compadd -a envs
                         fi
                     fi
                     ;;
@@ -109,24 +111,28 @@ _scoop() {
                         local opts=('--force:Skip confirmation')
                         _describe 'option' opts
                     else
+                        # Check if env name already provided (exclude current word being typed)
                         local has_env=false
-                        for w in "${words[@]:2}"; do
+                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                        for w in "${prev_args[@]}"; do
                             [[ $w != -* && -n $w ]] && has_env=true && break
                         done
                         if [[ $has_env == false ]]; then
                             local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
-                            _describe 'environment' envs
+                            compadd -a envs
                         fi
                     fi
                     ;;
                 activate)
+                    # Check if env name already provided (exclude current word being typed)
                     local has_env=false
-                    for w in "${words[@]:2}"; do
+                    local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                    for w in "${prev_args[@]}"; do
                         [[ $w != -* && -n $w ]] && has_env=true && break
                     done
                     if [[ $has_env == false ]]; then
                         local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
-                        _describe 'environment' envs
+                        compadd -a envs
                     fi
                     ;;
                 install)
@@ -139,13 +145,15 @@ _scoop() {
                     fi
                     ;;
                 uninstall)
+                    # Check if version already provided (exclude current word being typed)
                     local has_ver=false
-                    for w in "${words[@]:2}"; do
+                    local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                    for w in "${prev_args[@]}"; do
                         [[ $w != -* && -n $w ]] && has_ver=true && break
                     done
                     if [[ $has_ver == false ]]; then
                         local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
-                        _describe 'python version' pythons
+                        compadd -a pythons
                     fi
                     ;;
                 list)
@@ -159,13 +167,16 @@ _scoop() {
                         local opts=('--force:Overwrite existing environment')
                         _describe 'option' opts
                     else
+                        # Count positional args before current word
                         local pos_count=0
-                        for w in "${words[@]:2}"; do
+                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                        for w in "${prev_args[@]}"; do
                             [[ $w != -* && -n $w ]] && ((pos_count++))
                         done
                         if [[ $pos_count -eq 1 ]]; then
+                            # Second positional arg: python version
                             local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
-                            _describe 'python version' pythons
+                            compadd -a pythons
                         fi
                     fi
                     ;;
