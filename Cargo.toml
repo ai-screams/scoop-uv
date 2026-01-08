@@ -11,14 +11,13 @@ homepage = "https://github.com/ai-screams/scoop-uv"
 readme = "README.md"
 keywords = ["python", "virtualenv", "uv", "pyenv", "environment"]
 categories = ["command-line-utilities", "development-tools"]
-exclude = [
-    ".github/",
-    ".docs/",
-    ".gitignore",
-    ".prek.yaml",
-    "cliff.toml",
-    "deny.toml",
-    "release-plz.toml",
+# 화이트리스트: crates.io 배포에 필요한 파일만 포함
+include = [
+    "src/**/*.rs",
+    "Cargo.toml",
+    "/LICENSE-*",
+    "/README.md",
+    "/rust-toolchain.toml",
 ]
 
 [[bin]]

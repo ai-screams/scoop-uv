@@ -1,5 +1,6 @@
 //! Core business logic
 
+pub mod doctor;
 mod metadata;
 mod version;
 mod virtualenv;
