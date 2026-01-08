@@ -14,10 +14,6 @@ pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
 
-    /// Increase verbosity (can be repeated)
-    #[arg(short, long, action = ArgAction::Count, global = true)]
-    pub verbose: u8,
-
     /// Suppress all output
     #[arg(short, long, global = true)]
     pub quiet: bool,
@@ -25,10 +21,6 @@ pub struct Cli {
     /// Disable colored output
     #[arg(long, global = true, env = "NO_COLOR")]
     pub no_color: bool,
-
-    /// Output as JSON
-    #[arg(long, global = true)]
-    pub json: bool,
 }
 
 /// Available commands
@@ -44,6 +36,28 @@ pub enum Commands {
         /// Output names only, one per line (for scripting/completion)
         #[arg(long, hide = true)]
         bare: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// Set local environment for current directory
+    Use {
+        /// Name of the virtual environment
+        name: String,
+
+        /// Create .venv symlink to the virtual environment
+        #[arg(long, conflicts_with = "no_link")]
+        link: bool,
+
+        /// Set as global default
+        #[arg(short, long)]
+        global: bool,
+
+        /// Do not create .venv symlink (default behavior, explicit)
+        #[arg(long, conflicts_with = "link")]
+        no_link: bool,
     },
 
     /// Create a new virtual environment
@@ -58,24 +72,6 @@ pub enum Commands {
         /// Overwrite existing environment
         #[arg(short, long)]
         force: bool,
-    },
-
-    /// Set local environment for current directory
-    Use {
-        /// Name of the virtual environment
-        name: String,
-
-        /// Set as global default
-        #[arg(short, long)]
-        global: bool,
-
-        /// Create .venv symlink to the virtual environment
-        #[arg(long, conflicts_with = "no_link")]
-        link: bool,
-
-        /// Do not create .venv symlink (default behavior, explicit)
-        #[arg(long, conflicts_with = "link")]
-        no_link: bool,
     },
 
     /// Remove a virtual environment
@@ -109,6 +105,17 @@ pub enum Commands {
         /// Python version to uninstall
         #[arg(name = "VERSION")]
         python_version: String,
+    },
+
+    /// Diagnose installation issues
+    Doctor {
+        /// Increase verbosity (can be repeated)
+        #[arg(short, long, action = ArgAction::Count)]
+        verbose: u8,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 
     /// Output shell initialization script
