@@ -6,6 +6,8 @@ pub use spinner::Spinner;
 
 use owo_colors::OwoColorize;
 
+use crate::core::doctor::{CheckResult, CheckStatus};
+
 /// Output handler for CLI
 pub struct Output {
     /// Verbosity level (0 = normal, 1+ = verbose)
@@ -124,5 +126,162 @@ impl Output {
 impl Default for Output {
     fn default() -> Self {
         Self::new(0, false, false, false)
+    }
+}
+
+// ============================================================================
+// Doctor Report Output
+// ============================================================================
+
+impl Output {
+    /// Print doctor report header.
+    pub fn doctor_header(&self) {
+        if self.quiet || self.json {
+            return;
+        }
+        eprintln!();
+        eprintln!("Checking scoop installation...");
+        eprintln!();
+    }
+
+    /// Print a single check result.
+    pub fn doctor_check(&self, result: &CheckResult) {
+        if self.json {
+            return;
+        }
+
+        // Skip OK results in quiet mode
+        if self.quiet && result.is_ok() {
+            return;
+        }
+
+        let (icon, color_fn): (&str, fn(&str) -> String) = match &result.status {
+            CheckStatus::Ok => ("✓", |s| s.green().to_string()),
+            CheckStatus::Warning(_) => ("⚠", |s| s.yellow().to_string()),
+            CheckStatus::Error(_) => ("✗", |s| s.red().to_string()),
+        };
+
+        // Build message
+        let message = match &result.status {
+            CheckStatus::Ok => result.name.to_string(),
+            CheckStatus::Warning(msg) => format!("{}: {}", result.name, msg),
+            CheckStatus::Error(msg) => format!("{}: {}", result.name, msg),
+        };
+
+        // Print with or without color
+        if self.no_color {
+            eprintln!("{} {}", icon, message);
+        } else {
+            eprintln!("{} {}", color_fn(icon), message);
+        }
+
+        // Print details in verbose mode
+        if self.verbose > 0 {
+            if let Some(details) = &result.details {
+                if self.no_color {
+                    eprintln!("  {}", details);
+                } else {
+                    eprintln!("  {}", details.dimmed());
+                }
+            }
+        }
+
+        // Print suggestion for errors/warnings
+        if let Some(suggestion) = &result.suggestion {
+            if self.no_color {
+                eprintln!("  → {}", suggestion);
+            } else {
+                eprintln!("  {} {}", "→".cyan(), suggestion);
+            }
+        }
+    }
+
+    /// Print doctor report summary.
+    pub fn doctor_summary(&self, results: &[CheckResult]) {
+        if self.json {
+            return;
+        }
+
+        let errors = results.iter().filter(|r| r.is_error()).count();
+        let warnings = results.iter().filter(|r| r.is_warning()).count();
+
+        eprintln!();
+        eprintln!("──────────────────────────────────");
+
+        if errors == 0 && warnings == 0 {
+            if self.no_color {
+                eprintln!("All checks passed!");
+            } else {
+                eprintln!("{}", "All checks passed!".green());
+            }
+        } else {
+            let mut parts = Vec::new();
+            if errors > 0 {
+                parts.push(format!("{} error(s)", errors));
+            }
+            if warnings > 0 {
+                parts.push(format!("{} warning(s)", warnings));
+            }
+
+            let summary = format!("Found {}.", parts.join(" and "));
+            if self.no_color {
+                eprintln!("{}", summary);
+            } else {
+                eprintln!("{}", summary.yellow());
+            }
+        }
+    }
+
+    /// Print doctor report as JSON.
+    pub fn doctor_json(&self, results: &[CheckResult]) {
+        if !self.json {
+            return;
+        }
+
+        let json_results: Vec<serde_json::Value> = results
+            .iter()
+            .map(|r| {
+                let status = match &r.status {
+                    CheckStatus::Ok => "ok",
+                    CheckStatus::Warning(_) => "warning",
+                    CheckStatus::Error(_) => "error",
+                };
+
+                let message = match &r.status {
+                    CheckStatus::Ok => None,
+                    CheckStatus::Warning(msg) => Some(msg.clone()),
+                    CheckStatus::Error(msg) => Some(msg.clone()),
+                };
+
+                serde_json::json!({
+                    "id": r.id,
+                    "name": r.name,
+                    "status": status,
+                    "message": message,
+                    "suggestion": r.suggestion,
+                    "details": r.details,
+                })
+            })
+            .collect();
+
+        let errors = results.iter().filter(|r| r.is_error()).count();
+        let warnings = results.iter().filter(|r| r.is_warning()).count();
+        let ok = results.iter().filter(|r| r.is_ok()).count();
+
+        let output = serde_json::json!({
+            "version": env!("CARGO_PKG_VERSION"),
+            "summary": {
+                "total": results.len(),
+                "ok": ok,
+                "warnings": warnings,
+                "errors": errors,
+            },
+            "checks": json_results,
+        });
+
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&output).unwrap_or_default()
+        );
     }
 }
