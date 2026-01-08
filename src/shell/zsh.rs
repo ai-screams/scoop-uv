@@ -4,6 +4,9 @@
 pub fn init_script() -> &'static str {
     r#"# scoop shell integration for zsh
 
+# Disable completion sorting for scoop (preserves command order)
+zstyle ':completion:*:scoop:*' sort false
+
 # Wrapper function for scoop
 scoop() {
     local command="${1:-}"
@@ -71,27 +74,37 @@ _scoop() {
         command)
             local commands=(
                 'list:List all virtual environments'
-                'create:Create a new virtual environment'
                 'use:Set local environment for current directory'
+                'create:Create a new virtual environment'
                 'remove:Remove a virtual environment'
                 'install:Install a Python version'
                 'uninstall:Uninstall a Python version'
+                'doctor:Diagnose installation issues'
                 'init:Output shell initialization script'
                 'completions:Output shell completion script'
                 'activate:Activate a virtual environment'
                 'deactivate:Deactivate current virtual environment'
             )
-            _describe 'command' commands
+            _describe -V 'command' commands
             ;;
         args)
             case $line[1] in
                 use)
                     if [[ $cur == -* ]]; then
-                        local opts=(
-                            '--global:Set as global default'
-                            '--link:Create .venv symlink'
-                            '--no-link:Do not create .venv symlink'
-                        )
+                        local opts=('--help:Show help')
+                        local has_global=false has_link=false has_quiet=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                --global) has_global=true ;;
+                                --link|--no-link) has_link=true ;;
+                                -q|--quiet) has_quiet=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        [[ $has_link == false ]] && opts+=('--link:Create .venv symlink' '--no-link:Do not create .venv symlink')
+                        [[ $has_global == false ]] && opts+=('--global:Set as global default')
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
@@ -108,7 +121,18 @@ _scoop() {
                     ;;
                 remove)
                     if [[ $cur == -* ]]; then
-                        local opts=('--force:Skip confirmation')
+                        local opts=('--help:Show help')
+                        local has_force=false has_quiet=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                --force) has_force=true ;;
+                                -q|--quiet) has_quiet=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        [[ $has_force == false ]] && opts+=('--force:Skip confirmation')
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
@@ -137,34 +161,101 @@ _scoop() {
                     ;;
                 install)
                     if [[ $cur == -* ]]; then
-                        local opts=(
-                            '--latest:Install latest stable Python'
-                            '--stable:Install oldest fully-supported Python'
-                        )
+                        local opts=('--help:Show help')
+                        local has_version_opt=false has_quiet=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                --latest|--stable) has_version_opt=true ;;
+                                -q|--quiet) has_quiet=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        [[ $has_version_opt == false ]] && opts+=('--latest:Install latest stable Python' '--stable:Install oldest fully-supported Python')
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
                         _describe 'option' opts
                     fi
                     ;;
                 uninstall)
-                    # Check if version already provided (exclude current word being typed)
-                    local has_ver=false
-                    local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                    for w in "${prev_args[@]}"; do
-                        [[ $w != -* && -n $w ]] && has_ver=true && break
-                    done
-                    if [[ $has_ver == false ]]; then
-                        local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
-                        compadd -a pythons
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        local has_quiet=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                -q|--quiet) has_quiet=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _describe 'option' opts
+                    else
+                        # Check if version already provided (exclude current word being typed)
+                        local has_ver=false
+                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                        for w in "${prev_args[@]}"; do
+                            [[ $w != -* && -n $w ]] && has_ver=true && break
+                        done
+                        if [[ $has_ver == false ]]; then
+                            local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
+                            compadd -a pythons
+                        fi
                     fi
                     ;;
                 list)
                     if [[ $cur == -* ]]; then
-                        local opts=('--pythons:Show installed Python versions')
+                        local opts=('--help:Show help')
+                        local has_pythons=false has_json=false has_quiet=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                --pythons) has_pythons=true ;;
+                                --json) has_json=true ;;
+                                -q|--quiet) has_quiet=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        [[ $has_pythons == false ]] && opts+=('--pythons:Show installed Python versions')
+                        [[ $has_json == false ]] && opts+=('--json:Output as JSON')
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _describe 'option' opts
+                    fi
+                    ;;
+                doctor)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        # Check which options are already used
+                        local has_verbose=false has_quiet=false has_json=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                -v|--verbose) has_verbose=true ;;
+                                -q|--quiet) has_quiet=true ;;
+                                --json) has_json=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        # Add only unused options
+                        [[ $has_verbose == false ]] && opts+=('-v:Increase verbosity' '--verbose:Increase verbosity')
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_json == false ]] && opts+=('--json:Output as JSON')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
                         _describe 'option' opts
                     fi
                     ;;
                 create)
                     if [[ $cur == -* ]]; then
-                        local opts=('--force:Overwrite existing environment')
+                        local opts=('--help:Show help')
+                        local has_force=false has_quiet=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                --force) has_force=true ;;
+                                -q|--quiet) has_quiet=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        [[ $has_force == false ]] && opts+=('--force:Overwrite existing environment')
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
                         _describe 'option' opts
                     else
                         # Count positional args before current word

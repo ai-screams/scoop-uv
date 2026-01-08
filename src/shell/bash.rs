@@ -74,7 +74,7 @@ _scoop_complete() {
 
     # First argument: complete subcommands
     if [[ ${COMP_CWORD} -eq 1 ]]; then
-        COMPREPLY=($(compgen -W "list create use remove install uninstall init completions activate deactivate" -- "$cur"))
+        COMPREPLY=($(compgen -W "list use create remove install uninstall doctor init completions activate deactivate" -- "$cur"))
         return
     fi
 
@@ -82,22 +82,84 @@ _scoop_complete() {
     if [[ "$cur" == -* ]]; then
         case "$cmd" in
             list)
-                COMPREPLY=($(compgen -W "--pythons --help" -- "$cur"))
+                local opts="--pythons --json -q --quiet --no-color --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        --pythons) opts="${opts//--pythons }" ;;
+                        --json) opts="${opts//--json }" ;;
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
+                ;;
+            doctor)
+                local opts="-v --verbose -q --quiet --json --no-color --help"
+                # Filter out already used options
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        -v|--verbose) opts="${opts//-v }"; opts="${opts//--verbose }" ;;
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --json) opts="${opts//--json }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             create)
-                COMPREPLY=($(compgen -W "--force --help" -- "$cur"))
+                local opts="--force -q --quiet --no-color --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        --force) opts="${opts//--force }" ;;
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             use)
-                COMPREPLY=($(compgen -W "--global --link --no-link --help" -- "$cur"))
+                local opts="--link --global --no-link -q --quiet --no-color --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        --global) opts="${opts//--global }" ;;
+                        --link|--no-link) opts="${opts//--link }"; opts="${opts//--no-link }" ;;
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             remove)
-                COMPREPLY=($(compgen -W "--force --help" -- "$cur"))
+                local opts="--force -q --quiet --no-color --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        --force) opts="${opts//--force }" ;;
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             install)
-                COMPREPLY=($(compgen -W "--latest --stable --help" -- "$cur"))
+                local opts="--latest --stable -q --quiet --no-color --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        --latest|--stable) opts="${opts//--latest }"; opts="${opts//--stable }" ;;
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             uninstall)
-                COMPREPLY=($(compgen -W "--help" -- "$cur"))
+                local opts="-q --quiet --no-color --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             init|completions)
                 COMPREPLY=($(compgen -W "--help" -- "$cur"))
@@ -142,7 +204,7 @@ _scoop_complete() {
             ;;
     esac
 }
-complete -F _scoop_complete scoop
+complete -o nosort -F _scoop_complete scoop
 "#
 }
 
@@ -227,7 +289,7 @@ mod tests {
 
         // Must register completion function
         assert!(
-            script.contains("complete -F _scoop_complete scoop"),
+            script.contains("complete -o nosort -F _scoop_complete scoop"),
             "Script must register bash completion"
         );
     }
