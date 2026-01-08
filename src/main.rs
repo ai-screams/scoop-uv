@@ -39,9 +39,9 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, false);
             scoop_uv::cli::commands::create(&output, &name, &python, force)
         }
-        Commands::Doctor { verbose, json } => {
+        Commands::Doctor { verbose, json, fix } => {
             let output = Output::new(verbose, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::doctor(&output)
+            scoop_uv::cli::commands::doctor(&output, fix)
         }
         Commands::Use {
             name,

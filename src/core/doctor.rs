@@ -5,7 +5,9 @@
 
 use std::process::Command;
 
+use crate::core::metadata::Metadata;
 use crate::paths;
+use crate::uv::UvClient;
 
 // ============================================================================
 // Types
@@ -140,6 +142,8 @@ impl Doctor {
                 Box::new(HomeCheck),
                 Box::new(VirtualenvCheck),
                 Box::new(SymlinkCheck),
+                Box::new(ShellCheck),
+                Box::new(VersionCheck),
             ],
         }
     }
@@ -147,6 +151,263 @@ impl Doctor {
     /// Runs all checks and returns results.
     pub fn run_all(&self) -> Vec<CheckResult> {
         self.checks.iter().flat_map(|c| c.run()).collect()
+    }
+
+    /// Runs all checks and attempts to fix issues where possible.
+    ///
+    /// Returns the results after attempting fixes.
+    pub fn run_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult> {
+        let mut all_results = Vec::new();
+
+        for check in &self.checks {
+            let results = check.run();
+
+            for result in results {
+                // Attempt auto-fix for specific error types
+                if result.is_error() {
+                    if let Some(fixed_result) = self.try_fix(&result, output) {
+                        output.doctor_check(&fixed_result);
+                        all_results.push(fixed_result);
+                        continue;
+                    }
+                }
+
+                output.doctor_check(&result);
+                all_results.push(result);
+            }
+        }
+
+        all_results
+    }
+
+    /// Attempts to fix a specific issue.
+    ///
+    /// Returns Some(new_result) if fix was attempted, None if not fixable.
+    fn try_fix(&self, result: &CheckResult, output: &crate::output::Output) -> Option<CheckResult> {
+        match result.id {
+            "home" => self.fix_home(result, output),
+            "symlink" => self.fix_symlink(result, output),
+            _ => None,
+        }
+    }
+
+    /// Fix SCOOP_HOME directory issues.
+    fn fix_home(
+        &self,
+        result: &CheckResult,
+        output: &crate::output::Output,
+    ) -> Option<CheckResult> {
+        // Only fix "directory not found" errors
+        if let CheckStatus::Error(msg) = &result.status {
+            if msg.contains("not found") {
+                // Create the directory
+                if let Ok(home) = paths::scoop_home() {
+                    output.info(&format!("Creating {}...", home.display()));
+
+                    match std::fs::create_dir_all(&home) {
+                        Ok(_) => {
+                            // Also create virtualenvs subdirectory
+                            let _ = std::fs::create_dir_all(home.join("virtualenvs"));
+
+                            return Some(
+                                CheckResult::ok("home", "SCOOP_HOME directory")
+                                    .with_details(format!("created {}", home.display())),
+                            );
+                        }
+                        Err(e) => {
+                            return Some(
+                                CheckResult::error(
+                                    "home",
+                                    "SCOOP_HOME directory",
+                                    format!("failed to create: {}", e),
+                                )
+                                .with_suggestion("Check permissions"),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    /// Fix broken Python symlink issues.
+    fn fix_symlink(
+        &self,
+        result: &CheckResult,
+        output: &crate::output::Output,
+    ) -> Option<CheckResult> {
+        // Extract environment name from error message: "Python symlink in 'name' is broken"
+        let venv_name = if let CheckStatus::Error(msg) = &result.status {
+            // Parse: "Python symlink in 'name' is broken"
+            msg.split('\'').nth(1).map(|s| s.to_string())
+        } else {
+            None
+        }?;
+
+        output.info(&format!("Attempting to fix symlink for '{}'...", venv_name));
+
+        // Get virtualenv path
+        let venvs_dir = paths::virtualenvs_dir().ok()?;
+        let venv_path = venvs_dir.join(&venv_name);
+
+        if !venv_path.exists() {
+            return Some(
+                CheckResult::error(
+                    "symlink",
+                    "broken symlink",
+                    format!("environment '{}' not found", venv_name),
+                )
+                .with_suggestion(format!("scoop create {} <python-version>", venv_name)),
+            );
+        }
+
+        // Read metadata to get Python version
+        let metadata_path = venv_path.join(Metadata::FILE_NAME);
+        let python_version = if metadata_path.exists() {
+            match std::fs::read_to_string(&metadata_path) {
+                Ok(content) => match serde_json::from_str::<Metadata>(&content) {
+                    Ok(meta) => Some(meta.python_version),
+                    Err(_) => None,
+                },
+                Err(_) => None,
+            }
+        } else {
+            // Try to extract from pyvenv.cfg as fallback
+            let pyvenv_cfg = venv_path.join("pyvenv.cfg");
+            if pyvenv_cfg.exists() {
+                std::fs::read_to_string(&pyvenv_cfg)
+                    .ok()
+                    .and_then(|content| {
+                        for line in content.lines() {
+                            if line.starts_with("version") {
+                                return line.split('=').nth(1).map(|v| v.trim().to_string());
+                            }
+                        }
+                        None
+                    })
+            } else {
+                None
+            }
+        };
+
+        let python_version = match python_version {
+            Some(v) => v,
+            None => {
+                return Some(
+                    CheckResult::error(
+                        "symlink",
+                        "broken symlink",
+                        format!("could not determine Python version for '{}'", venv_name),
+                    )
+                    .with_suggestion(format!(
+                        "scoop remove {} && scoop create {} <python-version>",
+                        venv_name, venv_name
+                    )),
+                );
+            }
+        };
+
+        output.info(&format!("Found Python version: {}", python_version));
+
+        // Find Python binary using uv
+        let uv = match UvClient::new() {
+            Ok(uv) => uv,
+            Err(_) => {
+                return Some(
+                    CheckResult::error("symlink", "broken symlink", "uv not available")
+                        .with_suggestion("Install uv first"),
+                );
+            }
+        };
+
+        let python_path = match uv.find_python(&python_version) {
+            Ok(Some(info)) => match info.path {
+                Some(path) => path,
+                None => {
+                    return Some(
+                        CheckResult::error(
+                            "symlink",
+                            "broken symlink",
+                            format!("Python {} path not found", python_version),
+                        )
+                        .with_suggestion(format!("scoop install {}", python_version)),
+                    );
+                }
+            },
+            Ok(None) => {
+                return Some(
+                    CheckResult::error(
+                        "symlink",
+                        "broken symlink",
+                        format!("Python {} not installed", python_version),
+                    )
+                    .with_suggestion(format!("scoop install {}", python_version)),
+                );
+            }
+            Err(_) => {
+                return Some(
+                    CheckResult::error(
+                        "symlink",
+                        "broken symlink",
+                        "failed to find Python installation",
+                    )
+                    .with_suggestion(format!("scoop install {}", python_version)),
+                );
+            }
+        };
+
+        // Recreate symlink
+        let symlink_path = venv_path.join("bin").join("python");
+
+        // Remove old symlink if exists
+        if symlink_path.exists() || symlink_path.is_symlink() {
+            if let Err(e) = std::fs::remove_file(&symlink_path) {
+                return Some(
+                    CheckResult::error(
+                        "symlink",
+                        "broken symlink",
+                        format!("failed to remove old symlink: {}", e),
+                    )
+                    .with_suggestion("Check file permissions"),
+                );
+            }
+        }
+
+        // Create new symlink
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::symlink;
+            if let Err(e) = symlink(&python_path, &symlink_path) {
+                return Some(
+                    CheckResult::error(
+                        "symlink",
+                        "broken symlink",
+                        format!("failed to create symlink: {}", e),
+                    )
+                    .with_suggestion("Check file permissions"),
+                );
+            }
+        }
+
+        #[cfg(not(unix))]
+        {
+            return Some(
+                CheckResult::warn(
+                    "symlink",
+                    "broken symlink",
+                    "symlink fix not supported on this platform",
+                )
+                .with_suggestion("Manually recreate the symlink"),
+            );
+        }
+
+        output.success(&format!("Fixed symlink for '{}'", venv_name));
+
+        Some(
+            CheckResult::ok("symlink", "broken symlink")
+                .with_details(format!("fixed symlink for '{}'", venv_name)),
+        )
     }
 }
 
@@ -180,10 +441,19 @@ impl Check for UvCheck {
                 vec![CheckResult::ok(self.id(), self.name()).with_details(version)]
             }
             _ => {
+                // Provide OS-specific installation guidance
+                let install_cmd = if cfg!(target_os = "macos") {
+                    "brew install uv  OR  curl -LsSf https://astral.sh/uv/install.sh | sh"
+                } else if cfg!(target_os = "windows") {
+                    "powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\""
+                } else {
+                    "curl -LsSf https://astral.sh/uv/install.sh | sh"
+                };
+
                 vec![
-                    CheckResult::error(self.id(), self.name(), "uv not found").with_suggestion(
-                        "Install uv: curl -LsSf https://astral.sh/uv/install.sh | sh",
-                    ),
+                    CheckResult::error(self.id(), self.name(), "uv not found in PATH")
+                        .with_details("scoop requires uv to manage Python environments")
+                        .with_suggestion(format!("Install uv: {}", install_cmd)),
                 ]
             }
         }
@@ -400,6 +670,238 @@ impl Check for SymlinkCheck {
             results.push(
                 CheckResult::ok(self.id(), self.name())
                     .with_details(format!("{} symlinks valid", valid)),
+            );
+        }
+
+        results
+    }
+}
+
+/// Check for shell configuration (scoop init).
+struct ShellCheck;
+
+impl Check for ShellCheck {
+    fn id(&self) -> &'static str {
+        "shell"
+    }
+
+    fn name(&self) -> &'static str {
+        "shell configuration"
+    }
+
+    fn run(&self) -> Vec<CheckResult> {
+        let home = match dirs::home_dir() {
+            Some(h) => h,
+            None => {
+                return vec![CheckResult::error(
+                    self.id(),
+                    self.name(),
+                    "could not determine home directory",
+                )];
+            }
+        };
+
+        // Detect current shell from $SHELL environment variable
+        let shell = std::env::var("SHELL").unwrap_or_default();
+        let shell_name = std::path::Path::new(&shell)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("")
+            .to_lowercase();
+
+        // Determine config files to check based on shell
+        let config_files: Vec<(&str, std::path::PathBuf)> = match shell_name.as_str() {
+            "zsh" => vec![("zsh", home.join(".zshrc"))],
+            "bash" => {
+                // macOS uses .bash_profile, Linux uses .bashrc
+                if cfg!(target_os = "macos") {
+                    vec![
+                        ("bash", home.join(".bash_profile")),
+                        ("bash", home.join(".bashrc")),
+                    ]
+                } else {
+                    vec![("bash", home.join(".bashrc"))]
+                }
+            }
+            _ => {
+                // Unknown shell - check both common configs
+                return vec![
+                    CheckResult::warn(
+                        self.id(),
+                        self.name(),
+                        format!("unsupported shell: {}", shell_name),
+                    )
+                    .with_details("Supported shells: bash, zsh")
+                    .with_suggestion("Manual setup may be required"),
+                ];
+            }
+        };
+
+        // Check if any config file contains scoop init
+        for (_shell_type, config_path) in &config_files {
+            if config_path.exists() {
+                match std::fs::read_to_string(config_path) {
+                    Ok(content) => {
+                        // Look for scoop init pattern
+                        if content.contains("scoop init") {
+                            return vec![
+                                CheckResult::ok(self.id(), self.name())
+                                    .with_details(format!("found in {}", config_path.display())),
+                            ];
+                        }
+                    }
+                    Err(_) => {
+                        return vec![CheckResult::warn(
+                            self.id(),
+                            self.name(),
+                            format!("could not read {}", config_path.display()),
+                        )];
+                    }
+                }
+            }
+        }
+
+        // No scoop init found
+        let shell_type = if shell_name == "zsh" { "zsh" } else { "bash" };
+        let config_file = if shell_name == "zsh" {
+            "~/.zshrc"
+        } else if cfg!(target_os = "macos") {
+            "~/.bash_profile"
+        } else {
+            "~/.bashrc"
+        };
+
+        vec![
+            CheckResult::error(
+                self.id(),
+                self.name(),
+                "scoop init not found in shell config",
+            )
+            .with_suggestion(format!(
+                "Add to {}: eval \"$(scoop init {})\"",
+                config_file, shell_type
+            )),
+        ]
+    }
+}
+
+/// Check for version file validity.
+struct VersionCheck;
+
+impl Check for VersionCheck {
+    fn id(&self) -> &'static str {
+        "version"
+    }
+
+    fn name(&self) -> &'static str {
+        "version files"
+    }
+
+    fn run(&self) -> Vec<CheckResult> {
+        let mut results = Vec::new();
+        let venvs_dir = paths::virtualenvs_dir().ok();
+
+        // Check global version file
+        if let Ok(global_file) = paths::global_version_file() {
+            if global_file.exists() {
+                match std::fs::read_to_string(&global_file) {
+                    Ok(content) => {
+                        let env_name = content.trim();
+                        if !env_name.is_empty() {
+                            // Check if referenced environment exists
+                            let env_exists = venvs_dir
+                                .as_ref()
+                                .map(|dir| dir.join(env_name).exists())
+                                .unwrap_or(false);
+
+                            if env_exists {
+                                results.push(
+                                    CheckResult::ok("version:global", "global version")
+                                        .with_details(format!("set to '{}'", env_name)),
+                                );
+                            } else {
+                                results.push(
+                                    CheckResult::error(
+                                        "version:global",
+                                        "global version",
+                                        format!("references non-existent env '{}'", env_name),
+                                    )
+                                    .with_suggestion(format!(
+                                        "Run: scoop create {} <python-version>",
+                                        env_name
+                                    )),
+                                );
+                            }
+                        }
+                    }
+                    Err(_) => {
+                        results.push(
+                            CheckResult::warn(
+                                "version:global",
+                                "global version",
+                                "could not read global version file",
+                            )
+                            .with_suggestion(format!("Check file: {}", global_file.display())),
+                        );
+                    }
+                }
+            }
+        }
+
+        // Check local version file in current directory
+        let current_dir = match std::env::current_dir() {
+            Ok(dir) => dir,
+            Err(_) => return results,
+        };
+        let local_file = paths::local_version_file(&current_dir);
+        if local_file.exists() {
+            match std::fs::read_to_string(&local_file) {
+                Ok(content) => {
+                    let env_name = content.trim();
+                    if !env_name.is_empty() {
+                        // Check if referenced environment exists
+                        let env_exists = venvs_dir
+                            .as_ref()
+                            .map(|dir| dir.join(env_name).exists())
+                            .unwrap_or(false);
+
+                        if env_exists {
+                            results.push(
+                                CheckResult::ok("version:local", "local version")
+                                    .with_details(format!("set to '{}'", env_name)),
+                            );
+                        } else {
+                            results.push(
+                                CheckResult::error(
+                                    "version:local",
+                                    "local version",
+                                    format!("references non-existent env '{}'", env_name),
+                                )
+                                .with_suggestion(format!(
+                                    "Run: scoop create {} <python-version>",
+                                    env_name
+                                )),
+                            );
+                        }
+                    }
+                }
+                Err(_) => {
+                    results.push(
+                        CheckResult::warn(
+                            "version:local",
+                            "local version",
+                            "could not read local version file",
+                        )
+                        .with_suggestion("Check .scoop-version file permissions"),
+                    );
+                }
+            }
+        }
+
+        // If no version files found, that's fine
+        if results.is_empty() {
+            results.push(
+                CheckResult::ok(self.id(), self.name()).with_details("no version files configured"),
             );
         }
 

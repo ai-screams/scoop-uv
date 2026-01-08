@@ -116,6 +116,10 @@ pub enum Commands {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+
+        /// Automatically fix issues where possible
+        #[arg(long)]
+        fix: bool,
     },
 
     /// Output shell initialization script

@@ -13,33 +13,58 @@ use crate::output::Output;
 /// - 0: All checks passed
 /// - 1: Some warnings found
 /// - 2: Some errors found
-pub fn execute(output: &Output) -> Result<()> {
+pub fn execute(output: &Output, fix: bool) -> Result<()> {
     let doctor = Doctor::new();
-    let results = doctor.run_all();
 
-    // Print header
-    output.doctor_header();
+    if fix {
+        // Run with auto-fix
+        output.doctor_header();
+        let results = doctor.run_and_fix(output);
 
-    // Print each result
-    for result in &results {
-        output.doctor_check(result);
-    }
+        // Print summary or JSON
+        if output.is_json() {
+            output.doctor_json(&results);
+        } else {
+            output.doctor_summary(&results);
+        }
 
-    // Print summary or JSON
-    if output.is_json() {
-        output.doctor_json(&results);
+        // Determine exit code based on results
+        let has_errors = results.iter().any(|r| r.is_error());
+        let has_warnings = results.iter().any(|r| r.is_warning());
+
+        if has_errors {
+            std::process::exit(2);
+        } else if has_warnings {
+            std::process::exit(1);
+        }
     } else {
-        output.doctor_summary(&results);
-    }
+        // Normal run
+        let results = doctor.run_all();
 
-    // Determine exit code based on results
-    let has_errors = results.iter().any(|r| r.is_error());
-    let has_warnings = results.iter().any(|r| r.is_warning());
+        // Print header
+        output.doctor_header();
 
-    if has_errors {
-        std::process::exit(2);
-    } else if has_warnings {
-        std::process::exit(1);
+        // Print each result
+        for result in &results {
+            output.doctor_check(result);
+        }
+
+        // Print summary or JSON
+        if output.is_json() {
+            output.doctor_json(&results);
+        } else {
+            output.doctor_summary(&results);
+        }
+
+        // Determine exit code based on results
+        let has_errors = results.iter().any(|r| r.is_error());
+        let has_warnings = results.iter().any(|r| r.is_warning());
+
+        if has_errors {
+            std::process::exit(2);
+        } else if has_warnings {
+            std::process::exit(1);
+        }
     }
 
     Ok(())
