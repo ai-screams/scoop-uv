@@ -210,6 +210,8 @@ scoop remove myproject     # Melt it away 💧
 | `scoop list`                    | What's in the freezer?                 |
 | `scoop list --pythons`          | What Python versions do we have?       |
 | `scoop list --json`             | Output as JSON                         |
+| `scoop info <name>`             | Show detailed info about a flavor      |
+| `scoop info <name> --json`      | Output info as JSON                    |
 | `scoop remove <name>`           | Melt a flavor away                     |
 
 ### Managing the Freezer
