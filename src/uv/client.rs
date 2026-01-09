@@ -81,7 +81,7 @@ impl UvClient {
     }
 
     /// Install a Python version
-    pub fn install_python(&self, version: &str) -> Result<PathBuf> {
+    pub fn install_python(&self, version: &str) -> Result<()> {
         let output = Command::new(&self.path)
             .arg("python")
             .arg("install")
@@ -99,8 +99,7 @@ impl UvClient {
             });
         }
 
-        // TODO: Parse output to get installed path
-        Ok(PathBuf::new())
+        Ok(())
     }
 
     /// List installed Python versions (raw output)

@@ -53,14 +53,39 @@
 
 **scoop** scoops up uv's blazing speed — centralizing all your Python virtual environments in one place.
 
-> 🍨 Like an ice cream parlor — all flavors (envs) in one freezer (`~/.scoop/`),
-> served instantly with a single scoop. 🍨 is our signature!
+> 🍨 Think of it like running an ice cream parlor:
+> - **The Freezer** (`~/.scoop/`) keeps all your flavors fresh
+> - **Flavors** are your virtualenvs — mix once, serve anywhere
+> - **One scoop** is all you need to get the right env
 
-| Problem                            | scoop Solution                      |
-|------------------------------------|-------------------------------------|
-| `.venv` scattered across projects  | `~/.scoop/virtualenvs/` centralized |
-| Manual `source .venv/bin/activate` | Auto-activate on directory entry    |
-| pyenv-virtualenv is slow           | uv-powered, 100x+ faster            |
+| The Old Way (Yuck 🫠)                | The scoop Way (Fresh 🍨)             |
+|-------------------------------------|--------------------------------------|
+| `.venv` scattered across projects   | `~/.scoop/virtualenvs/` centralized  |
+| Manual `source .venv/bin/activate`  | Auto-activate on directory entry     |
+| pyenv-virtualenv is slow            | uv-powered, 100x+ faster             |
+| Which Python? Which venv? Chaos.    | `scoop doctor` checks everything     |
+
+---
+
+## The Freezer 🧊
+
+Your ice cream parlor lives here:
+
+```
+~/.scoop/                    # 🧊 The Freezer
+├── virtualenvs/             # 🍨 All your flavors
+│   ├── myproject/           #    → Python 3.12 flavor
+│   ├── webapp/              #    → Python 3.11 flavor
+│   └── experiment/          #    → Python 3.13 flavor
+└── version                  # 🥄 Default scoop preference
+```
+
+**Version file priority** (first match wins):
+```
+.scoop-version    →  "I want THIS flavor here"
+.python-version   →  "pyenv compatibility mode"
+~/.scoop/version  →  "My usual order"
+```
 
 ---
 
@@ -70,7 +95,7 @@
 
 | Dependency | Install | Why |
 |------------|---------|-----|
-| **uv** | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | Python installation backend |
+| **uv** | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | The secret ingredient 🔮 |
 | **Rust** | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` | Build from source |
 
 ### Install scoop
@@ -115,7 +140,7 @@ source ~/.bashrc
 
 ```bash
 scoop --version
-# → scoop 0.x.x 🍨
+# → scoop 0.2.7 🍨
 ```
 
 #### What this enables
@@ -126,10 +151,10 @@ scoop --version
 
 #### Using with pyenv
 
-Add scoop **after** pyenv in your rc file:
+Add scoop **after** pyenv in your rc file (order matters — scoop gets the last scoop! 🍨):
 
 ```bash
-# ~/.zshrc (order matters!)
+# ~/.zshrc
 eval "$(pyenv init -)"       # 1. pyenv first
 eval "$(scoop init zsh)"     # 2. scoop second
 ```
@@ -139,7 +164,7 @@ eval "$(scoop init zsh)"     # 2. scoop second
 | Variable | Effect |
 |----------|--------|
 | `SCOOP_NO_AUTO=1` | Disable auto-activation |
-| `SCOOP_HOME=/path` | Custom scoop directory (default: `~/.scoop`) |
+| `SCOOP_HOME=/path` | Custom freezer location (default: `~/.scoop`) |
 
 ```bash
 # Example: disable auto-activation
@@ -151,46 +176,102 @@ echo 'export SCOOP_NO_AUTO=1' >> ~/.zshrc
 ## Quick Start 🍨
 
 ```bash
-# Install Python
+# Stock up the freezer 🧊
 scoop install 3.12
 
-# Create a virtual environment
+# Mix a new flavor 🍦
 scoop create myproject 3.12
 
-# Set for current directory (auto-activates)
+# Pick your flavor for this directory (auto-activates!)
 scoop use myproject
 (myproject) $ pip install requests
 
-# Manage environments
-scoop list                 # List all environments
-scoop remove myproject     # Delete environment
+# Check what's in the freezer
+scoop list                 # List all flavors
+scoop list --pythons       # List Python versions
+scoop list --json          # For the data nerds 🤓
+
+# Clean up
+scoop remove myproject     # Melt it away 💧
 ```
 
 ---
 
 ## Commands 🍨
 
+### Everyday Scooping
+
 | Command                         | Description                            |
 |---------------------------------|----------------------------------------|
-| `scoop create <name> [version]` | Create virtual environment             |
-| `scoop use <name>`              | Set local environment (auto-activates) |
+| `scoop create <name> [version]` | Mix a new flavor (default: latest Python) |
+| `scoop use <name>`              | Pick your flavor (auto-activates)      |
 | `scoop use <name> --link`       | Also create `.venv` symlink for IDE    |
-| `scoop use <name> --global`     | Set global default                     |
-| `scoop list`                    | List environments                      |
-| `scoop list --pythons`          | List installed Python versions         |
-| `scoop remove <name>`           | Delete environment                     |
-| `scoop install [version]`       | Install Python (default: latest)       |
-| `scoop install --stable`        | Install oldest supported Python        |
-| `scoop uninstall <version>`     | Remove Python version                  |
+| `scoop use <name> --global`     | Set as your usual order                |
+| `scoop list`                    | What's in the freezer?                 |
+| `scoop list --pythons`          | What Python versions do we have?       |
+| `scoop list --json`             | Output as JSON                         |
+| `scoop remove <name>`           | Melt a flavor away                     |
+
+### Managing the Freezer
+
+| Command                     | Description                              |
+|-----------------------------|------------------------------------------|
+| `scoop install [version]`   | Stock up on Python (default: latest)     |
+| `scoop install --stable`    | Get the oldest supported Python (3.10)   |
+| `scoop uninstall <version>` | Remove a Python version                  |
+
+### Health Check 🩺
+
+| Command              | Description                            |
+|----------------------|----------------------------------------|
+| `scoop doctor`       | Is everything fresh? Check your setup! |
+| `scoop doctor --fix` | Auto-fix issues where possible         |
+| `scoop doctor --json`| Output diagnostics as JSON             |
+
+### Shell Integration
+
+| Command                    | Description                        |
+|----------------------------|------------------------------------|
+| `scoop init <shell>`       | Output shell initialization script |
+| `scoop completions <shell>`| Generate completion script         |
+
+> **Shells supported:** `bash`, `zsh`, `fish`, `powershell`
 
 For complete command reference, see [docs/commands.md](docs/commands.md).
 
 ---
 
+## Architecture 🏗️
+
+Built with Rust for speed and reliability:
+
+```
+src/
+├── cli/           # 🎮 Command parsing (clap)
+│   └── commands/  # Individual command handlers
+├── core/          # 🧠 Domain logic
+│   ├── version    # Version file resolution
+│   ├── metadata   # Virtualenv metadata (JSON)
+│   ├── virtualenv # Virtualenv entity
+│   └── doctor     # Health diagnostics
+├── shell/         # 🐚 Shell integration (bash, zsh)
+├── uv/            # ⚡ uv CLI wrapper
+├── output/        # 🎨 Terminal UI (spinners!)
+└── error, paths, validate  # Utilities
+```
+
+**Design principle:** The CLI outputs shell code to stdout, your shell evaluates it. Just like pyenv — battle-tested pattern.
+
+---
+
 ## Documentation 🍨
 
-- [Command Reference](docs/commands.md) — Complete command documentation
-- [Development Guide](docs/DEVELOPMENT.md) — Contributing and development setup
+| Guide | Description |
+|-------|-------------|
+| [Command Reference](docs/commands.md) | Complete command documentation |
+| [Development Guide](docs/DEVELOPMENT.md) | Architecture and contribution guide |
+| [Testing Guide](docs/TESTING.md) | Test structure, running, and writing tests |
+| [Code Quality Guide](docs/CODE_QUALITY.md) | Formatting, linting, and CI setup |
 
 ---
 
@@ -213,7 +294,7 @@ additional terms or conditions.
 
 ## Support 🍨
 
-If you find this project useful, consider buying me a coffee!
+If you find this project useful, consider buying me a coffee (or an ice cream 🍨)!
 
 <a href="https://buymeacoffee.com/pignuante" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50"></a>
 

@@ -8,12 +8,15 @@ use crate::error::{Result, ScoopError};
 /// Regex for valid environment names
 /// - Must start with a letter
 /// - Can contain letters, numbers, hyphens, and underscores
-static ENV_NAME_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z][a-zA-Z0-9_-]*$").unwrap());
+static ENV_NAME_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^[a-zA-Z][a-zA-Z0-9_-]*$").expect("ENV_NAME_REGEX is a valid pattern")
+});
 
 /// Regex for Python version strings
 /// Supports: 3, 3.12, 3.12.0, 3.12.0a1, 3.12.0b2, 3.12.0rc1
-static VERSION_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^\d+(\.\d+)*((a|b|rc)\d+)?$").unwrap());
+static VERSION_REGEX: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^\d+(\.\d+)*((a|b|rc)\d+)?$").expect("VERSION_REGEX is a valid pattern")
+});
 
 /// Reserved names that cannot be used as environment names
 const RESERVED_NAMES: &[&str] = &[

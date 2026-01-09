@@ -2,7 +2,7 @@
 
 use crate::core::VirtualenvService;
 use crate::error::Result;
-use crate::output::Output;
+use crate::output::{CreateData, Output};
 use crate::paths;
 
 /// Execute the create command
@@ -26,6 +26,19 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
     ));
 
     let path = service.create(name, python)?;
+
+    // JSON output
+    if output.is_json() {
+        output.json_success(
+            "create",
+            CreateData {
+                name: name.to_string(),
+                python: python.to_string(),
+                path: path.display().to_string(),
+            },
+        );
+        return Ok(());
+    }
 
     output.success(&format!("Created virtual environment '{name}'"));
     output.info(&format!("Location: {}", path.display()));

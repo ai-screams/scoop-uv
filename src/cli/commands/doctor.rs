@@ -1,8 +1,24 @@
 //! Doctor command
 
-use crate::core::doctor::Doctor;
+use crate::core::doctor::{CheckResult, Doctor};
 use crate::error::Result;
 use crate::output::Output;
+
+/// Exit process with appropriate code based on check results.
+///
+/// - Exit 2: If any errors found
+/// - Exit 1: If any warnings found (no errors)
+/// - No exit: If all checks passed
+fn exit_with_result_status(results: &[CheckResult]) {
+    let has_errors = results.iter().any(|r| r.is_error());
+    let has_warnings = results.iter().any(|r| r.is_warning());
+
+    if has_errors {
+        std::process::exit(2);
+    } else if has_warnings {
+        std::process::exit(1);
+    }
+}
 
 /// Execute the doctor command.
 ///
@@ -28,15 +44,7 @@ pub fn execute(output: &Output, fix: bool) -> Result<()> {
             output.doctor_summary(&results);
         }
 
-        // Determine exit code based on results
-        let has_errors = results.iter().any(|r| r.is_error());
-        let has_warnings = results.iter().any(|r| r.is_warning());
-
-        if has_errors {
-            std::process::exit(2);
-        } else if has_warnings {
-            std::process::exit(1);
-        }
+        exit_with_result_status(&results);
     } else {
         // Normal run
         let results = doctor.run_all();
@@ -56,15 +64,7 @@ pub fn execute(output: &Output, fix: bool) -> Result<()> {
             output.doctor_summary(&results);
         }
 
-        // Determine exit code based on results
-        let has_errors = results.iter().any(|r| r.is_error());
-        let has_warnings = results.iter().any(|r| r.is_warning());
-
-        if has_errors {
-            std::process::exit(2);
-        } else if has_warnings {
-            std::process::exit(1);
-        }
+        exit_with_result_status(&results);
     }
 
     Ok(())
