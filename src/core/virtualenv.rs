@@ -126,7 +126,7 @@ impl VirtualenvService {
     }
 
     /// Read metadata from a virtual environment
-    fn read_metadata(&self, path: &Path) -> Option<Metadata> {
+    pub fn read_metadata(&self, path: &Path) -> Option<Metadata> {
         let metadata_path = path.join(Metadata::FILE_NAME);
         let content = fs::read_to_string(metadata_path).ok()?;
         serde_json::from_str(&content).ok()
