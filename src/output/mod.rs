@@ -1,7 +1,9 @@
 //! Output utilities
 
+mod json;
 mod spinner;
 
+pub use json::*;
 pub use spinner::Spinner;
 
 use owo_colors::OwoColorize;
@@ -120,6 +122,42 @@ impl Output {
     /// Get verbosity level
     pub fn verbosity(&self) -> u8 {
         self.verbose
+    }
+}
+
+// ============================================================================
+// JSON Output Helpers
+// ============================================================================
+
+use crate::error::ScoopError;
+use serde::Serialize;
+
+impl Output {
+    /// Print a JSON success response to stdout
+    pub fn json_success<T: Serialize>(&self, command: &'static str, data: T) {
+        if !self.json {
+            return;
+        }
+        let response = JsonResponse::success(command, data);
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&response).unwrap_or_default()
+        );
+    }
+
+    /// Print a JSON error response to stderr
+    pub fn json_error(&self, command: &'static str, error: &ScoopError) {
+        if !self.json {
+            return;
+        }
+        let mut response = JsonErrorResponse::error(command, error.code(), error.to_string());
+        if let Some(suggestion) = error.suggestion() {
+            response = response.with_suggestion(suggestion);
+        }
+        eprintln!(
+            "{}",
+            serde_json::to_string_pretty(&response).unwrap_or_default()
+        );
     }
 }
 

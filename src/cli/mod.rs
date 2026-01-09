@@ -58,6 +58,10 @@ pub enum Commands {
         /// Do not create .venv symlink (default behavior, explicit)
         #[arg(long, conflicts_with = "link")]
         no_link: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 
     /// Create a new virtual environment
@@ -72,6 +76,10 @@ pub enum Commands {
         /// Overwrite existing environment
         #[arg(short, long)]
         force: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 
     /// Remove a virtual environment
@@ -83,6 +91,10 @@ pub enum Commands {
         /// Skip confirmation
         #[arg(short, long)]
         force: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 
     /// Install a Python version
@@ -98,6 +110,10 @@ pub enum Commands {
         /// Install oldest fully-supported Python (more stable)
         #[arg(long)]
         stable: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 
     /// Uninstall a Python version
@@ -105,6 +121,10 @@ pub enum Commands {
         /// Python version to uninstall
         #[arg(name = "VERSION")]
         python_version: String,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 
     /// Diagnose installation issues

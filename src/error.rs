@@ -80,6 +80,58 @@ pub enum ScoopError {
     InvalidArgument { message: String },
 }
 
+// ============================================================================
+// JSON Error Support
+// ============================================================================
+
+impl ScoopError {
+    /// Returns the error code for JSON output
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::VirtualenvNotFound { .. } => "ENV_NOT_FOUND",
+            Self::VirtualenvExists { .. } => "ENV_ALREADY_EXISTS",
+            Self::InvalidEnvName { .. } => "ENV_INVALID_NAME",
+            Self::InvalidPythonVersion { .. } => "PYTHON_INVALID_VERSION",
+            Self::UvNotFound => "UV_NOT_INSTALLED",
+            Self::UvCommandFailed { .. } => "UV_COMMAND_FAILED",
+            Self::PathError(_) => "IO_PATH_ERROR",
+            Self::HomeNotFound => "IO_HOME_NOT_FOUND",
+            Self::Io(_) => "IO_ERROR",
+            Self::Json(_) => "INTERNAL_JSON_ERROR",
+            Self::VersionFileNotFound { .. } => "CONFIG_VERSION_FILE_NOT_FOUND",
+            Self::UnsupportedShell { .. } => "SHELL_NOT_SUPPORTED",
+            Self::PythonNotInstalled { .. } => "PYTHON_NOT_INSTALLED",
+            Self::PythonInstallFailed { .. } => "PYTHON_INSTALL_FAILED",
+            Self::PythonUninstallFailed { .. } => "PYTHON_UNINSTALL_FAILED",
+            Self::NoPythonVersions { .. } => "PYTHON_NO_MATCHING_VERSION",
+            Self::InvalidArgument { .. } => "ARG_INVALID",
+        }
+    }
+
+    /// Returns a suggested fix for the error (if available)
+    pub fn suggestion(&self) -> Option<String> {
+        match self {
+            Self::VirtualenvNotFound { name } => {
+                Some(format!("Create it with: scoop create {name} 3.12"))
+            }
+            Self::VirtualenvExists { .. } => Some("Use --force to overwrite".to_string()),
+            Self::InvalidEnvName { .. } => {
+                Some("Names must start with a letter and contain only [a-zA-Z0-9_-]".to_string())
+            }
+            Self::UvNotFound => {
+                Some("Install: curl -LsSf https://astral.sh/uv/install.sh | sh".to_string())
+            }
+            Self::PythonNotInstalled { version } => {
+                Some(format!("Install it with: scoop install {version}"))
+            }
+            Self::NoPythonVersions { .. } => {
+                Some("Use 'scoop list --pythons' to see available versions".to_string())
+            }
+            _ => None,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -459,5 +511,350 @@ mod tests {
             msg.contains("parent directories"),
             "Should mention parent directory search"
         );
+    }
+
+    // ==========================================================================
+    // Error Code Tests (JSON API)
+    // ==========================================================================
+
+    #[test]
+    fn test_error_code_env_not_found() {
+        let err = ScoopError::VirtualenvNotFound { name: "x".into() };
+        assert_eq!(err.code(), "ENV_NOT_FOUND");
+    }
+
+    #[test]
+    fn test_error_code_env_already_exists() {
+        let err = ScoopError::VirtualenvExists { name: "x".into() };
+        assert_eq!(err.code(), "ENV_ALREADY_EXISTS");
+    }
+
+    #[test]
+    fn test_error_code_env_invalid_name() {
+        let err = ScoopError::InvalidEnvName {
+            name: "x".into(),
+            reason: "r".into(),
+        };
+        assert_eq!(err.code(), "ENV_INVALID_NAME");
+    }
+
+    #[test]
+    fn test_error_code_python_invalid_version() {
+        let err = ScoopError::InvalidPythonVersion {
+            version: "x".into(),
+        };
+        assert_eq!(err.code(), "PYTHON_INVALID_VERSION");
+    }
+
+    #[test]
+    fn test_error_code_uv_not_installed() {
+        let err = ScoopError::UvNotFound;
+        assert_eq!(err.code(), "UV_NOT_INSTALLED");
+    }
+
+    #[test]
+    fn test_error_code_uv_command_failed() {
+        let err = ScoopError::UvCommandFailed {
+            command: "x".into(),
+            message: "m".into(),
+        };
+        assert_eq!(err.code(), "UV_COMMAND_FAILED");
+    }
+
+    #[test]
+    fn test_error_code_io_path_error() {
+        let err = ScoopError::PathError("x".into());
+        assert_eq!(err.code(), "IO_PATH_ERROR");
+    }
+
+    #[test]
+    fn test_error_code_io_home_not_found() {
+        let err = ScoopError::HomeNotFound;
+        assert_eq!(err.code(), "IO_HOME_NOT_FOUND");
+    }
+
+    #[test]
+    fn test_error_code_io_error() {
+        let err = ScoopError::Io(io::Error::other("test"));
+        assert_eq!(err.code(), "IO_ERROR");
+    }
+
+    #[test]
+    fn test_error_code_internal_json_error() {
+        let json_err: serde_json::Error =
+            serde_json::from_str::<serde_json::Value>("invalid").expect_err("should fail");
+        let err: ScoopError = json_err.into();
+        assert_eq!(err.code(), "INTERNAL_JSON_ERROR");
+    }
+
+    #[test]
+    fn test_error_code_config_version_file_not_found() {
+        let err = ScoopError::VersionFileNotFound {
+            path: PathBuf::new(),
+        };
+        assert_eq!(err.code(), "CONFIG_VERSION_FILE_NOT_FOUND");
+    }
+
+    #[test]
+    fn test_error_code_shell_not_supported() {
+        let err = ScoopError::UnsupportedShell { shell: "x".into() };
+        assert_eq!(err.code(), "SHELL_NOT_SUPPORTED");
+    }
+
+    #[test]
+    fn test_error_code_python_not_installed() {
+        let err = ScoopError::PythonNotInstalled {
+            version: "x".into(),
+        };
+        assert_eq!(err.code(), "PYTHON_NOT_INSTALLED");
+    }
+
+    #[test]
+    fn test_error_code_python_install_failed() {
+        let err = ScoopError::PythonInstallFailed {
+            version: "x".into(),
+            message: "m".into(),
+        };
+        assert_eq!(err.code(), "PYTHON_INSTALL_FAILED");
+    }
+
+    #[test]
+    fn test_error_code_python_uninstall_failed() {
+        let err = ScoopError::PythonUninstallFailed {
+            version: "x".into(),
+            message: "m".into(),
+        };
+        assert_eq!(err.code(), "PYTHON_UNINSTALL_FAILED");
+    }
+
+    #[test]
+    fn test_error_code_python_no_matching_version() {
+        let err = ScoopError::NoPythonVersions {
+            pattern: "x".into(),
+        };
+        assert_eq!(err.code(), "PYTHON_NO_MATCHING_VERSION");
+    }
+
+    #[test]
+    fn test_error_code_arg_invalid() {
+        let err = ScoopError::InvalidArgument {
+            message: "x".into(),
+        };
+        assert_eq!(err.code(), "ARG_INVALID");
+    }
+
+    #[test]
+    fn test_all_error_codes_are_unique() {
+        use std::collections::HashSet;
+
+        let codes: Vec<&str> = vec![
+            ScoopError::VirtualenvNotFound { name: "".into() }.code(),
+            ScoopError::VirtualenvExists { name: "".into() }.code(),
+            ScoopError::InvalidEnvName {
+                name: "".into(),
+                reason: "".into(),
+            }
+            .code(),
+            ScoopError::InvalidPythonVersion { version: "".into() }.code(),
+            ScoopError::UvNotFound.code(),
+            ScoopError::UvCommandFailed {
+                command: "".into(),
+                message: "".into(),
+            }
+            .code(),
+            ScoopError::PathError("".into()).code(),
+            ScoopError::HomeNotFound.code(),
+            ScoopError::Io(io::Error::other("")).code(),
+            ScoopError::VersionFileNotFound {
+                path: PathBuf::new(),
+            }
+            .code(),
+            ScoopError::UnsupportedShell { shell: "".into() }.code(),
+            ScoopError::PythonNotInstalled { version: "".into() }.code(),
+            ScoopError::PythonInstallFailed {
+                version: "".into(),
+                message: "".into(),
+            }
+            .code(),
+            ScoopError::PythonUninstallFailed {
+                version: "".into(),
+                message: "".into(),
+            }
+            .code(),
+            ScoopError::NoPythonVersions { pattern: "".into() }.code(),
+            ScoopError::InvalidArgument { message: "".into() }.code(),
+        ];
+
+        let unique: HashSet<_> = codes.iter().collect();
+        assert_eq!(
+            codes.len(),
+            unique.len(),
+            "All error codes must be unique. Found duplicates."
+        );
+    }
+
+    #[test]
+    fn test_error_codes_follow_naming_convention() {
+        // All codes should be SCREAMING_SNAKE_CASE
+        let codes = vec![
+            ScoopError::VirtualenvNotFound { name: "".into() }.code(),
+            ScoopError::UvNotFound.code(),
+            ScoopError::HomeNotFound.code(),
+            ScoopError::InvalidArgument { message: "".into() }.code(),
+        ];
+
+        for code in codes {
+            assert!(
+                code.chars().all(|c| c.is_uppercase() || c == '_'),
+                "Error code '{}' should be SCREAMING_SNAKE_CASE",
+                code
+            );
+        }
+    }
+
+    // ==========================================================================
+    // Suggestion Tests (JSON API)
+    // ==========================================================================
+
+    #[test]
+    fn test_suggestion_virtualenv_not_found_includes_name() {
+        let err = ScoopError::VirtualenvNotFound {
+            name: "myenv".into(),
+        };
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.contains("myenv"));
+        assert!(suggestion.contains("scoop create"));
+    }
+
+    #[test]
+    fn test_suggestion_virtualenv_exists() {
+        let err = ScoopError::VirtualenvExists {
+            name: "existing".into(),
+        };
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.contains("--force"));
+    }
+
+    #[test]
+    fn test_suggestion_invalid_env_name() {
+        let err = ScoopError::InvalidEnvName {
+            name: "123".into(),
+            reason: "must start with letter".into(),
+        };
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.contains("letter"));
+        assert!(suggestion.contains("[a-zA-Z0-9_-]"));
+    }
+
+    #[test]
+    fn test_suggestion_uv_not_found() {
+        let err = ScoopError::UvNotFound;
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.contains("curl"));
+        assert!(suggestion.contains("astral.sh"));
+    }
+
+    #[test]
+    fn test_suggestion_python_not_installed_includes_version() {
+        let err = ScoopError::PythonNotInstalled {
+            version: "3.13".into(),
+        };
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.contains("3.13"));
+        assert!(suggestion.contains("scoop install"));
+    }
+
+    #[test]
+    fn test_suggestion_no_python_versions() {
+        let err = ScoopError::NoPythonVersions {
+            pattern: "2.7".into(),
+        };
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.contains("scoop list --pythons"));
+    }
+
+    #[test]
+    fn test_no_suggestion_for_io_error() {
+        let err = ScoopError::Io(io::Error::other("test"));
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_json_error() {
+        let json_err: serde_json::Error =
+            serde_json::from_str::<serde_json::Value>("invalid").expect_err("should fail");
+        let err: ScoopError = json_err.into();
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_uv_command_failed() {
+        let err = ScoopError::UvCommandFailed {
+            command: "venv".into(),
+            message: "failed".into(),
+        };
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_path_error() {
+        let err = ScoopError::PathError("invalid path".into());
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_home_not_found() {
+        let err = ScoopError::HomeNotFound;
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_version_file_not_found() {
+        let err = ScoopError::VersionFileNotFound {
+            path: PathBuf::from("/project"),
+        };
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_unsupported_shell() {
+        let err = ScoopError::UnsupportedShell {
+            shell: "fish".into(),
+        };
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_python_install_failed() {
+        let err = ScoopError::PythonInstallFailed {
+            version: "3.12".into(),
+            message: "network error".into(),
+        };
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_python_uninstall_failed() {
+        let err = ScoopError::PythonUninstallFailed {
+            version: "3.11".into(),
+            message: "in use".into(),
+        };
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_invalid_python_version() {
+        let err = ScoopError::InvalidPythonVersion {
+            version: "abc".into(),
+        };
+        assert!(err.suggestion().is_none());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_invalid_argument() {
+        let err = ScoopError::InvalidArgument {
+            message: "conflicting flags".into(),
+        };
+        assert!(err.suggestion().is_none());
     }
 }

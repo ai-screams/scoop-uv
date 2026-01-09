@@ -6,7 +6,7 @@ use std::path::Path;
 
 use crate::core::{VersionService, VirtualenvService};
 use crate::error::Result;
-use crate::output::Output;
+use crate::output::{Output, UseData};
 
 /// Execute the use command
 pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<()> {
@@ -17,19 +17,52 @@ pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<
 
     if global {
         VersionService::set_global(name)?;
+
+        // JSON output
+        if output.is_json() {
+            output.json_success(
+                "use",
+                UseData {
+                    name: name.to_string(),
+                    mode: "global",
+                    version_file: None,
+                    symlink: None,
+                },
+            );
+            return Ok(());
+        }
+
         output.success(&format!("Set global environment to '{name}'"));
     } else {
         let cwd = std::env::current_dir()?;
 
         // Set local version
         VersionService::set_local(&cwd, name)?;
-        output.success(&format!("Set local environment to '{name}'"));
+
+        let mut symlink_path = None;
 
         // Create .venv symlink only if --link flag is provided
         if link {
             let venv_link = cwd.join(".venv");
             create_venv_symlink(&venv_link, &venv_path, output)?;
+            symlink_path = Some(venv_link.display().to_string());
         }
+
+        // JSON output
+        if output.is_json() {
+            output.json_success(
+                "use",
+                UseData {
+                    name: name.to_string(),
+                    mode: "local",
+                    version_file: Some(cwd.join(".scoop-version").display().to_string()),
+                    symlink: symlink_path,
+                },
+            );
+            return Ok(());
+        }
+
+        output.success(&format!("Set local environment to '{name}'"));
     }
 
     Ok(())

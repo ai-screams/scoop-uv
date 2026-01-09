@@ -2,7 +2,7 @@
 
 use crate::core::VirtualenvService;
 use crate::error::Result;
-use crate::output::Output;
+use crate::output::{ListEnvsData, ListPythonsData, Output, PythonInfo, VirtualenvInfo};
 use crate::uv::UvClient;
 
 /// Execute the list command
@@ -18,6 +18,22 @@ pub fn execute(output: &Output, pythons: bool, bare: bool) -> Result<()> {
 fn list_virtualenvs(output: &Output, bare: bool) -> Result<()> {
     let service = VirtualenvService::auto()?;
     let envs = service.list()?;
+
+    // JSON output
+    if output.is_json() {
+        let virtualenvs: Vec<VirtualenvInfo> = envs
+            .iter()
+            .map(|env| VirtualenvInfo {
+                name: env.name.clone(),
+                python: env.python_version.clone(),
+                path: env.path.display().to_string(),
+                active: false, // TODO: detect active env
+            })
+            .collect();
+        let total = virtualenvs.len();
+        output.json_success("list", ListEnvsData { virtualenvs, total });
+        return Ok(());
+    }
 
     if envs.is_empty() {
         if !bare {
@@ -51,6 +67,26 @@ fn list_virtualenvs(output: &Output, bare: bool) -> Result<()> {
 fn list_pythons(output: &Output, bare: bool) -> Result<()> {
     let uv = UvClient::new()?;
     let pythons = uv.list_installed_pythons()?;
+
+    // JSON output
+    if output.is_json() {
+        let python_infos: Vec<PythonInfo> = pythons
+            .iter()
+            .map(|p| PythonInfo {
+                version: p.version.clone(),
+                path: p.path.as_ref().map(|path| path.display().to_string()),
+            })
+            .collect();
+        let total = python_infos.len();
+        output.json_success(
+            "list",
+            ListPythonsData {
+                pythons: python_infos,
+                total,
+            },
+        );
+        return Ok(());
+    }
 
     if pythons.is_empty() {
         if !bare {

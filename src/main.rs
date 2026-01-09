@@ -35,8 +35,9 @@ fn main() -> Result<()> {
             name,
             python,
             force,
+            json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::create(&output, &name, &python, force)
         }
         Commands::Doctor { verbose, json, fix } => {
@@ -48,24 +49,29 @@ fn main() -> Result<()> {
             global,
             link,
             no_link: _, // explicit option, same as default (no symlink)
+            json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::use_env(&output, &name, global, link)
         }
-        Commands::Remove { name, force } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+        Commands::Remove { name, force, json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::remove(&output, &name, force)
         }
         Commands::Install {
             python_version,
             latest,
             stable,
+            json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::install(&output, python_version.as_deref(), latest, stable)
         }
-        Commands::Uninstall { python_version } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+        Commands::Uninstall {
+            python_version,
+            json,
+        } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::uninstall(&output, &python_version)
         }
         Commands::Init { shell } => scoop_uv::cli::commands::init(shell),

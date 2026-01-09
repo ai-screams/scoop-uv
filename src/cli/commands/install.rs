@@ -1,7 +1,7 @@
 //! Install command
 
 use crate::error::{Result, ScoopError};
-use crate::output::Output;
+use crate::output::{InstallData, Output};
 use crate::uv::UvClient;
 
 /// Execute the install command
@@ -14,6 +14,18 @@ pub fn execute(output: &Output, version: Option<&str>, latest: bool, stable: boo
     output.info(&format!("Installing Python {target}..."));
 
     uv.install_python(&target)?;
+
+    // JSON output
+    if output.is_json() {
+        output.json_success(
+            "install",
+            InstallData {
+                version: target,
+                path: None, // uv doesn't return path on install
+            },
+        );
+        return Ok(());
+    }
 
     output.success(&format!("Installed Python {target}"));
 
