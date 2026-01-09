@@ -91,6 +91,29 @@ pub fn virtualenv_activate(name: &str) -> Result<PathBuf> {
     Ok(virtualenv_path(name)?.join("Scripts").join("activate.bat"))
 }
 
+/// Abbreviate home directory to `~` for display.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+/// use scoop_uv::paths::abbreviate_home;
+///
+/// // Home directory paths get abbreviated
+/// let home = dirs::home_dir().unwrap();
+/// let path = home.join(".scoop/virtualenvs/myenv");
+/// let abbreviated = abbreviate_home(&path);
+/// assert!(abbreviated.starts_with("~/"));
+/// ```
+pub fn abbreviate_home(path: &std::path::Path) -> String {
+    if let Some(home) = dirs::home_dir() {
+        if let Ok(stripped) = path.strip_prefix(&home) {
+            return format!("~/{}", stripped.display());
+        }
+    }
+    path.display().to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -318,5 +341,36 @@ mod tests {
             assert!(virtualenv_exists("my_env").unwrap());
             assert!(virtualenv_exists("env123").unwrap());
         });
+    }
+
+    // ==========================================================================
+    // abbreviate_home Tests
+    // ==========================================================================
+
+    #[test]
+    fn test_abbreviate_home_with_home_path() {
+        // Path under home directory should be abbreviated
+        if let Some(home) = dirs::home_dir() {
+            let path = home.join(".scoop").join("virtualenvs").join("myenv");
+            let result = abbreviate_home(&path);
+            assert!(result.starts_with("~/"));
+            assert!(result.contains(".scoop/virtualenvs/myenv"));
+        }
+    }
+
+    #[test]
+    fn test_abbreviate_home_outside_home() {
+        // Path outside home directory should remain unchanged
+        let path = PathBuf::from("/tmp/some/path");
+        let result = abbreviate_home(&path);
+        assert_eq!(result, "/tmp/some/path");
+    }
+
+    #[test]
+    fn test_abbreviate_home_root_path() {
+        // Root path should remain unchanged
+        let path = PathBuf::from("/");
+        let result = abbreviate_home(&path);
+        assert_eq!(result, "/");
     }
 }
