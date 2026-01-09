@@ -13,12 +13,12 @@ build-dir = "book"
 create-missing = true
 
 [output.html]
-site-url = "/uvenv/"
+site-url = "/scoop-uv/"
 default-theme = "rust"
 preferred-dark-theme = "ayu"
 smart-punctuation = true
-git-repository-url = "https://github.com/ai-screams/uvenv"
-edit-url-template = "https://github.com/ai-screams/uvenv/edit/main/docs/{path}"
+git-repository-url = "https://github.com/ai-screams/scoop-uv"
+edit-url-template = "https://github.com/ai-screams/scoop-uv/edit/main/docs/{path}"
 no-section-label = false
 
 [output.html.search]
