@@ -23,15 +23,15 @@
 
 ### 비교표
 
-| 도구 | 명령어 | 주요 목적 | 체크 항목 |
-|------|--------|----------|----------|
-| pyenv-doctor | `pyenv doctor` | 빌드 환경 검증 | git, OpenSSL, SQLite3, 컴파일러 |
-| brew doctor | `brew doctor` | 설치 상태 진단 | Xcode CLT, orphan kegs, unbrewed 파일 |
-| npm doctor | `npm doctor` | 런타임 환경 검증 | Node.js, git, 레지스트리 연결, 권한, 캐시 |
-| flutter doctor | `flutter doctor` | 개발환경 완전성 | SDK, Android/iOS 툴체인, IDE 플러그인 |
-| rustup check | `rustup check` | 업데이트 확인 | 툴체인 버전, rustup 버전 |
-| poetry | `poetry debug info` | 디버그 정보 | (doctor 없음) |
-| uv | 없음 | - | (doctor 없음) |
+| 도구             | 명령어                 | 주요 목적     | 체크 항목                               |
+|----------------|---------------------|-----------|-------------------------------------|
+| pyenv-doctor   | `pyenv doctor`      | 빌드 환경 검증  | git, OpenSSL, SQLite3, 컴파일러         |
+| brew doctor    | `brew doctor`       | 설치 상태 진단  | Xcode CLT, orphan kegs, unbrewed 파일 |
+| npm doctor     | `npm doctor`        | 런타임 환경 검증 | Node.js, git, 레지스트리 연결, 권한, 캐시      |
+| flutter doctor | `flutter doctor`    | 개발환경 완전성  | SDK, Android/iOS 툴체인, IDE 플러그인      |
+| rustup check   | `rustup check`      | 업데이트 확인   | 툴체인 버전, rustup 버전                   |
+| poetry         | `poetry debug info` | 디버그 정보    | (doctor 없음)                         |
+| uv             | 없음                  | -         | (doctor 없음)                         |
 
 ### 참고 링크
 
@@ -44,13 +44,16 @@
 ### 핵심 패턴
 
 **pyenv-doctor**: 빌드 의존성 검증 (OpenSSL, SQLite3 헤더)
+
 - scoop은 uv 사용하므로 빌드 불필요 → 해당 없음
 
 **npm doctor**: 런타임 환경 + 네트워크 + 권한 검증
+
 - 가장 유사한 모델
 - 선택적 체크 인자 지원 (connection, versions, cache, permissions)
 
 **flutter doctor**: 개발 환경 완전성 + 컬러 출력 + 상세 안내
+
 - UX 참고 모델
 - `-v` 상세 모드, 설치 안내 링크 제공
 
@@ -66,12 +69,14 @@
 ```
 
 **체크 로직**:
+
 ```rust
 // which uv 또는 uv --version 실행
 Command::new("uv").arg("--version").output()
 ```
 
 **실패 시**:
+
 ```
 [✗] uv: NOT FOUND
     Fix: curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -88,13 +93,15 @@ Command::new("uv").arg("--version").output()
 ```
 
 **체크 로직**:
+
 1. 현재 쉘 감지: `$SHELL` 환경변수
 2. 쉘 설정 파일에서 `scoop init` 패턴 검색:
-   - bash: `~/.bashrc`, `~/.bash_profile`
-   - zsh: `~/.zshrc`, `~/.zprofile`
+    - bash: `~/.bashrc`, `~/.bash_profile`
+    - zsh: `~/.zshrc`, `~/.zprofile`
 3. `eval` 포함 여부 확인 (흔한 실수)
 
 **실패 시**:
+
 ```
 [✗] Shell hook: NOT installed
     Fix: Add to ~/.zshrc:
@@ -102,6 +109,7 @@ Command::new("uv").arg("--version").output()
 ```
 
 **경고 (eval 누락)**:
+
 ```
 [!] Shell hook: found but missing 'eval'
     Current: scoop init zsh
@@ -119,13 +127,14 @@ Command::new("uv").arg("--version").output()
 ```
 
 **체크 로직**:
+
 ```rust
 // SCOOP_HOME 환경변수 또는 기본값
 let scoop_home = env::var("SCOOP_HOME")
-    .unwrap_or_else(|_| dirs::home_dir().join(".scoop"));
+.unwrap_or_else( | _ | dirs::home_dir().join(".scoop"));
 
 // 디렉토리 존재 및 쓰기 권한
-fs::metadata(&scoop_home)?.permissions().readonly() == false
+fs::metadata( & scoop_home) ?.permissions().readonly() == false
 ```
 
 ---
@@ -141,6 +150,7 @@ fs::metadata(&scoop_home)?.permissions().readonly() == false
 ```
 
 **문제 상황**:
+
 ```
 [!] Local env: old-project (from .scoop-version)
 [✗] Environment 'old-project' NOT FOUND
@@ -149,6 +159,7 @@ fs::metadata(&scoop_home)?.permissions().readonly() == false
 ```
 
 **체크 로직**:
+
 1. `scoop resolve` 실행하여 현재 환경 이름 획득
 2. 해당 환경 디렉토리 존재 확인
 3. `SCOOP_ACTIVE` 환경변수와 일치 여부
@@ -165,11 +176,12 @@ fs::metadata(&scoop_home)?.permissions().readonly() == false
 ```
 
 **체크 로직**:
+
 ```rust
 // uv python list --installed 실행
 Command::new("uv")
-    .args(["python", "list", "--installed"])
-    .output()
+.args(["python", "list", "--installed"])
+.output()
 ```
 
 ---
@@ -186,6 +198,7 @@ Command::new("uv")
 ```
 
 **체크 로직**:
+
 - 모든 환경 순회
 - 각 환경의 Python 버전이 설치되어 있는지 확인
 - 고아 환경 (Python 버전 누락) 경고
@@ -196,9 +209,9 @@ Command::new("uv")
 
 ### 상태 아이콘
 
-| 아이콘 | 의미 | 색상 |
-|--------|------|------|
-| `[✓]` | 성공 | 녹색 |
+| 아이콘   | 의미      | 색상  |
+|-------|---------|-----|
+| `[✓]` | 성공      | 녹색  |
 | `[✗]` | 실패 (필수) | 빨간색 |
 | `[!]` | 경고 (권장) | 노란색 |
 | `[?]` | 정보 (참고) | 파란색 |
@@ -283,19 +296,21 @@ scoop doctor --check deps       # 의존성만 검사
 
 ### Exit Code
 
-| 코드 | 의미 |
-|------|------|
-| 0 | 모든 검사 통과 |
-| 1 | 경고 있음 (동작에 지장 없음) |
-| 2 | 오류 있음 (동작에 지장 있음) |
+| 코드 | 의미                |
+|----|-------------------|
+| 0  | 모든 검사 통과          |
+| 1  | 경고 있음 (동작에 지장 없음) |
+| 2  | 오류 있음 (동작에 지장 있음) |
 
 ### --fix 동작 범위
 
 **자동 수정 가능**:
+
 - `~/.scoop` 디렉토리 생성
 - `virtualenvs/` 디렉토리 생성
 
 **자동 수정 불가 (안내만)**:
+
 - 쉘 설정 파일 수정 (사용자 승인 필요)
 - uv 설치
 - 환경 생성/삭제
@@ -393,6 +408,7 @@ impl HealthCheck for UvCheck {
 ### Phase 1: MVP (v0.3.0) ⭐ 권장 시작점
 
 **체크 항목** (4개):
+
 1. uv 존재 확인 (`which uv` + `--version`)
 2. SCOOP_HOME 디렉토리 확인
 3. 쉘 훅 설치 여부 (설정 파일 검색)
@@ -405,11 +421,13 @@ impl HealthCheck for UvCheck {
 ### Phase 2: 완성 (v0.4.0)
 
 **추가 체크 항목**:
+
 5. 쉘 설정 파일 상세 분석 (`eval` 누락 감지)
 6. 설치된 Python 버전 목록
 7. 환경 무결성 검사 (고아 환경)
 
 **추가 기능**:
+
 8. `--verbose` 옵션
 9. `--quiet` 옵션
 10. `--json` 옵션
@@ -421,6 +439,7 @@ impl HealthCheck for UvCheck {
 ### Phase 3: 고급 (v0.5.0+)
 
 **추가 기능**:
+
 12. `--fix` 자동 수정
 13. `--check <category>` 선택적 체크
 14. CI 모드 (`--ci`)
@@ -433,25 +452,27 @@ impl HealthCheck for UvCheck {
 ## 가장 흔한 문제 (우선 해결 대상)
 
 1. **uv 미설치**
-   - 증상: 환경 생성 실패
-   - 해결: 설치 명령 안내
+    - 증상: 환경 생성 실패
+    - 해결: 설치 명령 안내
 
 2. **쉘 훅 미설정**
-   - 증상: 자동 활성화 안됨
-   - 해결: 복붙 가능한 설정 라인 제공
+    - 증상: 자동 활성화 안됨
+    - 해결: 복붙 가능한 설정 라인 제공
 
 3. **삭제된 환경 참조**
-   - 증상: cd 시 에러 발생
-   - 해결: `scoop create` 또는 `.scoop-version` 삭제 안내
+    - 증상: cd 시 에러 발생
+    - 해결: `scoop create` 또는 `.scoop-version` 삭제 안내
 
 ---
 
 ## 테스트 시나리오
 
 ### 정상 케이스
+
 - [ ] uv 설치됨, 쉘 훅 설정됨, 환경 정상 → 모두 통과
 
 ### 실패 케이스
+
 - [ ] uv 미설치 → 설치 안내
 - [ ] SCOOP_HOME 없음 → 생성 안내
 - [ ] 쉘 훅 미설정 → 설정 안내
@@ -460,6 +481,7 @@ impl HealthCheck for UvCheck {
 - [ ] 고아 환경 존재 → 경고
 
 ### 옵션 테스트
+
 - [ ] `--verbose`: 상세 경로/버전 출력
 - [ ] `--quiet`: 요약만 출력
 - [ ] `--json`: JSON 형식 출력

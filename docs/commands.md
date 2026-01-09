@@ -28,6 +28,7 @@ scoop create <name> [python-version]
 | `--force`, `-f` | Overwrite existing flavor |
 
 **Examples:**
+
 ```bash
 scoop create myproject 3.12      # Mix with Python 3.12
 scoop create webapp              # Mix with latest Python
@@ -57,12 +58,14 @@ scoop use <name> [options]
 | `--no-link` | Do not create `.venv` symlink (default) |
 
 **Behavior:**
+
 - Creates `.scoop-version` file in current directory
 - Immediately activates the environment (if shell hook installed)
 - With `--global`: writes to `~/.scoop/version` (your usual order)
 - With `--link`: creates `.venv -> ~/.scoop/virtualenvs/<name>`
 
 **Examples:**
+
 ```bash
 scoop use myproject              # Pick this flavor here
 scoop use myproject --link       # Also create .venv symlink
@@ -87,6 +90,7 @@ scoop list [options]
 | `--json` | Output as JSON (for the data nerds 🤓) |
 
 **Examples:**
+
 ```bash
 scoop list                  # List all flavors
 scoop list --pythons        # List Python versions in stock
@@ -117,6 +121,7 @@ scoop remove <name> [options]
 | `--force`, `-f` | Skip confirmation prompt |
 
 **Examples:**
+
 ```bash
 scoop remove myproject           # Melt with confirmation
 scoop remove myproject --force   # Melt without asking
@@ -147,12 +152,14 @@ scoop install [version] [options]
 | `--stable` | Install oldest fully-supported Python (3.10) |
 
 **Version Resolution:**
+
 - No argument or `--latest`: installs latest Python 3.x
 - `--stable`: installs Python 3.10 (oldest with active security support)
 - `3.12`: installs latest 3.12.x patch
 - `3.12.3`: installs exact version
 
 **Examples:**
+
 ```bash
 scoop install                    # Stock up latest
 scoop install --latest           # Same as above
@@ -179,6 +186,7 @@ scoop uninstall <version>
 | `version` | Yes | Python version to remove |
 
 **Examples:**
+
 ```bash
 scoop uninstall 3.12             # Remove Python 3.12
 scoop uninstall 3.11.8           # Remove specific version
@@ -204,6 +212,7 @@ scoop doctor [options]
 | `--fix` | Auto-fix issues where possible |
 
 **Checks performed:**
+
 - uv installation and version
 - Shell integration status
 - Environment integrity
@@ -211,6 +220,7 @@ scoop doctor [options]
 - Version file validity
 
 **Examples:**
+
 ```bash
 scoop doctor                     # Quick health check
 scoop doctor -v                  # Verbose diagnostics
@@ -247,6 +257,7 @@ eval "$(scoop init zsh)"
 ```
 
 **Features enabled:**
+
 - 🎯 Auto-activation when entering directories with `.scoop-version`
 - ⌨️ Tab completion for commands, environments, and options
 - 🔄 Wrapper function for `activate`/`deactivate`/`use`
@@ -267,6 +278,7 @@ scoop completions <shell>
 | `shell` | Yes | Shell type: `bash`, `zsh`, `fish`, `powershell` |
 
 **Examples:**
+
 ```bash
 scoop completions bash           # Output bash completions
 scoop completions zsh            # Output zsh completions
@@ -304,34 +316,34 @@ eval "$(scoop deactivate)"
 
 Available for all commands:
 
-| Option | Description |
-|--------|-------------|
-| `-q`, `--quiet` | Suppress all output |
-| `--no-color` | Disable colored output |
-| `-h`, `--help` | Show help message |
-| `-V`, `--version` | Show version |
+| Option            | Description            |
+|-------------------|------------------------|
+| `-q`, `--quiet`   | Suppress all output    |
+| `--no-color`      | Disable colored output |
+| `-h`, `--help`    | Show help message      |
+| `-V`, `--version` | Show version           |
 
 ---
 
 ## Environment Variables 🌍
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `SCOOP_HOME` | The Freezer location | `~/.scoop` |
-| `SCOOP_NO_AUTO` | Disable auto-activation | (unset) |
-| `NO_COLOR` | Disable colored output | (unset) |
+| Variable        | Description             | Default    |
+|-----------------|-------------------------|------------|
+| `SCOOP_HOME`    | The Freezer location    | `~/.scoop` |
+| `SCOOP_NO_AUTO` | Disable auto-activation | (unset)    |
+| `NO_COLOR`      | Disable colored output  | (unset)    |
 
 ---
 
 ## The Freezer Layout 🧊
 
-| Location | Purpose |
-|----------|---------|
-| `~/.scoop/virtualenvs/` | All your flavors live here |
-| `~/.scoop/version` | Your usual order (global default) |
-| `.scoop-version` | Local flavor preference |
-| `.python-version` | pyenv compatibility (fallback) |
-| `.venv` | Symlink to active flavor (with `--link`) |
+| Location                | Purpose                                  |
+|-------------------------|------------------------------------------|
+| `~/.scoop/virtualenvs/` | All your flavors live here               |
+| `~/.scoop/version`      | Your usual order (global default)        |
+| `.scoop-version`        | Local flavor preference                  |
+| `.python-version`       | pyenv compatibility (fallback)           |
+| `.venv`                 | Symlink to active flavor (with `--link`) |
 
 ---
 

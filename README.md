@@ -266,8 +266,12 @@ src/
 
 ## Documentation 🍨
 
-- [Command Reference](docs/commands.md) — Complete command documentation
-- [Development Guide](docs/DEVELOPMENT.md) — Contributing and development setup
+| Guide | Description |
+|-------|-------------|
+| [Command Reference](docs/commands.md) | Complete command documentation |
+| [Development Guide](docs/DEVELOPMENT.md) | Architecture and contribution guide |
+| [Testing Guide](docs/TESTING.md) | Test structure, running, and writing tests |
+| [Code Quality Guide](docs/CODE_QUALITY.md) | Formatting, linting, and CI setup |
 
 ---
 

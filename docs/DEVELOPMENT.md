@@ -88,59 +88,27 @@ tests/                   # 🧪 Integration tests
 
 ## Common Commands
 
-### Build
+### Build & Run
 
 ```bash
 cargo build              # Debug build
 cargo build --release    # Release build (optimized)
-```
-
-### Test
-
-```bash
-cargo test               # Run all tests
-cargo test --all-features
-cargo test <test_name>   # Run specific test
-```
-
-### Lint & Format
-
-```bash
-cargo fmt                # Format code
-cargo fmt --check        # Check formatting
-cargo clippy --all-targets -- -D warnings
-```
-
-### Run
-
-```bash
-cargo run -- --help
-cargo run -- list
-cargo run -- create test 3.12
+cargo run -- --help      # Show help
+cargo run -- list        # Run commands
 cargo run -- doctor      # Check setup health
 ```
 
----
-
-## Pre-commit Hooks
-
-Hooks run automatically on `git commit`:
-
-| Hook | Description |
-|------|-------------|
-| `cargo-fmt` | Code formatting |
-| `cargo-clippy` | Linting |
-| `cargo-check` | Type checking |
-| `trailing-whitespace` | Whitespace fixes |
-| `check-toml` | TOML validation |
+### Quick Quality Check
 
 ```bash
-# Run all hooks manually
-prek run --all-files
-
-# Run specific hook
-prek run cargo-clippy
+# All checks at once (recommended before commit)
+cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings && cargo test
 ```
+
+For detailed guides, see:
+
+- **[TESTING.md](TESTING.md)** — Comprehensive testing guide
+- **[CODE_QUALITY.md](CODE_QUALITY.md)** — Formatting, linting, pre-commit hooks
 
 ---
 
@@ -149,28 +117,34 @@ prek run cargo-clippy
 ### Key Services
 
 **VirtualenvService** (`src/core/virtualenv.rs`)
+
 - Manages flavors in `~/.scoop/virtualenvs/` (the freezer)
 - Wraps uv commands for venv creation
 
 **VersionService** (`src/core/version.rs`)
+
 - Manages `.scoop-version` files
 - Resolves current directory → active flavor
 
 **Doctor** (`src/core/doctor.rs`)
+
 - Health diagnostics for scoop setup
 - Checks uv, shell integration, paths, environments
 
 **UvClient** (`src/uv/client.rs`)
+
 - Wrapper for `uv` CLI commands
 - Python version management (the secret ingredient)
 
 ### Shell Integration
 
 Shell scripts are embedded in Rust code:
+
 - `src/shell/bash.rs` - Bash init script
 - `src/shell/zsh.rs` - Zsh init script
 
 Key components:
+
 1. **Wrapper function** - Intercepts `use`/`activate`/`deactivate`
 2. **Hook function** - Auto-activation on directory change
 3. **Completion function** - Tab completion
@@ -180,6 +154,7 @@ Key components:
 ## Adding a New Command
 
 1. Define command in `src/cli/mod.rs`:
+
 ```rust
 #[derive(Subcommand)]
 pub enum Commands {
@@ -192,6 +167,7 @@ pub enum Commands {
 ```
 
 2. Create handler in `src/cli/commands/my_command.rs`:
+
 ```rust
 pub fn execute(output: &Output, option: bool) -> Result<()> {
     // Implementation
@@ -212,6 +188,7 @@ pub fn execute(output: &Output, option: bool) -> Result<()> {
 ### Unit Tests
 
 Located within source files:
+
 ```rust
 #[cfg(test)]
 mod tests {
@@ -227,6 +204,7 @@ mod tests {
 ### Integration Tests
 
 Located in `tests/`:
+
 ```rust
 use assert_cmd::Command;
 
