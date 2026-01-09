@@ -77,6 +77,7 @@ _scoop() {
                 'use:Set local environment for current directory'
                 'create:Create a new virtual environment'
                 'remove:Remove a virtual environment'
+                'info:Show detailed information about a virtual environment'
                 'install:Install a Python version'
                 'uninstall:Uninstall a Python version'
                 'doctor:Diagnose installation issues'
@@ -131,6 +132,38 @@ _scoop() {
                             esac
                         done
                         [[ $has_force == false ]] && opts+=('--force:Skip confirmation')
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _describe 'option' opts
+                    else
+                        # Check if env name already provided (exclude current word being typed)
+                        local has_env=false
+                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                        for w in "${prev_args[@]}"; do
+                            [[ $w != -* && -n $w ]] && has_env=true && break
+                        done
+                        if [[ $has_env == false ]]; then
+                            local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                            compadd -a envs
+                        fi
+                    fi
+                    ;;
+                info)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        local has_json=false has_allpackages=false has_nosize=false has_quiet=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                --json) has_json=true ;;
+                                --all-packages) has_allpackages=true ;;
+                                --no-size) has_nosize=true ;;
+                                -q|--quiet) has_quiet=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        [[ $has_json == false ]] && opts+=('--json:Output as JSON')
+                        [[ $has_allpackages == false ]] && opts+=('--all-packages:Show all installed packages')
+                        [[ $has_nosize == false ]] && opts+=('--no-size:Skip directory size calculation')
                         [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
                         [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
                         _describe 'option' opts

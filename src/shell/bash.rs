@@ -74,7 +74,7 @@ _scoop_complete() {
 
     # First argument: complete subcommands
     if [[ ${COMP_CWORD} -eq 1 ]]; then
-        COMPREPLY=($(compgen -W "list use create remove install uninstall doctor init completions activate deactivate" -- "$cur"))
+        COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate" -- "$cur"))
         return
     fi
 
@@ -161,6 +161,19 @@ _scoop_complete() {
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
+            info)
+                local opts="--json --all-packages --no-size -q --quiet --no-color --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        --json) opts="${opts//--json }" ;;
+                        --all-packages) opts="${opts//--all-packages }" ;;
+                        --no-size) opts="${opts//--no-size }" ;;
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
+                ;;
             init|completions)
                 COMPREPLY=($(compgen -W "--help" -- "$cur"))
                 ;;
@@ -170,7 +183,7 @@ _scoop_complete() {
 
     # Argument completion (by subcommand)
     case "$cmd" in
-        use|remove|activate)
+        use|remove|info|activate)
             # Check if env name already provided
             local has_arg=false
             for ((i=2; i<COMP_CWORD; i++)); do
