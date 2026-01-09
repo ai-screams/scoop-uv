@@ -123,6 +123,11 @@ impl Output {
     pub fn verbosity(&self) -> u8 {
         self.verbose
     }
+
+    /// Check if colors should be used
+    pub fn use_color(&self) -> bool {
+        !self.no_color
+    }
 }
 
 // ============================================================================
