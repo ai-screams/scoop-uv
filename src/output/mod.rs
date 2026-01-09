@@ -10,6 +10,37 @@ use owo_colors::OwoColorize;
 
 use crate::core::doctor::{CheckResult, CheckStatus};
 
+// ============================================================================
+// Size Formatting
+// ============================================================================
+
+/// Format bytes to human-readable string
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::output::format_size;
+/// assert_eq!(format_size(0), "0 B");
+/// assert_eq!(format_size(1024), "1 KB");
+/// assert_eq!(format_size(1_048_576), "1 MB");
+/// assert_eq!(format_size(1_073_741_824), "1.0 GB");
+/// ```
+pub fn format_size(bytes: u64) -> String {
+    const KB: u64 = 1024;
+    const MB: u64 = KB * 1024;
+    const GB: u64 = MB * 1024;
+
+    if bytes >= GB {
+        format!("{:.1} GB", bytes as f64 / GB as f64)
+    } else if bytes >= MB {
+        format!("{:.0} MB", bytes as f64 / MB as f64)
+    } else if bytes >= KB {
+        format!("{:.0} KB", bytes as f64 / KB as f64)
+    } else {
+        format!("{} B", bytes)
+    }
+}
+
 /// Output handler for CLI
 pub struct Output {
     /// Verbosity level (0 = normal, 1+ = verbose)
@@ -326,5 +357,57 @@ impl Output {
             "{}",
             serde_json::to_string_pretty(&output).unwrap_or_default()
         );
+    }
+}
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod format_size_tests {
+        use super::*;
+
+        #[test]
+        fn test_bytes() {
+            assert_eq!(format_size(0), "0 B");
+            assert_eq!(format_size(512), "512 B");
+            assert_eq!(format_size(1023), "1023 B");
+        }
+
+        #[test]
+        fn test_kilobytes() {
+            assert_eq!(format_size(1024), "1 KB");
+            assert_eq!(format_size(2048), "2 KB");
+            assert_eq!(format_size(10240), "10 KB");
+        }
+
+        #[test]
+        fn test_megabytes() {
+            assert_eq!(format_size(1_048_576), "1 MB");
+            assert_eq!(format_size(10_485_760), "10 MB");
+        }
+
+        #[test]
+        fn test_gigabytes() {
+            assert_eq!(format_size(1_073_741_824), "1.0 GB");
+            assert_eq!(format_size(2_147_483_648), "2.0 GB");
+        }
+
+        #[test]
+        fn test_boundary_values() {
+            // KB boundary
+            assert_eq!(format_size(1023), "1023 B");
+            assert_eq!(format_size(1024), "1 KB");
+            // MB boundary
+            assert_eq!(format_size(1_048_575), "1024 KB");
+            assert_eq!(format_size(1_048_576), "1 MB");
+            // GB boundary
+            assert_eq!(format_size(1_073_741_823), "1024 MB");
+            assert_eq!(format_size(1_073_741_824), "1.0 GB");
+        }
     }
 }
