@@ -2,16 +2,11 @@
 
 use owo_colors::OwoColorize;
 
-use crate::core::VirtualenvService;
+use crate::core::{VirtualenvService, get_active_env};
 use crate::error::Result;
 use crate::output::{ListEnvsData, ListPythonsData, Output, PythonInfo, VirtualenvInfo};
 use crate::paths::abbreviate_home;
 use crate::uv::UvClient;
-
-/// Get the currently active environment name from $SCOOP_ACTIVE
-fn get_active_env() -> Option<String> {
-    std::env::var("SCOOP_ACTIVE").ok()
-}
 
 /// Execute the list command
 pub fn execute(output: &Output, pythons: bool, bare: bool) -> Result<()> {

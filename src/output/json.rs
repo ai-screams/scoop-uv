@@ -144,6 +144,38 @@ pub struct UninstallData {
     pub version: String,
 }
 
+/// Package info for JSON output
+#[derive(Serialize)]
+pub struct PackageInfo {
+    pub name: String,
+    pub version: String,
+}
+
+/// Packages summary for JSON output
+#[derive(Serialize)]
+pub struct PackagesInfo {
+    pub total: usize,
+    pub items: Vec<PackageInfo>,
+    pub truncated: bool,
+}
+
+/// Detailed environment info for JSON output
+#[derive(Serialize)]
+pub struct EnvInfoData {
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub python: Option<String>,
+    pub path: String,
+    pub active: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size_bytes: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size_display: Option<String>,
+    pub packages: PackagesInfo,
+}
+
 // ============================================================================
 // Tests
 // ============================================================================

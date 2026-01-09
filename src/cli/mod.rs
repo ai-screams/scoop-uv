@@ -142,6 +142,24 @@ pub enum Commands {
         fix: bool,
     },
 
+    /// Show detailed information about a virtual environment
+    Info {
+        /// Name of the virtual environment
+        name: String,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+
+        /// Show all installed packages (default: top 5 only)
+        #[arg(long)]
+        all_packages: bool,
+
+        /// Skip directory size calculation (faster)
+        #[arg(long)]
+        no_size: bool,
+    },
+
     /// Output shell initialization script
     Init {
         /// Shell to generate script for

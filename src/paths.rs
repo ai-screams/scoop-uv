@@ -91,6 +91,47 @@ pub fn virtualenv_activate(name: &str) -> Result<PathBuf> {
     Ok(virtualenv_path(name)?.join("Scripts").join("activate.bat"))
 }
 
+/// Calculate directory size recursively
+///
+/// Symlinks are skipped to prevent infinite loops.
+///
+/// # Errors
+///
+/// Returns `std::io::Error` if:
+/// - Directory cannot be read (permission denied)
+/// - File metadata cannot be accessed
+///
+/// # Examples
+///
+/// ```no_run
+/// use std::path::Path;
+/// use scoop_uv::paths::calculate_dir_size;
+///
+/// let size = calculate_dir_size(Path::new("/tmp/mydir"))?;
+/// println!("Directory size: {} bytes", size);
+/// # Ok::<(), std::io::Error>(())
+/// ```
+pub fn calculate_dir_size(path: &std::path::Path) -> std::io::Result<u64> {
+    let mut total: u64 = 0;
+    // Skip symlinks to prevent infinite loops
+    if path.is_dir() && !path.is_symlink() {
+        for entry in std::fs::read_dir(path)? {
+            let entry = entry?;
+            let entry_path = entry.path(); // Fixed: avoid variable shadowing
+            // Skip symlinks in size calculation
+            if entry_path.is_symlink() {
+                continue;
+            }
+            if entry_path.is_dir() {
+                total += calculate_dir_size(&entry_path)?;
+            } else {
+                total += entry.metadata()?.len();
+            }
+        }
+    }
+    Ok(total)
+}
+
 /// Abbreviate home directory to `~` for display.
 ///
 /// # Examples
@@ -341,6 +382,81 @@ mod tests {
             assert!(virtualenv_exists("my_env").unwrap());
             assert!(virtualenv_exists("env123").unwrap());
         });
+    }
+
+    // ==========================================================================
+    // calculate_dir_size Tests
+    // ==========================================================================
+
+    #[test]
+    fn test_calculate_dir_size_empty_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        let size = calculate_dir_size(dir.path()).unwrap();
+        assert_eq!(size, 0);
+    }
+
+    #[test]
+    fn test_calculate_dir_size_with_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        std::fs::write(&file_path, b"hello").unwrap();
+
+        let size = calculate_dir_size(dir.path()).unwrap();
+        assert_eq!(size, 5);
+    }
+
+    #[test]
+    fn test_calculate_dir_size_nested_dirs() {
+        let dir = tempfile::tempdir().unwrap();
+        let subdir = dir.path().join("subdir");
+        std::fs::create_dir(&subdir).unwrap();
+
+        std::fs::write(subdir.join("test.txt"), b"hello world").unwrap();
+
+        let size = calculate_dir_size(dir.path()).unwrap();
+        assert_eq!(size, 11);
+    }
+
+    #[test]
+    fn test_calculate_dir_size_nonexistent() {
+        // is_dir() returns false for nonexistent, so returns 0
+        let result = calculate_dir_size(std::path::Path::new("/nonexistent/path"));
+        assert_eq!(result.unwrap(), 0);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_calculate_dir_size_skips_symlinks() {
+        use std::os::unix::fs::symlink;
+
+        let dir = tempfile::tempdir().unwrap();
+
+        // Create a file
+        std::fs::write(dir.path().join("file.txt"), b"test").unwrap();
+
+        // Create a symlink to the file (should be skipped)
+        symlink(dir.path().join("file.txt"), dir.path().join("link")).unwrap();
+
+        // Size should only include the file, not the symlink
+        let size = calculate_dir_size(dir.path()).unwrap();
+        assert_eq!(size, 4); // Only "test" (4 bytes)
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_calculate_dir_size_circular_symlink() {
+        use std::os::unix::fs::symlink;
+
+        let dir = tempfile::tempdir().unwrap();
+        let subdir = dir.path().join("sub");
+        std::fs::create_dir(&subdir).unwrap();
+
+        // Create circular symlink: sub/loop -> ..
+        symlink(dir.path(), subdir.join("loop")).unwrap();
+
+        // Should not hang or overflow - symlinks are skipped
+        let result = calculate_dir_size(dir.path());
+        assert!(result.is_ok());
     }
 
     // ==========================================================================

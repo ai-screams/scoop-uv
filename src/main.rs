@@ -44,6 +44,15 @@ fn main() -> Result<()> {
             let output = Output::new(verbose, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::doctor(&output, fix)
         }
+        Commands::Info {
+            name,
+            json,
+            all_packages,
+            no_size,
+        } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::info(&output, &name, all_packages, no_size)
+        }
         Commands::Use {
             name,
             global,
