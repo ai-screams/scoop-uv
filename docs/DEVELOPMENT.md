@@ -1,4 +1,6 @@
-# Development Guide
+# Development Guide 🍨
+
+> *"Want to add a new flavor? Here's the recipe book."*
 
 Guide for contributing to scoop development.
 
@@ -7,7 +9,7 @@ Guide for contributing to scoop development.
 ## Prerequisites
 
 - **Rust 1.85+** (Edition 2024)
-- **uv** - Python package manager ([install](https://github.com/astral-sh/uv))
+- **uv** - The secret ingredient ([install](https://github.com/astral-sh/uv))
 - **prek** - Pre-commit hooks ([install](https://github.com/j178/prek))
 
 ---
@@ -35,27 +37,28 @@ cargo test
 
 ---
 
-## Project Structure
+## The Kitchen Layout 🏗️
 
 ```
 src/
-├── main.rs              # Entry point
-├── lib.rs               # Library root
-├── error.rs             # Error types (ScoopError)
-├── paths.rs             # Path utilities
-├── validate.rs          # Name/version validation
-│
-├── uv/                  # uv client wrapper
+├── main.rs              # 🚪 Entry point
+├── lib.rs               # 📚 Library root
+├── error.rs             # ❌ Error types (ScoopError)
+├── paths.rs             # 📁 Path utilities
+├── validate.rs          # ✅ Name/version validation
+
+├── uv/                  # 🔮 uv client wrapper (the secret ingredient)
 │   ├── mod.rs
 │   └── client.rs
-│
-├── core/                # Business logic
+
+├── core/                # 🧠 Business logic (the flavor science)
 │   ├── mod.rs
 │   ├── virtualenv.rs    # VirtualenvService
 │   ├── version.rs       # VersionService
-│   └── metadata.rs      # Metadata structs
-│
-├── cli/                 # CLI layer
+│   ├── metadata.rs      # Metadata structs
+│   └── doctor.rs        # Health diagnostics 🩺
+
+├── cli/                 # 🎮 CLI layer (the counter)
 │   ├── mod.rs           # Cli struct, Commands enum
 │   └── commands/        # Command handlers
 │       ├── mod.rs
@@ -64,20 +67,21 @@ src/
 │       ├── use_env.rs
 │       ├── remove.rs
 │       ├── install.rs
+│       ├── doctor.rs
 │       └── ...
-│
-├── shell/               # Shell integration
+
+├── shell/               # 🐚 Shell integration
 │   ├── mod.rs
 │   ├── bash.rs
 │   └── zsh.rs
-│
-└── output/              # Output formatting
+
+└── output/              # 🎨 Output formatting (presentation!)
     ├── mod.rs
     └── spinner.rs
 
-docs/                    # Public documentation
-.docs/                   # Internal technical docs
-tests/                   # Integration tests
+docs/                    # 📖 Public documentation
+.docs/                   # 🔒 Internal technical docs
+tests/                   # 🧪 Integration tests
 ```
 
 ---
@@ -88,7 +92,7 @@ tests/                   # Integration tests
 
 ```bash
 cargo build              # Debug build
-cargo build --release    # Release build
+cargo build --release    # Release build (optimized)
 ```
 
 ### Test
@@ -113,6 +117,7 @@ cargo clippy --all-targets -- -D warnings
 cargo run -- --help
 cargo run -- list
 cargo run -- create test 3.12
+cargo run -- doctor      # Check setup health
 ```
 
 ---
@@ -144,16 +149,20 @@ prek run cargo-clippy
 ### Key Services
 
 **VirtualenvService** (`src/core/virtualenv.rs`)
-- Manages virtual environments in `~/.scoop/virtualenvs/`
+- Manages flavors in `~/.scoop/virtualenvs/` (the freezer)
 - Wraps uv commands for venv creation
 
 **VersionService** (`src/core/version.rs`)
 - Manages `.scoop-version` files
-- Resolves current directory → active environment
+- Resolves current directory → active flavor
+
+**Doctor** (`src/core/doctor.rs`)
+- Health diagnostics for scoop setup
+- Checks uv, shell integration, paths, environments
 
 **UvClient** (`src/uv/client.rs`)
 - Wrapper for `uv` CLI commands
-- Python version management
+- Python version management (the secret ingredient)
 
 ### Shell Integration
 
@@ -251,7 +260,7 @@ See `.docs/` for internal technical references:
 - `TECHNICAL_REFERENCE.md` - Implementation details
 - `SHELL_GOTCHAS.md` - Shell integration pitfalls
 - `IMPLEMENTATION_PLAN.md` - Development roadmap
-- `TODO_업무요약.md` - Task status
+- `brand/brand.md` - Brand guidelines 🍨
 
 ---
 
@@ -262,3 +271,8 @@ See `.docs/` for internal technical references:
 - Keep functions small and focused
 - Document public APIs with `///` comments
 - Use `thiserror` for error types
+- Korean error messages with solutions (per CLAUDE.md)
+
+---
+
+> 🍨 *"Good code is like good ice cream — crafted with care, enjoyed by many."*
