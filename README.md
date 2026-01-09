@@ -199,6 +199,8 @@ scoop remove myproject     # Melt it away 💧
 
 ## Commands 🍨
 
+> **Tip:** All commands support `--json` for machine-readable output.
+
 ### Everyday Scooping
 
 | Command                         | Description                            |
@@ -258,7 +260,7 @@ src/
 │   └── doctor     # Health diagnostics
 ├── shell/         # 🐚 Shell integration (bash, zsh)
 ├── uv/            # ⚡ uv CLI wrapper
-├── output/        # 🎨 Terminal UI (spinners!)
+├── output/        # 🎨 Terminal UI & JSON output
 └── error, paths, validate  # Utilities
 ```
 
