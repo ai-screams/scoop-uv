@@ -190,6 +190,79 @@ impl UvClient {
         Ok(None)
     }
 
+    /// Install packages into a virtual environment.
+    ///
+    /// # Arguments
+    ///
+    /// * `venv_path` - Path to the virtual environment
+    /// * `packages` - List of package specifications (e.g., "requests==2.31.0")
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ScoopError::UvCommandFailed`] if installation fails.
+    pub fn pip_install(&self, venv_path: &Path, packages: &[String]) -> Result<()> {
+        if packages.is_empty() {
+            return Ok(());
+        }
+
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("pip")
+            .arg("install")
+            .arg("--python")
+            .arg(venv_path.join("bin").join("python"));
+
+        for package in packages {
+            cmd.arg(package);
+        }
+
+        let output = cmd.output().map_err(|e| ScoopError::UvCommandFailed {
+            command: format!("uv pip install (into {})", venv_path.display()),
+            message: e.to_string(),
+        })?;
+
+        if !output.status.success() {
+            return Err(ScoopError::UvCommandFailed {
+                command: format!("uv pip install (into {})", venv_path.display()),
+                message: String::from_utf8_lossy(&output.stderr).to_string(),
+            });
+        }
+
+        Ok(())
+    }
+
+    /// Install packages from a requirements file into a virtual environment.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ScoopError::UvCommandFailed`] if installation fails.
+    pub fn pip_install_requirements(
+        &self,
+        venv_path: &Path,
+        requirements_path: &Path,
+    ) -> Result<()> {
+        let output = Command::new(&self.path)
+            .arg("pip")
+            .arg("install")
+            .arg("--python")
+            .arg(venv_path.join("bin").join("python"))
+            .arg("-r")
+            .arg(requirements_path)
+            .output()
+            .map_err(|e| ScoopError::UvCommandFailed {
+                command: format!("uv pip install -r {}", requirements_path.display()),
+                message: e.to_string(),
+            })?;
+
+        if !output.status.success() {
+            return Err(ScoopError::UvCommandFailed {
+                command: format!("uv pip install -r {}", requirements_path.display()),
+                message: String::from_utf8_lossy(&output.stderr).to_string(),
+            });
+        }
+
+        Ok(())
+    }
+
     /// Get the latest installed Python version
     pub fn latest_installed_python(&self) -> Result<Option<PythonInfo>> {
         let mut installed = self.list_installed_pythons()?;

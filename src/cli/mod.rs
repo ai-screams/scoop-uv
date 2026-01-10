@@ -23,6 +23,39 @@ pub struct Cli {
     pub no_color: bool,
 }
 
+/// Migrate subcommands
+#[derive(Subcommand, Debug)]
+pub enum MigrateCommand {
+    /// List environments available for migration
+    List {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Migrate a specific environment
+    #[command(name = "@env")]
+    Env {
+        /// Name of the environment to migrate
+        name: String,
+
+        /// Preview migration without making changes
+        #[arg(short = 'n', long)]
+        dry_run: bool,
+
+        /// Overwrite if environment already exists in scoop
+        #[arg(short, long)]
+        force: bool,
+
+        /// Skip confirmation prompts
+        #[arg(short, long)]
+        yes: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
 /// Available commands
 #[derive(Subcommand, Debug)]
 pub enum Commands {
@@ -188,6 +221,13 @@ pub enum Commands {
     /// Output deactivation script for eval
     #[command(hide = true)]
     Deactivate,
+
+    /// Migrate environments from other tools (pyenv, virtualenvwrapper)
+    Migrate {
+        /// Subcommand or environment name to migrate
+        #[command(subcommand)]
+        command: Option<MigrateCommand>,
+    },
 }
 
 /// Supported shell types

@@ -88,6 +88,10 @@ fn main() -> Result<()> {
         Commands::Resolve => scoop_uv::cli::commands::resolve(),
         Commands::Activate { name } => scoop_uv::cli::commands::activate(&name),
         Commands::Deactivate => scoop_uv::cli::commands::deactivate(),
+        Commands::Migrate { command } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            scoop_uv::cli::commands::migrate(&output, command)
+        }
     };
 
     // Handle errors
