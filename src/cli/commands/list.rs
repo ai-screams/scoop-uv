@@ -1,5 +1,7 @@
 //! List command
 
+use std::collections::BTreeSet;
+
 use owo_colors::OwoColorize;
 
 use crate::core::{VirtualenvService, get_active_env};
@@ -7,6 +9,7 @@ use crate::error::Result;
 use crate::output::{ListEnvsData, ListPythonsData, Output, PythonInfo, VirtualenvInfo};
 use crate::paths::abbreviate_home;
 use crate::uv::UvClient;
+use crate::validate::PythonVersion;
 
 /// Execute the list command
 pub fn execute(output: &Output, pythons: bool, bare: bool) -> Result<()> {
@@ -132,9 +135,15 @@ fn list_pythons(output: &Output, bare: bool) -> Result<()> {
     }
 
     if bare {
-        // Output versions only, one per line (for completion)
-        for python in pythons {
-            println!("{}", python.version);
+        // Output unique, sorted versions for shell completion
+        // This eliminates the need for `| sort -u` in shell scripts
+        let versions: BTreeSet<PythonVersion> = pythons
+            .iter()
+            .filter_map(|p| PythonVersion::parse(&p.version))
+            .collect();
+
+        for version in versions {
+            println!("{version}");
         }
     } else {
         // Calculate max version length for alignment
