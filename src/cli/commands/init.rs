@@ -9,7 +9,7 @@ pub fn execute(shell: ShellType) -> Result<()> {
     let script = match shell {
         ShellType::Bash => shell::bash::init_script(),
         ShellType::Zsh => shell::zsh::init_script(),
-        ShellType::Fish => todo!("Fish shell support not yet implemented"),
+        ShellType::Fish => shell::fish::init_script(),
         ShellType::Powershell => todo!("PowerShell support not yet implemented"),
     };
 
