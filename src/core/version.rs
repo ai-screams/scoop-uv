@@ -40,12 +40,35 @@ impl VersionService {
     }
 
     /// Resolve the version for a directory (local -> parent -> global)
+    ///
+    /// # Environment Variables
+    ///
+    /// - `SCOOP_RESOLVE_MAX_DEPTH`: Limits parent directory traversal depth.
+    ///   Useful for slow network filesystems (NFS, SSHFS, etc).
+    ///   - `0` = current directory only
+    ///   - `3` = current + up to 3 parent directories
+    ///   - unset = unlimited (default behavior)
     pub fn resolve(dir: &Path) -> Option<String> {
+        // Get max depth from environment variable (None = unlimited)
+        let max_depth = std::env::var("SCOOP_RESOLVE_MAX_DEPTH")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok());
+
         // Check current and parent directories for local version
         let mut current = dir.to_path_buf();
+        let mut depth = 0;
+
         loop {
             if let Some(version) = Self::get_local(&current) {
                 return Some(version);
+            }
+
+            // Check depth limit for network filesystem optimization
+            if let Some(max) = max_depth {
+                depth += 1;
+                if depth > max {
+                    break;
+                }
             }
 
             if !current.pop() {
@@ -64,11 +87,17 @@ impl VersionService {
     }
 
     /// Read a version file
+    ///
+    /// Returns `None` if:
+    /// - File doesn't exist or can't be read
+    /// - Content is empty after trimming
+    /// - Content is not a valid environment name (security: prevents command injection)
     fn read_version_file(path: &PathBuf) -> Option<String> {
         fs::read_to_string(path)
             .ok()
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
+            .filter(|s| crate::validate::is_valid_env_name(s))
     }
 
     /// Unset local version
@@ -243,6 +272,46 @@ mod tests {
 
     #[test]
     #[serial]
+    fn test_resolve_max_depth_limits_traversal() {
+        with_temp_scoop_home(|_temp_dir| {
+            let temp = TempDir::new().unwrap();
+            let root = temp.path();
+            let deep = root.join("a").join("b").join("c");
+            std::fs::create_dir_all(&deep).unwrap();
+
+            // Set version at root (3 levels up from deep)
+            VersionService::set_local(root, "rootenv").unwrap();
+            VersionService::set_global("globalenv").unwrap();
+
+            // SAFETY: This test runs in serial mode, so no concurrent access
+            unsafe {
+                // Without limit: should find rootenv
+                std::env::remove_var("SCOOP_RESOLVE_MAX_DEPTH");
+                assert_eq!(VersionService::resolve(&deep), Some("rootenv".to_string()));
+
+                // With limit=1: should not find rootenv (only checks deep and deep/a)
+                // and fall back to global
+                std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "1");
+                assert_eq!(
+                    VersionService::resolve(&deep),
+                    Some("globalenv".to_string())
+                );
+
+                // With limit=0: only checks current directory, falls back to global
+                std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "0");
+                assert_eq!(
+                    VersionService::resolve(&deep),
+                    Some("globalenv".to_string())
+                );
+
+                // Cleanup
+                std::env::remove_var("SCOOP_RESOLVE_MAX_DEPTH");
+            }
+        });
+    }
+
+    #[test]
+    #[serial]
     fn test_resolve_fallback_to_global() {
         with_temp_scoop_home(|_temp_dir| {
             let temp = TempDir::new().unwrap();
@@ -365,5 +434,112 @@ mod tests {
 
         let content = std::fs::read_to_string(&version_file).unwrap();
         assert_eq!(content, "myenv\n", "Version file should end with newline");
+    }
+
+    // =========================================================================
+    // Security Tests: Command Injection Prevention
+    // =========================================================================
+
+    #[test]
+    fn test_read_version_file_rejects_command_injection() {
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        let version_file = dir.join(".scoop-version");
+
+        // Write malicious content (command injection attempt)
+        std::fs::write(&version_file, "\"; echo INJECTED; #\n").unwrap();
+
+        // Should return None because content is not a valid env name
+        assert_eq!(
+            VersionService::get_local(dir),
+            None,
+            "Malicious content should be rejected"
+        );
+    }
+
+    #[test]
+    fn test_read_version_file_rejects_backtick_injection() {
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        let version_file = dir.join(".scoop-version");
+
+        // Write backtick command substitution attempt
+        std::fs::write(&version_file, "`rm -rf /`\n").unwrap();
+
+        assert_eq!(
+            VersionService::get_local(dir),
+            None,
+            "Backtick injection should be rejected"
+        );
+    }
+
+    #[test]
+    fn test_read_version_file_rejects_dollar_expansion() {
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        let version_file = dir.join(".scoop-version");
+
+        // Write variable expansion attempt
+        std::fs::write(&version_file, "$(whoami)\n").unwrap();
+
+        assert_eq!(
+            VersionService::get_local(dir),
+            None,
+            "Dollar expansion should be rejected"
+        );
+    }
+
+    #[test]
+    fn test_read_version_file_rejects_path_traversal() {
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        let version_file = dir.join(".scoop-version");
+
+        // Write path traversal attempt
+        std::fs::write(&version_file, "../../../etc/passwd\n").unwrap();
+
+        assert_eq!(
+            VersionService::get_local(dir),
+            None,
+            "Path traversal should be rejected"
+        );
+    }
+
+    #[test]
+    fn test_read_version_file_rejects_newline_injection() {
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        let version_file = dir.join(".scoop-version");
+
+        // Write multiline injection attempt
+        std::fs::write(&version_file, "safe\nrm -rf /\n").unwrap();
+
+        // After trim(), this becomes "safe\nrm -rf /" which contains newline
+        // is_valid_env_name should reject this
+        assert_eq!(
+            VersionService::get_local(dir),
+            None,
+            "Newline injection should be rejected"
+        );
+    }
+
+    #[test]
+    fn test_read_version_file_accepts_valid_names() {
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        let version_file = dir.join(".scoop-version");
+
+        // Test various valid environment names
+        let valid_names = ["myenv", "my-project", "test_env", "Env123", "a"];
+
+        for name in valid_names {
+            std::fs::write(&version_file, format!("{name}\n")).unwrap();
+            assert_eq!(
+                VersionService::get_local(dir),
+                Some(name.to_string()),
+                "Valid name '{}' should be accepted",
+                name
+            );
+        }
     }
 }

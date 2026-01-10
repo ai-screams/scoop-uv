@@ -136,6 +136,13 @@ echo 'eval "$(scoop init bash)"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
+**Fish**:
+
+```fish
+echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
+source ~/.config/fish/config.fish
+```
+
 #### Step 2: Verify
 
 ```bash
@@ -258,7 +265,7 @@ src/
 │   ├── metadata   # Virtualenv metadata (JSON)
 │   ├── virtualenv # Virtualenv entity
 │   └── doctor     # Health diagnostics
-├── shell/         # 🐚 Shell integration (bash, zsh)
+├── shell/         # 🐚 Shell integration (bash, zsh, fish)
 ├── uv/            # ⚡ uv CLI wrapper
 ├── output/        # 🎨 Terminal UI & JSON output
 └── error, paths, validate  # Utilities

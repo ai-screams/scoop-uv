@@ -17,7 +17,8 @@ src/
 ├── shell/            # Shell integration
 │   ├── mod.rs        # Shell module exports
 │   ├── bash.rs       # Bash init script
-│   └── zsh.rs        # Zsh init script
+│   ├── zsh.rs        # Zsh init script
+│   └── fish.rs       # Fish init script
 ├── output/           # Terminal UI and JSON output
 ├── uv/               # uv CLI wrapper
 ├── error.rs          # ScoopError enum

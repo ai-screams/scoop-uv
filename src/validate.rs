@@ -324,6 +324,45 @@ impl std::fmt::Display for PythonVersion {
     }
 }
 
+impl Ord for PythonVersion {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        use std::cmp::Ordering;
+
+        // Compare major version
+        match self.major.cmp(&other.major) {
+            Ordering::Equal => {}
+            ord => return ord,
+        }
+
+        // Compare minor version (None treated as 0)
+        match self.minor.unwrap_or(0).cmp(&other.minor.unwrap_or(0)) {
+            Ordering::Equal => {}
+            ord => return ord,
+        }
+
+        // Compare patch version (None treated as 0)
+        match self.patch.unwrap_or(0).cmp(&other.patch.unwrap_or(0)) {
+            Ordering::Equal => {}
+            ord => return ord,
+        }
+
+        // Compare suffix: None (stable) > Some (pre-release)
+        // e.g., 3.12.0 > 3.12.0rc1 > 3.12.0b1 > 3.12.0a1
+        match (&self.suffix, &other.suffix) {
+            (None, None) => Ordering::Equal,
+            (None, Some(_)) => Ordering::Greater, // stable > pre-release
+            (Some(_), None) => Ordering::Less,
+            (Some(a), Some(b)) => a.cmp(b),
+        }
+    }
+}
+
+impl PartialOrd for PythonVersion {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 /// Check if a version string is a special alias (latest, stable).
 ///
 /// # Examples
@@ -463,6 +502,43 @@ mod tests {
             PythonVersion::parse("3.12.0").unwrap().to_string(),
             "3.12.0"
         );
+    }
+
+    #[test]
+    fn test_python_version_ordering() {
+        let v3_9 = PythonVersion::parse("3.9").unwrap();
+        let v3_10 = PythonVersion::parse("3.10").unwrap();
+        let v3_11 = PythonVersion::parse("3.11").unwrap();
+        let v3_12 = PythonVersion::parse("3.12").unwrap();
+        let v3_12_0 = PythonVersion::parse("3.12.0").unwrap();
+        let v3_12_1 = PythonVersion::parse("3.12.1").unwrap();
+        let v3_13a1 = PythonVersion::parse("3.13a1").unwrap();
+        let v3_13rc1 = PythonVersion::parse("3.13rc1").unwrap();
+        let v3_13 = PythonVersion::parse("3.13").unwrap();
+
+        // Major.minor ordering
+        assert!(v3_9 < v3_10);
+        assert!(v3_10 < v3_11);
+        assert!(v3_11 < v3_12);
+
+        // Patch ordering
+        assert!(v3_12_0 < v3_12_1);
+
+        // Pre-release < stable
+        assert!(v3_13a1 < v3_13rc1);
+        assert!(v3_13rc1 < v3_13);
+        assert!(v3_13a1 < v3_13);
+
+        // Sorted collection test
+        use std::collections::BTreeSet;
+        let mut versions = BTreeSet::new();
+        versions.insert(v3_12.clone());
+        versions.insert(v3_10.clone());
+        versions.insert(v3_11.clone());
+        versions.insert(v3_9.clone());
+
+        let sorted: Vec<_> = versions.iter().collect();
+        assert_eq!(sorted, vec![&v3_9, &v3_10, &v3_11, &v3_12]);
     }
 
     #[test]

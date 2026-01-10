@@ -19,6 +19,7 @@ scoop completions <shell>
 ```bash
 scoop completions bash           # Output bash completions
 scoop completions zsh            # Output zsh completions
+scoop completions fish           # Output fish completions
 ```
 
 > **Tip:** Usually you don't need this separately - `scoop init` includes completions.
