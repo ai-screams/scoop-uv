@@ -3,10 +3,15 @@
 use crate::core::VirtualenvService;
 use crate::error::Result;
 use crate::paths;
+use crate::validate;
 
 /// Execute the activate command
 /// Outputs shell script to be eval'd
 pub fn execute(name: &str) -> Result<()> {
+    // Security: Validate input before any processing
+    // This is defense-in-depth against command injection via malicious .scoop-version files
+    validate::validate_env_name(name)?;
+
     let service = VirtualenvService::auto()?;
 
     // Verify environment exists
