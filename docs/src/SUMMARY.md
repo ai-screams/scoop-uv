@@ -36,5 +36,3 @@
 - [Code Quality](development/code-quality.md)
 
 ---
-
-[API Reference](https://docs.rs/scoop-uv)
