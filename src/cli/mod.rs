@@ -49,11 +49,19 @@ pub enum MigrateCommand {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+
+        /// Fail migration if any package fails to install
+        #[arg(long)]
+        strict: bool,
+
+        /// Delete original environments after successful migration
+        #[arg(long)]
+        delete_source: bool,
     },
     /// Migrate a specific environment
     #[command(name = "@env")]
     Env {
-        /// Name of the environment to migrate
+        /// Name of the pyenv environment to migrate
         name: String,
 
         /// Preview migration without making changes
@@ -71,6 +79,22 @@ pub enum MigrateCommand {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+
+        /// Fail migration if any package fails to install
+        #[arg(long)]
+        strict: bool,
+
+        /// Migrate with a different name
+        #[arg(long, value_name = "NEW_NAME")]
+        rename: Option<String>,
+
+        /// Auto-rename on conflict (uses {name}-pyenv pattern)
+        #[arg(long, conflicts_with = "force")]
+        auto_rename: bool,
+
+        /// Delete original pyenv environment after successful migration
+        #[arg(long)]
+        delete_source: bool,
     },
 }
 

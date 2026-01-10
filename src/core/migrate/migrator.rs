@@ -6,12 +6,39 @@ use std::path::{Path, PathBuf};
 use serde::Serialize;
 
 use crate::core::metadata::Metadata;
-use crate::error::{Result, ScoopError};
+use crate::error::{MigrationExitCode, Result, ScoopError};
 use crate::paths;
+use crate::uv::PythonInfo;
 use crate::uv::UvClient;
 
 use super::extractor::{ExtractionResult, PackageExtractor};
 use super::source::{EnvironmentStatus, SourceEnvironment};
+
+/// Result of Python version availability check
+#[derive(Debug)]
+pub enum PythonAvailability {
+    /// Exact version is installed
+    Available(PythonInfo),
+    /// Compatible version available (e.g., 3.9 instead of 3.9.1)
+    Compatible {
+        requested: String,
+        available: PythonInfo,
+    },
+    /// Not available, but can be installed by uv
+    CanInstall { version: String },
+    /// Not available at all
+    Unavailable { reason: String },
+}
+
+/// Extracts major.minor from version string (e.g., "3.12.1" -> "3.12").
+fn extract_major_minor(version: &str) -> String {
+    let parts: Vec<&str> = version.split('.').collect();
+    match parts.as_slice() {
+        [major, minor, ..] => format!("{}.{}", major, minor),
+        [major] => (*major).to_string(),
+        _ => version.to_string(),
+    }
+}
 
 /// Options for migration
 #[derive(Debug, Clone, Default)]
@@ -24,6 +51,12 @@ pub struct MigrateOptions {
     pub dry_run: bool,
     /// New name for the environment (if renaming)
     pub rename_to: Option<String>,
+    /// Fail on first package error (strict mode)
+    pub strict: bool,
+    /// Delete original environment after successful migration
+    pub delete_source: bool,
+    /// Automatically install Python if missing
+    pub auto_install_python: bool,
 }
 
 /// Result of a migration operation
@@ -41,6 +74,24 @@ pub struct MigrationResult {
     pub dry_run: bool,
     /// Path to the new environment
     pub path: PathBuf,
+    /// Whether the source environment was deleted
+    pub source_deleted: bool,
+    /// Actual Python version used (may differ from requested if compatible version used)
+    pub actual_python_version: String,
+}
+
+impl MigrationResult {
+    /// Returns the exit code based on migration result.
+    ///
+    /// Returns `Success` if all packages were migrated successfully,
+    /// `PartialSuccess` if some packages failed to install.
+    pub fn exit_code(&self) -> MigrationExitCode {
+        if self.packages_failed.is_empty() {
+            MigrationExitCode::Success
+        } else {
+            MigrationExitCode::PartialSuccess
+        }
+    }
 }
 
 /// Guard for rollback on failure
@@ -92,6 +143,44 @@ impl Migrator {
         Self {
             uv,
             extractor: PackageExtractor::new(),
+        }
+    }
+
+    /// Checks if Python version is available for creating environment.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if uv commands fail.
+    pub fn check_python_availability(&self, version: &str) -> Result<PythonAvailability> {
+        // 1. Try exact match first using find_python
+        if let Some(info) = self.uv.find_python(version)? {
+            return Ok(PythonAvailability::Available(info));
+        }
+
+        // 2. Try major.minor match
+        let major_minor = extract_major_minor(version);
+        if let Some(info) = self.uv.find_python(&major_minor)? {
+            return Ok(PythonAvailability::Compatible {
+                requested: version.to_string(),
+                available: info,
+            });
+        }
+
+        // 3. Check if it can be installed (check uv python list output)
+        let available = self.uv.list_pythons()?;
+        let can_install = available.iter().any(|line| line.contains(&major_minor));
+
+        if can_install {
+            Ok(PythonAvailability::CanInstall {
+                version: major_minor,
+            })
+        } else {
+            Ok(PythonAvailability::Unavailable {
+                reason: format!(
+                    "Python {} is not available and cannot be installed",
+                    version
+                ),
+            })
         }
     }
 
@@ -159,10 +248,17 @@ impl Migrator {
     }
 
     /// Installs packages into the target environment.
+    ///
+    /// # Arguments
+    ///
+    /// * `target_path` - Path to the target virtual environment.
+    /// * `packages` - Extracted packages to install.
+    /// * `strict` - If true, fail immediately on first package error.
     fn install_packages(
         &self,
         target_path: &Path,
         packages: &ExtractionResult,
+        strict: bool,
     ) -> Result<Vec<String>> {
         let mut failed = Vec::new();
 
@@ -182,6 +278,11 @@ impl Migrator {
                         .pip_install(target_path, std::slice::from_ref(spec))
                         .is_err()
                     {
+                        if strict {
+                            return Err(ScoopError::MigrationFailed {
+                                reason: format!("Failed to install package: {}", spec),
+                            });
+                        }
                         failed.push(spec.clone());
                     }
                 }
@@ -203,6 +304,28 @@ impl Migrator {
         }
 
         Ok(failed)
+    }
+
+    /// Deletes the source environment after successful migration.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the source directory cannot be deleted.
+    pub fn delete_source(&self, source: &SourceEnvironment) -> Result<()> {
+        if !source.path.exists() {
+            return Ok(()); // Already gone
+        }
+
+        fs::remove_dir_all(&source.path).map_err(|e| {
+            ScoopError::Io(std::io::Error::new(
+                e.kind(),
+                format!(
+                    "Failed to delete source at {}: {}",
+                    source.path.display(),
+                    e
+                ),
+            ))
+        })
     }
 
     /// Writes metadata for the migrated environment.
@@ -240,6 +363,8 @@ impl Migrator {
                 packages_failed: packages.failed.clone(),
                 dry_run: true,
                 path: target_path,
+                source_deleted: false,
+                actual_python_version: source.python_version.clone(),
             });
         }
 
@@ -268,7 +393,7 @@ impl Migrator {
         let failed = if options.skip_packages {
             Vec::new()
         } else {
-            self.install_packages(&target_path, &packages)?
+            self.install_packages(&target_path, &packages, options.strict)?
         };
 
         // Write metadata
@@ -276,6 +401,14 @@ impl Migrator {
 
         // Success - disarm rollback
         rollback.disarm();
+
+        // Delete source if requested
+        let source_deleted = if options.delete_source {
+            self.delete_source(source)?;
+            true
+        } else {
+            false
+        };
 
         let packages_migrated = packages.packages.len() - failed.len();
 
@@ -286,6 +419,8 @@ impl Migrator {
             packages_failed: failed,
             dry_run: false,
             path: target_path,
+            source_deleted,
+            actual_python_version: source.python_version.clone(),
         })
     }
 
@@ -386,5 +521,24 @@ mod tests {
         let options = MigrateOptions::default();
 
         assert!(migrator.validate_source(&source, &options).is_err());
+    }
+
+    #[test]
+    fn test_extract_major_minor_full_version() {
+        assert_eq!(extract_major_minor("3.12.1"), "3.12");
+        assert_eq!(extract_major_minor("3.9.18"), "3.9");
+        assert_eq!(extract_major_minor("2.7.18"), "2.7");
+    }
+
+    #[test]
+    fn test_extract_major_minor_partial_version() {
+        assert_eq!(extract_major_minor("3.12"), "3.12");
+        assert_eq!(extract_major_minor("3"), "3");
+    }
+
+    #[test]
+    fn test_extract_major_minor_edge_cases() {
+        assert_eq!(extract_major_minor(""), "");
+        assert_eq!(extract_major_minor("3.12.1.post1"), "3.12");
     }
 }

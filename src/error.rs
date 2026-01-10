@@ -1,10 +1,26 @@
 //! Error types for scoop
 
 use std::path::PathBuf;
+
+use serde::Serialize;
 use thiserror::Error;
 
 /// Result type alias using ScoopError
 pub type Result<T> = std::result::Result<T, ScoopError>;
+
+/// Exit status for migration operations
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[repr(u8)]
+pub enum MigrationExitCode {
+    /// Complete success - all packages migrated
+    Success = 0,
+    /// Partial success - some packages failed to install
+    PartialSuccess = 1,
+    /// Complete failure - rollback occurred
+    CompleteFailure = 2,
+    /// Source error - source not found or corrupted
+    SourceError = 3,
+}
 
 /// Main error type for scoop
 #[derive(Error, Debug)]
@@ -162,6 +178,21 @@ impl ScoopError {
                 Some("Use 'scoop list --pythons' to see available versions".to_string())
             }
             _ => None,
+        }
+    }
+
+    /// Returns the migration exit code for this error.
+    ///
+    /// Maps error types to appropriate exit codes for migration operations.
+    pub fn migration_exit_code(&self) -> MigrationExitCode {
+        match self {
+            Self::PyenvNotFound
+            | Self::PyenvEnvNotFound { .. }
+            | Self::CorruptedEnvironment { .. } => MigrationExitCode::SourceError,
+            Self::MigrationFailed { .. } | Self::MigrationNameConflict { .. } => {
+                MigrationExitCode::CompleteFailure
+            }
+            _ => MigrationExitCode::CompleteFailure,
         }
     }
 }

@@ -1,6 +1,6 @@
 //! Migration command implementation
 
-use dialoguer::Confirm;
+use dialoguer::{Confirm, Input, Select};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::Serialize;
 
@@ -62,6 +62,85 @@ struct MigrateAllSummary {
     skipped: usize,
 }
 
+/// User choice for handling name conflicts
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ConflictResolution {
+    Overwrite,
+    Rename,
+    Skip,
+}
+
+/// Prompts user for conflict resolution choice
+fn prompt_conflict_resolution(
+    output: &Output,
+    name: &str,
+    existing: &std::path::Path,
+) -> Result<ConflictResolution> {
+    output.warn(&format!(
+        "Name conflict: '{}' already exists at {}",
+        name,
+        existing.display()
+    ));
+
+    let options = &[
+        "Overwrite - Delete existing and migrate fresh",
+        "Rename - Migrate with a different name",
+        "Skip - Don't migrate this environment",
+    ];
+
+    let selection = Select::new()
+        .with_prompt("How would you like to resolve this conflict?")
+        .items(options)
+        .default(2) // Default to Skip (safest)
+        .interact()
+        .map_err(|e| ScoopError::Io(std::io::Error::other(format!("Dialog error: {}", e))))?;
+
+    Ok(match selection {
+        0 => ConflictResolution::Overwrite,
+        1 => ConflictResolution::Rename,
+        _ => ConflictResolution::Skip,
+    })
+}
+
+/// Prompts for new environment name when renaming
+fn prompt_rename(name: &str) -> Result<String> {
+    let suggested = format!("{}-pyenv", name);
+
+    let new_name: String = Input::new()
+        .with_prompt("Enter new name for the environment")
+        .default(suggested)
+        .validate_with(|input: &String| {
+            crate::validate::validate_env_name(input)
+                .map(|_| ())
+                .map_err(|e| e.to_string())
+        })
+        .interact_text()
+        .map_err(|e| ScoopError::Io(std::io::Error::other(format!("Dialog error: {}", e))))?;
+
+    Ok(new_name)
+}
+
+/// Generates a unique name by appending suffixes
+fn generate_unique_name(base_name: &str) -> Result<String> {
+    // Try {name}-pyenv first
+    let first_try = format!("{}-pyenv", base_name);
+    if !crate::paths::virtualenv_path(&first_try)?.exists() {
+        return Ok(first_try);
+    }
+
+    // Try numbered suffixes
+    for i in 1..100 {
+        let candidate = format!("{}-{}", base_name, i);
+        if !crate::paths::virtualenv_path(&candidate)?.exists() {
+            return Ok(candidate);
+        }
+    }
+
+    Err(ScoopError::MigrationFailed {
+        reason: format!("Could not find unique name for '{}'", base_name),
+    })
+}
+
 /// Execute migrate command
 pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
     match command {
@@ -71,14 +150,31 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             force,
             yes,
             json,
-        }) => migrate_all_environments(output, dry_run, force, yes, json),
+            strict,
+            delete_source,
+        }) => migrate_all_environments(output, dry_run, force, yes, json, strict, delete_source),
         Some(MigrateCommand::Env {
             name,
             dry_run,
             force,
             yes,
             json,
-        }) => migrate_environment(output, &name, dry_run, force, yes, json),
+            strict,
+            rename,
+            auto_rename,
+            delete_source,
+        }) => migrate_environment(
+            output,
+            &name,
+            dry_run,
+            force,
+            yes,
+            json,
+            strict,
+            rename,
+            auto_rename,
+            delete_source,
+        ),
         None => {
             // No subcommand - show help or list
             list_environments(output, output.is_json())
@@ -167,13 +263,18 @@ fn list_environments(output: &Output, json: bool) -> Result<()> {
 }
 
 /// Migrate a single environment
+#[allow(clippy::too_many_arguments)]
 fn migrate_environment(
     output: &Output,
     name: &str,
     dry_run: bool,
     force: bool,
-    _yes: bool,
+    yes: bool,
     json: bool,
+    strict: bool,
+    rename: Option<String>,
+    auto_rename: bool,
+    delete_source: bool,
 ) -> Result<()> {
     let discovery = PyenvDiscovery::default_root().ok_or(ScoopError::PyenvNotFound)?;
 
@@ -191,25 +292,72 @@ fn migrate_environment(
         output.info(&format!("  Size: {:.1} MB", size_mb));
     }
 
+    // Determine final name (may be renamed)
+    let mut final_name = rename.clone().unwrap_or_else(|| name.to_string());
+    let mut effective_force = force;
+
     // Check status
     match &source.status {
         EnvironmentStatus::Ready => {}
         EnvironmentStatus::NameConflict { existing } => {
-            if !force {
+            if auto_rename {
+                // Auto-rename: generate unique name
+                final_name = generate_unique_name(name)?;
                 if !json {
-                    output.warn(&format!(
-                        "Name conflict: '{}' already exists at {}",
-                        name,
-                        existing.display()
+                    output.info(&format!(
+                        "Auto-renaming to '{}' to avoid conflict",
+                        final_name
                     ));
-                    output.info("Use --force to overwrite.");
                 }
-                return Err(ScoopError::MigrationNameConflict {
-                    name: name.to_string(),
-                    existing: existing.clone(),
-                });
-            }
-            if !json {
+            } else if rename.is_some() {
+                // User provided explicit rename, check if that conflicts too
+                let renamed_path = crate::paths::virtualenv_path(&final_name)?;
+                if renamed_path.exists() && !force {
+                    return Err(ScoopError::MigrationNameConflict {
+                        name: final_name.clone(),
+                        existing: renamed_path,
+                    });
+                }
+            } else if !force {
+                // Interactive conflict resolution (if not json and not yes)
+                if !json && !yes {
+                    let resolution = prompt_conflict_resolution(output, name, existing)?;
+                    match resolution {
+                        ConflictResolution::Overwrite => {
+                            effective_force = true;
+                            if !json {
+                                output.warn("Will overwrite existing environment.");
+                            }
+                        }
+                        ConflictResolution::Rename => {
+                            final_name = prompt_rename(name)?;
+                            if !json {
+                                output.info(&format!("Will migrate as '{}'", final_name));
+                            }
+                        }
+                        ConflictResolution::Skip => {
+                            if !json {
+                                output.info("Skipping migration.");
+                            }
+                            return Ok(());
+                        }
+                    }
+                } else {
+                    // Non-interactive mode: error out
+                    if !json {
+                        output.warn(&format!(
+                            "Name conflict: '{}' already exists at {}",
+                            name,
+                            existing.display()
+                        ));
+                        output.info("Use --force to overwrite, --rename to use different name, or --auto-rename.");
+                    }
+                    return Err(ScoopError::MigrationNameConflict {
+                        name: name.to_string(),
+                        existing: existing.clone(),
+                    });
+                }
+            } else if !json {
                 output.warn("Forcing migration over existing environment.");
             }
         }
@@ -242,9 +390,16 @@ fn migrate_environment(
     let migrator = Migrator::new();
     let options = MigrateOptions {
         dry_run,
-        force,
+        force: effective_force,
         skip_packages: false,
-        rename_to: None,
+        rename_to: if final_name != name {
+            Some(final_name.clone())
+        } else {
+            None
+        },
+        strict,
+        delete_source,
+        auto_install_python: false,
     };
 
     if !json {
@@ -277,6 +432,8 @@ fn migrate_all_environments(
     force: bool,
     yes: bool,
     json: bool,
+    strict: bool,
+    delete_source: bool,
 ) -> Result<()> {
     if !json {
         output.info("Scanning for pyenv environments...");
@@ -419,6 +576,9 @@ fn migrate_all_environments(
         force,
         skip_packages: false,
         rename_to: None,
+        strict,
+        delete_source,
+        auto_install_python: false,
     };
 
     let mut migrated: Vec<MigrationResult> = Vec::new();
