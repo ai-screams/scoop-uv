@@ -20,11 +20,17 @@ const EOL_PYTHON_MINOR: u32 = 8;
 /// For large environments with thousands of files, this can be expensive.
 /// Consider using `Option<u64>` in `SourceEnvironment` and calculating size lazily.
 ///
-/// # Usage
+/// # Examples
 ///
-/// This function is available for on-demand size calculation when needed.
-/// The `SourceEnvironment::size_bytes` field is `None` by default for performance,
-/// and this function can be used to populate it when displaying detailed info.
+/// ```no_run
+/// use std::path::Path;
+/// use crate::core::migrate::common::dir_size;
+///
+/// let venv_path = Path::new("/home/user/.pyenv/versions/3.12.0/envs/myproject");
+/// let size = dir_size(venv_path);
+/// let size_mb = size as f64 / 1_048_576.0;
+/// println!("Environment size: {:.1} MB", size_mb);
+/// ```
 #[allow(dead_code)]
 pub fn dir_size(path: &Path) -> u64 {
     walkdir::WalkDir::new(path)
@@ -40,6 +46,18 @@ pub fn dir_size(path: &Path) -> u64 {
 ///
 /// Returns `Some(path)` if a scoop environment with the same name exists,
 /// `None` otherwise.
+///
+/// # Examples
+///
+/// ```no_run
+/// use crate::core::migrate::common::check_name_conflict;
+///
+/// if let Some(existing_path) = check_name_conflict("myproject") {
+///     println!("Conflict: {} already exists", existing_path.display());
+/// } else {
+///     println!("Name 'myproject' is available");
+/// }
+/// ```
 pub fn check_name_conflict(name: &str) -> Option<PathBuf> {
     if let Ok(venvs_dir) = paths::virtualenvs_dir() {
         let scoop_path = venvs_dir.join(name);
@@ -57,6 +75,25 @@ pub fn check_name_conflict(name: &str) -> Option<PathBuf> {
 /// 1. Name conflict (existing scoop environment)
 /// 2. Python EOL (3.8 and below, or Python 2.x)
 /// 3. Ready to migrate
+///
+/// # Examples
+///
+/// ```
+/// use crate::core::migrate::common::determine_status;
+/// use crate::core::migrate::EnvironmentStatus;
+///
+/// // Modern Python, no conflict
+/// let status = determine_status("new_env", "3.12.0");
+/// assert!(matches!(status, EnvironmentStatus::Ready));
+///
+/// // EOL Python version
+/// let status = determine_status("old_env", "3.7.0");
+/// assert!(matches!(status, EnvironmentStatus::PythonEol { .. }));
+///
+/// // Python 2.x is definitely EOL
+/// let status = determine_status("ancient_env", "2.7.18");
+/// assert!(matches!(status, EnvironmentStatus::PythonEol { .. }));
+/// ```
 pub fn determine_status(name: &str, python_version: &str) -> EnvironmentStatus {
     // Check for name conflict first
     if let Some(existing) = check_name_conflict(name) {

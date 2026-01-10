@@ -25,6 +25,22 @@ pub enum ConflictResolution {
 ///
 /// Displays three options: Overwrite, Rename, or Skip.
 /// Default selection is Skip (safest option).
+///
+/// # Examples
+///
+/// ```ignore
+/// use std::path::Path;
+/// use crate::cli::commands::migrate::conflict::{prompt_conflict_resolution, ConflictResolution};
+///
+/// let existing = Path::new("/home/user/.scoop/virtualenvs/myenv");
+/// let resolution = prompt_conflict_resolution(&output, "myenv", existing)?;
+///
+/// match resolution {
+///     ConflictResolution::Overwrite => println!("Will delete and recreate"),
+///     ConflictResolution::Rename => println!("Will prompt for new name"),
+///     ConflictResolution::Skip => println!("Skipping migration"),
+/// }
+/// ```
 pub fn prompt_conflict_resolution(
     output: &Output,
     name: &str,
@@ -59,6 +75,16 @@ pub fn prompt_conflict_resolution(
 /// Prompts for new environment name when renaming.
 ///
 /// Suggests `{name}-pyenv` as default and validates the input.
+///
+/// # Examples
+///
+/// ```ignore
+/// use crate::cli::commands::migrate::conflict::prompt_rename;
+///
+/// // User will see: "Enter new name for the environment [myenv-pyenv]:"
+/// let new_name = prompt_rename("myenv")?;
+/// println!("Will migrate as: {}", new_name);
+/// ```
 pub fn prompt_rename(name: &str) -> Result<String> {
     let suggested = format!("{}-pyenv", name);
 
@@ -79,7 +105,23 @@ pub fn prompt_rename(name: &str) -> Result<String> {
 /// Generates a unique name by appending suffixes.
 ///
 /// Tries `{name}-pyenv` first, then `{name}-1`, `{name}-2`, etc.
-/// up to `MAX_RENAME_ATTEMPTS`.
+/// up to [`MAX_RENAME_ATTEMPTS`].
+///
+/// # Examples
+///
+/// ```no_run
+/// use crate::cli::commands::migrate::conflict::generate_unique_name;
+///
+/// // If "myenv-pyenv" doesn't exist, returns "myenv-pyenv"
+/// // If it exists, tries "myenv-1", "myenv-2", etc.
+/// let unique = generate_unique_name("myenv")?;
+/// assert!(unique.starts_with("myenv"));
+/// ```
+///
+/// # Errors
+///
+/// Returns [`ScoopError::MigrationFailed`] if no unique name can be found
+/// after [`MAX_RENAME_ATTEMPTS`] tries.
 pub fn generate_unique_name(base_name: &str) -> Result<String> {
     // Try {name}-pyenv first
     let first_try = format!("{}-pyenv", base_name);

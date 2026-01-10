@@ -13,6 +13,23 @@ use crate::error::{Result, ScoopError};
 ///
 /// Results are sorted by source type (pyenv, virtualenvwrapper, conda),
 /// then alphabetically by name.
+///
+/// # Examples
+///
+/// ```no_run
+/// use crate::cli::commands::migrate::scan::scan_all_environments;
+/// use crate::cli::MigrateSource;
+///
+/// // Scan all sources
+/// let all_envs = scan_all_environments(None);
+/// println!("Found {} environments", all_envs.len());
+///
+/// // Scan only pyenv
+/// let pyenv_only = scan_all_environments(Some(MigrateSource::Pyenv));
+/// for env in pyenv_only {
+///     println!("{}: Python {}", env.name, env.python_version);
+/// }
+/// ```
 pub fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<SourceEnvironment> {
     let mut all_envs = Vec::new();
 
@@ -65,6 +82,27 @@ pub fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<Source
 ///
 /// Searches in order: pyenv, virtualenvwrapper, conda.
 /// Returns the first match found.
+///
+/// # Examples
+///
+/// ```no_run
+/// use crate::cli::commands::migrate::scan::find_environment_by_name;
+/// use crate::cli::MigrateSource;
+///
+/// // Search across all sources
+/// let env = find_environment_by_name("myproject", None)?;
+/// println!("Found {} at {}", env.name, env.path.display());
+///
+/// // Search only in conda
+/// let conda_env = find_environment_by_name("data-science", Some(MigrateSource::Conda))?;
+/// ```
+///
+/// # Errors
+///
+/// Returns source-specific error if environment is not found:
+/// - [`ScoopError::PyenvEnvNotFound`]
+/// - [`ScoopError::VenvWrapperEnvNotFound`]
+/// - [`ScoopError::CondaEnvNotFound`]
 pub fn find_environment_by_name(
     name: &str,
     source_filter: Option<MigrateSource>,
