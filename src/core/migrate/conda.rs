@@ -4,9 +4,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::error::{Result, ScoopError};
-use crate::paths;
 
-use super::source::{EnvironmentSource, EnvironmentStatus, SourceEnvironment, SourceType};
+use super::common;
+use super::source::{EnvironmentSource, SourceEnvironment, SourceType};
 
 /// Discovers Conda environments
 #[derive(Debug)]
@@ -108,55 +108,6 @@ impl CondaDiscovery {
         None
     }
 
-    /// Calculate directory size in bytes
-    fn dir_size(path: &Path) -> u64 {
-        walkdir::WalkDir::new(path)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter_map(|e| e.metadata().ok())
-            .filter(|m| m.is_file())
-            .map(|m| m.len())
-            .sum()
-    }
-
-    /// Check if environment name conflicts with existing scoop environment
-    fn check_name_conflict(name: &str) -> Option<PathBuf> {
-        if let Ok(venvs_dir) = paths::virtualenvs_dir() {
-            let scoop_path = venvs_dir.join(name);
-            if scoop_path.exists() {
-                return Some(scoop_path);
-            }
-        }
-        None
-    }
-
-    /// Determine environment status
-    fn determine_status(name: &str, python_version: &str) -> EnvironmentStatus {
-        if let Some(existing) = Self::check_name_conflict(name) {
-            return EnvironmentStatus::NameConflict { existing };
-        }
-
-        let major_minor: Vec<&str> = python_version.split('.').collect();
-        if major_minor.len() >= 2 {
-            if let (Ok(major), Ok(minor)) =
-                (major_minor[0].parse::<u32>(), major_minor[1].parse::<u32>())
-            {
-                if major == 3 && minor <= 8 {
-                    return EnvironmentStatus::PythonEol {
-                        version: python_version.to_string(),
-                    };
-                }
-                if major == 2 {
-                    return EnvironmentStatus::PythonEol {
-                        version: python_version.to_string(),
-                    };
-                }
-            }
-        }
-
-        EnvironmentStatus::Ready
-    }
-
     /// Check if directory is a valid conda environment
     fn is_conda_env(path: &Path) -> bool {
         // Conda environments have conda-meta directory
@@ -168,6 +119,37 @@ impl CondaDiscovery {
         // And should have a python binary (we only migrate python envs)
         let python_bin = path.join("bin").join("python");
         python_bin.exists()
+    }
+
+    /// Parse a single environment directory into SourceEnvironment
+    fn parse_environment(&self, env_path: &Path) -> Option<SourceEnvironment> {
+        let name = env_path.file_name()?.to_str()?.to_string();
+
+        // Skip hidden directories
+        if name.starts_with('.') {
+            return None;
+        }
+
+        // Validate it's a conda environment
+        if !Self::is_conda_env(env_path) {
+            return None;
+        }
+
+        // Get Python version
+        let python_version =
+            Self::get_python_version(env_path).unwrap_or_else(|| "unknown".to_string());
+
+        // Determine status
+        let status = common::determine_status(&name, &python_version);
+
+        Some(SourceEnvironment {
+            name,
+            python_version,
+            path: env_path.to_path_buf(),
+            source_type: SourceType::Conda,
+            size_bytes: None, // Lazy: calculated only when needed
+            status,
+        })
     }
 }
 
@@ -198,41 +180,14 @@ impl EnvironmentSource for CondaDiscovery {
                     continue;
                 }
 
-                let name = match entry.file_name().to_str() {
-                    Some(n) => n.to_string(),
-                    None => continue,
-                };
-
-                // Skip hidden directories and duplicates
-                if name.starts_with('.') || seen_names.contains(&name) {
-                    continue;
+                if let Some(env) = self.parse_environment(&env_path) {
+                    // Skip duplicates
+                    if seen_names.contains(&env.name) {
+                        continue;
+                    }
+                    seen_names.insert(env.name.clone());
+                    environments.push(env);
                 }
-
-                // Validate it's a conda environment
-                if !Self::is_conda_env(&env_path) {
-                    continue;
-                }
-
-                seen_names.insert(name.clone());
-
-                // Get Python version
-                let python_version =
-                    Self::get_python_version(&env_path).unwrap_or_else(|| "unknown".to_string());
-
-                // Calculate size
-                let size_bytes = Self::dir_size(&env_path);
-
-                // Determine status
-                let status = Self::determine_status(&name, &python_version);
-
-                environments.push(SourceEnvironment {
-                    name,
-                    python_version,
-                    path: env_path,
-                    source_type: SourceType::Conda,
-                    size_bytes,
-                    status,
-                });
             }
         }
 
@@ -241,21 +196,28 @@ impl EnvironmentSource for CondaDiscovery {
         Ok(environments)
     }
 
+    /// Find a specific environment by name using O(1) direct path access.
     fn find_environment(&self, name: &str) -> Result<SourceEnvironment> {
-        let environments = self.scan_environments()?;
+        // Search in each root directory directly
+        for root in &self.roots {
+            let env_path = root.join(name);
+            if env_path.exists() && env_path.is_dir() {
+                if let Some(env) = self.parse_environment(&env_path) {
+                    return Ok(env);
+                }
+            }
+        }
 
-        environments
-            .into_iter()
-            .find(|env| env.name == name)
-            .ok_or_else(|| ScoopError::CondaEnvNotFound {
-                name: name.to_string(),
-            })
+        Err(ScoopError::CondaEnvNotFound {
+            name: name.to_string(),
+        })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::migrate::EnvironmentStatus;
 
     #[test]
     fn test_default_roots_returns_none_when_not_installed() {
@@ -271,7 +233,7 @@ mod tests {
 
     #[test]
     fn test_determine_status_ready() {
-        let status = CondaDiscovery::determine_status("nonexistent_conda_test", "3.12.0");
+        let status = common::determine_status("nonexistent_conda_test", "3.12.0");
         assert!(matches!(status, EnvironmentStatus::Ready));
     }
 

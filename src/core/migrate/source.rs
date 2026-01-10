@@ -53,8 +53,12 @@ pub struct SourceEnvironment {
     pub path: PathBuf,
     /// Source type
     pub source_type: SourceType,
-    /// Size in bytes
-    pub size_bytes: u64,
+    /// Size in bytes (lazy-loaded, None = not yet calculated)
+    ///
+    /// Calculating directory size requires traversing the entire directory tree,
+    /// which can be expensive for large environments. This field is `None` by default
+    /// and only populated when explicitly requested (e.g., for detailed info display).
+    pub size_bytes: Option<u64>,
     /// Migration status
     pub status: EnvironmentStatus,
 }

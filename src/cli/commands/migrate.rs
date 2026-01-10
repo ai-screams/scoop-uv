@@ -62,6 +62,32 @@ struct MigrateAllSummary {
     skipped: usize,
 }
 
+/// Options for CLI migrate execution.
+///
+/// This struct consolidates the many boolean flags used by migrate commands
+/// to improve readability and maintainability.
+#[derive(Debug, Clone, Default)]
+struct MigrateExecuteOptions {
+    /// Preview migration without making changes
+    dry_run: bool,
+    /// Force overwrite existing environments
+    force: bool,
+    /// Skip confirmation prompts
+    yes: bool,
+    /// Output as JSON
+    json: bool,
+    /// Fail on first package error
+    strict: bool,
+    /// Delete original environment after successful migration
+    delete_source: bool,
+    /// Migrate with a different name
+    rename: Option<String>,
+    /// Auto-rename on conflict
+    auto_rename: bool,
+    /// Filter by source tool
+    source_filter: Option<MigrateSource>,
+}
+
 /// User choice for handling name conflicts
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ConflictResolution {
@@ -153,16 +179,19 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             strict,
             delete_source,
             source,
-        }) => migrate_all_environments(
-            output,
-            dry_run,
-            force,
-            yes,
-            json,
-            strict,
-            delete_source,
-            source,
-        ),
+        }) => {
+            let opts = MigrateExecuteOptions {
+                dry_run,
+                force,
+                yes,
+                json,
+                strict,
+                delete_source,
+                source_filter: source,
+                ..Default::default()
+            };
+            migrate_all_environments(output, &opts)
+        }
         Some(MigrateCommand::Env {
             name,
             dry_run,
@@ -174,19 +203,20 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             auto_rename,
             delete_source,
             source,
-        }) => migrate_environment(
-            output,
-            &name,
-            dry_run,
-            force,
-            yes,
-            json,
-            strict,
-            rename,
-            auto_rename,
-            delete_source,
-            source,
-        ),
+        }) => {
+            let opts = MigrateExecuteOptions {
+                dry_run,
+                force,
+                yes,
+                json,
+                strict,
+                rename,
+                auto_rename,
+                delete_source,
+                source_filter: source,
+            };
+            migrate_environment(output, &name, &opts)
+        }
         None => {
             // No subcommand - show help or list
             list_environments(output, output.is_json(), None)
@@ -376,10 +406,15 @@ fn list_environments(
             EnvironmentStatus::Corrupted { reason } => ("✗", format!(" ({})", reason)),
         };
 
-        let size_mb = env.size_bytes as f64 / 1_048_576.0;
+        let size_mb = env.size_bytes.unwrap_or(0) as f64 / 1_048_576.0;
+        let size_str = if env.size_bytes.is_some() {
+            format!("{:>8.1} MB", size_mb)
+        } else {
+            "       - MB".to_string() // Not calculated
+        };
         println!(
-            "    {} {:<20} Python {:<10} {:>8.1} MB{}",
-            status_icon, env.name, env.python_version, size_mb, status_hint
+            "    {} {:<20} Python {:<10} {}{}",
+            status_icon, env.name, env.python_version, size_str, status_hint
         );
     }
 
@@ -391,23 +426,10 @@ fn list_environments(
 }
 
 /// Migrate a single environment
-#[allow(clippy::too_many_arguments)]
-fn migrate_environment(
-    output: &Output,
-    name: &str,
-    dry_run: bool,
-    force: bool,
-    yes: bool,
-    json: bool,
-    strict: bool,
-    rename: Option<String>,
-    auto_rename: bool,
-    delete_source: bool,
-    source_filter: Option<MigrateSource>,
-) -> Result<()> {
-    let source = find_environment_by_name(name, source_filter)?;
+fn migrate_environment(output: &Output, name: &str, opts: &MigrateExecuteOptions) -> Result<()> {
+    let source = find_environment_by_name(name, opts.source_filter)?;
 
-    if !json {
+    if !opts.json {
         // Show environment info
         output.info(&format!(
             "Source: {} from {} (Python {})",
@@ -415,55 +437,57 @@ fn migrate_environment(
         ));
         output.info(&format!("  Path: {}", source.path.display()));
 
-        let size_mb = source.size_bytes as f64 / 1_048_576.0;
-        output.info(&format!("  Size: {:.1} MB", size_mb));
+        if let Some(size_bytes) = source.size_bytes {
+            let size_mb = size_bytes as f64 / 1_048_576.0;
+            output.info(&format!("  Size: {:.1} MB", size_mb));
+        }
     }
 
     // Determine final name (may be renamed)
-    let mut final_name = rename.clone().unwrap_or_else(|| name.to_string());
-    let mut effective_force = force;
+    let mut final_name = opts.rename.clone().unwrap_or_else(|| name.to_string());
+    let mut effective_force = opts.force;
 
     // Check status
     match &source.status {
         EnvironmentStatus::Ready => {}
         EnvironmentStatus::NameConflict { existing } => {
-            if auto_rename {
+            if opts.auto_rename {
                 // Auto-rename: generate unique name
                 final_name = generate_unique_name(name)?;
-                if !json {
+                if !opts.json {
                     output.info(&format!(
                         "Auto-renaming to '{}' to avoid conflict",
                         final_name
                     ));
                 }
-            } else if rename.is_some() {
+            } else if opts.rename.is_some() {
                 // User provided explicit rename, check if that conflicts too
                 let renamed_path = crate::paths::virtualenv_path(&final_name)?;
-                if renamed_path.exists() && !force {
+                if renamed_path.exists() && !opts.force {
                     return Err(ScoopError::MigrationNameConflict {
                         name: final_name.clone(),
                         existing: renamed_path,
                     });
                 }
-            } else if !force {
+            } else if !opts.force {
                 // Interactive conflict resolution (if not json and not yes)
-                if !json && !yes {
+                if !opts.json && !opts.yes {
                     let resolution = prompt_conflict_resolution(output, name, existing)?;
                     match resolution {
                         ConflictResolution::Overwrite => {
                             effective_force = true;
-                            if !json {
+                            if !opts.json {
                                 output.warn("Will overwrite existing environment.");
                             }
                         }
                         ConflictResolution::Rename => {
                             final_name = prompt_rename(name)?;
-                            if !json {
+                            if !opts.json {
                                 output.info(&format!("Will migrate as '{}'", final_name));
                             }
                         }
                         ConflictResolution::Skip => {
-                            if !json {
+                            if !opts.json {
                                 output.info("Skipping migration.");
                             }
                             return Ok(());
@@ -471,7 +495,7 @@ fn migrate_environment(
                     }
                 } else {
                     // Non-interactive mode: error out
-                    if !json {
+                    if !opts.json {
                         output.warn(&format!(
                             "Name conflict: '{}' already exists at {}",
                             name,
@@ -484,13 +508,13 @@ fn migrate_environment(
                         existing: existing.clone(),
                     });
                 }
-            } else if !json {
+            } else if !opts.json {
                 output.warn("Forcing migration over existing environment.");
             }
         }
         EnvironmentStatus::PythonEol { version } => {
-            if !force {
-                if !json {
+            if !opts.force {
+                if !opts.json {
                     output.warn(&format!("Python {} is end-of-life.", version));
                     output.info("Use --force to migrate anyway.");
                 }
@@ -498,12 +522,12 @@ fn migrate_environment(
                     reason: format!("Python {} is EOL", version),
                 });
             }
-            if !json {
+            if !opts.json {
                 output.warn("Migrating with EOL Python version.");
             }
         }
         EnvironmentStatus::Corrupted { reason } => {
-            if !json {
+            if !opts.json {
                 output.error(&format!("Environment is corrupted: {}", reason));
             }
             return Err(ScoopError::CorruptedEnvironment {
@@ -514,9 +538,9 @@ fn migrate_environment(
     }
 
     // Create migrator and options
-    let migrator = Migrator::new();
+    let migrator = Migrator::new()?;
     let options = MigrateOptions {
-        dry_run,
+        dry_run: opts.dry_run,
         force: effective_force,
         skip_packages: false,
         rename_to: if final_name != name {
@@ -524,13 +548,13 @@ fn migrate_environment(
         } else {
             None
         },
-        strict,
-        delete_source,
+        strict: opts.strict,
+        delete_source: opts.delete_source,
         auto_install_python: false,
     };
 
-    if !json {
-        if dry_run {
+    if !opts.json {
+        if opts.dry_run {
             output.info("[DRY-RUN] Simulating migration...");
         } else {
             output.info("Starting migration...");
@@ -541,40 +565,31 @@ fn migrate_environment(
     let result = migrator.migrate(&source, &options)?;
 
     // JSON output
-    if json {
+    if opts.json {
         output.json_success("migrate", &result);
         return Ok(());
     }
 
     // Report results
-    print_migration_result(output, &result, dry_run);
+    print_migration_result(output, &result, opts.dry_run);
 
     Ok(())
 }
 
 /// Migrate all environments at once
-#[allow(clippy::too_many_arguments)]
-fn migrate_all_environments(
-    output: &Output,
-    dry_run: bool,
-    force: bool,
-    yes: bool,
-    json: bool,
-    strict: bool,
-    delete_source: bool,
-    source_filter: Option<MigrateSource>,
-) -> Result<()> {
-    if !json {
-        let source_name = source_filter
+fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -> Result<()> {
+    if !opts.json {
+        let source_name = opts
+            .source_filter
             .map(|s| s.to_string())
             .unwrap_or_else(|| "all sources".to_string());
         output.info(&format!("Scanning {} for environments...", source_name));
     }
 
-    let environments = scan_all_environments(source_filter);
+    let environments = scan_all_environments(opts.source_filter);
 
     if environments.is_empty() {
-        if json {
+        if opts.json {
             output.json_success(
                 "migrate all",
                 MigrateAllData {
@@ -590,7 +605,10 @@ fn migrate_all_environments(
                 },
             );
         } else {
-            let source_name = source_filter.map(|s| format!("{} ", s)).unwrap_or_default();
+            let source_name = opts
+                .source_filter
+                .map(|s| format!("{} ", s))
+                .unwrap_or_default();
             output.info(&format!("No {}environments found.", source_name));
         }
         return Ok(());
@@ -601,7 +619,7 @@ fn migrate_all_environments(
         .iter()
         .filter(|e| {
             matches!(e.status, EnvironmentStatus::Ready)
-                || (force
+                || (opts.force
                     && matches!(
                         e.status,
                         EnvironmentStatus::PythonEol { .. }
@@ -630,7 +648,7 @@ fn migrate_all_environments(
     let skipped_count = skipped.len();
 
     if migratable.is_empty() {
-        if json {
+        if opts.json {
             output.json_success(
                 "migrate all",
                 MigrateAllData {
@@ -658,7 +676,7 @@ fn migrate_all_environments(
     }
 
     // Show what will be migrated (only in non-JSON mode)
-    if !json {
+    if !opts.json {
         output.info(&format!(
             "Found {} environment(s) to migrate:",
             migratable.len()
@@ -686,7 +704,7 @@ fn migrate_all_environments(
         }
 
         // Confirmation prompt if not --yes and not dry-run and not JSON
-        if !yes && !dry_run {
+        if !opts.yes && !opts.dry_run {
             println!();
             let confirmed = Confirm::new()
                 .with_prompt(format!("Migrate {} environment(s)?", migratable.len()))
@@ -702,22 +720,22 @@ fn migrate_all_environments(
     }
 
     // Perform migrations
-    let migrator = Migrator::new();
+    let migrator = Migrator::new()?;
     let options = MigrateOptions {
-        dry_run,
-        force,
+        dry_run: opts.dry_run,
+        force: opts.force,
         skip_packages: false,
         rename_to: None,
-        strict,
-        delete_source,
+        strict: opts.strict,
+        delete_source: opts.delete_source,
         auto_install_python: false,
     };
 
     let mut migrated: Vec<MigrationResult> = Vec::new();
     let mut failed: Vec<MigrateFailure> = Vec::new();
 
-    if !json {
-        if dry_run {
+    if !opts.json {
+        if opts.dry_run {
             output.info("");
             output.info("[DRY-RUN] Simulating migration of all environments...");
         } else {
@@ -727,7 +745,7 @@ fn migrate_all_environments(
     }
 
     // Create progress bar for batch migration
-    let progress = if !json && !dry_run && !output.is_quiet() {
+    let progress = if !opts.json && !opts.dry_run && !output.is_quiet() {
         let pb = ProgressBar::new(migratable.len() as u64);
         pb.set_style(
             ProgressStyle::default_bar()
@@ -744,7 +762,7 @@ fn migrate_all_environments(
         if let Some(ref pb) = progress {
             pb.set_message(format!("Migrating '{}'...", env.name));
             pb.set_position(idx as u64);
-        } else if !json {
+        } else if !opts.json {
             output.info("");
             output.info(&format!("Migrating '{}'...", env.name));
         }
@@ -762,8 +780,8 @@ fn migrate_all_environments(
                             result.packages_failed.len()
                         ));
                     }
-                } else if !json {
-                    if dry_run {
+                } else if !opts.json {
+                    if opts.dry_run {
                         output.info(&format!(
                             "  [DRY-RUN] Would create: {}",
                             result.path.display()
@@ -795,7 +813,7 @@ fn migrate_all_environments(
                 });
                 if let Some(ref pb) = progress {
                     pb.println(format!("✗ '{}' failed: {}", env.name, e));
-                } else if !json {
+                } else if !opts.json {
                     output.error(&format!("  Failed: {}", e));
                 }
             }
@@ -808,7 +826,7 @@ fn migrate_all_environments(
     }
 
     // JSON output
-    if json {
+    if opts.json {
         output.json_success(
             "migrate all",
             MigrateAllData {
@@ -829,7 +847,7 @@ fn migrate_all_environments(
     // Summary (non-JSON)
     output.info("");
     output.info("─".repeat(40).as_str());
-    if dry_run {
+    if opts.dry_run {
         output.info(&format!(
             "[DRY-RUN] Would migrate: {}/{}",
             migrated.len(),

@@ -1,5 +1,6 @@
 //! Migration support for importing environments from other tools
 
+mod common;
 mod conda;
 mod discovery;
 mod extractor;

@@ -123,19 +123,17 @@ pub struct Migrator {
     extractor: PackageExtractor,
 }
 
-impl Default for Migrator {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Migrator {
     /// Creates a new migrator.
-    pub fn new() -> Self {
-        Self {
-            uv: UvClient::new().expect("uv not found"),
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ScoopError::UvNotFound`] if uv is not installed or not in PATH.
+    pub fn new() -> Result<Self> {
+        Ok(Self {
+            uv: UvClient::new()?,
             extractor: PackageExtractor::new(),
-        }
+        })
     }
 
     /// Creates a migrator with a specific UvClient.
@@ -452,7 +450,7 @@ mod tests {
             python_version: "3.12.0".to_string(),
             path: PathBuf::from("/mock/path"),
             source_type: SourceType::Pyenv,
-            size_bytes: 1024,
+            size_bytes: Some(1024),
             status,
         }
     }
