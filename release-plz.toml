@@ -5,6 +5,11 @@
 # Use git-cliff for changelog generation
 changelog_config = "cliff.toml"
 
+# Bump minor version for feat commits even in 0.x releases
+# Without this, feat commits only bump patch in 0.x (e.g., 0.2.11 -> 0.2.12)
+# With this, feat commits bump minor in 0.x (e.g., 0.2.11 -> 0.3.0)
+features_always_increment_minor = true
+
 # Automatically update CHANGELOG.md
 changelog_update = true
 
