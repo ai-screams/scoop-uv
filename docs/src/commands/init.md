@@ -26,6 +26,11 @@ eval "$(scoop init bash)"
 eval "$(scoop init zsh)"
 ```
 
+```fish
+# Fish (~/.config/fish/config.fish)
+eval (scoop init fish)
+```
+
 ## Features Enabled
 
 - Auto-activation when entering directories with `.scoop-version`
@@ -37,4 +42,5 @@ eval "$(scoop init zsh)"
 ```bash
 scoop init bash                  # Output bash init script
 scoop init zsh                   # Output zsh init script
+scoop init fish                  # Output fish init script
 ```

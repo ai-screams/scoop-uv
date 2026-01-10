@@ -46,6 +46,13 @@ echo 'eval "$(scoop init bash)"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
+### Fish
+
+```fish
+echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
+source ~/.config/fish/config.fish
+```
+
 ## Auto-Activation
 
 When enabled, scoop automatically activates environments based on version files.
@@ -61,6 +68,14 @@ add-zsh-hook chpwd _scoop_hook
 
 ```bash
 PROMPT_COMMAND="_scoop_hook;$PROMPT_COMMAND"
+```
+
+**Fish**: Uses `--on-variable PWD` event handler
+
+```fish
+function _scoop_hook --on-variable PWD
+    # Check for version file and activate/deactivate
+end
 ```
 
 The hook checks for version files and activates/deactivates accordingly.
@@ -82,6 +97,7 @@ scoop checks these files in order (first match wins):
 | `SCOOP_HOME` | Base directory | `~/.scoop` |
 | `SCOOP_NO_AUTO` | Disable auto-activation | (unset) |
 | `SCOOP_ACTIVE` | Currently active environment | (set by scoop) |
+| `SCOOP_RESOLVE_MAX_DEPTH` | Limit parent directory traversal | (unlimited) |
 
 ### Disable Auto-Activation
 
@@ -93,6 +109,18 @@ export SCOOP_NO_AUTO=1
 
 ```bash
 export SCOOP_HOME=/custom/path
+```
+
+### Network Filesystem Optimization
+
+For slow network filesystems (NFS, SSHFS), limit directory traversal depth:
+
+```bash
+# Only check current directory and up to 3 parents
+export SCOOP_RESOLVE_MAX_DEPTH=3
+
+# Only check current directory (fastest)
+export SCOOP_RESOLVE_MAX_DEPTH=0
 ```
 
 ## Using with pyenv
@@ -121,5 +149,5 @@ Completion is automatically enabled by `scoop init`.
 |-------|--------|
 | Zsh | Full support (auto-activation, completion) |
 | Bash | Full support (auto-activation, completion) |
-| Fish | Completion only |
-| PowerShell | Completion only |
+| Fish | Full support (auto-activation, completion) |
+| PowerShell | Planned (P3) |
