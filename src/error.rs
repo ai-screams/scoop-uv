@@ -107,6 +107,18 @@ pub enum ScoopError {
     )]
     PyenvEnvNotFound { name: String },
 
+    /// virtualenvwrapper environment not found
+    #[error(
+        "virtualenvwrapper environment '{name}' not found\n\nCheck available environments: scoop migrate list --source virtualenvwrapper"
+    )]
+    VenvWrapperEnvNotFound { name: String },
+
+    /// conda environment not found
+    #[error(
+        "conda environment '{name}' not found\n\nCheck available environments: scoop migrate list --source conda"
+    )]
+    CondaEnvNotFound { name: String },
+
     /// Corrupted environment
     #[error("Environment '{name}' is corrupted: {reason}")]
     CorruptedEnvironment { name: String, reason: String },
@@ -151,6 +163,8 @@ impl ScoopError {
             Self::InvalidArgument { .. } => "ARG_INVALID",
             Self::PyenvNotFound => "source.pyenv_not_found",
             Self::PyenvEnvNotFound { .. } => "source.env_not_found",
+            Self::VenvWrapperEnvNotFound { .. } => "source.env_not_found",
+            Self::CondaEnvNotFound { .. } => "source.env_not_found",
             Self::CorruptedEnvironment { .. } => "migrate.corrupted",
             Self::PackageExtractionFailed { .. } => "migrate.extraction_failed",
             Self::MigrationFailed { .. } => "migrate.failed",
@@ -188,6 +202,8 @@ impl ScoopError {
         match self {
             Self::PyenvNotFound
             | Self::PyenvEnvNotFound { .. }
+            | Self::VenvWrapperEnvNotFound { .. }
+            | Self::CondaEnvNotFound { .. }
             | Self::CorruptedEnvironment { .. } => MigrationExitCode::SourceError,
             Self::MigrationFailed { .. } | Self::MigrationNameConflict { .. } => {
                 MigrationExitCode::CompleteFailure

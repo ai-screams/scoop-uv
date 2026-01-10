@@ -4,10 +4,10 @@ use dialoguer::{Confirm, Input, Select};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde::Serialize;
 
-use crate::cli::MigrateCommand;
+use crate::cli::{MigrateCommand, MigrateSource};
 use crate::core::migrate::{
-    EnvironmentSource, EnvironmentStatus, MigrateOptions, MigrationResult, Migrator,
-    PyenvDiscovery, SourceEnvironment,
+    CondaDiscovery, EnvironmentSource, EnvironmentStatus, MigrateOptions, MigrationResult,
+    Migrator, PyenvDiscovery, SourceEnvironment, SourceType, VenvWrapperDiscovery,
 };
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
@@ -144,7 +144,7 @@ fn generate_unique_name(base_name: &str) -> Result<String> {
 /// Execute migrate command
 pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
     match command {
-        Some(MigrateCommand::List { json }) => list_environments(output, json),
+        Some(MigrateCommand::List { json, source }) => list_environments(output, json, source),
         Some(MigrateCommand::All {
             dry_run,
             force,
@@ -152,7 +152,17 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             json,
             strict,
             delete_source,
-        }) => migrate_all_environments(output, dry_run, force, yes, json, strict, delete_source),
+            source,
+        }) => migrate_all_environments(
+            output,
+            dry_run,
+            force,
+            yes,
+            json,
+            strict,
+            delete_source,
+            source,
+        ),
         Some(MigrateCommand::Env {
             name,
             dry_run,
@@ -163,6 +173,7 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             rename,
             auto_rename,
             delete_source,
+            source,
         }) => migrate_environment(
             output,
             &name,
@@ -174,23 +185,127 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             rename,
             auto_rename,
             delete_source,
+            source,
         ),
         None => {
             // No subcommand - show help or list
-            list_environments(output, output.is_json())
+            list_environments(output, output.is_json(), None)
         }
     }
 }
 
-/// List environments available for migration
-fn list_environments(output: &Output, json: bool) -> Result<()> {
-    if !json {
-        output.info("Scanning for pyenv environments...");
+/// Scan environments from all available sources or a specific source
+fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<SourceEnvironment> {
+    let mut all_envs = Vec::new();
+
+    // Scan sources based on filter
+    let scan_pyenv = source_filter.is_none() || source_filter == Some(MigrateSource::Pyenv);
+    let scan_venv =
+        source_filter.is_none() || source_filter == Some(MigrateSource::Virtualenvwrapper);
+    let scan_conda = source_filter.is_none() || source_filter == Some(MigrateSource::Conda);
+
+    if scan_pyenv {
+        if let Some(discovery) = PyenvDiscovery::default_root() {
+            if let Ok(envs) = discovery.scan_environments() {
+                all_envs.extend(envs);
+            }
+        }
     }
 
-    let discovery = PyenvDiscovery::default_root().ok_or(ScoopError::PyenvNotFound)?;
+    if scan_venv {
+        if let Some(discovery) = VenvWrapperDiscovery::default_root() {
+            if let Ok(envs) = discovery.scan_environments() {
+                all_envs.extend(envs);
+            }
+        }
+    }
 
-    let environments = discovery.scan_environments()?;
+    if scan_conda {
+        if let Some(discovery) = CondaDiscovery::default_roots() {
+            if let Ok(envs) = discovery.scan_environments() {
+                all_envs.extend(envs);
+            }
+        }
+    }
+
+    // Sort by source type, then by name
+    all_envs.sort_by(|a, b| {
+        let source_order = |s: &SourceType| match s {
+            SourceType::Pyenv => 0,
+            SourceType::VirtualenvWrapper => 1,
+            SourceType::Conda => 2,
+        };
+        source_order(&a.source_type)
+            .cmp(&source_order(&b.source_type))
+            .then(a.name.cmp(&b.name))
+    });
+
+    all_envs
+}
+
+/// Find an environment by name, searching across sources
+fn find_environment_by_name(
+    name: &str,
+    source_filter: Option<MigrateSource>,
+) -> Result<SourceEnvironment> {
+    // Try pyenv first
+    if source_filter.is_none() || source_filter == Some(MigrateSource::Pyenv) {
+        if let Some(discovery) = PyenvDiscovery::default_root() {
+            if let Ok(env) = discovery.find_environment(name) {
+                return Ok(env);
+            }
+        }
+    }
+
+    // Try virtualenvwrapper
+    if source_filter.is_none() || source_filter == Some(MigrateSource::Virtualenvwrapper) {
+        if let Some(discovery) = VenvWrapperDiscovery::default_root() {
+            if let Ok(env) = discovery.find_environment(name) {
+                return Ok(env);
+            }
+        }
+    }
+
+    // Try conda
+    if source_filter.is_none() || source_filter == Some(MigrateSource::Conda) {
+        if let Some(discovery) = CondaDiscovery::default_roots() {
+            if let Ok(env) = discovery.find_environment(name) {
+                return Ok(env);
+            }
+        }
+    }
+
+    // If a specific source was requested, return that error
+    match source_filter {
+        Some(MigrateSource::Pyenv) => Err(ScoopError::PyenvEnvNotFound {
+            name: name.to_string(),
+        }),
+        Some(MigrateSource::Virtualenvwrapper) => Err(ScoopError::VenvWrapperEnvNotFound {
+            name: name.to_string(),
+        }),
+        Some(MigrateSource::Conda) => Err(ScoopError::CondaEnvNotFound {
+            name: name.to_string(),
+        }),
+        None => Err(ScoopError::PyenvEnvNotFound {
+            name: name.to_string(),
+        }),
+    }
+}
+
+/// List environments available for migration
+fn list_environments(
+    output: &Output,
+    json: bool,
+    source_filter: Option<MigrateSource>,
+) -> Result<()> {
+    if !json {
+        let source_name = source_filter
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "all sources".to_string());
+        output.info(&format!("Scanning {} for environments...", source_name));
+    }
+
+    let environments = scan_all_environments(source_filter);
 
     // JSON output
     if json {
@@ -208,10 +323,14 @@ fn list_environments(output: &Output, json: bool) -> Result<()> {
             }
         }
 
+        let source_str = source_filter
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "all".to_string());
+
         output.json_success(
             "migrate list",
             MigrateListData {
-                source: "pyenv".to_string(),
+                source: source_str,
                 environments,
                 summary: MigrateListSummary {
                     total: ready + conflict + eol + corrupted,
@@ -226,17 +345,26 @@ fn list_environments(output: &Output, json: bool) -> Result<()> {
     }
 
     if environments.is_empty() {
-        output.info("No pyenv environments found.");
+        let source_name = source_filter.map(|s| format!("{} ", s)).unwrap_or_default();
+        output.info(&format!("No {}environments found.", source_name));
         return Ok(());
     }
 
-    output.success(&format!(
-        "Found {} pyenv environment(s):",
-        environments.len()
-    ));
+    output.success(&format!("Found {} environment(s):", environments.len()));
     println!();
 
+    // Group by source type for display
+    let mut current_source: Option<SourceType> = None;
     for env in &environments {
+        // Print source header when it changes
+        if current_source != Some(env.source_type) {
+            if current_source.is_some() {
+                println!();
+            }
+            println!("  [{}]", env.source_type);
+            current_source = Some(env.source_type);
+        }
+
         let (status_icon, status_hint) = match &env.status {
             EnvironmentStatus::Ready => ("✓", "".to_string()),
             EnvironmentStatus::NameConflict { existing } => {
@@ -250,14 +378,14 @@ fn list_environments(output: &Output, json: bool) -> Result<()> {
 
         let size_mb = env.size_bytes as f64 / 1_048_576.0;
         println!(
-            "  {} {:<20} Python {:<10} {:>8.1} MB{}",
+            "    {} {:<20} Python {:<10} {:>8.1} MB{}",
             status_icon, env.name, env.python_version, size_mb, status_hint
         );
     }
 
     println!();
-    output.info("To migrate: scoop migrate <name>");
-    output.info("To preview: scoop migrate <name> --dry-run");
+    output.info("To migrate: scoop migrate @env <name>");
+    output.info("To preview: scoop migrate @env <name> --dry-run");
 
     Ok(())
 }
@@ -275,16 +403,15 @@ fn migrate_environment(
     rename: Option<String>,
     auto_rename: bool,
     delete_source: bool,
+    source_filter: Option<MigrateSource>,
 ) -> Result<()> {
-    let discovery = PyenvDiscovery::default_root().ok_or(ScoopError::PyenvNotFound)?;
-
-    let source = discovery.find_environment(name)?;
+    let source = find_environment_by_name(name, source_filter)?;
 
     if !json {
         // Show environment info
         output.info(&format!(
-            "Source: {} (Python {})",
-            name, source.python_version
+            "Source: {} from {} (Python {})",
+            name, source.source_type, source.python_version
         ));
         output.info(&format!("  Path: {}", source.path.display()));
 
@@ -426,6 +553,7 @@ fn migrate_environment(
 }
 
 /// Migrate all environments at once
+#[allow(clippy::too_many_arguments)]
 fn migrate_all_environments(
     output: &Output,
     dry_run: bool,
@@ -434,13 +562,16 @@ fn migrate_all_environments(
     json: bool,
     strict: bool,
     delete_source: bool,
+    source_filter: Option<MigrateSource>,
 ) -> Result<()> {
     if !json {
-        output.info("Scanning for pyenv environments...");
+        let source_name = source_filter
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| "all sources".to_string());
+        output.info(&format!("Scanning {} for environments...", source_name));
     }
 
-    let discovery = PyenvDiscovery::default_root().ok_or(ScoopError::PyenvNotFound)?;
-    let environments = discovery.scan_environments()?;
+    let environments = scan_all_environments(source_filter);
 
     if environments.is_empty() {
         if json {
@@ -459,7 +590,8 @@ fn migrate_all_environments(
                 },
             );
         } else {
-            output.info("No pyenv environments found.");
+            let source_name = source_filter.map(|s| format!("{} ", s)).unwrap_or_default();
+            output.info(&format!("No {}environments found.", source_name));
         }
         return Ok(());
     }

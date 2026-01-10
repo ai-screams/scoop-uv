@@ -23,6 +23,27 @@ pub struct Cli {
     pub no_color: bool,
 }
 
+/// Source type for migration
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+pub enum MigrateSource {
+    /// pyenv-virtualenv
+    Pyenv,
+    /// virtualenvwrapper
+    Virtualenvwrapper,
+    /// conda
+    Conda,
+}
+
+impl std::fmt::Display for MigrateSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Pyenv => write!(f, "pyenv"),
+            Self::Virtualenvwrapper => write!(f, "virtualenvwrapper"),
+            Self::Conda => write!(f, "conda"),
+        }
+    }
+}
+
 /// Migrate subcommands
 #[derive(Subcommand, Debug)]
 pub enum MigrateCommand {
@@ -31,6 +52,10 @@ pub enum MigrateCommand {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+
+        /// Filter by source tool (pyenv, virtualenvwrapper, conda)
+        #[arg(long, value_enum)]
+        source: Option<MigrateSource>,
     },
     /// Migrate all environments at once
     All {
@@ -57,11 +82,15 @@ pub enum MigrateCommand {
         /// Delete original environments after successful migration
         #[arg(long)]
         delete_source: bool,
+
+        /// Filter by source tool (pyenv, virtualenvwrapper, conda)
+        #[arg(long, value_enum)]
+        source: Option<MigrateSource>,
     },
     /// Migrate a specific environment
     #[command(name = "@env")]
     Env {
-        /// Name of the pyenv environment to migrate
+        /// Name of the environment to migrate
         name: String,
 
         /// Preview migration without making changes
@@ -88,13 +117,17 @@ pub enum MigrateCommand {
         #[arg(long, value_name = "NEW_NAME")]
         rename: Option<String>,
 
-        /// Auto-rename on conflict (uses {name}-pyenv pattern)
+        /// Auto-rename on conflict (uses {name}-<source> pattern)
         #[arg(long, conflicts_with = "force")]
         auto_rename: bool,
 
-        /// Delete original pyenv environment after successful migration
+        /// Delete original environment after successful migration
         #[arg(long)]
         delete_source: bool,
+
+        /// Source tool (pyenv, virtualenvwrapper, conda)
+        #[arg(long, value_enum)]
+        source: Option<MigrateSource>,
     },
 }
 
