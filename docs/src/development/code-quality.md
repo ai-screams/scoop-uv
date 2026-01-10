@@ -1,10 +1,6 @@
-# Code Quality Guide 🎯
-
-> *"Quality is not an act, it's a habit."*
+# Code Quality
 
 Comprehensive guide for maintaining code quality in scoop.
-
----
 
 ## Quick Reference
 
@@ -21,8 +17,6 @@ cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings &&
 # Pre-commit hooks
 prek run --all-files
 ```
-
----
 
 ## Formatting (rustfmt)
 
@@ -67,8 +61,6 @@ cargo fmt -- --check --diff
 **JetBrains (RustRover/CLion)**:
 
 - Settings → Languages → Rust → Rustfmt → Run on save
-
----
 
 ## Linting (Clippy)
 
@@ -132,14 +124,12 @@ cargo clippy --fix --allow-dirty --allow-staged
 fn complex_function(...) {}
 
 // Entire module
-# ![allow(clippy::module_inception)]
+#![allow(clippy::module_inception)]
 
 // With explanation
 #[allow(clippy::unwrap_used)] // Safe: validated in parse()
 fn get_value() {}
 ```
-
----
 
 ## Pre-commit Hooks (prek)
 
@@ -217,8 +207,6 @@ git commit --no-verify
 | `check-toml`          | Validate TOML files    | Pre-commit |
 | `check-yaml`          | Validate YAML files    | Pre-commit |
 
----
-
 ## CI Pipeline
 
 ### GitHub Actions
@@ -259,8 +247,6 @@ cargo fmt --check && \
 cargo clippy --all-targets --all-features -- -D warnings && \
 cargo test --all-features
 ```
-
----
 
 ## Code Style Guidelines
 
@@ -324,7 +310,7 @@ fn process() -> Result<()> {
 
 // Avoid: unwrap() in library code
 fn bad() {
-    let file = File::open(path).unwrap(); // 🚫
+    let file = File::open(path).unwrap(); // Bad
 }
 
 // OK: expect() with explanation
@@ -350,8 +336,6 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::paths;
 ```
-
----
 
 ## Security Considerations
 
@@ -383,8 +367,6 @@ cargo audit fix
 - Document safety invariants
 - Use `#![forbid(unsafe_code)]` in library crates
 
----
-
 ## Performance
 
 ### Profiling
@@ -407,8 +389,6 @@ cargo bench
 # Using criterion
 cargo bench --bench my_benchmark
 ```
-
----
 
 ## Continuous Improvement
 
@@ -434,8 +414,6 @@ cargo update
 # Upgrade to latest compatible versions
 cargo upgrade  # requires cargo-edit
 ```
-
----
 
 ## Troubleshooting
 
@@ -472,8 +450,6 @@ rustup default stable
 rustc --version
 ```
 
----
-
 ## Summary Checklist
 
 Before committing:
@@ -485,7 +461,3 @@ Before committing:
 - [ ] No `todo!()` or `dbg!()` left in code
 - [ ] Public APIs documented
 - [ ] Error messages are helpful
-
----
-
-> 🍨 *"Clean code is like fresh ice cream — satisfying and delightful."*

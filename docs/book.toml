@@ -1,0 +1,38 @@
+# mdBook Configuration
+# https://rust-lang.github.io/mdBook/format/configuration/
+
+[book]
+title = "scoop Documentation"
+description = "Centralized Python virtual environment manager using uv"
+authors = ["ai-screams"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+create-missing = true
+
+[output.html]
+site-url = "/scoop-uv/"
+default-theme = "rust"
+preferred-dark-theme = "ayu"
+smart-punctuation = true
+git-repository-url = "https://github.com/ai-screams/scoop-uv"
+edit-url-template = "https://github.com/ai-screams/scoop-uv/edit/main/docs/{path}"
+no-section-label = false
+
+[output.html.search]
+enable = true
+limit-results = 30
+teaser-word-count = 30
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 1
+boost-paragraph = 1
+expand = true
+heading-split-level = 3
+copy-js = true
+
+[output.html.fold]
+enable = true
+level = 0

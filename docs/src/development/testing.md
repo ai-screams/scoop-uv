@@ -1,10 +1,6 @@
-# Testing Guide 🧪
-
-> *"Trust, but verify — every flavor before serving."*
+# Testing
 
 Comprehensive guide for testing scoop.
-
----
 
 ## Quick Reference
 
@@ -14,8 +10,6 @@ cargo test json                     # Run tests containing "json"
 cargo test -- --nocapture           # Show println! output
 cargo clippy -- -D warnings         # Lint check
 ```
-
----
 
 ## Test Structure
 
@@ -40,8 +34,6 @@ src/
 └── uv/
     └── client.rs             # Unit tests for uv client
 ```
-
----
 
 ## Running Tests
 
@@ -102,8 +94,6 @@ cargo test -- --ignored
 cargo test test_name -- --nocapture --test-threads=1
 ```
 
----
-
 ## Test Categories
 
 ### Unit Tests (239 tests)
@@ -122,7 +112,7 @@ mod tests {
 }
 ```
 
-**Key test modules:**
+Key test modules:
 
 | Module                    | Tests | Coverage                        |
 |---------------------------|-------|---------------------------------|
@@ -194,8 +184,6 @@ proptest! {
 ```
 
 Located in `src/validate.rs`.
-
----
 
 ## Writing Tests
 
@@ -281,8 +269,6 @@ fn test_optional_field_omitted() {
 }
 ```
 
----
-
 ## Test Utilities
 
 Located in `src/test_utils.rs`:
@@ -306,8 +292,6 @@ fn test_with_mock_venv() {
     });
 }
 ```
-
----
 
 ## Coverage
 
@@ -340,8 +324,6 @@ cargo llvm-cov --html
 open target/llvm-cov/html/index.html
 ```
 
----
-
 ## CI/CD Testing
 
 Tests run automatically on:
@@ -358,8 +340,6 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 - name: Run clippy
   run: cargo clippy --all-targets -- -D warnings
 ```
-
----
 
 ## Troubleshooting
 
@@ -399,8 +379,6 @@ brew install shellcheck
 apt install shellcheck
 ```
 
----
-
 ## Best Practices
 
 1. **Test naming**: `test_<function>_<scenario>_<expected>`
@@ -409,7 +387,3 @@ apt install shellcheck
 4. **Test edge cases**: Empty, unicode, special chars, boundaries
 5. **No test interdependencies**: Each test should be isolated
 6. **Fast tests**: Mock external dependencies
-
----
-
-> 🍨 *"Well-tested code is like a well-stocked freezer — always ready to serve."*
