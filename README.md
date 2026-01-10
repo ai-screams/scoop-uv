@@ -270,12 +270,15 @@ src/
 
 ## Documentation 🍨
 
+📖 **[Full Documentation](https://ai-screams.github.io/scoop-uv/)**
+
 | Guide | Description |
 |-------|-------------|
-| [Command Reference](docs/commands.md) | Complete command documentation |
-| [Development Guide](docs/DEVELOPMENT.md) | Architecture and contribution guide |
-| [Testing Guide](docs/TESTING.md) | Test structure, running, and writing tests |
-| [Code Quality Guide](docs/CODE_QUALITY.md) | Formatting, linting, and CI setup |
+| [Installation](https://ai-screams.github.io/scoop-uv/installation.html) | Prerequisites and setup |
+| [Quick Start](https://ai-screams.github.io/scoop-uv/quick-start.html) | Get started in 5 minutes |
+| [Commands](https://ai-screams.github.io/scoop-uv/commands/) | Complete command reference |
+| [Shell Integration](https://ai-screams.github.io/scoop-uv/shell-integration.html) | Auto-activation and configuration |
+| [Contributing](https://ai-screams.github.io/scoop-uv/development/contributing.html) | Development guide |
 
 ---
 
