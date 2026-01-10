@@ -1,6 +1,6 @@
 [package]
 name = "scoop-uv"
-version = "0.2.10"
+version = "0.2.11"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Hanyul <pignuante@gmail.com>"]
