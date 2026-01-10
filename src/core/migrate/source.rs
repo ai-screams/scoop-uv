@@ -2,10 +2,13 @@
 
 use std::path::PathBuf;
 
+use serde::Serialize;
+
 use crate::error::Result;
 
 /// Type of source tool
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SourceType {
     /// pyenv-virtualenv
     Pyenv,
@@ -26,7 +29,8 @@ impl std::fmt::Display for SourceType {
 }
 
 /// Status of a source environment for migration
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "status", rename_all = "snake_case")]
 pub enum EnvironmentStatus {
     /// Ready to migrate
     Ready,
@@ -39,7 +43,7 @@ pub enum EnvironmentStatus {
 }
 
 /// Information about a source environment
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct SourceEnvironment {
     /// Environment name
     pub name: String,

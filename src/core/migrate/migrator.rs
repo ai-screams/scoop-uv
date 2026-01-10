@@ -3,6 +3,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use serde::Serialize;
+
 use crate::core::metadata::Metadata;
 use crate::error::{Result, ScoopError};
 use crate::paths;
@@ -25,7 +27,7 @@ pub struct MigrateOptions {
 }
 
 /// Result of a migration operation
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct MigrationResult {
     /// Name of the migrated environment
     pub name: String,

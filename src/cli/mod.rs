@@ -32,6 +32,24 @@ pub enum MigrateCommand {
         #[arg(long)]
         json: bool,
     },
+    /// Migrate all environments at once
+    All {
+        /// Preview migration without making changes
+        #[arg(short = 'n', long)]
+        dry_run: bool,
+
+        /// Include EOL Python versions and overwrite conflicts
+        #[arg(short, long)]
+        force: bool,
+
+        /// Skip confirmation prompts
+        #[arg(short, long)]
+        yes: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Migrate a specific environment
     #[command(name = "@env")]
     Env {
