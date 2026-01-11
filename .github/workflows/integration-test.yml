@@ -1,0 +1,50 @@
+# Docker-based Integration Tests
+# Runs integration tests in containerized environment with real pyenv
+
+name: Integration Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ============================================================
+  # Docker-based integration tests (Tier 2)
+  # Tests requiring real pyenv/virtualenv environment
+  # ============================================================
+  docker-integration:
+    name: Docker Integration
+    runs-on: ubuntu-latest
+    # Use pre-built slim image from ghcr.io
+    container:
+      image: ghcr.io/ai-screams/scoop:slim
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Reuse caching pattern from ci.yml
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "integration"
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Run integration tests
+        run: cargo test --features integration-test --release
+
+      - name: Test pyenv migration (dry-run)
+        run: |
+          ./target/release/scoop migrate list
+          ./target/release/scoop migrate test-pyenv-312 --dry-run
