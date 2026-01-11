@@ -77,12 +77,19 @@ ENV UV_VERSION=0.5.14
 RUN curl -LsSf "https://astral.sh/uv/${UV_VERSION}/install.sh" | sh
 ENV PATH="/root/.local/bin:$PATH"
 
-# Install Miniconda
+# Install Miniconda (architecture-aware)
 ENV CONDA_DIR="/opt/conda"
-RUN curl -fsSL -o /tmp/miniconda.sh \
-    "https://repo.anaconda.com/miniconda/Miniconda3-py312_24.7.1-0-Linux-x86_64.sh" \
-    && bash /tmp/miniconda.sh -b -p "$CONDA_DIR" \
-    && rm /tmp/miniconda.sh
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-py312_24.7.1-0-Linux-x86_64.sh"; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-py312_24.7.1-0-Linux-aarch64.sh"; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    curl -fsSL -o /tmp/miniconda.sh "$MINICONDA_URL" && \
+    bash /tmp/miniconda.sh -b -p "$CONDA_DIR" && \
+    rm /tmp/miniconda.sh
 ENV PATH="$CONDA_DIR/bin:$PATH"
 
 # Install virtualenvwrapper
