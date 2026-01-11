@@ -2,6 +2,7 @@
 
 pub mod doctor;
 mod metadata;
+pub mod migrate;
 mod version;
 mod virtualenv;
 

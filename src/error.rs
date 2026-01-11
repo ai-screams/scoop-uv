@@ -1,10 +1,26 @@
 //! Error types for scoop
 
 use std::path::PathBuf;
+
+use serde::Serialize;
 use thiserror::Error;
 
 /// Result type alias using ScoopError
 pub type Result<T> = std::result::Result<T, ScoopError>;
+
+/// Exit status for migration operations
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[repr(u8)]
+pub enum MigrationExitCode {
+    /// Complete success - all packages migrated
+    Success = 0,
+    /// Partial success - some packages failed to install
+    PartialSuccess = 1,
+    /// Complete failure - rollback occurred
+    CompleteFailure = 2,
+    /// Source error - source not found or corrupted
+    SourceError = 3,
+}
 
 /// Main error type for scoop
 #[derive(Error, Debug)]
@@ -78,6 +94,46 @@ pub enum ScoopError {
     /// Invalid argument combination
     #[error("{message}")]
     InvalidArgument { message: String },
+
+    /// pyenv not found
+    #[error(
+        "pyenv is not installed or not found\n\nCheck PYENV_ROOT environment variable or ~/.pyenv directory\nInstall pyenv: https://github.com/pyenv/pyenv#installation"
+    )]
+    PyenvNotFound,
+
+    /// pyenv environment not found
+    #[error(
+        "pyenv environment '{name}' not found\n\nCheck available environments: scoop migrate list"
+    )]
+    PyenvEnvNotFound { name: String },
+
+    /// virtualenvwrapper environment not found
+    #[error(
+        "virtualenvwrapper environment '{name}' not found\n\nCheck available environments: scoop migrate list --source virtualenvwrapper"
+    )]
+    VenvWrapperEnvNotFound { name: String },
+
+    /// conda environment not found
+    #[error(
+        "conda environment '{name}' not found\n\nCheck available environments: scoop migrate list --source conda"
+    )]
+    CondaEnvNotFound { name: String },
+
+    /// Corrupted environment
+    #[error("Environment '{name}' is corrupted: {reason}")]
+    CorruptedEnvironment { name: String, reason: String },
+
+    /// Package extraction failed
+    #[error("Failed to extract packages: {reason}")]
+    PackageExtractionFailed { reason: String },
+
+    /// Migration failed
+    #[error("Migration failed: {reason}\n\nThe environment has been rolled back.")]
+    MigrationFailed { reason: String },
+
+    /// Name conflict with existing scoop environment
+    #[error("Environment '{name}' already exists in scoop at {}\n\nUse --force to overwrite or choose a different name", existing.display())]
+    MigrationNameConflict { name: String, existing: PathBuf },
 }
 
 // ============================================================================
@@ -105,6 +161,14 @@ impl ScoopError {
             Self::PythonUninstallFailed { .. } => "PYTHON_UNINSTALL_FAILED",
             Self::NoPythonVersions { .. } => "PYTHON_NO_MATCHING_VERSION",
             Self::InvalidArgument { .. } => "ARG_INVALID",
+            Self::PyenvNotFound => "source.pyenv_not_found",
+            Self::PyenvEnvNotFound { .. } => "source.env_not_found",
+            Self::VenvWrapperEnvNotFound { .. } => "source.env_not_found",
+            Self::CondaEnvNotFound { .. } => "source.env_not_found",
+            Self::CorruptedEnvironment { .. } => "migrate.corrupted",
+            Self::PackageExtractionFailed { .. } => "migrate.extraction_failed",
+            Self::MigrationFailed { .. } => "migrate.failed",
+            Self::MigrationNameConflict { .. } => "migrate.name_conflict",
         }
     }
 
@@ -128,6 +192,23 @@ impl ScoopError {
                 Some("Use 'scoop list --pythons' to see available versions".to_string())
             }
             _ => None,
+        }
+    }
+
+    /// Returns the migration exit code for this error.
+    ///
+    /// Maps error types to appropriate exit codes for migration operations.
+    pub fn migration_exit_code(&self) -> MigrationExitCode {
+        match self {
+            Self::PyenvNotFound
+            | Self::PyenvEnvNotFound { .. }
+            | Self::VenvWrapperEnvNotFound { .. }
+            | Self::CondaEnvNotFound { .. }
+            | Self::CorruptedEnvironment { .. } => MigrationExitCode::SourceError,
+            Self::MigrationFailed { .. } | Self::MigrationNameConflict { .. } => {
+                MigrationExitCode::CompleteFailure
+            }
+            _ => MigrationExitCode::CompleteFailure,
         }
     }
 }

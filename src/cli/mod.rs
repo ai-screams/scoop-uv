@@ -23,6 +23,114 @@ pub struct Cli {
     pub no_color: bool,
 }
 
+/// Source type for migration
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+pub enum MigrateSource {
+    /// pyenv-virtualenv
+    Pyenv,
+    /// virtualenvwrapper
+    Virtualenvwrapper,
+    /// conda
+    Conda,
+}
+
+impl std::fmt::Display for MigrateSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Pyenv => write!(f, "pyenv"),
+            Self::Virtualenvwrapper => write!(f, "virtualenvwrapper"),
+            Self::Conda => write!(f, "conda"),
+        }
+    }
+}
+
+/// Migrate subcommands
+#[derive(Subcommand, Debug)]
+pub enum MigrateCommand {
+    /// List environments available for migration
+    List {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+
+        /// Filter by source tool (pyenv, virtualenvwrapper, conda)
+        #[arg(long, value_enum)]
+        source: Option<MigrateSource>,
+    },
+    /// Migrate all environments at once
+    All {
+        /// Preview migration without making changes
+        #[arg(short = 'n', long)]
+        dry_run: bool,
+
+        /// Include EOL Python versions and overwrite conflicts
+        #[arg(short, long)]
+        force: bool,
+
+        /// Skip confirmation prompts
+        #[arg(short, long)]
+        yes: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+
+        /// Fail migration if any package fails to install
+        #[arg(long)]
+        strict: bool,
+
+        /// Delete original environments after successful migration
+        #[arg(long)]
+        delete_source: bool,
+
+        /// Filter by source tool (pyenv, virtualenvwrapper, conda)
+        #[arg(long, value_enum)]
+        source: Option<MigrateSource>,
+    },
+    /// Migrate a specific environment
+    #[command(name = "@env")]
+    Env {
+        /// Name of the environment to migrate
+        name: String,
+
+        /// Preview migration without making changes
+        #[arg(short = 'n', long)]
+        dry_run: bool,
+
+        /// Overwrite if environment already exists in scoop
+        #[arg(short, long)]
+        force: bool,
+
+        /// Skip confirmation prompts
+        #[arg(short, long)]
+        yes: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+
+        /// Fail migration if any package fails to install
+        #[arg(long)]
+        strict: bool,
+
+        /// Migrate with a different name
+        #[arg(long, value_name = "NEW_NAME")]
+        rename: Option<String>,
+
+        /// Auto-rename on conflict (uses {name}-<source> pattern)
+        #[arg(long, conflicts_with = "force")]
+        auto_rename: bool,
+
+        /// Delete original environment after successful migration
+        #[arg(long)]
+        delete_source: bool,
+
+        /// Source tool (pyenv, virtualenvwrapper, conda)
+        #[arg(long, value_enum)]
+        source: Option<MigrateSource>,
+    },
+}
+
 /// Available commands
 #[derive(Subcommand, Debug)]
 pub enum Commands {
@@ -188,6 +296,13 @@ pub enum Commands {
     /// Output deactivation script for eval
     #[command(hide = true)]
     Deactivate,
+
+    /// Migrate environments from other tools (pyenv, virtualenvwrapper)
+    Migrate {
+        /// Subcommand or environment name to migrate
+        #[command(subcommand)]
+        command: Option<MigrateCommand>,
+    },
 }
 
 /// Supported shell types

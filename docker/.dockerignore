@@ -1,0 +1,44 @@
+# Build artifacts
+target/
+*.log
+*.tmp
+
+# Version control
+.git/
+.gitignore
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test results
+coverage/
+*.profraw
+*.profdata
+tarpaulin-report.html
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation build
+docs/book/
+
+# Local config
+.env
+.env.local
+
+# Rust cache (handled by volumes)
+.cargo/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Node (if any)
+node_modules/
