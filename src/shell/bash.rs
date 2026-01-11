@@ -74,7 +74,7 @@ _scoop_complete() {
 
     # First argument: complete subcommands
     if [[ ${COMP_CWORD} -eq 1 ]]; then
-        COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate" -- "$cur"))
+        COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate migrate lang" -- "$cur"))
         return
     fi
 
@@ -177,6 +177,21 @@ _scoop_complete() {
             init|completions)
                 COMPREPLY=($(compgen -W "--help" -- "$cur"))
                 ;;
+            lang)
+                local opts="--list --reset --json --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        --list) opts="${opts//--list }" ;;
+                        --reset) opts="${opts//--reset }" ;;
+                        --json) opts="${opts//--json }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
+                ;;
+            migrate)
+                local opts="--help"
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
+                ;;
         esac
         return
     fi
@@ -214,6 +229,14 @@ _scoop_complete() {
                 # Second positional arg: python version
                 COMPREPLY=($(compgen -W "$(command scoop list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
             fi
+            ;;
+        lang)
+            # Complete language codes
+            COMPREPLY=($(compgen -W "en ko" -- "$cur"))
+            ;;
+        migrate)
+            # Complete migrate subcommands
+            COMPREPLY=($(compgen -W "list all @env" -- "$cur"))
             ;;
     esac
 }
