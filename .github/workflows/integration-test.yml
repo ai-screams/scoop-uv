@@ -58,5 +58,5 @@ jobs:
               cargo build --release &&
               cargo test --release &&
               ./target/release/scoop migrate list &&
-              ./target/release/scoop migrate test-pyenv-312 --dry-run
+              ./target/release/scoop migrate @env test-pyenv-312 --dry-run
             "
