@@ -3,6 +3,7 @@
 use std::collections::BTreeSet;
 
 use owo_colors::OwoColorize;
+use rust_i18n::t;
 
 use crate::core::{VirtualenvService, get_active_env};
 use crate::error::Result;
@@ -44,8 +45,8 @@ fn list_virtualenvs(output: &Output, bare: bool) -> Result<()> {
 
     if envs.is_empty() {
         if !bare {
-            output.info("No virtual environments found");
-            output.info("Create one with: scoop create <name> <version>");
+            output.info(&t!("list.no_envs"));
+            output.info(&t!("list.no_envs_hint"));
         }
         return Ok(());
     }
@@ -128,8 +129,8 @@ fn list_pythons(output: &Output, bare: bool) -> Result<()> {
 
     if pythons.is_empty() {
         if !bare {
-            output.info("No Python versions installed");
-            output.info("Install one with: scoop install <version>");
+            output.info(&t!("list.no_pythons"));
+            output.info(&t!("list.no_pythons_hint"));
         }
         return Ok(());
     }

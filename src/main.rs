@@ -7,6 +7,9 @@ use scoop_uv::cli::{Cli, Commands};
 use scoop_uv::output::Output;
 
 fn main() -> Result<()> {
+    // Initialize i18n (must be early, before any translated output)
+    scoop_uv::i18n::init();
+
     // Initialize error handling
     color_eyre::install()?;
 
@@ -92,12 +95,27 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, false);
             scoop_uv::cli::commands::migrate(&output, command)
         }
+        Commands::Lang {
+            lang,
+            list,
+            reset,
+            json,
+        } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::lang(&output, lang.as_deref(), list, reset)
+        }
     };
 
     // Handle errors
     if let Err(e) = result {
         let output = Output::new(0, cli.quiet, cli.no_color, false);
         output.error(&e.to_string());
+
+        // Print suggestion hint if available
+        if let Some(suggestion) = e.suggestion() {
+            eprintln!("{suggestion}");
+        }
+
         std::process::exit(1);
     }
 

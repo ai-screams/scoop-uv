@@ -1,5 +1,7 @@
 //! Create command
 
+use rust_i18n::t;
+
 use crate::core::VirtualenvService;
 use crate::error::Result;
 use crate::output::{CreateData, Output};
@@ -12,7 +14,7 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
     // Check if exists and handle force
     if service.exists(name)? {
         if force {
-            output.info(&format!("Removing existing environment '{name}'..."));
+            output.info(&t!("create.removing_existing", name = name));
             service.delete(name)?;
         } else {
             return Err(crate::error::ScoopError::VirtualenvExists {
@@ -21,9 +23,7 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
         }
     }
 
-    output.info(&format!(
-        "Creating virtual environment '{name}' with Python {python}..."
-    ));
+    output.info(&t!("create.creating", name = name, python = python));
 
     let path = service.create(name, python)?;
 
@@ -40,12 +40,9 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
         return Ok(());
     }
 
-    output.success(&format!("Created virtual environment '{name}'"));
-    output.info(&format!("Location: {}", path.display()));
-    output.info(&format!(
-        "Activate with: scoop use {name}  # or: source {}/bin/activate",
-        paths::virtualenv_path(name)?.display()
-    ));
+    output.success(&t!("create.success", name = name));
+    output.info(&t!("create.path", path = paths::abbreviate_home(&path)));
+    output.info(&t!("create.activate_hint", name = name));
 
     Ok(())
 }

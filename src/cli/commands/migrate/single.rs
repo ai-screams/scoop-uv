@@ -2,6 +2,8 @@
 //!
 //! Handles migration of individual environments with status validation.
 
+use rust_i18n::t;
+
 use crate::core::migrate::{EnvironmentStatus, MigrateOptions, MigrationResult, Migrator};
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
@@ -16,18 +18,18 @@ use super::types::MigrateExecuteOptions;
 pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run: bool) {
     if dry_run {
         output.info("");
-        output.info("[DRY-RUN] Migration preview:");
-        output.info(&format!("  Would create: {}", result.path.display()));
-        output.info(&format!("  Python version: {}", result.python_version));
-        output.info(&format!(
-            "  Packages to install: {}",
-            result.packages_migrated
+        output.info(&t!("migrate.dry_run_header"));
+        output.info(&t!(
+            "migrate.to",
+            path = crate::paths::abbreviate_home(&result.path)
         ));
+        output.info(&t!("migrate.python", version = &result.python_version));
+        output.info(&t!("migrate.packages", count = result.packages_migrated));
 
         if !result.packages_failed.is_empty() {
-            output.warn(&format!(
-                "  Packages that may fail: {}",
-                result.packages_failed.len()
+            output.warn(&t!(
+                "migrate.failed_packages",
+                count = result.packages_failed.len()
             ));
             for pkg in &result.packages_failed {
                 output.info(&format!("    - {}", pkg));
@@ -35,23 +37,20 @@ pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run
         }
 
         output.info("");
-        output.info("No changes made. Run without --dry-run to migrate.");
+        output.info(&t!("migrate.dry_run_hint"));
     } else {
-        output.success(&format!(
-            "Environment '{}' migrated successfully!",
-            result.name
+        output.success(&t!("migrate.success", name = &result.name));
+        output.info(&t!(
+            "create.path",
+            path = crate::paths::abbreviate_home(&result.path)
         ));
-        output.info(&format!("  Path: {}", result.path.display()));
-        output.info(&format!("  Python: {}", result.python_version));
-        output.info(&format!(
-            "  Packages installed: {}",
-            result.packages_migrated
-        ));
+        output.info(&t!("migrate.python", version = &result.python_version));
+        output.info(&t!("migrate.packages", count = result.packages_migrated));
 
         if !result.packages_failed.is_empty() {
-            output.warn(&format!(
-                "  Packages failed: {} (may require manual installation)",
-                result.packages_failed.len()
+            output.warn(&t!(
+                "migrate.failed_packages",
+                count = result.packages_failed.len()
             ));
             for pkg in &result.packages_failed {
                 output.info(&format!("    - {}", pkg));
@@ -59,7 +58,7 @@ pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run
         }
 
         output.info("");
-        output.info(&format!("Activate with: scoop use {}", result.name));
+        output.info(&t!("migrate.activate_hint", name = &result.name));
     }
 }
 
@@ -76,14 +75,17 @@ pub fn migrate_environment(
     if !opts.json {
         // Show environment info
         output.info(&format!(
-            "Source: {} from {} (Python {})",
+            "Source: {} ({}, Python {})",
             name, source.source_type, source.python_version
         ));
-        output.info(&format!("  Path: {}", source.path.display()));
+        output.info(&t!(
+            "migrate.source_path",
+            path = crate::paths::abbreviate_home(&source.path)
+        ));
 
         if let Some(size_bytes) = source.size_bytes {
             let size_mb = size_bytes as f64 / 1_048_576.0;
-            output.info(&format!("  Size: {:.1} MB", size_mb));
+            output.info(&t!("migrate.size", size = format!("{:.1}", size_mb)));
         }
     }
 
@@ -99,10 +101,7 @@ pub fn migrate_environment(
                 // Auto-rename: generate unique name
                 final_name = generate_unique_name(name)?;
                 if !opts.json {
-                    output.info(&format!(
-                        "Auto-renaming to '{}' to avoid conflict",
-                        final_name
-                    ));
+                    output.info(&t!("migrate.auto_rename", name = &final_name));
                 }
             } else if opts.rename.is_some() {
                 // User provided explicit rename, check if that conflicts too
@@ -121,18 +120,18 @@ pub fn migrate_environment(
                         ConflictResolution::Overwrite => {
                             effective_force = true;
                             if !opts.json {
-                                output.warn("Will overwrite existing environment.");
+                                output.warn(&t!("migrate.will_overwrite"));
                             }
                         }
                         ConflictResolution::Rename => {
                             final_name = prompt_rename(name)?;
                             if !opts.json {
-                                output.info(&format!("Will migrate as '{}'", final_name));
+                                output.info(&t!("migrate.will_migrate_as", name = &final_name));
                             }
                         }
                         ConflictResolution::Skip => {
                             if !opts.json {
-                                output.info("Skipping migration.");
+                                output.info(&t!("migrate.skipped"));
                             }
                             return Ok(());
                         }
@@ -140,14 +139,8 @@ pub fn migrate_environment(
                 } else {
                     // Non-interactive mode: error out
                     if !opts.json {
-                        output.warn(&format!(
-                            "Name conflict: '{}' already exists at {}",
-                            name,
-                            existing.display()
-                        ));
-                        output.info(
-                            "Use --force to overwrite, --rename to use different name, or --auto-rename.",
-                        );
+                        output.warn(&t!("migrate.name_exists", name = name));
+                        output.info(&t!("migrate.use_flags"));
                     }
                     return Err(ScoopError::MigrationNameConflict {
                         name: name.to_string(),
@@ -155,26 +148,26 @@ pub fn migrate_environment(
                     });
                 }
             } else if !opts.json {
-                output.warn("Forcing migration over existing environment.");
+                output.warn(&t!("migrate.overwriting"));
             }
         }
         EnvironmentStatus::PythonEol { version } => {
             if !opts.force {
                 if !opts.json {
-                    output.warn(&format!("Python {} is end-of-life.", version));
-                    output.info("Use --force to migrate anyway.");
+                    output.warn(&t!("migrate.eol_warning", version = version));
+                    output.info(&t!("migrate.eol_force_hint"));
                 }
                 return Err(ScoopError::MigrationFailed {
                     reason: format!("Python {} is EOL", version),
                 });
             }
             if !opts.json {
-                output.warn("Migrating with EOL Python version.");
+                output.warn(&t!("migrate.eol_proceeding", version = version));
             }
         }
         EnvironmentStatus::Corrupted { reason } => {
             if !opts.json {
-                output.error(&format!("Environment is corrupted: {}", reason));
+                output.error(&t!("migrate.corrupted", reason = reason));
             }
             return Err(ScoopError::CorruptedEnvironment {
                 name: name.to_string(),
@@ -201,9 +194,9 @@ pub fn migrate_environment(
 
     if !opts.json {
         if opts.dry_run {
-            output.info("[DRY-RUN] Simulating migration...");
+            output.info(&t!("migrate.simulating"));
         } else {
-            output.info("Starting migration...");
+            output.info(&t!("migrate.migrating"));
         }
     }
 

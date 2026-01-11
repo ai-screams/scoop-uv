@@ -2,6 +2,8 @@
 //!
 //! Displays discovered environments in human-readable or JSON format.
 
+use rust_i18n::t;
+
 use crate::cli::MigrateSource;
 use crate::core::migrate::{EnvironmentStatus, SourceType};
 use crate::error::Result;
@@ -25,7 +27,7 @@ pub fn list_environments(
         let source_name = source_filter
             .map(|s| s.to_string())
             .unwrap_or_else(|| "all sources".to_string());
-        output.info(&format!("Scanning {} for environments...", source_name));
+        output.info(&t!("migrate.scanning", source = source_name));
     }
 
     let environments = scan_all_environments(source_filter);
@@ -69,11 +71,11 @@ pub fn list_environments(
 
     if environments.is_empty() {
         let source_name = source_filter.map(|s| format!("{} ", s)).unwrap_or_default();
-        output.info(&format!("No {}environments found.", source_name));
+        output.info(&t!("migrate.no_envs", source = source_name));
         return Ok(());
     }
 
-    output.success(&format!("Found {} environment(s):", environments.len()));
+    output.success(&t!("migrate.found", count = environments.len()));
     println!();
 
     // Group by source type for display
@@ -112,8 +114,8 @@ pub fn list_environments(
     }
 
     println!();
-    output.info("To migrate: scoop migrate @env <name>");
-    output.info("To preview: scoop migrate @env <name> --dry-run");
+    output.info(&t!("migrate.hint_single"));
+    output.info(&t!("migrate.hint_preview"));
 
     Ok(())
 }

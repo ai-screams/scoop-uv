@@ -303,6 +303,24 @@ pub enum Commands {
         #[command(subcommand)]
         command: Option<MigrateCommand>,
     },
+
+    /// Set or show language preference
+    Lang {
+        /// Language code to set (e.g., ko, en)
+        lang: Option<String>,
+
+        /// List supported languages
+        #[arg(long)]
+        list: bool,
+
+        /// Reset to system default
+        #[arg(long)]
+        reset: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Supported shell types

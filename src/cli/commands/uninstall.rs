@@ -1,5 +1,7 @@
 //! Uninstall command
 
+use rust_i18n::t;
+
 use crate::error::Result;
 use crate::output::{Output, UninstallData};
 use crate::uv::UvClient;
@@ -8,7 +10,7 @@ use crate::uv::UvClient;
 pub fn execute(output: &Output, version: &str) -> Result<()> {
     let uv = UvClient::new()?;
 
-    output.info(&format!("Uninstalling Python {version}..."));
+    output.info(&t!("uninstall.uninstalling", version = version));
 
     uv.uninstall_python(version)?;
 
@@ -23,7 +25,7 @@ pub fn execute(output: &Output, version: &str) -> Result<()> {
         return Ok(());
     }
 
-    output.success(&format!("Uninstalled Python {version}"));
+    output.success(&t!("uninstall.success", version = version));
 
     Ok(())
 }

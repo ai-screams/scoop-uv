@@ -85,6 +85,8 @@ _scoop() {
                 'completions:Output shell completion script'
                 'activate:Activate a virtual environment'
                 'deactivate:Deactivate current virtual environment'
+                'migrate:Migrate environments from other tools'
+                'lang:Set or show language preference'
             )
             _describe -V 'command' commands
             ;;
@@ -307,6 +309,35 @@ _scoop() {
                 init|completions)
                     local shells=('bash:Bash shell' 'zsh:Zsh shell' 'fish:Fish shell' 'powershell:PowerShell')
                     _describe 'shell' shells
+                    ;;
+                lang)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        local has_list=false has_reset=false has_json=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                --list) has_list=true ;;
+                                --reset) has_reset=true ;;
+                                --json) has_json=true ;;
+                            esac
+                        done
+                        [[ $has_list == false ]] && opts+=('--list:List supported languages')
+                        [[ $has_reset == false ]] && opts+=('--reset:Reset to system default')
+                        [[ $has_json == false ]] && opts+=('--json:Output as JSON')
+                        _describe 'option' opts
+                    else
+                        local langs=('en:English' 'ko:Korean')
+                        _describe 'language' langs
+                    fi
+                    ;;
+                migrate)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _describe 'option' opts
+                    else
+                        local subcmds=('list:List environments available for migration' 'all:Migrate all environments' '@env:Migrate a specific environment')
+                        _describe 'subcommand' subcmds
+                    fi
                     ;;
             esac
             ;;

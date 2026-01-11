@@ -77,7 +77,7 @@ end
 complete -c scoop -f
 
 # Subcommands
-set -l commands list use create remove info install uninstall doctor init completions activate deactivate
+set -l commands list use create remove info install uninstall doctor init completions activate deactivate migrate lang
 
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "list" -d "List all virtual environments"
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "use" -d "Set local environment for current directory"
@@ -91,6 +91,8 @@ complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "init" -d "O
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "completions" -d "Output shell completion script"
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "activate" -d "Activate a virtual environment"
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "deactivate" -d "Deactivate current virtual environment"
+complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "migrate" -d "Migrate environments from other tools"
+complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "lang" -d "Set or show language preference"
 
 # Options for 'list' (with duplicate prevention)
 complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt pythons" -l pythons -d "Show installed Python versions"
@@ -150,6 +152,20 @@ complete -c scoop -n "__fish_seen_subcommand_from create; and __fish_is_nth_toke
 
 # Shell types for init/completions
 complete -c scoop -n "__fish_seen_subcommand_from init completions" -a "bash zsh fish powershell" -d "Shell type"
+
+# Options for 'lang' (with duplicate prevention)
+complete -c scoop -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt list" -l list -d "List supported languages"
+complete -c scoop -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt reset" -l reset -d "Reset to system default"
+complete -c scoop -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt json" -l json -d "Output as JSON"
+
+# Language codes for lang command
+complete -c scoop -n "__fish_seen_subcommand_from lang" -a "en" -d "English"
+complete -c scoop -n "__fish_seen_subcommand_from lang" -a "ko" -d "Korean"
+
+# Subcommands for 'migrate'
+complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "list" -d "List environments available for migration"
+complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "all" -d "Migrate all environments"
+complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "@env" -d "Migrate a specific environment"
 "#
 }
 
