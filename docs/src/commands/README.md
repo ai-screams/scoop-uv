@@ -14,6 +14,8 @@ Complete reference for all scoop commands.
 | [`scoop uninstall`](uninstall.md) | - | Uninstall Python version |
 | [`scoop doctor`](doctor.md) | - | Diagnose installation |
 | [`scoop info`](info.md) | - | Show virtualenv details |
+| [`scoop migrate`](migrate.md) | - | Migrate from pyenv/conda/venvwrapper |
+| [`scoop lang`](lang.md) | - | Get/set display language |
 | [`scoop init`](init.md) | - | Shell init script |
 | [`scoop completions`](completions.md) | - | Completion script |
 
@@ -34,6 +36,7 @@ Available for all commands:
 |----------|-------------|---------|
 | `SCOOP_HOME` | Base directory for scoop | `~/.scoop` |
 | `SCOOP_NO_AUTO` | Disable auto-activation | (unset) |
+| `SCOOP_LANG` | Display language (en, ko) | System locale |
 | `NO_COLOR` | Disable colored output | (unset) |
 
 ## Directory Layout

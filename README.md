@@ -64,6 +64,8 @@
 | Manual `source .venv/bin/activate`  | Auto-activate on directory entry     |
 | pyenv-virtualenv is slow            | uv-powered, 100x+ faster             |
 | Which Python? Which venv? Chaos.    | `scoop doctor` checks everything     |
+| Migrating envs? Manual nightmare.   | `scoop migrate --all` does it all    |
+| English-only CLI                    | Multi-language support (en, ko)      |
 
 ---
 
@@ -147,7 +149,7 @@ source ~/.config/fish/config.fish
 
 ```bash
 scoop --version
-# → scoop 0.2.7 🍨
+# → scoop 0.3.1 🍨
 ```
 
 #### What this enables
@@ -155,6 +157,8 @@ scoop --version
 - ✅ **Auto-activation** — enter a directory with `.scoop-version`, environment activates
 - ✅ **Tab completion** — commands, environments, Python versions
 - ✅ **Shell wrapper** — `scoop activate/deactivate` works correctly
+- ✅ **Migration ready** — import from pyenv, conda, virtualenvwrapper
+- ✅ **Multi-language** — Korean (ko) and English (en) supported
 
 #### Using with pyenv
 
@@ -239,6 +243,25 @@ scoop remove myproject     # Melt it away 💧
 | `scoop doctor --fix` | Auto-fix issues where possible         |
 | `scoop doctor --json`| Output diagnostics as JSON             |
 
+### Migration 🚚
+
+| Command                     | Description                              |
+|-----------------------------|------------------------------------------|
+| `scoop migrate list`        | Show environments to migrate             |
+| `scoop migrate @<name>`     | Migrate a single environment             |
+| `scoop migrate --all`       | Migrate all environments                 |
+
+> **Supported sources:** pyenv-virtualenv, virtualenvwrapper, conda
+
+### Language 🌏
+
+| Command               | Description                        |
+|-----------------------|------------------------------------|
+| `scoop lang`          | Show current language              |
+| `scoop lang <code>`   | Set language (en, ko)              |
+| `scoop lang --list`   | List supported languages           |
+| `scoop lang --reset`  | Reset to system default            |
+
 ### Shell Integration
 
 | Command                    | Description                        |
@@ -264,10 +287,13 @@ src/
 │   ├── version    # Version file resolution
 │   ├── metadata   # Virtualenv metadata (JSON)
 │   ├── virtualenv # Virtualenv entity
-│   └── doctor     # Health diagnostics
+│   ├── doctor     # Health diagnostics
+│   └── migrate/   # Migration (pyenv, conda, venvwrapper)
 ├── shell/         # 🐚 Shell integration (bash, zsh, fish)
 ├── uv/            # ⚡ uv CLI wrapper
 ├── output/        # 🎨 Terminal UI & JSON output
+├── i18n.rs        # 🌏 Internationalization (en, ko)
+├── config.rs      # ⚙️ User configuration
 └── error, paths, validate  # Utilities
 ```
 
