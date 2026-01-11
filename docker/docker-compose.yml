@@ -1,0 +1,89 @@
+# Docker Compose v2 (version field deprecated since v2.0)
+# https://docs.docker.com/compose/compose-file/
+
+services:
+  # ============================================================
+  # Full test environment (development)
+  # ============================================================
+  full:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: full
+      args:
+        BUILDKIT_INLINE_CACHE: "1"
+    image: ghcr.io/ai-screams/scoop:latest
+    volumes:
+      # Source code (live reload)
+      - ..:/workspace:cached
+      # Cargo cache (build speed)
+      - cargo-registry:/root/.cargo/registry
+      - cargo-git:/root/.cargo/git
+      # Target cache (incremental builds)
+      - target-cache:/workspace/target
+    environment:
+      - RUST_BACKTRACE=1
+      - CARGO_TERM_COLOR=always
+      - CARGO_INCREMENTAL=1
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    # Resource limits (optional)
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+  # ============================================================
+  # Slim test environment (CI)
+  # ============================================================
+  slim:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: slim
+      args:
+        BUILDKIT_INLINE_CACHE: "1"
+    image: ghcr.io/ai-screams/scoop:slim
+    volumes:
+      - ..:/workspace:cached
+      - cargo-registry:/root/.cargo/registry
+      - cargo-git:/root/.cargo/git
+      - target-cache:/workspace/target
+    environment:
+      - RUST_BACKTRACE=1
+      - CARGO_TERM_COLOR=always
+    working_dir: /workspace
+
+  # ============================================================
+  # Integration test runner
+  # ============================================================
+  test:
+    extends:
+      service: slim
+    command: cargo test --features integration-test
+    profiles:
+      - test
+
+  # ============================================================
+  # Benchmark runner
+  # ============================================================
+  bench:
+    extends:
+      service: full
+    command: cargo bench
+    profiles:
+      - bench
+
+# ============================================================
+# Named volumes for caching
+# ============================================================
+volumes:
+  cargo-registry:
+    name: scoop-cargo-registry
+  cargo-git:
+    name: scoop-cargo-git
+  target-cache:
+    name: scoop-target-cache
