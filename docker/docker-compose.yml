@@ -21,6 +21,11 @@ services:
       - cargo-git:/root/.cargo/git
       # Target cache (incremental builds)
       - target-cache:/workspace/target
+      # Shell scripts (live reload for development)
+      - ../docker/scripts/entrypoint.sh:/entrypoint.sh:ro
+      - ../docker/scripts/bashrc.sh:/root/.bashrc:ro
+      - ../docker/scripts/zshrc.sh:/root/.zshrc:ro
+      - ../docker/scripts/config.fish:/root/.config/fish/config.fish:ro
     environment:
       - RUST_BACKTRACE=1
       - CARGO_TERM_COLOR=always
@@ -52,6 +57,11 @@ services:
       - cargo-registry:/root/.cargo/registry
       - cargo-git:/root/.cargo/git
       - target-cache:/workspace/target
+      # Shell scripts (live reload for development)
+      - ../docker/scripts/entrypoint.sh:/entrypoint.sh:ro
+      - ../docker/scripts/bashrc.sh:/root/.bashrc:ro
+      - ../docker/scripts/zshrc.sh:/root/.zshrc:ro
+      - ../docker/scripts/config.fish:/root/.config/fish/config.fish:ro
     environment:
       - RUST_BACKTRACE=1
       - CARGO_TERM_COLOR=always
