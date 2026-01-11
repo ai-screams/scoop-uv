@@ -322,3 +322,145 @@ migrate.batch_failed_list:
 migrate.conflict_warning:
   en: "Environment '%{name}' already exists at %{path}"
   ko: "'%{name}' 환경이 이미 존재: %{path}"
+
+# ============================================================================
+# Error messages
+# ============================================================================
+error.virtualenv_not_found:
+  en: "Can't find '%{name}' environment"
+  ko: "'%{name}' 환경을 찾을 수 없음"
+
+error.virtualenv_exists:
+  en: "'%{name}' already exists"
+  ko: "'%{name}'이(가) 이미 존재"
+
+error.invalid_env_name:
+  en: "Invalid name '%{name}': %{reason}"
+  ko: "잘못된 이름 '%{name}': %{reason}"
+
+error.invalid_python_version:
+  en: "Invalid Python version: %{version}"
+  ko: "잘못된 Python 버전: %{version}"
+
+error.uv_not_found:
+  en: "uv not found (scoop's core engine)"
+  ko: "uv를 찾을 수 없음 (scoop 핵심 엔진)"
+
+error.uv_command_failed:
+  en: "uv %{command} failed: %{message}"
+  ko: "uv %{command} 실패: %{message}"
+
+error.path_error:
+  en: "Path error: %{message}"
+  ko: "경로 오류: %{message}"
+
+error.home_not_found:
+  en: "Can't find home directory"
+  ko: "홈 디렉토리를 찾을 수 없음"
+
+error.io:
+  en: "IO error: %{message}"
+  ko: "IO 오류: %{message}"
+
+error.json:
+  en: "JSON error: %{message}"
+  ko: "JSON 오류: %{message}"
+
+error.version_file_not_found:
+  en: "No version file in %{path} or parent directories"
+  ko: "%{path} 또는 상위 디렉토리에 버전 파일 없음"
+
+error.unsupported_shell:
+  en: "Shell '%{shell}' not supported"
+  ko: "'%{shell}' 셸은 지원하지 않음"
+
+error.python_not_installed:
+  en: "Python %{version} not installed"
+  ko: "Python %{version} 미설치"
+
+error.python_install_failed:
+  en: "Couldn't install Python %{version}: %{message}"
+  ko: "Python %{version} 설치 실패: %{message}"
+
+error.python_uninstall_failed:
+  en: "Couldn't uninstall Python %{version}: %{message}"
+  ko: "Python %{version} 삭제 실패: %{message}"
+
+error.no_python_versions:
+  en: "No Python versions matching '%{pattern}'"
+  ko: "'%{pattern}'와 일치하는 Python 버전 없음"
+
+error.invalid_argument:
+  en: "%{message}"
+  ko: "%{message}"
+
+error.pyenv_not_found:
+  en: "pyenv not found"
+  ko: "pyenv를 찾을 수 없음"
+
+error.pyenv_env_not_found:
+  en: "pyenv environment '%{name}' not found"
+  ko: "pyenv 환경 '%{name}'을(를) 찾을 수 없음"
+
+error.venvwrapper_env_not_found:
+  en: "virtualenvwrapper environment '%{name}' not found"
+  ko: "virtualenvwrapper 환경 '%{name}'을(를) 찾을 수 없음"
+
+error.conda_env_not_found:
+  en: "conda environment '%{name}' not found"
+  ko: "conda 환경 '%{name}'을(를) 찾을 수 없음"
+
+error.corrupted_environment:
+  en: "'%{name}' is corrupted: %{reason}"
+  ko: "'%{name}' 손상됨: %{reason}"
+
+error.package_extraction_failed:
+  en: "Couldn't extract packages: %{reason}"
+  ko: "패키지 추출 실패: %{reason}"
+
+error.migration_failed:
+  en: "Migration failed: %{reason} (rolled back)"
+  ko: "마이그레이션 실패: %{reason} (롤백됨)"
+
+error.migration_name_conflict:
+  en: "'%{name}' already exists at %{path}"
+  ko: "'%{name}'이(가) %{path}에 이미 존재"
+
+# ============================================================================
+# Error suggestions
+# ============================================================================
+suggestion.virtualenv_not_found:
+  en: "→ Create: scoop create %{name} 3.12"
+  ko: "→ 생성: scoop create %{name} 3.12"
+
+suggestion.virtualenv_exists:
+  en: "→ Use --force to overwrite"
+  ko: "→ --force로 덮어쓰기"
+
+suggestion.invalid_env_name:
+  en: "→ Names must start with a letter: [a-zA-Z][a-zA-Z0-9_-]*"
+  ko: "→ 이름은 문자로 시작: [a-zA-Z][a-zA-Z0-9_-]*"
+
+suggestion.uv_not_found:
+  en: "→ Install: curl -LsSf https://astral.sh/uv/install.sh | sh"
+  ko: "→ 설치: curl -LsSf https://astral.sh/uv/install.sh | sh"
+
+suggestion.python_not_installed:
+  en: "→ Install: scoop install %{version}"
+  ko: "→ 설치: scoop install %{version}"
+
+suggestion.no_python_versions:
+  en: "→ See versions: scoop list --pythons"
+  ko: "→ 버전 목록: scoop list --pythons"
+
+suggestion.pyenv_not_found:
+  en: "→ Check PYENV_ROOT or ~/.pyenv directory\n→ Install: https://github.com/pyenv/pyenv#installation"
+  ko: "→ PYENV_ROOT 또는 ~/.pyenv 확인\n→ 설치: https://github.com/pyenv/pyenv#installation"
+
+suggestion.source_env_not_found:
+  en: "→ See available: scoop migrate list"
+  ko: "→ 목록 확인: scoop migrate list"
+
+suggestion.migration_name_conflict:
+  en: "→ Use --force to overwrite, or pick a different name"
+  ko: "→ --force로 덮어쓰기, 또는 다른 이름 사용"

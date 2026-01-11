@@ -42,6 +42,8 @@ impl TestFixture {
 fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
     let mut cmd = Command::cargo_bin("scoop").unwrap();
     cmd.env("SCOOP_HOME", scoop_home);
+    // Force English locale for consistent test assertions
+    cmd.env("SCOOP_LANG", "en");
     cmd
 }
 

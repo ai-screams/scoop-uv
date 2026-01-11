@@ -1,7 +1,9 @@
 //! Error types for scoop
 
+use std::fmt;
 use std::path::PathBuf;
 
+use rust_i18n::t;
 use serde::Serialize;
 use thiserror::Error;
 
@@ -26,104 +28,211 @@ pub enum MigrationExitCode {
 #[derive(Error, Debug)]
 pub enum ScoopError {
     /// Virtual environment not found
-    #[error("Can't find '{name}' environment")]
     VirtualenvNotFound { name: String },
 
     /// Virtual environment already exists
-    #[error("'{name}' already exists")]
     VirtualenvExists { name: String },
 
     /// Invalid environment name
-    #[error("Invalid name '{name}': {reason}")]
     InvalidEnvName { name: String, reason: String },
 
     /// Invalid Python version
-    #[error("Invalid Python version: {version}")]
     InvalidPythonVersion { version: String },
 
     /// uv not found
-    #[error("uv not found (scoop's core engine)")]
     UvNotFound,
 
     /// uv command failed
-    #[error("uv failed: {message}")]
     UvCommandFailed { command: String, message: String },
 
     /// Path error
-    #[error("Path error: {0}")]
     PathError(String),
 
     /// Home directory not found
-    #[error("Can't find home directory")]
     HomeNotFound,
 
     /// IO error
-    #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
     /// JSON error
-    #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
 
     /// Version file not found
-    #[error("No version file in {path} or parent directories")]
     VersionFileNotFound { path: PathBuf },
 
     /// Shell not supported
-    #[error("Shell '{shell}' not supported")]
     UnsupportedShell { shell: String },
 
     /// Python version not installed
-    #[error("Python {version} not installed")]
     PythonNotInstalled { version: String },
 
     /// Python installation failed
-    #[error("Couldn't install Python {version}: {message}")]
     PythonInstallFailed { version: String, message: String },
 
     /// Python uninstallation failed
-    #[error("Couldn't uninstall Python {version}: {message}")]
     PythonUninstallFailed { version: String, message: String },
 
     /// No Python versions available
-    #[error("No Python versions matching '{pattern}'")]
     NoPythonVersions { pattern: String },
 
     /// Invalid argument combination
-    #[error("{message}")]
     InvalidArgument { message: String },
 
     /// pyenv not found
-    #[error("pyenv not found")]
     PyenvNotFound,
 
     /// pyenv environment not found
-    #[error("pyenv environment '{name}' not found")]
     PyenvEnvNotFound { name: String },
 
     /// virtualenvwrapper environment not found
-    #[error("virtualenvwrapper environment '{name}' not found")]
     VenvWrapperEnvNotFound { name: String },
 
     /// conda environment not found
-    #[error("conda environment '{name}' not found")]
     CondaEnvNotFound { name: String },
 
     /// Corrupted environment
-    #[error("'{name}' is corrupted: {reason}")]
     CorruptedEnvironment { name: String, reason: String },
 
     /// Package extraction failed
-    #[error("Couldn't extract packages: {reason}")]
     PackageExtractionFailed { reason: String },
 
     /// Migration failed
-    #[error("Migration failed: {reason} (rolled back)")]
     MigrationFailed { reason: String },
 
     /// Name conflict with existing scoop environment
-    #[error("'{name}' already exists at {}", existing.display())]
     MigrationNameConflict { name: String, existing: PathBuf },
+}
+
+// ============================================================================
+// Display Implementation (i18n-aware)
+// ============================================================================
+
+impl fmt::Display for ScoopError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::VirtualenvNotFound { name } => {
+                write!(f, "{}", t!("error.virtualenv_not_found", name = name))
+            }
+            Self::VirtualenvExists { name } => {
+                write!(f, "{}", t!("error.virtualenv_exists", name = name))
+            }
+            Self::InvalidEnvName { name, reason } => {
+                write!(
+                    f,
+                    "{}",
+                    t!("error.invalid_env_name", name = name, reason = reason)
+                )
+            }
+            Self::InvalidPythonVersion { version } => {
+                write!(
+                    f,
+                    "{}",
+                    t!("error.invalid_python_version", version = version)
+                )
+            }
+            Self::UvNotFound => write!(f, "{}", t!("error.uv_not_found")),
+            Self::UvCommandFailed { command, message } => {
+                write!(
+                    f,
+                    "{}",
+                    t!(
+                        "error.uv_command_failed",
+                        command = command,
+                        message = message
+                    )
+                )
+            }
+            Self::PathError(msg) => {
+                write!(f, "{}", t!("error.path_error", message = msg))
+            }
+            Self::HomeNotFound => write!(f, "{}", t!("error.home_not_found")),
+            Self::Io(err) => {
+                write!(f, "{}", t!("error.io", message = err.to_string()))
+            }
+            Self::Json(err) => {
+                write!(f, "{}", t!("error.json", message = err.to_string()))
+            }
+            Self::VersionFileNotFound { path } => {
+                write!(
+                    f,
+                    "{}",
+                    t!("error.version_file_not_found", path = path.display())
+                )
+            }
+            Self::UnsupportedShell { shell } => {
+                write!(f, "{}", t!("error.unsupported_shell", shell = shell))
+            }
+            Self::PythonNotInstalled { version } => {
+                write!(f, "{}", t!("error.python_not_installed", version = version))
+            }
+            Self::PythonInstallFailed { version, message } => {
+                write!(
+                    f,
+                    "{}",
+                    t!(
+                        "error.python_install_failed",
+                        version = version,
+                        message = message
+                    )
+                )
+            }
+            Self::PythonUninstallFailed { version, message } => {
+                write!(
+                    f,
+                    "{}",
+                    t!(
+                        "error.python_uninstall_failed",
+                        version = version,
+                        message = message
+                    )
+                )
+            }
+            Self::NoPythonVersions { pattern } => {
+                write!(f, "{}", t!("error.no_python_versions", pattern = pattern))
+            }
+            Self::InvalidArgument { message } => {
+                write!(f, "{}", t!("error.invalid_argument", message = message))
+            }
+            Self::PyenvNotFound => write!(f, "{}", t!("error.pyenv_not_found")),
+            Self::PyenvEnvNotFound { name } => {
+                write!(f, "{}", t!("error.pyenv_env_not_found", name = name))
+            }
+            Self::VenvWrapperEnvNotFound { name } => {
+                write!(f, "{}", t!("error.venvwrapper_env_not_found", name = name))
+            }
+            Self::CondaEnvNotFound { name } => {
+                write!(f, "{}", t!("error.conda_env_not_found", name = name))
+            }
+            Self::CorruptedEnvironment { name, reason } => {
+                write!(
+                    f,
+                    "{}",
+                    t!("error.corrupted_environment", name = name, reason = reason)
+                )
+            }
+            Self::PackageExtractionFailed { reason } => {
+                write!(
+                    f,
+                    "{}",
+                    t!("error.package_extraction_failed", reason = reason)
+                )
+            }
+            Self::MigrationFailed { reason } => {
+                write!(f, "{}", t!("error.migration_failed", reason = reason))
+            }
+            Self::MigrationNameConflict { name, existing } => {
+                write!(
+                    f,
+                    "{}",
+                    t!(
+                        "error.migration_name_conflict",
+                        name = name,
+                        path = existing.display()
+                    )
+                )
+            }
+        }
+    }
 }
 
 // ============================================================================
@@ -151,14 +260,14 @@ impl ScoopError {
             Self::PythonUninstallFailed { .. } => "PYTHON_UNINSTALL_FAILED",
             Self::NoPythonVersions { .. } => "PYTHON_NO_MATCHING_VERSION",
             Self::InvalidArgument { .. } => "ARG_INVALID",
-            Self::PyenvNotFound => "source.pyenv_not_found",
-            Self::PyenvEnvNotFound { .. } => "source.env_not_found",
-            Self::VenvWrapperEnvNotFound { .. } => "source.env_not_found",
-            Self::CondaEnvNotFound { .. } => "source.env_not_found",
-            Self::CorruptedEnvironment { .. } => "migrate.corrupted",
-            Self::PackageExtractionFailed { .. } => "migrate.extraction_failed",
-            Self::MigrationFailed { .. } => "migrate.failed",
-            Self::MigrationNameConflict { .. } => "migrate.name_conflict",
+            Self::PyenvNotFound => "SOURCE_PYENV_NOT_FOUND",
+            Self::PyenvEnvNotFound { .. } => "SOURCE_PYENV_ENV_NOT_FOUND",
+            Self::VenvWrapperEnvNotFound { .. } => "SOURCE_VENVWRAPPER_ENV_NOT_FOUND",
+            Self::CondaEnvNotFound { .. } => "SOURCE_CONDA_ENV_NOT_FOUND",
+            Self::CorruptedEnvironment { .. } => "MIGRATE_CORRUPTED",
+            Self::PackageExtractionFailed { .. } => "MIGRATE_EXTRACTION_FAILED",
+            Self::MigrationFailed { .. } => "MIGRATE_FAILED",
+            Self::MigrationNameConflict { .. } => "MIGRATE_NAME_CONFLICT",
         }
     }
 
@@ -166,31 +275,23 @@ impl ScoopError {
     pub fn suggestion(&self) -> Option<String> {
         match self {
             Self::VirtualenvNotFound { name } => {
-                Some(format!("→ Create: scoop create {name} 3.12"))
+                Some(t!("suggestion.virtualenv_not_found", name = name).to_string())
             }
-            Self::VirtualenvExists { .. } => Some("→ Use --force to overwrite".to_string()),
-            Self::InvalidEnvName { .. } => {
-                Some("→ Names must start with a letter: [a-zA-Z][a-zA-Z0-9_-]*".to_string())
-            }
-            Self::UvNotFound => {
-                Some("→ Install: curl -LsSf https://astral.sh/uv/install.sh | sh".to_string())
-            }
+            Self::VirtualenvExists { .. } => Some(t!("suggestion.virtualenv_exists").to_string()),
+            Self::InvalidEnvName { .. } => Some(t!("suggestion.invalid_env_name").to_string()),
+            Self::UvNotFound => Some(t!("suggestion.uv_not_found").to_string()),
             Self::PythonNotInstalled { version } => {
-                Some(format!("→ Install: scoop install {version}"))
+                Some(t!("suggestion.python_not_installed", version = version).to_string())
             }
-            Self::NoPythonVersions { .. } => {
-                Some("→ See versions: scoop list --pythons".to_string())
-            }
-            Self::PyenvNotFound => Some(
-                "→ Check PYENV_ROOT or ~/.pyenv directory\n→ Install: https://github.com/pyenv/pyenv#installation".to_string(),
-            ),
+            Self::NoPythonVersions { .. } => Some(t!("suggestion.no_python_versions").to_string()),
+            Self::PyenvNotFound => Some(t!("suggestion.pyenv_not_found").to_string()),
             Self::PyenvEnvNotFound { .. }
             | Self::VenvWrapperEnvNotFound { .. }
             | Self::CondaEnvNotFound { .. } => {
-                Some("→ See available: scoop migrate list".to_string())
+                Some(t!("suggestion.source_env_not_found").to_string())
             }
             Self::MigrationNameConflict { .. } => {
-                Some("→ Use --force to overwrite, or pick a different name".to_string())
+                Some(t!("suggestion.migration_name_conflict").to_string())
             }
             _ => None,
         }
@@ -267,7 +368,7 @@ mod tests {
             command: "venv".to_string(),
             message: "Python not found".to_string(),
         };
-        assert!(err.to_string().contains("uv failed"));
+        assert!(err.to_string().contains("uv venv failed"));
         assert!(err.to_string().contains("Python not found"));
     }
 
@@ -573,7 +674,10 @@ mod tests {
             message: "Python 3.15 not found".to_string(),
         };
         let msg = err.to_string();
-        assert!(msg.contains("uv failed"), "Should indicate uv failure");
+        assert!(
+            msg.contains("uv venv failed"),
+            "Should indicate uv command failure"
+        );
         assert!(
             msg.contains("Python 3.15 not found"),
             "Should include the error message"
@@ -724,6 +828,60 @@ mod tests {
     }
 
     #[test]
+    fn test_error_code_source_pyenv_not_found() {
+        let err = ScoopError::PyenvNotFound;
+        assert_eq!(err.code(), "SOURCE_PYENV_NOT_FOUND");
+    }
+
+    #[test]
+    fn test_error_code_source_pyenv_env_not_found() {
+        let err = ScoopError::PyenvEnvNotFound { name: "x".into() };
+        assert_eq!(err.code(), "SOURCE_PYENV_ENV_NOT_FOUND");
+    }
+
+    #[test]
+    fn test_error_code_source_venvwrapper_env_not_found() {
+        let err = ScoopError::VenvWrapperEnvNotFound { name: "x".into() };
+        assert_eq!(err.code(), "SOURCE_VENVWRAPPER_ENV_NOT_FOUND");
+    }
+
+    #[test]
+    fn test_error_code_source_conda_env_not_found() {
+        let err = ScoopError::CondaEnvNotFound { name: "x".into() };
+        assert_eq!(err.code(), "SOURCE_CONDA_ENV_NOT_FOUND");
+    }
+
+    #[test]
+    fn test_error_code_migrate_corrupted() {
+        let err = ScoopError::CorruptedEnvironment {
+            name: "x".into(),
+            reason: "r".into(),
+        };
+        assert_eq!(err.code(), "MIGRATE_CORRUPTED");
+    }
+
+    #[test]
+    fn test_error_code_migrate_extraction_failed() {
+        let err = ScoopError::PackageExtractionFailed { reason: "x".into() };
+        assert_eq!(err.code(), "MIGRATE_EXTRACTION_FAILED");
+    }
+
+    #[test]
+    fn test_error_code_migrate_failed() {
+        let err = ScoopError::MigrationFailed { reason: "x".into() };
+        assert_eq!(err.code(), "MIGRATE_FAILED");
+    }
+
+    #[test]
+    fn test_error_code_migrate_name_conflict() {
+        let err = ScoopError::MigrationNameConflict {
+            name: "x".into(),
+            existing: PathBuf::from("/path"),
+        };
+        assert_eq!(err.code(), "MIGRATE_NAME_CONFLICT");
+    }
+
+    #[test]
     fn test_all_error_codes_are_unique() {
         use std::collections::HashSet;
 
@@ -763,6 +921,23 @@ mod tests {
             .code(),
             ScoopError::NoPythonVersions { pattern: "".into() }.code(),
             ScoopError::InvalidArgument { message: "".into() }.code(),
+            // Migration error codes
+            ScoopError::PyenvNotFound.code(),
+            ScoopError::PyenvEnvNotFound { name: "".into() }.code(),
+            ScoopError::VenvWrapperEnvNotFound { name: "".into() }.code(),
+            ScoopError::CondaEnvNotFound { name: "".into() }.code(),
+            ScoopError::CorruptedEnvironment {
+                name: "".into(),
+                reason: "".into(),
+            }
+            .code(),
+            ScoopError::PackageExtractionFailed { reason: "".into() }.code(),
+            ScoopError::MigrationFailed { reason: "".into() }.code(),
+            ScoopError::MigrationNameConflict {
+                name: "".into(),
+                existing: PathBuf::new(),
+            }
+            .code(),
         ];
 
         let unique: HashSet<_> = codes.iter().collect();
@@ -781,6 +956,23 @@ mod tests {
             ScoopError::UvNotFound.code(),
             ScoopError::HomeNotFound.code(),
             ScoopError::InvalidArgument { message: "".into() }.code(),
+            // Migration error codes
+            ScoopError::PyenvNotFound.code(),
+            ScoopError::PyenvEnvNotFound { name: "".into() }.code(),
+            ScoopError::VenvWrapperEnvNotFound { name: "".into() }.code(),
+            ScoopError::CondaEnvNotFound { name: "".into() }.code(),
+            ScoopError::CorruptedEnvironment {
+                name: "".into(),
+                reason: "".into(),
+            }
+            .code(),
+            ScoopError::PackageExtractionFailed { reason: "".into() }.code(),
+            ScoopError::MigrationFailed { reason: "".into() }.code(),
+            ScoopError::MigrationNameConflict {
+                name: "".into(),
+                existing: PathBuf::new(),
+            }
+            .code(),
         ];
 
         for code in codes {

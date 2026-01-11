@@ -50,7 +50,8 @@ fn set_language(output: &Output, code: &str) -> Result<()> {
             output.json_success(
                 "lang",
                 serde_json::json!({
-                    "error": true,
+                    "unsupported": true,
+                    "lang": code,
                     "message": t!("lang.unsupported", lang = code).to_string(),
                 }),
             );
