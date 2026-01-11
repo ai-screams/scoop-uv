@@ -68,9 +68,64 @@ RUN --mount=type=cache,target=/root/.pyenv/cache,sharing=locked \
 RUN python --version && pip --version
 
 # ============================================================
-# Stage 4: full - Complete test environment
+# Stage 4: scoop - Build and install scoop binary
 # ============================================================
-FROM python AS full
+FROM python AS scoop-build
+
+# Ensure rustup has a default toolchain
+RUN rustup default stable
+
+# Copy source code
+COPY Cargo.toml Cargo.lock /build/scoop/
+COPY src /build/scoop/src
+
+WORKDIR /build/scoop
+
+# Build release binary with cache
+RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
+    --mount=type=cache,target=/build/scoop/target,sharing=locked \
+    cargo build --release \
+    && cp target/release/scoop /usr/local/bin/scoop
+
+# Verify installation
+RUN scoop --version
+
+# ============================================================
+# Stage 5: shells - Configure zsh and fish
+# ============================================================
+FROM scoop-build AS shells
+
+# Basic zsh configuration
+RUN echo '# scoop zsh config\n\
+export PYENV_ROOT="$HOME/.pyenv"\n\
+export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"\n\
+eval "$(pyenv init -)"\n\
+eval "$(pyenv virtualenv-init -)"\n\
+eval "$(scoop init zsh)"\n\
+\n\
+# Prompt\n\
+PROMPT="%F{cyan}[scoop-test]%f %~ $ "\n\
+' > /root/.zshrc
+
+# Basic fish configuration
+RUN mkdir -p /root/.config/fish \
+    && echo '# scoop fish config\n\
+set -gx PYENV_ROOT $HOME/.pyenv\n\
+set -gx PATH $PYENV_ROOT/bin $PYENV_ROOT/shims $PATH\n\
+pyenv init - | source\n\
+pyenv virtualenv-init - | source\n\
+scoop init fish | source\n\
+\n\
+# Prompt\n\
+function fish_prompt\n\
+    echo -n (set_color cyan)"[scoop-test]"(set_color normal)" "(prompt_pwd)" \$ "\n\
+end\n\
+' > /root/.config/fish/config.fish
+
+# ============================================================
+# Stage 6: full - Complete test environment
+# ============================================================
+FROM shells AS full
 
 # Install uv (version pinned)
 ENV UV_VERSION=0.5.14
@@ -121,9 +176,9 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash", "-l"]
 
 # ============================================================
-# Stage 5: slim - Minimal CI environment
+# Stage 7: slim - Minimal CI environment
 # ============================================================
-FROM python AS slim
+FROM shells AS slim
 
 # Install uv only
 ENV UV_VERSION=0.5.14
@@ -133,8 +188,9 @@ ENV PATH="/root/.local/bin:$PATH"
 # Minimal test fixture
 RUN pyenv virtualenv 3.12.4 test-pyenv-312
 
-# Copy entrypoint
+# Copy entrypoint and shell config
 COPY docker/scripts/entrypoint.sh /entrypoint.sh
+COPY docker/scripts/bashrc.sh /root/.bashrc
 RUN chmod +x /entrypoint.sh
 
 WORKDIR /workspace

@@ -5,6 +5,11 @@
 set -e
 
 # ============================================================
+# Rust and uv initialization (official image uses /usr/local/cargo)
+# ============================================================
+export PATH="/usr/local/cargo/bin:/root/.cargo/bin:/root/.local/bin:$PATH"
+
+# ============================================================
 # pyenv initialization
 # ============================================================
 export PYENV_ROOT="/root/.pyenv"

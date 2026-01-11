@@ -25,9 +25,9 @@ if command -v virtualenvwrapper.sh &> /dev/null; then
 fi
 
 # ============================================================
-# Rust
+# Rust (official image uses /usr/local/cargo)
 # ============================================================
-export PATH="/root/.cargo/bin:$PATH"
+export PATH="/usr/local/cargo/bin:/root/.cargo/bin:$PATH"
 
 # ============================================================
 # uv
