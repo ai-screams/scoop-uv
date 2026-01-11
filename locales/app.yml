@@ -1,0 +1,48 @@
+# scoop i18n translations
+# Format: rust-i18n Version 2
+_version: 2
+
+# ============================================================================
+# Lang command messages
+# ============================================================================
+lang.current:
+  en: "Current: %{lang} (%{name})"
+  ko: "현재: %{lang} (%{name})"
+
+lang.set:
+  en: "Language set to %{lang}"
+  ko: "언어가 %{lang}(으)로 설정됨"
+
+lang.reset:
+  en: "Reset to system default: %{lang}"
+  ko: "시스템 기본으로 리셋됨: %{lang}"
+
+lang.unsupported:
+  en: "Unsupported language: %{lang}"
+  ko: "지원하지 않는 언어: %{lang}"
+
+lang.list_header:
+  en: "Supported languages:"
+  ko: "지원 언어:"
+
+lang.hint:
+  en: "Run 'scoop lang --list' to see supported languages"
+  ko: "'scoop lang --list'로 지원 언어 확인"
+
+# ============================================================================
+# Future: Success messages
+# ============================================================================
+# success.created:
+#   en: "Created '%{name}' environment"
+#   ko: "'%{name}' 환경 생성됨"
+
+# success.removed:
+#   en: "Removed '%{name}'"
+#   ko: "'%{name}' 삭제됨"
+
+# ============================================================================
+# Future: Error messages
+# ============================================================================
+# error.not_found:
+#   en: "Can't find '%{name}'"
+#   ko: "'%{name}'을(를) 찾을 수 없습니다"
