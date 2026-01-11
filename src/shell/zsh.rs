@@ -312,7 +312,9 @@ _scoop() {
             ;;
     esac
 }
-compdef _scoop scoop
+
+# Register completion only if compdef is available (requires compinit)
+(( $+functions[compdef] )) && compdef _scoop scoop
 "#
 }
 

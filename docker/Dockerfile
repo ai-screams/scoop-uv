@@ -97,6 +97,10 @@ FROM scoop-build AS shells
 
 # Basic zsh configuration
 RUN echo '# scoop zsh config\n\
+\n\
+# Completion system (required for scoop)\n\
+autoload -Uz compinit && compinit\n\
+\n\
 export PYENV_ROOT="$HOME/.pyenv"\n\
 export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"\n\
 eval "$(pyenv init -)"\n\
