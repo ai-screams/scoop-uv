@@ -12,6 +12,8 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   # ============================================================
@@ -21,30 +23,40 @@ jobs:
   docker-integration:
     name: Docker Integration
     runs-on: ubuntu-latest
-    # Use pre-built slim image from ghcr.io
-    container:
-      image: ghcr.io/ai-screams/scoop:slim
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Reuse caching pattern from ci.yml
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          shared-key: "integration"
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build release binary
-        run: cargo build --release
-
-      - name: Run integration tests
-        run: cargo test --features integration-test --release
-
-      - name: Test pyenv migration (dry-run)
+      # Try to pull existing image, build if not available
+      - name: Pull or build slim image
         run: |
-          ./target/release/scoop migrate list
-          ./target/release/scoop migrate test-pyenv-312 --dry-run
+          if ! docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:slim 2>/dev/null; then
+            echo "Image not found, building locally..."
+            docker build -f docker/Dockerfile --target slim -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:slim .
+          fi
+
+      - name: Run integration tests in container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            -e CARGO_TERM_COLOR=always \
+            -e RUST_BACKTRACE=1 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:slim \
+            bash -c "
+              cargo build --release &&
+              cargo test --features integration-test --release &&
+              ./target/release/scoop migrate list &&
+              ./target/release/scoop migrate test-pyenv-312 --dry-run
+            "
