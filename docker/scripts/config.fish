@@ -1,60 +1,58 @@
-#!/bin/bash
-# Shell configuration for scoop test container
+# scoop fish config
 
 # ============================================================
 # pyenv
 # ============================================================
-export PYENV_ROOT="/root/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)" 2>/dev/null || true
+set -gx PYENV_ROOT $HOME/.pyenv
+set -gx PATH $PYENV_ROOT/bin $PYENV_ROOT/shims $PATH
+pyenv init - | source
+pyenv virtualenv-init - | source 2>/dev/null; or true
 
 # ============================================================
 # conda (if installed)
 # ============================================================
-if [ -d "/opt/conda" ]; then
-    eval "$(/opt/conda/bin/conda shell.bash hook)"
-fi
+if test -d /opt/conda
+    eval (/opt/conda/bin/conda shell.fish hook) 2>/dev/null; or true
+end
 
 # ============================================================
 # virtualenvwrapper (if installed)
 # ============================================================
-export WORKON_HOME="/root/.virtualenvs"
-if command -v virtualenvwrapper.sh &> /dev/null; then
-    source "$(which virtualenvwrapper.sh)"
-fi
+set -gx WORKON_HOME /root/.virtualenvs
 
 # ============================================================
-# Rust (official image uses /usr/local/cargo)
+# Rust
 # ============================================================
-export PATH="/usr/local/cargo/bin:/root/.cargo/bin:$PATH"
+set -gx PATH /usr/local/cargo/bin /root/.cargo/bin $PATH
 
 # ============================================================
 # uv
 # ============================================================
-export PATH="/root/.local/bin:$PATH"
-
-# ============================================================
-# Development settings
-# ============================================================
-export CARGO_TERM_COLOR=always
-export RUST_BACKTRACE=1
-
-# ============================================================
-# Prompt
-# ============================================================
-PS1='\[\033[1;36m\][scoop-test]\[\033[0m\] \w $ '
+set -gx PATH /root/.local/bin $PATH
 
 # ============================================================
 # scoop (workspace build takes precedence over /usr/local/bin)
 # ============================================================
-if [ -d "/workspace/target/release" ]; then
-    export PATH="/workspace/target/release:$PATH"
+if test -d /workspace/target/release
+    set -gx PATH /workspace/target/release $PATH
     # Initialize shell integration if available
-    if [ -x "/workspace/target/release/scoop" ]; then
-        eval "$(/workspace/target/release/scoop init bash)" 2>/dev/null || true
-    fi
-fi
+    if test -x /workspace/target/release/scoop
+        /workspace/target/release/scoop init fish | source 2>/dev/null; or true
+    end
+end
+
+# ============================================================
+# Development settings
+# ============================================================
+set -gx CARGO_TERM_COLOR always
+set -gx RUST_BACKTRACE 1
+
+# ============================================================
+# Prompt
+# ============================================================
+function fish_prompt
+    echo -n (set_color cyan)"[scoop-test]"(set_color normal)" "(prompt_pwd)" \$ "
+end
 
 # ============================================================
 # Aliases
