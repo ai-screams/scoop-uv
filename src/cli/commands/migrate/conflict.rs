@@ -109,13 +109,23 @@ pub fn prompt_rename(name: &str) -> Result<String> {
 ///
 /// # Examples
 ///
-/// ```no_run
-/// use crate::cli::commands::migrate::conflict::generate_unique_name;
+/// ```ignore
+/// use scoop_uv::cli::commands::migrate::conflict::generate_unique_name;
+///
+/// // Setup: isolated SCOOP_HOME
+/// let temp = tempfile::tempdir().unwrap();
+/// std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
+/// std::env::set_var("SCOOP_HOME", temp.path());
 ///
 /// // If "myenv-pyenv" doesn't exist, returns "myenv-pyenv"
-/// // If it exists, tries "myenv-1", "myenv-2", etc.
-/// let unique = generate_unique_name("myenv")?;
-/// assert!(unique.starts_with("myenv"));
+/// let unique = generate_unique_name("myenv").unwrap();
+/// assert_eq!(unique, "myenv-pyenv");
+///
+/// // Create "myenv-pyenv" to test fallback
+/// std::fs::create_dir(temp.path().join("virtualenvs/myenv-pyenv")).unwrap();
+/// let unique2 = generate_unique_name("myenv").unwrap();
+/// assert_eq!(unique2, "myenv-1");
+/// std::env::remove_var("SCOOP_HOME");
 /// ```
 ///
 /// # Errors
