@@ -16,10 +16,10 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
     // JSON mode always implies force (no interactive confirmation)
     if !force && !output.is_json() {
         // Show what will be deleted
-        output.info(&format!("Environment path: {}", path.display()));
+        output.info(&format!("Path: {}", crate::paths::abbreviate_home(&path)));
 
         let confirmed = Confirm::new()
-            .with_prompt(format!("Remove virtual environment '{name}'?"))
+            .with_prompt(format!("Remove '{name}'?"))
             .default(false)
             .interact()
             .unwrap_or(false);
@@ -30,7 +30,7 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
         }
     }
 
-    output.info(&format!("Removing virtual environment '{name}'..."));
+    output.info(&format!("Removing '{name}'..."));
     service.delete(name)?;
 
     // JSON output
@@ -45,7 +45,7 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
         return Ok(());
     }
 
-    output.success(&format!("Removed virtual environment '{name}'"));
+    output.success(&format!("Removed '{name}'"));
 
     Ok(())
 }

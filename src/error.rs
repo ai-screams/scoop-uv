@@ -26,29 +26,27 @@ pub enum MigrationExitCode {
 #[derive(Error, Debug)]
 pub enum ScoopError {
     /// Virtual environment not found
-    #[error("Virtual environment '{name}' not found")]
+    #[error("Can't find '{name}' environment")]
     VirtualenvNotFound { name: String },
 
     /// Virtual environment already exists
-    #[error("Virtual environment '{name}' already exists")]
+    #[error("'{name}' already exists")]
     VirtualenvExists { name: String },
 
     /// Invalid environment name
-    #[error("Invalid environment name '{name}': {reason}")]
+    #[error("Invalid name '{name}': {reason}")]
     InvalidEnvName { name: String, reason: String },
 
     /// Invalid Python version
-    #[error("Invalid Python version '{version}'")]
+    #[error("Invalid Python version: {version}")]
     InvalidPythonVersion { version: String },
 
     /// uv not found
-    #[error(
-        "uv is not installed. Install it with: curl -LsSf https://astral.sh/uv/install.sh | sh"
-    )]
+    #[error("uv not found (scoop's core engine)")]
     UvNotFound,
 
     /// uv command failed
-    #[error("uv command failed: {message}")]
+    #[error("uv failed: {message}")]
     UvCommandFailed { command: String, message: String },
 
     /// Path error
@@ -56,7 +54,7 @@ pub enum ScoopError {
     PathError(String),
 
     /// Home directory not found
-    #[error("Could not determine home directory")]
+    #[error("Can't find home directory")]
     HomeNotFound,
 
     /// IO error
@@ -68,27 +66,27 @@ pub enum ScoopError {
     Json(#[from] serde_json::Error),
 
     /// Version file not found
-    #[error("No version file found in {path} or its parent directories")]
+    #[error("No version file in {path} or parent directories")]
     VersionFileNotFound { path: PathBuf },
 
     /// Shell not supported
-    #[error("Shell '{shell}' is not supported")]
+    #[error("Shell '{shell}' not supported")]
     UnsupportedShell { shell: String },
 
     /// Python version not installed
-    #[error("Python {version} is not installed. Install it with: scoop install {version}")]
+    #[error("Python {version} not installed")]
     PythonNotInstalled { version: String },
 
     /// Python installation failed
-    #[error("Failed to install Python {version}: {message}")]
+    #[error("Couldn't install Python {version}: {message}")]
     PythonInstallFailed { version: String, message: String },
 
     /// Python uninstallation failed
-    #[error("Failed to uninstall Python {version}: {message}")]
+    #[error("Couldn't uninstall Python {version}: {message}")]
     PythonUninstallFailed { version: String, message: String },
 
     /// No Python versions available
-    #[error("No Python versions available matching '{pattern}'")]
+    #[error("No Python versions matching '{pattern}'")]
     NoPythonVersions { pattern: String },
 
     /// Invalid argument combination
@@ -96,43 +94,35 @@ pub enum ScoopError {
     InvalidArgument { message: String },
 
     /// pyenv not found
-    #[error(
-        "pyenv is not installed or not found\n\nCheck PYENV_ROOT environment variable or ~/.pyenv directory\nInstall pyenv: https://github.com/pyenv/pyenv#installation"
-    )]
+    #[error("pyenv not found")]
     PyenvNotFound,
 
     /// pyenv environment not found
-    #[error(
-        "pyenv environment '{name}' not found\n\nCheck available environments: scoop migrate list"
-    )]
+    #[error("pyenv environment '{name}' not found")]
     PyenvEnvNotFound { name: String },
 
     /// virtualenvwrapper environment not found
-    #[error(
-        "virtualenvwrapper environment '{name}' not found\n\nCheck available environments: scoop migrate list --source virtualenvwrapper"
-    )]
+    #[error("virtualenvwrapper environment '{name}' not found")]
     VenvWrapperEnvNotFound { name: String },
 
     /// conda environment not found
-    #[error(
-        "conda environment '{name}' not found\n\nCheck available environments: scoop migrate list --source conda"
-    )]
+    #[error("conda environment '{name}' not found")]
     CondaEnvNotFound { name: String },
 
     /// Corrupted environment
-    #[error("Environment '{name}' is corrupted: {reason}")]
+    #[error("'{name}' is corrupted: {reason}")]
     CorruptedEnvironment { name: String, reason: String },
 
     /// Package extraction failed
-    #[error("Failed to extract packages: {reason}")]
+    #[error("Couldn't extract packages: {reason}")]
     PackageExtractionFailed { reason: String },
 
     /// Migration failed
-    #[error("Migration failed: {reason}\n\nThe environment has been rolled back.")]
+    #[error("Migration failed: {reason} (rolled back)")]
     MigrationFailed { reason: String },
 
     /// Name conflict with existing scoop environment
-    #[error("Environment '{name}' already exists in scoop at {}\n\nUse --force to overwrite or choose a different name", existing.display())]
+    #[error("'{name}' already exists at {}", existing.display())]
     MigrationNameConflict { name: String, existing: PathBuf },
 }
 
@@ -176,20 +166,31 @@ impl ScoopError {
     pub fn suggestion(&self) -> Option<String> {
         match self {
             Self::VirtualenvNotFound { name } => {
-                Some(format!("Create it with: scoop create {name} 3.12"))
+                Some(format!("→ Create: scoop create {name} 3.12"))
             }
-            Self::VirtualenvExists { .. } => Some("Use --force to overwrite".to_string()),
+            Self::VirtualenvExists { .. } => Some("→ Use --force to overwrite".to_string()),
             Self::InvalidEnvName { .. } => {
-                Some("Names must start with a letter and contain only [a-zA-Z0-9_-]".to_string())
+                Some("→ Names must start with a letter: [a-zA-Z][a-zA-Z0-9_-]*".to_string())
             }
             Self::UvNotFound => {
-                Some("Install: curl -LsSf https://astral.sh/uv/install.sh | sh".to_string())
+                Some("→ Install: curl -LsSf https://astral.sh/uv/install.sh | sh".to_string())
             }
             Self::PythonNotInstalled { version } => {
-                Some(format!("Install it with: scoop install {version}"))
+                Some(format!("→ Install: scoop install {version}"))
             }
             Self::NoPythonVersions { .. } => {
-                Some("Use 'scoop list --pythons' to see available versions".to_string())
+                Some("→ See versions: scoop list --pythons".to_string())
+            }
+            Self::PyenvNotFound => Some(
+                "→ Check PYENV_ROOT or ~/.pyenv directory\n→ Install: https://github.com/pyenv/pyenv#installation".to_string(),
+            ),
+            Self::PyenvEnvNotFound { .. }
+            | Self::VenvWrapperEnvNotFound { .. }
+            | Self::CondaEnvNotFound { .. } => {
+                Some("→ See available: scoop migrate list".to_string())
+            }
+            Self::MigrationNameConflict { .. } => {
+                Some("→ Use --force to overwrite, or pick a different name".to_string())
             }
             _ => None,
         }
@@ -223,7 +224,7 @@ mod tests {
         let err = ScoopError::VirtualenvNotFound {
             name: "myenv".to_string(),
         };
-        assert_eq!(err.to_string(), "Virtual environment 'myenv' not found");
+        assert_eq!(err.to_string(), "Can't find 'myenv' environment");
     }
 
     #[test]
@@ -231,10 +232,7 @@ mod tests {
         let err = ScoopError::VirtualenvExists {
             name: "existing".to_string(),
         };
-        assert_eq!(
-            err.to_string(),
-            "Virtual environment 'existing' already exists"
-        );
+        assert_eq!(err.to_string(), "'existing' already exists");
     }
 
     #[test]
@@ -252,16 +250,15 @@ mod tests {
         let err = ScoopError::InvalidPythonVersion {
             version: "abc".to_string(),
         };
-        assert_eq!(err.to_string(), "Invalid Python version 'abc'");
+        assert_eq!(err.to_string(), "Invalid Python version: abc");
     }
 
     #[test]
-    fn test_uv_not_found_contains_install_hint() {
+    fn test_uv_not_found_message() {
         let err = ScoopError::UvNotFound;
         let msg = err.to_string();
-        assert!(msg.contains("uv is not installed"));
-        assert!(msg.contains("curl"));
-        assert!(msg.contains("astral.sh"));
+        assert!(msg.contains("uv not found"));
+        assert!(msg.contains("core engine"));
     }
 
     #[test]
@@ -270,7 +267,7 @@ mod tests {
             command: "venv".to_string(),
             message: "Python not found".to_string(),
         };
-        assert!(err.to_string().contains("uv command failed"));
+        assert!(err.to_string().contains("uv failed"));
         assert!(err.to_string().contains("Python not found"));
     }
 
@@ -283,7 +280,7 @@ mod tests {
     #[test]
     fn test_home_not_found_message() {
         let err = ScoopError::HomeNotFound;
-        assert!(err.to_string().contains("home directory"));
+        assert!(err.to_string().contains("Can't find home directory"));
     }
 
     #[test]
@@ -317,17 +314,17 @@ mod tests {
         let err = ScoopError::UnsupportedShell {
             shell: "fish".to_string(),
         };
-        assert_eq!(err.to_string(), "Shell 'fish' is not supported");
+        assert_eq!(err.to_string(), "Shell 'fish' not supported");
     }
 
     #[test]
-    fn test_python_not_installed_contains_hint() {
+    fn test_python_not_installed_message() {
         let err = ScoopError::PythonNotInstalled {
             version: "3.13".to_string(),
         };
         let msg = err.to_string();
         assert!(msg.contains("3.13"));
-        assert!(msg.contains("scoop install"));
+        assert!(msg.contains("not installed"));
     }
 
     #[test]
@@ -336,6 +333,7 @@ mod tests {
             version: "3.12".to_string(),
             message: "network error".to_string(),
         };
+        assert!(err.to_string().contains("Couldn't install"));
         assert!(err.to_string().contains("3.12"));
         assert!(err.to_string().contains("network error"));
     }
@@ -346,6 +344,7 @@ mod tests {
             version: "3.11".to_string(),
             message: "in use".to_string(),
         };
+        assert!(err.to_string().contains("Couldn't uninstall"));
         assert!(err.to_string().contains("3.11"));
         assert!(err.to_string().contains("in use"));
     }
@@ -482,11 +481,11 @@ mod tests {
             let msg = err.to_string();
             // Messages should not be empty
             assert!(!msg.is_empty(), "Error message should not be empty");
-            // Messages should not start with lowercase (except for special cases)
+            // Messages should start with uppercase, quote, or 'u' (for 'uv')
             let first_char = msg.chars().next().unwrap();
             assert!(
-                first_char.is_uppercase() || first_char == 'u', // 'uv' is valid
-                "Error message should start with uppercase: {}",
+                first_char.is_uppercase() || first_char == '\'' || first_char == 'u',
+                "Error message should start with uppercase, quote, or 'u': {}",
                 msg
             );
         }
@@ -521,23 +520,23 @@ mod tests {
     }
 
     #[test]
-    fn test_error_messages_suggest_solutions() {
-        // UvNotFound should include installation instructions
+    fn test_error_suggestions_provide_hints() {
+        // UvNotFound suggestion should include installation instructions
         let err = ScoopError::UvNotFound;
-        let msg = err.to_string();
+        let suggestion = err.suggestion().expect("should have suggestion");
         assert!(
-            msg.contains("curl") || msg.contains("install"),
-            "UvNotFound should suggest installation"
+            suggestion.contains("curl") && suggestion.contains("astral.sh"),
+            "UvNotFound suggestion should include install command"
         );
 
-        // PythonNotInstalled should suggest install command
+        // PythonNotInstalled suggestion should suggest install command
         let err = ScoopError::PythonNotInstalled {
             version: "3.13".to_string(),
         };
-        let msg = err.to_string();
+        let suggestion = err.suggestion().expect("should have suggestion");
         assert!(
-            msg.contains("scoop install"),
-            "PythonNotInstalled should suggest scoop install"
+            suggestion.contains("scoop install") && suggestion.contains("3.13"),
+            "PythonNotInstalled suggestion should include scoop install"
         );
     }
 
@@ -574,7 +573,7 @@ mod tests {
             message: "Python 3.15 not found".to_string(),
         };
         let msg = err.to_string();
-        assert!(msg.contains("failed"), "Should indicate failure");
+        assert!(msg.contains("uv failed"), "Should indicate uv failure");
         assert!(
             msg.contains("Python 3.15 not found"),
             "Should include the error message"
@@ -803,6 +802,7 @@ mod tests {
             name: "myenv".into(),
         };
         let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("myenv"));
         assert!(suggestion.contains("scoop create"));
     }
@@ -813,6 +813,7 @@ mod tests {
             name: "existing".into(),
         };
         let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("--force"));
     }
 
@@ -823,14 +824,15 @@ mod tests {
             reason: "must start with letter".into(),
         };
         let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("letter"));
-        assert!(suggestion.contains("[a-zA-Z0-9_-]"));
     }
 
     #[test]
     fn test_suggestion_uv_not_found() {
         let err = ScoopError::UvNotFound;
         let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("curl"));
         assert!(suggestion.contains("astral.sh"));
     }
@@ -841,6 +843,7 @@ mod tests {
             version: "3.13".into(),
         };
         let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("3.13"));
         assert!(suggestion.contains("scoop install"));
     }
@@ -851,6 +854,7 @@ mod tests {
             pattern: "2.7".into(),
         };
         let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("scoop list --pythons"));
     }
 

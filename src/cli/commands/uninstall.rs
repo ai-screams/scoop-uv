@@ -23,7 +23,7 @@ pub fn execute(output: &Output, version: &str) -> Result<()> {
         return Ok(());
     }
 
-    output.success(&format!("Uninstalled Python {version}"));
+    output.success(&format!("Python {version} uninstalled"));
 
     Ok(())
 }

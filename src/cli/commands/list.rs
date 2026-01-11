@@ -44,8 +44,8 @@ fn list_virtualenvs(output: &Output, bare: bool) -> Result<()> {
 
     if envs.is_empty() {
         if !bare {
-            output.info("No virtual environments found");
-            output.info("Create one with: scoop create <name> <version>");
+            output.info("No environments yet");
+            output.info("→ Create one: scoop create myenv 3.12");
         }
         return Ok(());
     }
@@ -129,7 +129,7 @@ fn list_pythons(output: &Output, bare: bool) -> Result<()> {
     if pythons.is_empty() {
         if !bare {
             output.info("No Python versions installed");
-            output.info("Install one with: scoop install <version>");
+            output.info("→ Install one: scoop install 3.12");
         }
         return Ok(());
     }

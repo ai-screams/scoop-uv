@@ -12,7 +12,7 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
     // Check if exists and handle force
     if service.exists(name)? {
         if force {
-            output.info(&format!("Removing existing environment '{name}'..."));
+            output.info(&format!("Removing existing '{name}'..."));
             service.delete(name)?;
         } else {
             return Err(crate::error::ScoopError::VirtualenvExists {
@@ -21,9 +21,7 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
         }
     }
 
-    output.info(&format!(
-        "Creating virtual environment '{name}' with Python {python}..."
-    ));
+    output.info(&format!("Creating '{name}' (Python {python})..."));
 
     let path = service.create(name, python)?;
 
@@ -40,12 +38,9 @@ pub fn execute(output: &Output, name: &str, python: &str, force: bool) -> Result
         return Ok(());
     }
 
-    output.success(&format!("Created virtual environment '{name}'"));
-    output.info(&format!("Location: {}", path.display()));
-    output.info(&format!(
-        "Activate with: scoop use {name}  # or: source {}/bin/activate",
-        paths::virtualenv_path(name)?.display()
-    ));
+    output.success(&format!("Created '{name}' environment"));
+    output.info(&format!("  Path: {}", paths::abbreviate_home(&path)));
+    output.info(&format!("  Activate: scoop use {name}"));
 
     Ok(())
 }

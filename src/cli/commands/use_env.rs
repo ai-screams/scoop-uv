@@ -32,7 +32,7 @@ pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<
             return Ok(());
         }
 
-        output.success(&format!("Set global environment to '{name}'"));
+        output.success(&format!("Set '{name}' as global environment"));
     } else {
         let cwd = std::env::current_dir()?;
 
@@ -62,7 +62,7 @@ pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<
             return Ok(());
         }
 
-        output.success(&format!("Set local environment to '{name}'"));
+        output.success(&format!("Set '{name}' as local environment"));
     }
 
     Ok(())
@@ -74,13 +74,16 @@ fn create_venv_symlink(link: &Path, target: &Path, output: &Output) -> Result<()
         if link.is_symlink() {
             fs::remove_file(link)?;
         } else {
-            output.warn(".venv exists and is not a symlink, skipping");
+            output.warn(".venv exists but isn't a symlink, skipping");
             return Ok(());
         }
     }
 
     symlink(target, link)?;
-    output.info(&format!("Created symlink: .venv -> {}", target.display()));
+    output.info(&format!(
+        "Linked .venv -> {}",
+        crate::paths::abbreviate_home(target)
+    ));
 
     Ok(())
 }

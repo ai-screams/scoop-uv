@@ -17,16 +17,16 @@ pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run
     if dry_run {
         output.info("");
         output.info("[DRY-RUN] Migration preview:");
-        output.info(&format!("  Would create: {}", result.path.display()));
-        output.info(&format!("  Python version: {}", result.python_version));
         output.info(&format!(
-            "  Packages to install: {}",
-            result.packages_migrated
+            "  Would create: {}",
+            crate::paths::abbreviate_home(&result.path)
         ));
+        output.info(&format!("  Python: {}", result.python_version));
+        output.info(&format!("  Packages: {}", result.packages_migrated));
 
         if !result.packages_failed.is_empty() {
             output.warn(&format!(
-                "  Packages that may fail: {}",
+                "  May fail: {} packages",
                 result.packages_failed.len()
             ));
             for pkg in &result.packages_failed {
@@ -35,22 +35,22 @@ pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run
         }
 
         output.info("");
-        output.info("No changes made. Run without --dry-run to migrate.");
+        output.info("→ Run without --dry-run to migrate");
     } else {
-        output.success(&format!(
-            "Environment '{}' migrated successfully!",
-            result.name
+        output.success(&format!("Migrated '{}'", result.name));
+        output.info(&format!(
+            "  Path: {}",
+            crate::paths::abbreviate_home(&result.path)
         ));
-        output.info(&format!("  Path: {}", result.path.display()));
         output.info(&format!("  Python: {}", result.python_version));
         output.info(&format!(
-            "  Packages installed: {}",
+            "  Packages: {} installed",
             result.packages_migrated
         ));
 
         if !result.packages_failed.is_empty() {
             output.warn(&format!(
-                "  Packages failed: {} (may require manual installation)",
+                "  Failed: {} packages (may need manual install)",
                 result.packages_failed.len()
             ));
             for pkg in &result.packages_failed {
@@ -59,7 +59,7 @@ pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run
         }
 
         output.info("");
-        output.info(&format!("Activate with: scoop use {}", result.name));
+        output.info(&format!("→ Activate: scoop use {}", result.name));
     }
 }
 
@@ -76,10 +76,13 @@ pub fn migrate_environment(
     if !opts.json {
         // Show environment info
         output.info(&format!(
-            "Source: {} from {} (Python {})",
+            "Source: {} ({}, Python {})",
             name, source.source_type, source.python_version
         ));
-        output.info(&format!("  Path: {}", source.path.display()));
+        output.info(&format!(
+            "  Path: {}",
+            crate::paths::abbreviate_home(&source.path)
+        ));
 
         if let Some(size_bytes) = source.size_bytes {
             let size_mb = size_bytes as f64 / 1_048_576.0;
@@ -99,10 +102,7 @@ pub fn migrate_environment(
                 // Auto-rename: generate unique name
                 final_name = generate_unique_name(name)?;
                 if !opts.json {
-                    output.info(&format!(
-                        "Auto-renaming to '{}' to avoid conflict",
-                        final_name
-                    ));
+                    output.info(&format!("Auto-renaming to '{}'", final_name));
                 }
             } else if opts.rename.is_some() {
                 // User provided explicit rename, check if that conflicts too
@@ -121,7 +121,7 @@ pub fn migrate_environment(
                         ConflictResolution::Overwrite => {
                             effective_force = true;
                             if !opts.json {
-                                output.warn("Will overwrite existing environment.");
+                                output.warn("Will overwrite existing environment");
                             }
                         }
                         ConflictResolution::Rename => {
@@ -132,7 +132,7 @@ pub fn migrate_environment(
                         }
                         ConflictResolution::Skip => {
                             if !opts.json {
-                                output.info("Skipping migration.");
+                                output.info("Skipped");
                             }
                             return Ok(());
                         }
@@ -141,13 +141,11 @@ pub fn migrate_environment(
                     // Non-interactive mode: error out
                     if !opts.json {
                         output.warn(&format!(
-                            "Name conflict: '{}' already exists at {}",
+                            "'{}' already exists at {}",
                             name,
-                            existing.display()
+                            crate::paths::abbreviate_home(existing)
                         ));
-                        output.info(
-                            "Use --force to overwrite, --rename to use different name, or --auto-rename.",
-                        );
+                        output.info("→ Use --force, --rename, or --auto-rename");
                     }
                     return Err(ScoopError::MigrationNameConflict {
                         name: name.to_string(),
@@ -155,26 +153,26 @@ pub fn migrate_environment(
                     });
                 }
             } else if !opts.json {
-                output.warn("Forcing migration over existing environment.");
+                output.warn("Overwriting existing environment");
             }
         }
         EnvironmentStatus::PythonEol { version } => {
             if !opts.force {
                 if !opts.json {
-                    output.warn(&format!("Python {} is end-of-life.", version));
-                    output.info("Use --force to migrate anyway.");
+                    output.warn(&format!("Python {} reached end-of-life", version));
+                    output.info("→ Use --force to proceed anyway");
                 }
                 return Err(ScoopError::MigrationFailed {
                     reason: format!("Python {} is EOL", version),
                 });
             }
             if !opts.json {
-                output.warn("Migrating with EOL Python version.");
+                output.warn(&format!("Python {} is EOL, proceeding anyway", version));
             }
         }
         EnvironmentStatus::Corrupted { reason } => {
             if !opts.json {
-                output.error(&format!("Environment is corrupted: {}", reason));
+                output.error(&format!("Corrupted: {}", reason));
             }
             return Err(ScoopError::CorruptedEnvironment {
                 name: name.to_string(),
@@ -201,9 +199,9 @@ pub fn migrate_environment(
 
     if !opts.json {
         if opts.dry_run {
-            output.info("[DRY-RUN] Simulating migration...");
+            output.info("[DRY-RUN] Simulating...");
         } else {
-            output.info("Starting migration...");
+            output.info("Migrating...");
         }
     }
 

@@ -155,7 +155,7 @@ fn test_activate_nonexistent_env() {
         .args(["activate", "nonexistent"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("not found"));
+        .stderr(predicate::str::contains("Can't find"));
 }
 
 #[test]
@@ -166,7 +166,7 @@ fn test_remove_nonexistent_env() {
         .args(["remove", "nonexistent"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("not found"));
+        .stderr(predicate::str::contains("Can't find"));
 }
 
 #[test]
@@ -177,7 +177,7 @@ fn test_use_nonexistent_env() {
         .args(["use", "nonexistent"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("not found"));
+        .stderr(predicate::str::contains("Can't find"));
 }
 
 #[test]
@@ -498,7 +498,7 @@ mod output_format {
             "Error should mention the problematic env name"
         );
         assert!(
-            stderr.contains("not found") || stderr.contains("찾을 수 없습니다"),
+            stderr.contains("Can't find"),
             "Error should explain the problem"
         );
     }

@@ -98,6 +98,12 @@ fn main() -> Result<()> {
     if let Err(e) = result {
         let output = Output::new(0, cli.quiet, cli.no_color, false);
         output.error(&e.to_string());
+
+        // Print suggestion hint if available
+        if let Some(suggestion) = e.suggestion() {
+            eprintln!("{suggestion}");
+        }
+
         std::process::exit(1);
     }
 

@@ -214,7 +214,7 @@ impl Output {
             return;
         }
         eprintln!();
-        eprintln!("Checking scoop installation...");
+        eprintln!("Checking installation...");
         eprintln!();
     }
 

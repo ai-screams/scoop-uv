@@ -27,7 +27,7 @@ pub fn execute(output: &Output, version: Option<&str>, latest: bool, stable: boo
         return Ok(());
     }
 
-    output.success(&format!("Installed Python {target}"));
+    output.success(&format!("Python {target} installed"));
 
     Ok(())
 }
