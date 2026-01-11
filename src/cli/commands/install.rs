@@ -1,5 +1,7 @@
 //! Install command
 
+use rust_i18n::t;
+
 use crate::error::{Result, ScoopError};
 use crate::output::{InstallData, Output};
 use crate::uv::UvClient;
@@ -11,7 +13,7 @@ pub fn execute(output: &Output, version: Option<&str>, latest: bool, stable: boo
 
     let uv = UvClient::new()?;
 
-    output.info(&format!("Installing Python {target}..."));
+    output.info(&t!("install.installing", version = &target));
 
     uv.install_python(&target)?;
 
@@ -27,7 +29,7 @@ pub fn execute(output: &Output, version: Option<&str>, latest: bool, stable: boo
         return Ok(());
     }
 
-    output.success(&format!("Python {target} installed"));
+    output.success(&t!("install.success", version = &target));
 
     Ok(())
 }

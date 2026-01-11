@@ -4,6 +4,8 @@ use std::fs;
 use std::os::unix::fs::symlink;
 use std::path::Path;
 
+use rust_i18n::t;
+
 use crate::core::{VersionService, VirtualenvService};
 use crate::error::Result;
 use crate::output::{Output, UseData};
@@ -32,7 +34,7 @@ pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<
             return Ok(());
         }
 
-        output.success(&format!("Set '{name}' as global environment"));
+        output.success(&t!("use.set_global", name = name));
     } else {
         let cwd = std::env::current_dir()?;
 
@@ -62,7 +64,7 @@ pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<
             return Ok(());
         }
 
-        output.success(&format!("Set '{name}' as local environment"));
+        output.success(&t!("use.set_local", name = name));
     }
 
     Ok(())
@@ -74,15 +76,15 @@ fn create_venv_symlink(link: &Path, target: &Path, output: &Output) -> Result<()
         if link.is_symlink() {
             fs::remove_file(link)?;
         } else {
-            output.warn(".venv exists but isn't a symlink, skipping");
+            output.warn(&t!("use.venv_not_symlink"));
             return Ok(());
         }
     }
 
     symlink(target, link)?;
-    output.info(&format!(
-        "Linked .venv -> {}",
-        crate::paths::abbreviate_home(target)
+    output.info(&t!(
+        "use.linked",
+        path = crate::paths::abbreviate_home(target)
     ));
 
     Ok(())

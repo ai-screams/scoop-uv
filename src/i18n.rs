@@ -12,8 +12,7 @@ use crate::config::Config;
 pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
     ("en", "English"),
     ("ko", "한국어"),
-    // Future: ("ja", "日本語"),
-    // Future: ("zh-CN", "简体中文"),
+    // Coming Soon: ja (日本語), zh-CN (简体中文), fr (Français), ar (العربية)
 ];
 
 /// Initialize locale on startup.

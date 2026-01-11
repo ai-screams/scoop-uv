@@ -4,6 +4,7 @@
 
 use dialoguer::Confirm;
 use indicatif::{ProgressBar, ProgressStyle};
+use rust_i18n::t;
 
 use crate::core::migrate::{EnvironmentStatus, MigrateOptions, MigrationResult, Migrator};
 use crate::error::{Result, ScoopError};
@@ -24,7 +25,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
             .source_filter
             .map(|s| s.to_string())
             .unwrap_or_else(|| "all sources".to_string());
-        output.info(&format!("Scanning {} for environments...", source_name));
+        output.info(&t!("migrate.scanning", source = source_name));
     }
 
     let environments = scan_all_environments(opts.source_filter);
@@ -50,7 +51,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                 .source_filter
                 .map(|s| format!("{} ", s))
                 .unwrap_or_default();
-            output.info(&format!("No {}environments found.", source_name));
+            output.info(&t!("migrate.no_envs", source = source_name));
         }
         return Ok(());
     }
@@ -105,12 +106,9 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                 },
             );
         } else {
-            output.info("No environments eligible for migration.");
+            output.info(&t!("migrate.no_eligible"));
             if skipped_count > 0 {
-                output.info(&format!(
-                    "  {} environment(s) skipped (corrupted or require --force)",
-                    skipped_count
-                ));
+                output.info(&t!("migrate.skipped_count", count = skipped_count));
             }
         }
         return Ok(());
@@ -154,7 +152,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                 .map_err(|e| ScoopError::Io(std::io::Error::other(e)))?;
 
             if !confirmed {
-                output.info("Migration cancelled.");
+                output.info(&t!("migrate.batch_cancelled"));
                 return Ok(());
             }
         }
@@ -178,10 +176,10 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
     if !opts.json {
         if opts.dry_run {
             output.info("");
-            output.info("[DRY-RUN] Simulating migration of all environments...");
+            output.info(&t!("migrate.batch_dry_run"));
         } else {
             output.info("");
-            output.info("Starting batch migration...");
+            output.info(&t!("migrate.batch_start"));
         }
     }
 
@@ -201,11 +199,11 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
 
     for (idx, env) in migratable.iter().enumerate() {
         if let Some(ref pb) = progress {
-            pb.set_message(format!("Migrating '{}'...", env.name));
+            pb.set_message(t!("migrate.batch_item", name = &env.name).to_string());
             pb.set_position(idx as u64);
         } else if !opts.json {
             output.info("");
-            output.info(&format!("Migrating '{}'...", env.name));
+            output.info(&t!("migrate.batch_item", name = &env.name));
         }
 
         match migrator.migrate(env, &options) {
@@ -227,20 +225,14 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                             "  [DRY-RUN] Would create: {}",
                             result.path.display()
                         ));
-                        output.info(&format!(
-                            "  Packages to install: {}",
-                            result.packages_migrated
-                        ));
+                        output.info(&t!("migrate.packages", count = result.packages_migrated));
                     } else {
-                        output.success(&format!("  '{}' migrated successfully", result.name));
-                        output.info(&format!(
-                            "  Packages installed: {}",
-                            result.packages_migrated
-                        ));
+                        output.success(&t!("migrate.batch_item_success", name = &result.name));
+                        output.info(&t!("migrate.packages", count = result.packages_migrated));
                         if !result.packages_failed.is_empty() {
-                            output.warn(&format!(
-                                "  Packages failed: {}",
-                                result.packages_failed.len()
+                            output.warn(&t!(
+                                "migrate.failed_packages",
+                                count = result.packages_failed.len()
                             ));
                         }
                     }
@@ -255,7 +247,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                 if let Some(ref pb) = progress {
                     pb.println(format!("✗ '{}' failed: {}", env.name, e));
                 } else if !opts.json {
-                    output.error(&format!("  Failed: {}", e));
+                    output.error(&t!("migrate.batch_item_failed", error = e.to_string()));
                 }
             }
         }
@@ -289,23 +281,22 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
     output.info("");
     output.info("─".repeat(40).as_str());
     if opts.dry_run {
-        output.info(&format!(
-            "[DRY-RUN] Would migrate: {}/{}",
-            migrated.len(),
-            migratable.len()
-        ));
-        output.info("No changes made. Run without --dry-run to migrate.");
+        output.info(&t!("migrate.batch_summary_dry", count = migrated.len()));
+        output.info(&t!("migrate.batch_no_changes"));
     } else {
-        output.success(&format!(
-            "Migration complete: {}/{} succeeded",
-            migrated.len(),
-            migratable.len()
+        output.success(&t!(
+            "migrate.batch_summary",
+            success = migrated.len(),
+            total = migratable.len()
         ));
     }
 
     if !failed.is_empty() {
         let failed_names: Vec<_> = failed.iter().map(|f| f.name.as_str()).collect();
-        output.warn(&format!("Failed environments: {}", failed_names.join(", ")));
+        output.warn(&t!(
+            "migrate.batch_failed_list",
+            names = failed_names.join(", ")
+        ));
     }
 
     Ok(())
