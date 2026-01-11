@@ -23,6 +23,8 @@
 - [uninstall](commands/uninstall.md)
 - [doctor](commands/doctor.md)
 - [info](commands/info.md)
+- [migrate](commands/migrate.md)
+- [lang](commands/lang.md)
 - [init](commands/init.md)
 - [completions](commands/completions.md)
 
