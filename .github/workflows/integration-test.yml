@@ -56,7 +56,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:slim \
             bash -c "
               cargo build --release &&
-              cargo test --features integration-test --release &&
+              cargo test --release &&
               ./target/release/scoop migrate list &&
               ./target/release/scoop migrate test-pyenv-312 --dry-run
             "
