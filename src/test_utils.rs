@@ -14,6 +14,50 @@ use crate::paths::SCOOP_HOME_ENV;
 /// All tests that modify SCOOP_HOME must acquire this lock first.
 pub static ENV_LOCK: Mutex<()> = Mutex::new(());
 
+/// Execute a test function with SCOOP_HOME environment variable unset.
+///
+/// This helper ensures safe testing of default behavior when SCOOP_HOME is not set.
+/// Uses catch_unwind to guarantee cleanup even if the test panics.
+///
+/// # Examples
+///
+/// ```ignore
+/// use scoop::test_utils::with_no_scoop_home;
+///
+/// #[test]
+/// fn test_default_home() {
+///     with_no_scoop_home(|| {
+///         // SCOOP_HOME is guaranteed to be unset here
+///         let home = scoop_home().unwrap();
+///         assert!(home.ends_with(".scoop"));
+///     });
+/// }
+/// ```
+pub fn with_no_scoop_home<F, T>(f: F) -> T
+where
+    F: FnOnce() -> T,
+{
+    // Recover from poisoned mutex if a previous test panicked
+    let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let backup = std::env::var(SCOOP_HOME_ENV).ok();
+
+    // SAFETY: Protected by ENV_LOCK mutex - only one test modifies this at a time
+    unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
+
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
+
+    // Restore original value if it existed
+    if let Some(val) = backup {
+        // SAFETY: Protected by ENV_LOCK mutex
+        unsafe { std::env::set_var(SCOOP_HOME_ENV, val) };
+    }
+
+    match result {
+        Ok(val) => val,
+        Err(e) => std::panic::resume_unwind(e),
+    }
+}
+
 /// Execute a test function with an isolated temporary SCOOP_HOME.
 ///
 /// This helper:

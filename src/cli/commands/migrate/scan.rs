@@ -16,10 +16,7 @@ use crate::error::{Result, ScoopError};
 ///
 /// # Examples
 ///
-/// ```ignore
-/// use scoop_uv::cli::commands::migrate::scan::scan_all_environments;
-/// use scoop_uv::cli::MigrateSource;
-///
+/// ```text
 /// // Scan all sources (returns empty if none installed)
 /// let all_envs = scan_all_environments(None);
 /// println!("Found {} environments", all_envs.len());
@@ -85,10 +82,7 @@ pub fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<Source
 ///
 /// # Examples
 ///
-/// ```ignore
-/// use scoop_uv::cli::commands::migrate::scan::find_environment_by_name;
-/// use scoop_uv::cli::MigrateSource;
-///
+/// ```text
 /// // Search for non-existent environment returns error
 /// let result = find_environment_by_name("nonexistent-env-12345", None);
 /// assert!(result.is_err());

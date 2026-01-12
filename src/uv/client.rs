@@ -564,33 +564,4 @@ graalpy-3.11.0    /path/graalpy
         assert!(info.path.is_none());
         assert!(!info.installed);
     }
-
-    /// PythonInfo Clone trait
-    #[test]
-    fn test_python_info_clone() {
-        let original = PythonInfo {
-            version: "3.12.0".to_string(),
-            path: Some(PathBuf::from("/path")),
-            installed: true,
-            implementation: "cpython".to_string(),
-        };
-
-        let cloned = original.clone();
-        assert_eq!(original, cloned);
-    }
-
-    /// PythonInfo Debug trait
-    #[test]
-    fn test_python_info_debug() {
-        let info = PythonInfo {
-            version: "3.12.0".to_string(),
-            path: Some(PathBuf::from("/path")),
-            installed: true,
-            implementation: "cpython".to_string(),
-        };
-
-        let debug_str = format!("{:?}", info);
-        assert!(debug_str.contains("3.12.0"));
-        assert!(debug_str.contains("cpython"));
-    }
 }

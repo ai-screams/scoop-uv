@@ -28,10 +28,7 @@ pub enum ConflictResolution {
 ///
 /// # Examples
 ///
-/// ```ignore
-/// use std::path::Path;
-/// use crate::cli::commands::migrate::conflict::{prompt_conflict_resolution, ConflictResolution};
-///
+/// ```text
 /// let existing = Path::new("/home/user/.scoop/virtualenvs/myenv");
 /// let resolution = prompt_conflict_resolution(&output, "myenv", existing)?;
 ///
@@ -78,9 +75,7 @@ pub fn prompt_conflict_resolution(
 ///
 /// # Examples
 ///
-/// ```ignore
-/// use crate::cli::commands::migrate::conflict::prompt_rename;
-///
+/// ```text
 /// // User will see: "Enter new name for the environment [myenv-pyenv]:"
 /// let new_name = prompt_rename("myenv")?;
 /// println!("Will migrate as: {}", new_name);
@@ -109,23 +104,14 @@ pub fn prompt_rename(name: &str) -> Result<String> {
 ///
 /// # Examples
 ///
-/// ```ignore
-/// use scoop_uv::cli::commands::migrate::conflict::generate_unique_name;
-///
-/// // Setup: isolated SCOOP_HOME
-/// let temp = tempfile::tempdir().unwrap();
-/// std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
-/// std::env::set_var("SCOOP_HOME", temp.path());
-///
+/// ```text
 /// // If "myenv-pyenv" doesn't exist, returns "myenv-pyenv"
 /// let unique = generate_unique_name("myenv").unwrap();
 /// assert_eq!(unique, "myenv-pyenv");
 ///
-/// // Create "myenv-pyenv" to test fallback
-/// std::fs::create_dir(temp.path().join("virtualenvs/myenv-pyenv")).unwrap();
+/// // If "myenv-pyenv" exists, tries "myenv-1", "myenv-2", etc.
 /// let unique2 = generate_unique_name("myenv").unwrap();
 /// assert_eq!(unique2, "myenv-1");
-/// std::env::remove_var("SCOOP_HOME");
 /// ```
 ///
 /// # Errors

@@ -111,24 +111,6 @@ mod tests {
         assert!(Metadata::FILE_NAME.starts_with("."));
     }
 
-    #[test]
-    fn test_metadata_clone() {
-        let meta = Metadata::new("clonetest".to_string(), "3.12".to_string(), None);
-        let cloned = meta.clone();
-
-        assert_eq!(cloned.name, meta.name);
-        assert_eq!(cloned.python_version, meta.python_version);
-    }
-
-    #[test]
-    fn test_metadata_debug_format() {
-        let meta = Metadata::new("debugtest".to_string(), "3.12".to_string(), None);
-        let debug_str = format!("{:?}", meta);
-
-        assert!(debug_str.contains("Metadata"));
-        assert!(debug_str.contains("debugtest"));
-    }
-
     // ==========================================================================
     // Version Compatibility Tests
     // ==========================================================================

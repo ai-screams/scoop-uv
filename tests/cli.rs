@@ -120,16 +120,7 @@ fn test_init_zsh() {
         .stdout(predicate::str::contains("add-zsh-hook"));
 }
 
-#[test]
-#[ignore = "fish shell panics instead of returning error - TODO: fix"]
-fn test_init_unsupported_shell() {
-    Command::cargo_bin("scoop")
-        .unwrap()
-        .args(["init", "fish"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("not supported"));
-}
+// test_init_unsupported_shell removed: fish shell is now fully supported
 
 #[test]
 fn test_completions_bash() {

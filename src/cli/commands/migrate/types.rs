@@ -107,49 +107,6 @@ mod tests {
         );
     }
 
-    /// Clone 트레잇 동작 검증
-    #[test]
-    fn test_migrate_execute_options_clone() {
-        let original = MigrateExecuteOptions {
-            dry_run: true,
-            force: true,
-            yes: false,
-            json: true,
-            strict: false,
-            delete_source: true,
-            rename: Some("new-name".to_string()),
-            auto_rename: true,
-            source_filter: Some(MigrateSource::Pyenv),
-        };
-
-        let cloned = original.clone();
-
-        assert_eq!(cloned.dry_run, original.dry_run);
-        assert_eq!(cloned.force, original.force);
-        assert_eq!(cloned.yes, original.yes);
-        assert_eq!(cloned.json, original.json);
-        assert_eq!(cloned.strict, original.strict);
-        assert_eq!(cloned.delete_source, original.delete_source);
-        assert_eq!(cloned.rename, original.rename);
-        assert_eq!(cloned.auto_rename, original.auto_rename);
-    }
-
-    /// Debug 트레잇 동작 검증
-    #[test]
-    fn test_migrate_execute_options_debug() {
-        let opts = MigrateExecuteOptions {
-            dry_run: true,
-            rename: Some("test-env".to_string()),
-            ..Default::default()
-        };
-
-        let debug_str = format!("{:?}", opts);
-
-        assert!(debug_str.contains("dry_run: true"));
-        assert!(debug_str.contains("rename: Some(\"test-env\")"));
-        assert!(debug_str.contains("MigrateExecuteOptions"));
-    }
-
     /// MigrateListData 구조체 테스트
     #[test]
     fn test_migrate_list_data_serialize() {

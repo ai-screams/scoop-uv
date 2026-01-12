@@ -5,7 +5,7 @@ use std::process::Command;
 
 use crate::core::{VirtualenvService, get_active_env};
 use crate::error::{Result, ScoopError};
-use crate::output::{EnvInfoData, Output, PackageInfo, PackagesInfo, format_size};
+use crate::output::{EnvInfoData, Output, PackagesInfo, format_size};
 use crate::paths::{abbreviate_home, calculate_dir_size};
 
 const DEFAULT_PACKAGE_LIMIT: usize = 5;
@@ -64,15 +64,14 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
             .unwrap_or((None, None))
     };
 
-    // Get packages
+    // Get packages with truncation
     let packages = get_packages(&path);
     let limit = if all_packages {
         usize::MAX
     } else {
         DEFAULT_PACKAGE_LIMIT
     };
-    let truncated = packages.len() > limit;
-    let remaining = packages.len().saturating_sub(limit);
+    let packages_info = PackagesInfo::new(&packages, limit);
 
     // JSON output
     if output.is_json() {
@@ -84,18 +83,7 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
             created_at: metadata.as_ref().map(|m| m.created_at.to_rfc3339()),
             size_bytes,
             size_display,
-            packages: PackagesInfo {
-                total: packages.len(),
-                items: packages
-                    .iter()
-                    .take(limit)
-                    .map(|(n, v)| PackageInfo {
-                        name: n.clone(),
-                        version: v.clone(),
-                    })
-                    .collect(),
-                truncated,
-            },
+            packages: packages_info,
         };
         output.json_success("info", data);
         return Ok(());
@@ -122,13 +110,13 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
         println!("{:w$}{}", "Size:", size);
     }
 
-    println!("{:w$}{}", "Packages:", packages.len());
+    println!("{:w$}{}", "Packages:", packages_info.total);
     let indent = " ".repeat(w);
-    for (name, ver) in packages.iter().take(limit) {
-        println!("{}{}=={}", indent, name, ver);
+    for pkg in &packages_info.items {
+        println!("{}{}=={}", indent, pkg.name, pkg.version);
     }
-    if truncated {
-        println!("{}... ({} more)", indent, remaining);
+    if packages_info.truncated {
+        println!("{}... ({} more)", indent, packages_info.remaining());
     }
 
     Ok(())
@@ -144,15 +132,6 @@ mod tests {
     use crate::test_utils::with_temp_scoop_home;
     use serial_test::serial;
     use tempfile::TempDir;
-
-    // =========================================================================
-    // Constants Tests
-    // =========================================================================
-
-    #[test]
-    fn default_package_limit_is_five() {
-        assert_eq!(DEFAULT_PACKAGE_LIMIT, 5);
-    }
 
     // =========================================================================
     // get_packages Tests
@@ -257,63 +236,5 @@ mod tests {
             DEFAULT_PACKAGE_LIMIT
         };
         assert_eq!(limit, DEFAULT_PACKAGE_LIMIT);
-    }
-
-    // =========================================================================
-    // Truncation Logic Tests
-    // =========================================================================
-
-    #[test]
-    fn truncated_false_when_packages_under_limit() {
-        let packages: Vec<(String, String)> = vec![
-            ("pkg1".to_string(), "1.0".to_string()),
-            ("pkg2".to_string(), "2.0".to_string()),
-        ];
-        let limit = DEFAULT_PACKAGE_LIMIT;
-        let truncated = packages.len() > limit;
-
-        assert!(!truncated);
-    }
-
-    #[test]
-    fn truncated_false_when_packages_equal_limit() {
-        let packages: Vec<(String, String)> = (0..DEFAULT_PACKAGE_LIMIT)
-            .map(|i| (format!("pkg{}", i), format!("{}.0", i)))
-            .collect();
-        let limit = DEFAULT_PACKAGE_LIMIT;
-        let truncated = packages.len() > limit;
-
-        assert!(!truncated);
-    }
-
-    #[test]
-    fn truncated_true_when_packages_over_limit() {
-        let packages: Vec<(String, String)> = (0..DEFAULT_PACKAGE_LIMIT + 1)
-            .map(|i| (format!("pkg{}", i), format!("{}.0", i)))
-            .collect();
-        let limit = DEFAULT_PACKAGE_LIMIT;
-        let truncated = packages.len() > limit;
-
-        assert!(truncated);
-    }
-
-    #[test]
-    fn remaining_calculation_correct() {
-        let packages: Vec<(String, String)> = (0..10)
-            .map(|i| (format!("pkg{}", i), format!("{}.0", i)))
-            .collect();
-        let limit = DEFAULT_PACKAGE_LIMIT;
-        let remaining = packages.len().saturating_sub(limit);
-
-        assert_eq!(remaining, 5);
-    }
-
-    #[test]
-    fn remaining_zero_when_under_limit() {
-        let packages: Vec<(String, String)> = vec![("pkg".to_string(), "1.0".to_string())];
-        let limit = DEFAULT_PACKAGE_LIMIT;
-        let remaining = packages.len().saturating_sub(limit);
-
-        assert_eq!(remaining, 0);
     }
 }

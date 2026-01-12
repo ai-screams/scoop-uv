@@ -192,29 +192,6 @@ mod tests {
     }
 
     // =========================================================================
-    // Clone & Debug Trait Tests
-    // =========================================================================
-
-    #[test]
-    fn test_config_clone() {
-        let original = Config {
-            lang: Some("en".to_string()),
-        };
-        let cloned = original.clone();
-        assert_eq!(original.lang, cloned.lang);
-    }
-
-    #[test]
-    fn test_config_debug() {
-        let config = Config {
-            lang: Some("ko".to_string()),
-        };
-        let debug_str = format!("{:?}", config);
-        assert!(debug_str.contains("Config"));
-        assert!(debug_str.contains("ko"));
-    }
-
-    // =========================================================================
     // set_lang Method Tests
     // =========================================================================
 

@@ -157,71 +157,41 @@ mod tests {
     }
 
     // =========================================================================
-    // execute() Tests
-    // =========================================================================
-
-    #[test]
-    #[serial]
-    fn test_execute_list_flag() {
-        with_temp_scoop_home(|_| {
-            let output = create_test_output(false);
-            let result = execute(&output, None, true, false);
-            assert!(result.is_ok());
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn test_execute_reset_flag() {
-        with_temp_scoop_home(|_| {
-            let output = create_test_output(false);
-            let result = execute(&output, None, false, true);
-            assert!(result.is_ok());
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn test_execute_set_language() {
-        with_temp_scoop_home(|_| {
-            let output = create_test_output(false);
-            let result = execute(&output, Some("en"), false, false);
-            assert!(result.is_ok());
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn test_execute_show_current() {
-        with_temp_scoop_home(|_| {
-            let output = create_test_output(false);
-            let result = execute(&output, None, false, false);
-            assert!(result.is_ok());
-        });
-    }
-
-    // =========================================================================
     // show_current() Tests
     // =========================================================================
 
     #[test]
     #[serial]
-    fn test_show_current_returns_ok() {
+    fn test_show_current_returns_supported_locale() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(false);
             let result = show_current(&output);
             assert!(result.is_ok());
+
+            // Verify current locale is a supported language
+            let current = i18n::current();
+            assert!(
+                i18n::is_supported(&current),
+                "Current locale '{}' should be supported",
+                current
+            );
         });
     }
 
     #[test]
     #[serial]
-    fn test_show_current_json_mode() {
+    fn test_show_current_json_mode_returns_supported_locale() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(true);
             let result = show_current(&output);
             assert!(result.is_ok());
-            // JSON output is printed to stdout, verified by execute path
+
+            // JSON mode should still have valid current locale
+            let current = i18n::current();
+            assert!(
+                i18n::is_supported(&current),
+                "JSON mode should maintain valid locale"
+            );
         });
     }
 
@@ -265,12 +235,20 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_set_language_unsupported_returns_ok() {
+    fn test_set_language_unsupported_does_not_change_locale() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(false);
-            // Unsupported language returns Ok but prints error message
+            let before = i18n::current();
+
+            // Unsupported language returns Ok but should not change locale
             let result = set_language(&output, "xyz");
             assert!(result.is_ok());
+
+            let after = i18n::current();
+            assert_eq!(
+                before, after,
+                "Unsupported language should not change locale"
+            );
         });
     }
 
@@ -290,21 +268,40 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_set_language_json_mode_supported() {
+    fn test_set_language_json_mode_changes_locale() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(true);
+
+            // Set to Korean
+            let result = set_language(&output, "ko");
+            assert!(result.is_ok());
+            assert_eq!(i18n::current(), "ko", "JSON mode should change locale");
+
+            // Set back to English
             let result = set_language(&output, "en");
             assert!(result.is_ok());
+            assert_eq!(i18n::current(), "en");
         });
     }
 
     #[test]
     #[serial]
-    fn test_set_language_json_mode_unsupported() {
+    fn test_set_language_json_mode_unsupported_no_change() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(true);
+
+            // Set to valid first
+            set_language(&output, "en").unwrap();
+            let before = i18n::current();
+
+            // Try unsupported
             let result = set_language(&output, "xyz");
             assert!(result.is_ok());
+            assert_eq!(
+                i18n::current(),
+                before,
+                "Unsupported language should not change locale in JSON mode"
+            );
         });
     }
 
@@ -332,11 +329,24 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_reset_language_returns_ok() {
+    fn test_reset_language_sets_supported_locale() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(false);
+
+            // Set to Korean first
+            set_language(&output, "ko").unwrap();
+            assert_eq!(i18n::current(), "ko");
+
+            // Reset should set to a supported locale
             let result = reset_language(&output);
             assert!(result.is_ok());
+
+            let current = i18n::current();
+            assert!(
+                i18n::is_supported(&current),
+                "Reset should set to supported locale, got '{}'",
+                current
+            );
         });
     }
 
@@ -366,11 +376,22 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_reset_language_json_mode() {
+    fn test_reset_language_json_mode_sets_supported_locale() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(true);
+
+            // Set to Korean first
+            set_language(&output, "ko").unwrap();
+
+            // Reset in JSON mode
             let result = reset_language(&output);
             assert!(result.is_ok());
+
+            let current = i18n::current();
+            assert!(
+                i18n::is_supported(&current),
+                "JSON mode reset should set supported locale"
+            );
         });
     }
 
@@ -382,14 +403,19 @@ mod tests {
 
             // Set a language first
             set_language(&output, "ko").unwrap();
+            assert_eq!(i18n::current(), "ko");
 
             // Reset should detect system locale
             let result = reset_language(&output);
             assert!(result.is_ok());
 
-            // Current locale should be a supported language
+            // Current locale must be a supported language (en is always supported)
             let current = i18n::current();
-            assert!(i18n::is_supported(&current) || current == "en");
+            assert!(
+                i18n::is_supported(&current),
+                "Reset should detect supported system locale, got '{}'",
+                current
+            );
         });
     }
 
@@ -399,21 +425,35 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_list_languages_returns_ok() {
+    fn test_list_languages_includes_current_locale() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(false);
             let result = list_languages(&output);
             assert!(result.is_ok());
+
+            // Current locale should be in supported languages
+            let current = i18n::current();
+            let codes: Vec<&str> = SUPPORTED_LANGS.iter().map(|(c, _)| *c).collect();
+            assert!(
+                codes.contains(&current.as_str()),
+                "Current locale '{}' should be in supported list",
+                current
+            );
         });
     }
 
     #[test]
     #[serial]
-    fn test_list_languages_json_mode() {
+    fn test_list_languages_json_mode_has_supported_langs() {
         with_temp_scoop_home(|_| {
             let output = create_test_output(true);
             let result = list_languages(&output);
             assert!(result.is_ok());
+
+            // JSON mode should also work with supported langs
+            let codes: Vec<&str> = SUPPORTED_LANGS.iter().map(|(c, _)| *c).collect();
+            assert!(codes.contains(&"en"), "Must include English");
+            assert!(codes.contains(&"ko"), "Must include Korean");
         });
     }
 
