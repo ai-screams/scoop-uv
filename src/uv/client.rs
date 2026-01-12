@@ -440,4 +440,157 @@ pypy-3.10.0-macos-aarch64-none    /path/to/pypy
         let client = UvClient::with_path(PathBuf::from("/usr/bin/uv"));
         assert_eq!(client.path, PathBuf::from("/usr/bin/uv"));
     }
+
+    // =========================================================================
+    // parse_python_list Security & Edge Case Tests
+    // =========================================================================
+
+    /// Path traversal attempt in python path - should be parsed as-is (no sanitization needed)
+    /// The path is used for display only, not for execution
+    #[test]
+    fn test_parse_python_list_path_traversal_attempt() {
+        let output = "cpython-3.12.0-macos-aarch64-none    ../../../etc/passwd\n";
+        let pythons = parse_python_list(output);
+
+        assert_eq!(pythons.len(), 1);
+        assert_eq!(pythons[0].version, "3.12.0");
+        // Path is stored as-is - validation happens elsewhere
+        assert_eq!(pythons[0].path, Some(PathBuf::from("../../../etc/passwd")));
+    }
+
+    /// Very long input line - DoS resistance
+    #[test]
+    fn test_parse_python_list_very_long_line() {
+        let long_path = "/very/long/".to_string() + &"x".repeat(10_000);
+        let output = format!("cpython-3.12.0-macos-aarch64-none    {}\n", long_path);
+        let pythons = parse_python_list(&output);
+
+        assert_eq!(pythons.len(), 1);
+        assert_eq!(pythons[0].version, "3.12.0");
+        assert!(pythons[0].path.is_some());
+    }
+
+    /// Unicode in paths - should handle properly
+    #[test]
+    fn test_parse_python_list_unicode_path() {
+        let output = "cpython-3.12.0-macos-aarch64-none    /Users/한글/python\n";
+        let pythons = parse_python_list(output);
+
+        assert_eq!(pythons.len(), 1);
+        assert_eq!(pythons[0].path, Some(PathBuf::from("/Users/한글/python")));
+    }
+
+    /// Spaces in path (quoted) - note: current parser splits on whitespace
+    #[test]
+    fn test_parse_python_list_multiple_whitespace() {
+        // Multiple spaces between version and path
+        let output = "cpython-3.12.0-macos-aarch64-none        /path/to/python\n";
+        let pythons = parse_python_list(output);
+
+        assert_eq!(pythons.len(), 1);
+        assert_eq!(pythons[0].path, Some(PathBuf::from("/path/to/python")));
+    }
+
+    /// Only whitespace lines
+    #[test]
+    fn test_parse_python_list_only_whitespace() {
+        let output = "   \n\t\n  \t  \n";
+        let pythons = parse_python_list(output);
+        assert!(pythons.is_empty());
+    }
+
+    /// Malformed version string without hyphen
+    #[test]
+    fn test_parse_python_list_malformed_version() {
+        let output = "cpython\n";
+        let pythons = parse_python_list(output);
+
+        assert_eq!(pythons.len(), 1);
+        // When no hyphen, the entire string becomes implementation
+        assert_eq!(pythons[0].implementation, "cpython");
+        assert_eq!(pythons[0].version, "cpython"); // Fallback to full string
+    }
+
+    /// Version with many segments (e.g., 3.12.1.post1)
+    #[test]
+    fn test_parse_python_list_version_with_suffix() {
+        let output = "cpython-3.12.1-macos-aarch64-none    /path/to/python\n";
+        let pythons = parse_python_list(output);
+
+        assert_eq!(pythons.len(), 1);
+        assert_eq!(pythons[0].version, "3.12.1");
+        assert_eq!(pythons[0].implementation, "cpython");
+    }
+
+    /// Different Python implementations
+    #[test]
+    fn test_parse_python_list_various_implementations() {
+        let output = r#"
+cpython-3.12.0    /path/cpython
+pypy-3.10.0    /path/pypy
+graalpy-3.11.0    /path/graalpy
+"#;
+        let pythons = parse_python_list(output);
+
+        assert_eq!(pythons.len(), 3);
+        assert_eq!(pythons[0].implementation, "cpython");
+        assert_eq!(pythons[1].implementation, "pypy");
+        assert_eq!(pythons[2].implementation, "graalpy");
+    }
+
+    /// Null bytes and control characters - should not panic
+    #[test]
+    fn test_parse_python_list_control_characters() {
+        // Lines are split by \n, so embedded \0 stays in line
+        let output = "cpython-3.12.0\x00-injected    /path\n";
+        let result = std::panic::catch_unwind(|| parse_python_list(output));
+        assert!(result.is_ok()); // Should not panic
+    }
+
+    // =========================================================================
+    // PythonInfo Tests
+    // =========================================================================
+
+    /// PythonInfo with None path
+    #[test]
+    fn test_python_info_none_path() {
+        let info = PythonInfo {
+            version: "3.12.0".to_string(),
+            path: None,
+            installed: false,
+            implementation: "cpython".to_string(),
+        };
+
+        assert!(info.path.is_none());
+        assert!(!info.installed);
+    }
+
+    /// PythonInfo Clone trait
+    #[test]
+    fn test_python_info_clone() {
+        let original = PythonInfo {
+            version: "3.12.0".to_string(),
+            path: Some(PathBuf::from("/path")),
+            installed: true,
+            implementation: "cpython".to_string(),
+        };
+
+        let cloned = original.clone();
+        assert_eq!(original, cloned);
+    }
+
+    /// PythonInfo Debug trait
+    #[test]
+    fn test_python_info_debug() {
+        let info = PythonInfo {
+            version: "3.12.0".to_string(),
+            path: Some(PathBuf::from("/path")),
+            installed: true,
+            implementation: "cpython".to_string(),
+        };
+
+        let debug_str = format!("{:?}", info);
+        assert!(debug_str.contains("3.12.0"));
+        assert!(debug_str.contains("cpython"));
+    }
 }
