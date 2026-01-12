@@ -203,6 +203,87 @@ macro_rules! assert_error_variant {
     };
 }
 
+// =============================================================================
+// Migrate Test Helpers
+// =============================================================================
+
+/// Environment variables backed up during isolated migrate tests.
+const MIGRATE_ENV_VARS: &[&str] = &[
+    "PYENV_ROOT",
+    "PYENV_VIRTUALENV_INIT",
+    "WORKON_HOME",
+    "VIRTUALENVWRAPPER_HOOK_DIR",
+    "CONDA_PREFIX",
+    "CONDA_EXE",
+];
+
+/// Global mutex for migrate environment tests.
+///
+/// Prevents race conditions when tests modify PYENV_ROOT, WORKON_HOME, etc.
+pub static MIGRATE_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+/// Execute a test function with isolated migrate environment variables.
+///
+/// This helper:
+/// 1. Acquires the MIGRATE_ENV_LOCK to prevent race conditions
+/// 2. Backs up and unsets all migrate-related environment variables
+/// 3. Runs the provided test function
+/// 4. Restores original environment variables (even on panic)
+///
+/// Use this for testing `find_environment_by_name` error cases where
+/// no real pyenv/conda/virtualenvwrapper installation should be found.
+///
+/// # Examples
+///
+/// ```ignore
+/// use scoop::test_utils::with_isolated_migrate_env;
+///
+/// #[test]
+/// fn test_find_returns_error_when_not_found() {
+///     with_isolated_migrate_env(|| {
+///         // PYENV_ROOT, WORKON_HOME, CONDA_PREFIX are all unset
+///         let result = find_environment_by_name("nonexistent", None);
+///         assert!(result.is_err());
+///     });
+/// }
+/// ```
+pub fn with_isolated_migrate_env<F, T>(f: F) -> T
+where
+    F: FnOnce() -> T,
+{
+    use std::collections::HashMap;
+
+    // Recover from poisoned mutex
+    let _guard = MIGRATE_ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+
+    // Backup and unset environment variables
+    let mut backup: HashMap<&str, Option<String>> = HashMap::new();
+    for var in MIGRATE_ENV_VARS {
+        backup.insert(var, std::env::var(var).ok());
+        // SAFETY: Protected by MIGRATE_ENV_LOCK mutex
+        unsafe { std::env::remove_var(var) };
+    }
+
+    // Run test with catch_unwind to ensure cleanup
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
+
+    // Restore environment variables
+    for (var, value) in backup {
+        // SAFETY: Protected by MIGRATE_ENV_LOCK mutex
+        unsafe {
+            match value {
+                Some(v) => std::env::set_var(var, v),
+                None => std::env::remove_var(var),
+            }
+        }
+    }
+
+    match result {
+        Ok(val) => val,
+        Err(e) => std::panic::resume_unwind(e),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

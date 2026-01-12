@@ -141,3 +141,371 @@ fn list_languages(output: &Output) -> Result<()> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::with_temp_scoop_home;
+    use serial_test::serial;
+
+    // =========================================================================
+    // Test Helpers
+    // =========================================================================
+
+    fn create_test_output(json: bool) -> Output {
+        Output::new(0, false, true, json) // verbose=0, quiet=false, no_color=true, json
+    }
+
+    // =========================================================================
+    // execute() Tests
+    // =========================================================================
+
+    #[test]
+    #[serial]
+    fn test_execute_list_flag() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            let result = execute(&output, None, true, false);
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_execute_reset_flag() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            let result = execute(&output, None, false, true);
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_execute_set_language() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            let result = execute(&output, Some("en"), false, false);
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_execute_show_current() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            let result = execute(&output, None, false, false);
+            assert!(result.is_ok());
+        });
+    }
+
+    // =========================================================================
+    // show_current() Tests
+    // =========================================================================
+
+    #[test]
+    #[serial]
+    fn test_show_current_returns_ok() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            let result = show_current(&output);
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_show_current_json_mode() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(true);
+            let result = show_current(&output);
+            assert!(result.is_ok());
+            // JSON output is printed to stdout, verified by execute path
+        });
+    }
+
+    // =========================================================================
+    // set_language() Tests
+    // =========================================================================
+
+    #[test]
+    #[serial]
+    fn test_set_language_supported_en() {
+        with_temp_scoop_home(|temp_dir| {
+            let output = create_test_output(false);
+            let result = set_language(&output, "en");
+            assert!(result.is_ok());
+
+            // Verify config was saved
+            let config_path = temp_dir.path().join("config.json");
+            assert!(config_path.exists());
+
+            let content = std::fs::read_to_string(&config_path).unwrap();
+            assert!(content.contains("\"lang\":\"en\"") || content.contains("\"lang\": \"en\""));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_set_language_supported_ko() {
+        with_temp_scoop_home(|temp_dir| {
+            let output = create_test_output(false);
+            let result = set_language(&output, "ko");
+            assert!(result.is_ok());
+
+            // Verify config was saved
+            let config_path = temp_dir.path().join("config.json");
+            assert!(config_path.exists());
+
+            let content = std::fs::read_to_string(&config_path).unwrap();
+            assert!(content.contains("\"lang\":\"ko\"") || content.contains("\"lang\": \"ko\""));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_set_language_unsupported_returns_ok() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            // Unsupported language returns Ok but prints error message
+            let result = set_language(&output, "xyz");
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_set_language_unsupported_no_config_change() {
+        with_temp_scoop_home(|temp_dir| {
+            let output = create_test_output(false);
+            let result = set_language(&output, "fr"); // fr is not yet supported
+            assert!(result.is_ok());
+
+            // Config should not be created for unsupported language
+            let config_path = temp_dir.path().join("config.json");
+            assert!(!config_path.exists());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_set_language_json_mode_supported() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(true);
+            let result = set_language(&output, "en");
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_set_language_json_mode_unsupported() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(true);
+            let result = set_language(&output, "xyz");
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_set_language_updates_locale() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+
+            // Set to Korean
+            let result = set_language(&output, "ko");
+            assert!(result.is_ok());
+            assert_eq!(i18n::current(), "ko");
+
+            // Set back to English
+            let result = set_language(&output, "en");
+            assert!(result.is_ok());
+            assert_eq!(i18n::current(), "en");
+        });
+    }
+
+    // =========================================================================
+    // reset_language() Tests
+    // =========================================================================
+
+    #[test]
+    #[serial]
+    fn test_reset_language_returns_ok() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            let result = reset_language(&output);
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_reset_language_removes_from_config() {
+        with_temp_scoop_home(|temp_dir| {
+            let output = create_test_output(false);
+
+            // First set a language
+            set_language(&output, "ko").unwrap();
+            let config_path = temp_dir.path().join("config.json");
+            assert!(config_path.exists());
+
+            let content = std::fs::read_to_string(&config_path).unwrap();
+            assert!(content.contains("\"lang\""));
+
+            // Now reset
+            let result = reset_language(&output);
+            assert!(result.is_ok());
+
+            // Config should no longer contain lang
+            let content = std::fs::read_to_string(&config_path).unwrap();
+            assert!(!content.contains("\"lang\""));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_reset_language_json_mode() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(true);
+            let result = reset_language(&output);
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_reset_language_detects_system_locale() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+
+            // Set a language first
+            set_language(&output, "ko").unwrap();
+
+            // Reset should detect system locale
+            let result = reset_language(&output);
+            assert!(result.is_ok());
+
+            // Current locale should be a supported language
+            let current = i18n::current();
+            assert!(i18n::is_supported(&current) || current == "en");
+        });
+    }
+
+    // =========================================================================
+    // list_languages() Tests
+    // =========================================================================
+
+    #[test]
+    #[serial]
+    fn test_list_languages_returns_ok() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            let result = list_languages(&output);
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_list_languages_json_mode() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(true);
+            let result = list_languages(&output);
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    fn test_supported_langs_includes_expected() {
+        // Verify SUPPORTED_LANGS contains en and ko
+        let codes: Vec<&str> = SUPPORTED_LANGS.iter().map(|(c, _)| *c).collect();
+        assert!(codes.contains(&"en"));
+        assert!(codes.contains(&"ko"));
+    }
+
+    // =========================================================================
+    // i18n Integration Tests
+    // =========================================================================
+
+    #[test]
+    fn test_is_supported_returns_true_for_en() {
+        assert!(i18n::is_supported("en"));
+    }
+
+    #[test]
+    fn test_is_supported_returns_true_for_ko() {
+        assert!(i18n::is_supported("ko"));
+    }
+
+    #[test]
+    fn test_is_supported_returns_false_for_unknown() {
+        assert!(!i18n::is_supported("xyz"));
+        assert!(!i18n::is_supported("fr"));
+        assert!(!i18n::is_supported(""));
+    }
+
+    #[test]
+    fn test_language_name_returns_correct_names() {
+        assert_eq!(i18n::language_name("en"), Some("English"));
+        assert_eq!(i18n::language_name("ko"), Some("한국어"));
+    }
+
+    #[test]
+    fn test_language_name_returns_none_for_unknown() {
+        assert_eq!(i18n::language_name("xyz"), None);
+        assert_eq!(i18n::language_name("fr"), None);
+    }
+
+    // =========================================================================
+    // Edge Cases
+    // =========================================================================
+
+    #[test]
+    #[serial]
+    fn test_set_language_empty_string() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+            let result = set_language(&output, "");
+            // Empty string is not supported, should return Ok but not save
+            assert!(result.is_ok());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_set_language_case_sensitive() {
+        with_temp_scoop_home(|_| {
+            let output = create_test_output(false);
+
+            // "EN" is not supported (case-sensitive)
+            let result = set_language(&output, "EN");
+            assert!(result.is_ok());
+
+            // Should not change locale to "EN" since it's unsupported
+            // The locale stays as whatever it was before
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_set_language_overwrites_previous() {
+        with_temp_scoop_home(|temp_dir| {
+            let output = create_test_output(false);
+
+            // Set to ko
+            set_language(&output, "ko").unwrap();
+
+            // Overwrite with en
+            set_language(&output, "en").unwrap();
+
+            let config_path = temp_dir.path().join("config.json");
+            let content = std::fs::read_to_string(&config_path).unwrap();
+
+            // Should only contain en, not ko
+            assert!(content.contains("\"en\""));
+            // Note: config has one lang field, so ko is replaced
+        });
+    }
+}

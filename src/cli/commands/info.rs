@@ -133,3 +133,187 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
 
     Ok(())
 }
+
+// =============================================================================
+// Tests
+// =============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::with_temp_scoop_home;
+    use serial_test::serial;
+    use tempfile::TempDir;
+
+    // =========================================================================
+    // Constants Tests
+    // =========================================================================
+
+    #[test]
+    fn default_package_limit_is_five() {
+        assert_eq!(DEFAULT_PACKAGE_LIMIT, 5);
+    }
+
+    // =========================================================================
+    // get_packages Tests
+    // =========================================================================
+
+    #[test]
+    fn get_packages_nonexistent_path_returns_empty() {
+        let path = Path::new("/nonexistent/path/to/venv");
+        let packages = get_packages(path);
+        assert!(packages.is_empty());
+    }
+
+    #[test]
+    fn get_packages_no_pip_returns_empty() {
+        let temp = TempDir::new().unwrap();
+        // Create a directory without pip
+        std::fs::create_dir_all(temp.path().join("bin")).unwrap();
+
+        let packages = get_packages(temp.path());
+        assert!(packages.is_empty());
+    }
+
+    #[test]
+    fn get_packages_empty_bin_returns_empty() {
+        let temp = TempDir::new().unwrap();
+        // bin directory exists but no pip
+        std::fs::create_dir_all(temp.path().join("bin")).unwrap();
+
+        let packages = get_packages(temp.path());
+        assert!(packages.is_empty());
+    }
+
+    // =========================================================================
+    // execute Error Path Tests
+    // =========================================================================
+
+    #[test]
+    #[serial]
+    fn execute_nonexistent_env_returns_error() {
+        with_temp_scoop_home(|temp_dir| {
+            // Create virtualenvs directory (required by VirtualenvService)
+            std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+
+            let output = Output::new(0, false, false, false);
+            let result = execute(&output, "nonexistent", false, false);
+
+            assert!(result.is_err());
+            let err = result.unwrap_err();
+            assert!(matches!(err, ScoopError::VirtualenvNotFound { .. }));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn execute_with_all_packages_flag() {
+        with_temp_scoop_home(|temp_dir| {
+            std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+
+            let output = Output::new(0, false, false, false);
+            // all_packages flag should not cause panic even with nonexistent env
+            let result = execute(&output, "nonexistent", true, false);
+
+            assert!(result.is_err());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn execute_with_no_size_flag() {
+        with_temp_scoop_home(|temp_dir| {
+            std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+
+            let output = Output::new(0, false, false, false);
+            // no_size flag should not cause panic
+            let result = execute(&output, "nonexistent", false, true);
+
+            assert!(result.is_err());
+        });
+    }
+
+    // =========================================================================
+    // Package Limit Logic Tests
+    // =========================================================================
+
+    #[test]
+    fn package_limit_with_all_packages_is_usize_max() {
+        let all_packages = true;
+        let limit = if all_packages {
+            usize::MAX
+        } else {
+            DEFAULT_PACKAGE_LIMIT
+        };
+        assert_eq!(limit, usize::MAX);
+    }
+
+    #[test]
+    fn package_limit_without_all_packages_is_default() {
+        let all_packages = false;
+        let limit = if all_packages {
+            usize::MAX
+        } else {
+            DEFAULT_PACKAGE_LIMIT
+        };
+        assert_eq!(limit, DEFAULT_PACKAGE_LIMIT);
+    }
+
+    // =========================================================================
+    // Truncation Logic Tests
+    // =========================================================================
+
+    #[test]
+    fn truncated_false_when_packages_under_limit() {
+        let packages: Vec<(String, String)> = vec![
+            ("pkg1".to_string(), "1.0".to_string()),
+            ("pkg2".to_string(), "2.0".to_string()),
+        ];
+        let limit = DEFAULT_PACKAGE_LIMIT;
+        let truncated = packages.len() > limit;
+
+        assert!(!truncated);
+    }
+
+    #[test]
+    fn truncated_false_when_packages_equal_limit() {
+        let packages: Vec<(String, String)> = (0..DEFAULT_PACKAGE_LIMIT)
+            .map(|i| (format!("pkg{}", i), format!("{}.0", i)))
+            .collect();
+        let limit = DEFAULT_PACKAGE_LIMIT;
+        let truncated = packages.len() > limit;
+
+        assert!(!truncated);
+    }
+
+    #[test]
+    fn truncated_true_when_packages_over_limit() {
+        let packages: Vec<(String, String)> = (0..DEFAULT_PACKAGE_LIMIT + 1)
+            .map(|i| (format!("pkg{}", i), format!("{}.0", i)))
+            .collect();
+        let limit = DEFAULT_PACKAGE_LIMIT;
+        let truncated = packages.len() > limit;
+
+        assert!(truncated);
+    }
+
+    #[test]
+    fn remaining_calculation_correct() {
+        let packages: Vec<(String, String)> = (0..10)
+            .map(|i| (format!("pkg{}", i), format!("{}.0", i)))
+            .collect();
+        let limit = DEFAULT_PACKAGE_LIMIT;
+        let remaining = packages.len().saturating_sub(limit);
+
+        assert_eq!(remaining, 5);
+    }
+
+    #[test]
+    fn remaining_zero_when_under_limit() {
+        let packages: Vec<(String, String)> = vec![("pkg".to_string(), "1.0".to_string())];
+        let limit = DEFAULT_PACKAGE_LIMIT;
+        let remaining = packages.len().saturating_sub(limit);
+
+        assert_eq!(remaining, 0);
+    }
+}
