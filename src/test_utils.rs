@@ -271,8 +271,9 @@ pub static MIGRATE_ENV_LOCK: Mutex<()> = Mutex::new(());
 /// This helper:
 /// 1. Acquires the MIGRATE_ENV_LOCK to prevent race conditions
 /// 2. Backs up and unsets all migrate-related environment variables
-/// 3. Runs the provided test function
-/// 4. Restores original environment variables (even on panic)
+/// 3. Sets HOME to a temporary directory to prevent fallback to ~/.pyenv, ~/.virtualenvs, etc.
+/// 4. Runs the provided test function
+/// 5. Restores original environment variables (even on panic)
 ///
 /// Use this for testing `find_environment_by_name` error cases where
 /// no real pyenv/conda/virtualenvwrapper installation should be found.
@@ -286,6 +287,7 @@ pub static MIGRATE_ENV_LOCK: Mutex<()> = Mutex::new(());
 /// fn test_find_returns_error_when_not_found() {
 ///     with_isolated_migrate_env(|| {
 ///         // PYENV_ROOT, WORKON_HOME, CONDA_PREFIX are all unset
+///         // HOME points to an empty temp directory
 ///         let result = find_environment_by_name("nonexistent", None);
 ///         assert!(result.is_err());
 ///     });
@@ -300,6 +302,10 @@ where
     // Recover from poisoned mutex
     let _guard = MIGRATE_ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 
+    // Create temp dir for HOME to prevent fallback discovery to ~/.pyenv, ~/.virtualenvs, etc.
+    // Discovery functions use dirs::home_dir() which reads HOME env var on Unix.
+    let temp_home = TempDir::new().expect("Failed to create temp HOME for migrate isolation");
+
     // Backup and unset environment variables
     let mut backup: HashMap<&str, Option<String>> = HashMap::new();
     for var in MIGRATE_ENV_VARS {
@@ -307,6 +313,11 @@ where
         // SAFETY: Protected by MIGRATE_ENV_LOCK mutex
         unsafe { std::env::remove_var(var) };
     }
+
+    // Also backup and set HOME to temp directory
+    backup.insert("HOME", std::env::var("HOME").ok());
+    // SAFETY: Protected by MIGRATE_ENV_LOCK mutex
+    unsafe { std::env::set_var("HOME", temp_home.path()) };
 
     // Run test with catch_unwind to ensure cleanup
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
