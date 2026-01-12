@@ -5,7 +5,7 @@ use std::process::Command;
 
 use crate::core::{VirtualenvService, get_active_env};
 use crate::error::{Result, ScoopError};
-use crate::output::{EnvInfoData, Output, PackageInfo, PackagesInfo, format_size};
+use crate::output::{EnvInfoData, Output, PackagesInfo, format_size};
 use crate::paths::{abbreviate_home, calculate_dir_size};
 
 const DEFAULT_PACKAGE_LIMIT: usize = 5;
@@ -64,15 +64,14 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
             .unwrap_or((None, None))
     };
 
-    // Get packages
+    // Get packages with truncation
     let packages = get_packages(&path);
     let limit = if all_packages {
         usize::MAX
     } else {
         DEFAULT_PACKAGE_LIMIT
     };
-    let truncated = packages.len() > limit;
-    let remaining = packages.len().saturating_sub(limit);
+    let packages_info = PackagesInfo::new(&packages, limit);
 
     // JSON output
     if output.is_json() {
@@ -84,18 +83,7 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
             created_at: metadata.as_ref().map(|m| m.created_at.to_rfc3339()),
             size_bytes,
             size_display,
-            packages: PackagesInfo {
-                total: packages.len(),
-                items: packages
-                    .iter()
-                    .take(limit)
-                    .map(|(n, v)| PackageInfo {
-                        name: n.clone(),
-                        version: v.clone(),
-                    })
-                    .collect(),
-                truncated,
-            },
+            packages: packages_info,
         };
         output.json_success("info", data);
         return Ok(());
@@ -122,14 +110,131 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
         println!("{:w$}{}", "Size:", size);
     }
 
-    println!("{:w$}{}", "Packages:", packages.len());
+    println!("{:w$}{}", "Packages:", packages_info.total);
     let indent = " ".repeat(w);
-    for (name, ver) in packages.iter().take(limit) {
-        println!("{}{}=={}", indent, name, ver);
+    for pkg in &packages_info.items {
+        println!("{}{}=={}", indent, pkg.name, pkg.version);
     }
-    if truncated {
-        println!("{}... ({} more)", indent, remaining);
+    if packages_info.truncated {
+        println!("{}... ({} more)", indent, packages_info.remaining());
     }
 
     Ok(())
+}
+
+// =============================================================================
+// Tests
+// =============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::with_temp_scoop_home;
+    use serial_test::serial;
+    use tempfile::TempDir;
+
+    // =========================================================================
+    // get_packages Tests
+    // =========================================================================
+
+    #[test]
+    fn get_packages_nonexistent_path_returns_empty() {
+        let path = Path::new("/nonexistent/path/to/venv");
+        let packages = get_packages(path);
+        assert!(packages.is_empty());
+    }
+
+    #[test]
+    fn get_packages_no_pip_returns_empty() {
+        let temp = TempDir::new().unwrap();
+        // Create a directory without pip
+        std::fs::create_dir_all(temp.path().join("bin")).unwrap();
+
+        let packages = get_packages(temp.path());
+        assert!(packages.is_empty());
+    }
+
+    #[test]
+    fn get_packages_empty_bin_returns_empty() {
+        let temp = TempDir::new().unwrap();
+        // bin directory exists but no pip
+        std::fs::create_dir_all(temp.path().join("bin")).unwrap();
+
+        let packages = get_packages(temp.path());
+        assert!(packages.is_empty());
+    }
+
+    // =========================================================================
+    // execute Error Path Tests
+    // =========================================================================
+
+    #[test]
+    #[serial]
+    fn execute_nonexistent_env_returns_error() {
+        with_temp_scoop_home(|temp_dir| {
+            // Create virtualenvs directory (required by VirtualenvService)
+            std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+
+            let output = Output::new(0, false, false, false);
+            let result = execute(&output, "nonexistent", false, false);
+
+            assert!(result.is_err());
+            let err = result.unwrap_err();
+            assert!(matches!(err, ScoopError::VirtualenvNotFound { .. }));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn execute_with_all_packages_flag() {
+        with_temp_scoop_home(|temp_dir| {
+            std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+
+            let output = Output::new(0, false, false, false);
+            // all_packages flag should not cause panic even with nonexistent env
+            let result = execute(&output, "nonexistent", true, false);
+
+            assert!(result.is_err());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn execute_with_no_size_flag() {
+        with_temp_scoop_home(|temp_dir| {
+            std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+
+            let output = Output::new(0, false, false, false);
+            // no_size flag should not cause panic
+            let result = execute(&output, "nonexistent", false, true);
+
+            assert!(result.is_err());
+        });
+    }
+
+    // =========================================================================
+    // Package Limit Logic Tests
+    // =========================================================================
+
+    #[test]
+    fn package_limit_with_all_packages_is_usize_max() {
+        let all_packages = true;
+        let limit = if all_packages {
+            usize::MAX
+        } else {
+            DEFAULT_PACKAGE_LIMIT
+        };
+        assert_eq!(limit, usize::MAX);
+    }
+
+    #[test]
+    fn package_limit_without_all_packages_is_default() {
+        let all_packages = false;
+        let limit = if all_packages {
+            usize::MAX
+        } else {
+            DEFAULT_PACKAGE_LIMIT
+        };
+        assert_eq!(limit, DEFAULT_PACKAGE_LIMIT);
+    }
 }

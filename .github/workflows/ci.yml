@@ -66,6 +66,9 @@ jobs:
       - name: Run tests
         run: cargo test --all-features --workspace
 
+      - name: Run ignored tests (requires uv)
+        run: cargo test --all-features --workspace -- --ignored
+
   # ====================
   # Build check
   # ====================

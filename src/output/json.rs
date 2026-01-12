@@ -1,6 +1,6 @@
 //! JSON output types for CLI commands
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Success response wrapper
 #[derive(Serialize)]
@@ -139,7 +139,7 @@ pub struct InstallData {
 }
 
 /// Uninstall response data
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct UninstallData {
     pub version: String,
 }
@@ -157,6 +157,49 @@ pub struct PackagesInfo {
     pub total: usize,
     pub items: Vec<PackageInfo>,
     pub truncated: bool,
+}
+
+impl PackagesInfo {
+    /// Creates a new PackagesInfo with truncation applied.
+    ///
+    /// # Arguments
+    /// * `packages` - Full list of (name, version) tuples
+    /// * `limit` - Maximum number of packages to include in items
+    ///
+    /// # Examples
+    /// ```
+    /// # use scoop_uv::output::PackagesInfo;
+    /// let packages = vec![
+    ///     ("pkg1".to_string(), "1.0".to_string()),
+    ///     ("pkg2".to_string(), "2.0".to_string()),
+    /// ];
+    /// let info = PackagesInfo::new(&packages, 1);
+    /// assert_eq!(info.total, 2);
+    /// assert_eq!(info.items.len(), 1);
+    /// assert!(info.truncated);
+    /// ```
+    pub fn new(packages: &[(String, String)], limit: usize) -> Self {
+        let total = packages.len();
+        let truncated = total > limit;
+        Self {
+            total,
+            items: packages
+                .iter()
+                .take(limit)
+                .map(|(n, v)| PackageInfo {
+                    name: n.clone(),
+                    version: v.clone(),
+                })
+                .collect(),
+            truncated,
+        }
+    }
+
+    /// Returns the number of packages not included due to truncation.
+    #[inline]
+    pub fn remaining(&self) -> usize {
+        self.total.saturating_sub(self.items.len())
+    }
 }
 
 /// Detailed environment info for JSON output
@@ -639,5 +682,118 @@ mod tests {
         assert_eq!(parsed["virtualenvs"][0]["active"], true);
         assert_eq!(parsed["virtualenvs"][1]["name"], "env2");
         assert!(parsed["virtualenvs"][1].get("python").is_none());
+    }
+
+    // ========================================
+    // PackagesInfo Tests
+    // ========================================
+
+    #[test]
+    fn packages_info_new_under_limit_not_truncated() {
+        let packages = vec![
+            ("pkg1".to_string(), "1.0".to_string()),
+            ("pkg2".to_string(), "2.0".to_string()),
+        ];
+        let info = PackagesInfo::new(&packages, 5);
+
+        assert_eq!(info.total, 2);
+        assert_eq!(info.items.len(), 2);
+        assert!(!info.truncated);
+        assert_eq!(info.remaining(), 0);
+    }
+
+    #[test]
+    fn packages_info_new_equal_limit_not_truncated() {
+        let packages: Vec<(String, String)> = (0..5)
+            .map(|i| (format!("pkg{}", i), format!("{}.0", i)))
+            .collect();
+        let info = PackagesInfo::new(&packages, 5);
+
+        assert_eq!(info.total, 5);
+        assert_eq!(info.items.len(), 5);
+        assert!(!info.truncated);
+        assert_eq!(info.remaining(), 0);
+    }
+
+    #[test]
+    fn packages_info_new_over_limit_truncated() {
+        let packages: Vec<(String, String)> = (0..10)
+            .map(|i| (format!("pkg{}", i), format!("{}.0", i)))
+            .collect();
+        let info = PackagesInfo::new(&packages, 5);
+
+        assert_eq!(info.total, 10);
+        assert_eq!(info.items.len(), 5);
+        assert!(info.truncated);
+        assert_eq!(info.remaining(), 5);
+    }
+
+    #[test]
+    fn packages_info_new_empty_packages() {
+        let packages: Vec<(String, String)> = vec![];
+        let info = PackagesInfo::new(&packages, 5);
+
+        assert_eq!(info.total, 0);
+        assert_eq!(info.items.len(), 0);
+        assert!(!info.truncated);
+        assert_eq!(info.remaining(), 0);
+    }
+
+    #[test]
+    fn packages_info_new_zero_limit_all_truncated() {
+        let packages = vec![
+            ("pkg1".to_string(), "1.0".to_string()),
+            ("pkg2".to_string(), "2.0".to_string()),
+        ];
+        let info = PackagesInfo::new(&packages, 0);
+
+        assert_eq!(info.total, 2);
+        assert_eq!(info.items.len(), 0);
+        assert!(info.truncated);
+        assert_eq!(info.remaining(), 2);
+    }
+
+    #[test]
+    fn packages_info_new_preserves_order() {
+        let packages = vec![
+            ("zeta".to_string(), "3.0".to_string()),
+            ("alpha".to_string(), "1.0".to_string()),
+            ("beta".to_string(), "2.0".to_string()),
+        ];
+        let info = PackagesInfo::new(&packages, 2);
+
+        assert_eq!(info.items[0].name, "zeta");
+        assert_eq!(info.items[1].name, "alpha");
+        // beta is truncated
+        assert_eq!(info.remaining(), 1);
+    }
+
+    #[test]
+    fn packages_info_new_copies_version_correctly() {
+        let packages = vec![
+            ("numpy".to_string(), "1.24.3".to_string()),
+            ("pandas".to_string(), "2.0.1".to_string()),
+        ];
+        let info = PackagesInfo::new(&packages, 5);
+
+        assert_eq!(info.items[0].version, "1.24.3");
+        assert_eq!(info.items[1].version, "2.0.1");
+    }
+
+    #[test]
+    fn packages_info_serializes_correctly() {
+        let packages = vec![
+            ("pkg1".to_string(), "1.0".to_string()),
+            ("pkg2".to_string(), "2.0".to_string()),
+        ];
+        let info = PackagesInfo::new(&packages, 1);
+
+        let json = serde_json::to_string(&info).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(parsed["total"], 2);
+        assert_eq!(parsed["truncated"], true);
+        assert_eq!(parsed["items"].as_array().unwrap().len(), 1);
+        assert_eq!(parsed["items"][0]["name"], "pkg1");
     }
 }

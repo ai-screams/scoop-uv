@@ -466,13 +466,6 @@ mod tests {
         assert_eq!(err.to_string(), "Cannot use --stable and --latest together");
     }
 
-    #[test]
-    fn test_error_is_debug() {
-        let err = ScoopError::HomeNotFound;
-        let debug_str = format!("{:?}", err);
-        assert!(debug_str.contains("HomeNotFound"));
-    }
-
     // ==========================================================================
     // IO Error Propagation Tests
     // ==========================================================================

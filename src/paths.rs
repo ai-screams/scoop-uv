@@ -158,27 +158,23 @@ pub fn abbreviate_home(path: &std::path::Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::with_temp_scoop_home;
+    use crate::test_utils::{with_no_scoop_home, with_temp_scoop_home};
     use serial_test::serial;
 
     #[test]
-    #[serial]
     fn test_scoop_home_default() {
-        // SAFETY: serial_test ensures exclusive access
-        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
-        let home = scoop_home().unwrap();
-        assert!(home.ends_with(".scoop"));
+        with_no_scoop_home(|| {
+            let home = scoop_home().unwrap();
+            assert!(home.ends_with(".scoop"));
+        });
     }
 
     #[test]
-    #[serial]
     fn test_scoop_home_env() {
-        // SAFETY: serial_test ensures exclusive access
-        unsafe { std::env::set_var(SCOOP_HOME_ENV, "/tmp/test-scoop") };
-        let home = scoop_home().unwrap();
-        assert_eq!(home, PathBuf::from("/tmp/test-scoop"));
-        // SAFETY: cleanup
-        unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
+        with_temp_scoop_home(|temp_dir| {
+            let home = scoop_home().unwrap();
+            assert_eq!(home, temp_dir.path());
+        });
     }
 
     #[test]

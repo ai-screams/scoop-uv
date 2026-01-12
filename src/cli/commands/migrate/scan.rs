@@ -16,10 +16,7 @@ use crate::error::{Result, ScoopError};
 ///
 /// # Examples
 ///
-/// ```ignore
-/// use scoop_uv::cli::commands::migrate::scan::scan_all_environments;
-/// use scoop_uv::cli::MigrateSource;
-///
+/// ```text
 /// // Scan all sources (returns empty if none installed)
 /// let all_envs = scan_all_environments(None);
 /// println!("Found {} environments", all_envs.len());
@@ -85,10 +82,7 @@ pub fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<Source
 ///
 /// # Examples
 ///
-/// ```ignore
-/// use scoop_uv::cli::commands::migrate::scan::find_environment_by_name;
-/// use scoop_uv::cli::MigrateSource;
-///
+/// ```text
 /// // Search for non-existent environment returns error
 /// let result = find_environment_by_name("nonexistent-env-12345", None);
 /// assert!(result.is_err());
@@ -149,5 +143,110 @@ pub fn find_environment_by_name(
         None => Err(ScoopError::PyenvEnvNotFound {
             name: name.to_string(),
         }),
+    }
+}
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::with_isolated_migrate_env;
+
+    /// Tests that source_filter=None returns PyenvEnvNotFound for nonexistent env.
+    #[test]
+    fn find_environment_by_name_no_filter_returns_pyenv_error() {
+        with_isolated_migrate_env(|| {
+            let result = find_environment_by_name("nonexistent_env_12345", None);
+
+            assert!(result.is_err());
+            assert!(matches!(
+                result.unwrap_err(),
+                ScoopError::PyenvEnvNotFound { .. }
+            ));
+        });
+    }
+
+    /// Tests that source_filter=Pyenv returns PyenvEnvNotFound.
+    #[test]
+    fn find_environment_by_name_pyenv_filter_returns_pyenv_error() {
+        with_isolated_migrate_env(|| {
+            let result =
+                find_environment_by_name("nonexistent_env_12345", Some(MigrateSource::Pyenv));
+
+            assert!(result.is_err());
+            let err = result.unwrap_err();
+            assert!(
+                matches!(err, ScoopError::PyenvEnvNotFound { ref name } if name == "nonexistent_env_12345")
+            );
+        });
+    }
+
+    /// Tests that source_filter=Virtualenvwrapper returns VenvWrapperEnvNotFound.
+    #[test]
+    fn find_environment_by_name_venvwrapper_filter_returns_venvwrapper_error() {
+        with_isolated_migrate_env(|| {
+            let result = find_environment_by_name(
+                "nonexistent_env_12345",
+                Some(MigrateSource::Virtualenvwrapper),
+            );
+
+            assert!(result.is_err());
+            let err = result.unwrap_err();
+            assert!(
+                matches!(err, ScoopError::VenvWrapperEnvNotFound { ref name } if name == "nonexistent_env_12345")
+            );
+        });
+    }
+
+    /// Tests that source_filter=Conda returns CondaEnvNotFound.
+    #[test]
+    fn find_environment_by_name_conda_filter_returns_conda_error() {
+        with_isolated_migrate_env(|| {
+            let result =
+                find_environment_by_name("nonexistent_env_12345", Some(MigrateSource::Conda));
+
+            assert!(result.is_err());
+            let err = result.unwrap_err();
+            assert!(
+                matches!(err, ScoopError::CondaEnvNotFound { ref name } if name == "nonexistent_env_12345")
+            );
+        });
+    }
+
+    /// Tests scan_all_environments with no environments installed returns empty.
+    #[test]
+    fn scan_all_environments_empty_when_no_sources() {
+        with_isolated_migrate_env(|| {
+            let envs = scan_all_environments(None);
+            assert!(envs.is_empty());
+        });
+    }
+
+    /// Tests scan_all_environments with specific source filter.
+    #[test]
+    fn scan_all_environments_with_pyenv_filter_returns_empty() {
+        with_isolated_migrate_env(|| {
+            let envs = scan_all_environments(Some(MigrateSource::Pyenv));
+            assert!(envs.is_empty());
+        });
+    }
+
+    #[test]
+    fn scan_all_environments_with_venvwrapper_filter_returns_empty() {
+        with_isolated_migrate_env(|| {
+            let envs = scan_all_environments(Some(MigrateSource::Virtualenvwrapper));
+            assert!(envs.is_empty());
+        });
+    }
+
+    #[test]
+    fn scan_all_environments_with_conda_filter_returns_empty() {
+        with_isolated_migrate_env(|| {
+            let envs = scan_all_environments(Some(MigrateSource::Conda));
+            assert!(envs.is_empty());
+        });
     }
 }

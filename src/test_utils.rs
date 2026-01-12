@@ -14,6 +14,50 @@ use crate::paths::SCOOP_HOME_ENV;
 /// All tests that modify SCOOP_HOME must acquire this lock first.
 pub static ENV_LOCK: Mutex<()> = Mutex::new(());
 
+/// Execute a test function with SCOOP_HOME environment variable unset.
+///
+/// This helper ensures safe testing of default behavior when SCOOP_HOME is not set.
+/// Uses catch_unwind to guarantee cleanup even if the test panics.
+///
+/// # Examples
+///
+/// ```ignore
+/// use scoop::test_utils::with_no_scoop_home;
+///
+/// #[test]
+/// fn test_default_home() {
+///     with_no_scoop_home(|| {
+///         // SCOOP_HOME is guaranteed to be unset here
+///         let home = scoop_home().unwrap();
+///         assert!(home.ends_with(".scoop"));
+///     });
+/// }
+/// ```
+pub fn with_no_scoop_home<F, T>(f: F) -> T
+where
+    F: FnOnce() -> T,
+{
+    // Recover from poisoned mutex if a previous test panicked
+    let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let backup = std::env::var(SCOOP_HOME_ENV).ok();
+
+    // SAFETY: Protected by ENV_LOCK mutex - only one test modifies this at a time
+    unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
+
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
+
+    // Restore original value if it existed
+    if let Some(val) = backup {
+        // SAFETY: Protected by ENV_LOCK mutex
+        unsafe { std::env::set_var(SCOOP_HOME_ENV, val) };
+    }
+
+    match result {
+        Ok(val) => val,
+        Err(e) => std::panic::resume_unwind(e),
+    }
+}
+
 /// Execute a test function with an isolated temporary SCOOP_HOME.
 ///
 /// This helper:
@@ -203,6 +247,214 @@ macro_rules! assert_error_variant {
     };
 }
 
+// =============================================================================
+// Migrate Test Helpers
+// =============================================================================
+
+/// Environment variables backed up during isolated migrate tests.
+const MIGRATE_ENV_VARS: &[&str] = &[
+    "PYENV_ROOT",
+    "PYENV_VIRTUALENV_INIT",
+    "WORKON_HOME",
+    "VIRTUALENVWRAPPER_HOOK_DIR",
+    "CONDA_PREFIX",
+    "CONDA_EXE",
+];
+
+/// Global mutex for migrate environment tests.
+///
+/// Prevents race conditions when tests modify PYENV_ROOT, WORKON_HOME, etc.
+pub static MIGRATE_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+/// Execute a test function with isolated migrate environment variables.
+///
+/// This helper:
+/// 1. Acquires the MIGRATE_ENV_LOCK to prevent race conditions
+/// 2. Backs up and unsets all migrate-related environment variables
+/// 3. Runs the provided test function
+/// 4. Restores original environment variables (even on panic)
+///
+/// Use this for testing `find_environment_by_name` error cases where
+/// no real pyenv/conda/virtualenvwrapper installation should be found.
+///
+/// # Examples
+///
+/// ```ignore
+/// use scoop::test_utils::with_isolated_migrate_env;
+///
+/// #[test]
+/// fn test_find_returns_error_when_not_found() {
+///     with_isolated_migrate_env(|| {
+///         // PYENV_ROOT, WORKON_HOME, CONDA_PREFIX are all unset
+///         let result = find_environment_by_name("nonexistent", None);
+///         assert!(result.is_err());
+///     });
+/// }
+/// ```
+pub fn with_isolated_migrate_env<F, T>(f: F) -> T
+where
+    F: FnOnce() -> T,
+{
+    use std::collections::HashMap;
+
+    // Recover from poisoned mutex
+    let _guard = MIGRATE_ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+
+    // Backup and unset environment variables
+    let mut backup: HashMap<&str, Option<String>> = HashMap::new();
+    for var in MIGRATE_ENV_VARS {
+        backup.insert(var, std::env::var(var).ok());
+        // SAFETY: Protected by MIGRATE_ENV_LOCK mutex
+        unsafe { std::env::remove_var(var) };
+    }
+
+    // Run test with catch_unwind to ensure cleanup
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
+
+    // Restore environment variables
+    for (var, value) in backup {
+        // SAFETY: Protected by MIGRATE_ENV_LOCK mutex
+        unsafe {
+            match value {
+                Some(v) => std::env::set_var(var, v),
+                None => std::env::remove_var(var),
+            }
+        }
+    }
+
+    match result {
+        Ok(val) => val,
+        Err(e) => std::panic::resume_unwind(e),
+    }
+}
+
+/// Create a mock pyenv-virtualenv environment for testing.
+///
+/// This creates the correct pyenv-virtualenv directory structure:
+/// - `$PYENV_ROOT/versions/<python_version>/envs/<name>/` directory
+/// - `pyvenv.cfg` with Python version
+/// - `bin/python` (empty file, just needs to exist)
+///
+/// # Arguments
+///
+/// * `pyenv_root` - The PYENV_ROOT directory
+/// * `name` - Name of the environment
+/// * `python_version` - Python version string (e.g., "3.12.0")
+///
+/// # Examples
+///
+/// ```ignore
+/// use tempfile::TempDir;
+/// use scoop::test_utils::create_mock_pyenv_env;
+///
+/// let temp = TempDir::new().unwrap();
+/// create_mock_pyenv_env(temp.path(), "myenv", "3.12.0");
+/// // Creates: temp/versions/3.12.0/envs/myenv/
+/// ```
+pub fn create_mock_pyenv_env(pyenv_root: &std::path::Path, name: &str, python_version: &str) {
+    use std::fs;
+
+    // pyenv-virtualenv structure: versions/<python_version>/envs/<env_name>/
+    let versions_dir = pyenv_root.join("versions");
+    let python_dir = versions_dir.join(python_version);
+    let envs_dir = python_dir.join("envs");
+    let env_dir = envs_dir.join(name);
+    let bin_dir = env_dir.join("bin");
+
+    fs::create_dir_all(&bin_dir).expect("Failed to create mock pyenv bin directory");
+
+    // Create pyvenv.cfg
+    let pyvenv_cfg = format!(
+        "home = {}/versions/{}/bin\nversion = {}\n",
+        pyenv_root.display(),
+        python_version,
+        python_version
+    );
+    fs::write(env_dir.join("pyvenv.cfg"), pyvenv_cfg).expect("Failed to write pyvenv.cfg");
+
+    // Create bin/python (empty file)
+    fs::write(bin_dir.join("python"), "").expect("Failed to write mock python binary");
+}
+
+/// Create a corrupted mock pyenv-virtualenv environment (missing bin/python).
+///
+/// Useful for testing error handling when environment is corrupted.
+pub fn create_corrupted_pyenv_env(pyenv_root: &std::path::Path, name: &str, python_version: &str) {
+    use std::fs;
+
+    // pyenv-virtualenv structure: versions/<python_version>/envs/<env_name>/
+    let versions_dir = pyenv_root.join("versions");
+    let python_dir = versions_dir.join(python_version);
+    let envs_dir = python_dir.join("envs");
+    let env_dir = envs_dir.join(name);
+
+    fs::create_dir_all(&env_dir).expect("Failed to create mock pyenv directory");
+
+    // Create pyvenv.cfg but NO bin/python
+    let pyvenv_cfg = format!("version = {}\n", python_version);
+    fs::write(env_dir.join("pyvenv.cfg"), pyvenv_cfg).expect("Failed to write pyvenv.cfg");
+}
+
+/// Execute a test with both SCOOP_HOME and PYENV_ROOT isolated.
+///
+/// This helper combines `with_temp_scoop_home` and `with_isolated_migrate_env`,
+/// setting up a complete isolated environment for migration testing.
+///
+/// # Returns
+///
+/// A tuple of (scoop_home TempDir, pyenv_root TempDir)
+pub fn with_full_migrate_env<F, T>(f: F) -> T
+where
+    F: FnOnce(&TempDir, &TempDir) -> T,
+{
+    use std::collections::HashMap;
+
+    // Recover from poisoned mutex
+    let _env_guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let _migrate_guard = MIGRATE_ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+
+    // Create temp directories
+    let scoop_home = TempDir::new().expect("Failed to create temp SCOOP_HOME");
+    let pyenv_root = TempDir::new().expect("Failed to create temp PYENV_ROOT");
+
+    // Create virtualenvs directory for scoop
+    std::fs::create_dir_all(scoop_home.path().join("virtualenvs"))
+        .expect("Failed to create virtualenvs dir");
+
+    // Backup and set environment variables
+    let mut backup: HashMap<&str, Option<String>> = HashMap::new();
+    for var in MIGRATE_ENV_VARS {
+        backup.insert(var, std::env::var(var).ok());
+        unsafe { std::env::remove_var(var) };
+    }
+    backup.insert("SCOOP_HOME", std::env::var("SCOOP_HOME").ok());
+
+    // Set isolated environment
+    unsafe {
+        std::env::set_var(SCOOP_HOME_ENV, scoop_home.path());
+        std::env::set_var("PYENV_ROOT", pyenv_root.path());
+    }
+
+    // Run test with catch_unwind
+    let result =
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&scoop_home, &pyenv_root)));
+
+    // Restore environment
+    for (var, value) in backup {
+        unsafe {
+            match value {
+                Some(v) => std::env::set_var(var, v),
+                None => std::env::remove_var(var),
+            }
+        }
+    }
+
+    match result {
+        Ok(val) => val,
+        Err(e) => std::panic::resume_unwind(e),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -339,6 +591,39 @@ mod tests {
             assert!(json.contains("created_at"));
             assert!(json.contains("created_by"));
         }
+    }
+
+    // ==========================================================================
+    // Isolated Migrate Env Tests
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn test_with_isolated_migrate_env_unsets_vars() {
+        with_isolated_migrate_env(|| {
+            // All migrate env vars should be unset
+            assert!(std::env::var("PYENV_ROOT").is_err());
+            assert!(std::env::var("WORKON_HOME").is_err());
+            assert!(std::env::var("CONDA_PREFIX").is_err());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_with_isolated_migrate_env_restores_vars() {
+        // Set a var before the test
+        unsafe { std::env::set_var("PYENV_ROOT", "/original/path") };
+
+        with_isolated_migrate_env(|| {
+            // Should be unset inside
+            assert!(std::env::var("PYENV_ROOT").is_err());
+        });
+
+        // Should be restored after
+        assert_eq!(std::env::var("PYENV_ROOT").unwrap(), "/original/path");
+
+        // Cleanup
+        unsafe { std::env::remove_var("PYENV_ROOT") };
     }
 
     // ==========================================================================

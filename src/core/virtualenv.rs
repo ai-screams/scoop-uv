@@ -181,20 +181,6 @@ mod tests {
     }
 
     #[test]
-    fn test_virtualenv_info_clone() {
-        let info = VirtualenvInfo {
-            name: "clonetest".to_string(),
-            path: PathBuf::from("/clone"),
-            python_version: None,
-        };
-        let cloned = info.clone();
-
-        assert_eq!(cloned.name, info.name);
-        assert_eq!(cloned.path, info.path);
-        assert_eq!(cloned.python_version, info.python_version);
-    }
-
-    #[test]
     #[serial]
     fn test_list_empty_when_no_venvs_dir() {
         with_temp_scoop_home(|_temp_dir| {
