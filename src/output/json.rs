@@ -1,6 +1,6 @@
 //! JSON output types for CLI commands
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Success response wrapper
 #[derive(Serialize)]
@@ -139,7 +139,7 @@ pub struct InstallData {
 }
 
 /// Uninstall response data
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct UninstallData {
     pub version: String,
 }
