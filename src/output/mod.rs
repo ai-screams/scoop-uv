@@ -410,4 +410,72 @@ mod tests {
             assert_eq!(format_size(1_073_741_824), "1.0 GB");
         }
     }
+
+    mod output_flag_tests {
+        use super::*;
+
+        #[test]
+        fn is_json_returns_correct_value() {
+            let json_output = Output::new(0, false, false, true);
+            let normal_output = Output::new(0, false, false, false);
+
+            assert!(json_output.is_json());
+            assert!(!normal_output.is_json());
+        }
+
+        #[test]
+        fn is_quiet_returns_correct_value() {
+            let quiet_output = Output::new(0, true, false, false);
+            let normal_output = Output::new(0, false, false, false);
+
+            assert!(quiet_output.is_quiet());
+            assert!(!normal_output.is_quiet());
+        }
+
+        #[test]
+        fn default_output_has_expected_flags() {
+            let output = Output::default();
+
+            assert!(!output.is_json());
+            assert!(!output.is_quiet());
+            assert!(output.use_color()); // default should use color
+        }
+
+        /// Boundary value: maximum verbosity level
+        #[test]
+        fn output_handles_max_verbosity() {
+            let output = Output::new(u8::MAX, false, false, false);
+
+            // Should not panic, and verbosity should be preserved
+            assert_eq!(output.verbosity(), u8::MAX);
+        }
+
+        /// Boundary value: all flags enabled simultaneously
+        #[test]
+        fn output_handles_all_flags_enabled() {
+            // quiet=true, no_color=true, json=true - potentially conflicting
+            let output = Output::new(0, true, true, true);
+
+            // All flags should be set as specified
+            assert!(output.is_quiet());
+            assert!(!output.use_color()); // no_color=true means use_color=false
+            assert!(output.is_json());
+        }
+
+        /// Verbosity levels affect behavior correctly
+        #[test]
+        fn output_verbosity_levels() {
+            let v0 = Output::new(0, false, false, false);
+            let v1 = Output::new(1, false, false, false);
+            let v2 = Output::new(2, false, false, false);
+
+            assert_eq!(v0.verbosity(), 0);
+            assert_eq!(v1.verbosity(), 1);
+            assert_eq!(v2.verbosity(), 2);
+
+            // Verify ordering
+            assert!(v0.verbosity() < v1.verbosity());
+            assert!(v1.verbosity() < v2.verbosity());
+        }
+    }
 }
