@@ -161,6 +161,44 @@ use.linked:
   pt-BR: ".venv -> %{path} vinculado"
   ja: ".venv -> %{path} にリンクしました"
 
+use.system_local:
+  en: "Using system Python in current directory"
+  ko: "현재 디렉토리에서 시스템 Python 사용"
+  pt-BR: "Usando Python do sistema no diretório atual"
+
+use.system_global:
+  en: "Using system Python globally"
+  ko: "전역으로 시스템 Python 사용"
+  pt-BR: "Usando Python do sistema globalmente"
+
+use.local_unset:
+  en: "Removed local environment setting"
+  ko: "로컬 환경 설정 제거됨"
+  pt-BR: "Configuração de ambiente local removida"
+
+use.global_unset:
+  en: "Removed global environment setting"
+  ko: "전역 환경 설정 제거됨"
+  pt-BR: "Configuração de ambiente global removida"
+
+# ============================================================================
+# Shell command
+# ============================================================================
+shell.set:
+  en: "Shell environment set to: %{name}"
+  ko: "쉘 환경 설정됨: %{name}"
+  pt-BR: "Ambiente do shell definido para: %{name}"
+
+shell.system:
+  en: "Shell environment set to system Python"
+  ko: "쉘 환경이 시스템 Python으로 설정됨"
+  pt-BR: "Ambiente do shell definido para Python do sistema"
+
+shell.unset:
+  en: "Shell environment unset"
+  ko: "쉘 환경 설정 해제됨"
+  pt-BR: "Ambiente do shell não definido"
+
 # ============================================================================
 # Install command
 # ============================================================================
@@ -619,6 +657,16 @@ error.migration_name_conflict:
   ko: "'%{name}'이(가) %{path}에 이미 존재"
   pt-BR: "'%{name}' já existe em %{path}"
   ja: "'%{name}' はすでに存在します: %{path}"
+
+error.use_missing_name:
+  en: "Environment name required (use --unset to remove setting)"
+  ko: "환경 이름 필요 (설정 제거는 --unset 사용)"
+  pt-BR: "Nome do ambiente necessário (use --unset para remover configuração)"
+
+error.shell_missing_name:
+  en: "Environment name required (use --unset to clear)"
+  ko: "환경 이름 필요 (해제는 --unset 사용)"
+  pt-BR: "Nome do ambiente necessário (use --unset para limpar)"
 
 # ============================================================================
 # Error suggestions

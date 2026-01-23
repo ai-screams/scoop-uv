@@ -49,7 +49,7 @@ function scoop
             end
             return $ret
 
-        case activate deactivate
+        case activate deactivate shell
             # Pass through help/version flags without eval
             if string match -qr -- '(-h|--help|-V|--version)' $argv
                 command scoop $argv
@@ -64,9 +64,26 @@ end
 
 # Auto-activate hook
 function _scoop_hook --on-variable PWD
+    # Priority 1: SCOOP_VERSION environment variable (scoop shell)
+    if set -q SCOOP_VERSION
+        if test "$SCOOP_VERSION" = "system"
+            if set -q SCOOP_ACTIVE
+                eval (command scoop deactivate)
+            end
+        else if test "$SCOOP_VERSION" != "$SCOOP_ACTIVE"
+            eval (command scoop activate "$SCOOP_VERSION")
+        end
+        return
+    end
+
+    # Priority 2-5: File-based resolution
     set -l env_name (command scoop resolve 2>/dev/null)
 
-    if test -n "$env_name" -a "$env_name" != "$SCOOP_ACTIVE"
+    if test "$env_name" = "system"
+        if set -q SCOOP_ACTIVE
+            eval (command scoop deactivate)
+        end
+    else if test -n "$env_name" -a "$env_name" != "$SCOOP_ACTIVE"
         eval (command scoop activate "$env_name")
     else if test -z "$env_name" -a -n "$SCOOP_ACTIVE"
         eval (command scoop deactivate)
@@ -106,6 +123,7 @@ complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_
 complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'use' (with duplicate prevention)
+complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt unset" -l unset -d "Remove version setting"
 complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt global" -l global -d "Set as global default"
 complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l link -d "Create .venv symlink"
 complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l no-link -d "Do not create .venv symlink"

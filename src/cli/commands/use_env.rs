@@ -11,7 +11,101 @@ use crate::error::Result;
 use crate::output::{Output, UseData};
 
 /// Execute the use command
-pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<()> {
+pub fn execute(
+    output: &Output,
+    name: Option<&str>,
+    unset: bool,
+    global: bool,
+    link: bool,
+) -> Result<()> {
+    let cwd = std::env::current_dir()?;
+
+    // Handle --unset flag
+    if unset {
+        if global {
+            VersionService::unset_global()?;
+
+            if output.is_json() {
+                output.json_success(
+                    "use",
+                    UseData {
+                        name: String::new(),
+                        mode: "global_unset",
+                        version_file: None,
+                        symlink: None,
+                    },
+                );
+                return Ok(());
+            }
+
+            output.success(&t!("use.global_unset"));
+        } else {
+            VersionService::unset_local(&cwd)?;
+
+            if output.is_json() {
+                output.json_success(
+                    "use",
+                    UseData {
+                        name: String::new(),
+                        mode: "local_unset",
+                        version_file: None,
+                        symlink: None,
+                    },
+                );
+                return Ok(());
+            }
+
+            output.success(&t!("use.local_unset"));
+        }
+        return Ok(());
+    }
+
+    // Name is required when not using --unset
+    let name = name.ok_or_else(|| crate::error::ScoopError::InvalidArgument {
+        message: t!("error.use_missing_name").to_string(),
+    })?;
+
+    // Handle "system" special value
+    if name.to_lowercase() == "system" {
+        if global {
+            VersionService::set_global("system")?;
+
+            if output.is_json() {
+                output.json_success(
+                    "use",
+                    UseData {
+                        name: "system".to_string(),
+                        mode: "global",
+                        version_file: None,
+                        symlink: None,
+                    },
+                );
+                return Ok(());
+            }
+
+            output.success(&t!("use.system_global"));
+        } else {
+            VersionService::set_local(&cwd, "system")?;
+
+            if output.is_json() {
+                output.json_success(
+                    "use",
+                    UseData {
+                        name: "system".to_string(),
+                        mode: "local",
+                        version_file: Some(cwd.join(".scoop-version").display().to_string()),
+                        symlink: None,
+                    },
+                );
+                return Ok(());
+            }
+
+            output.success(&t!("use.system_local"));
+        }
+        return Ok(());
+    }
+
+    // Normal environment handling
     let service = VirtualenvService::auto()?;
 
     // Verify environment exists
@@ -36,8 +130,6 @@ pub fn execute(output: &Output, name: &str, global: bool, link: bool) -> Result<
 
         output.success(&t!("use.set_global", name = name));
     } else {
-        let cwd = std::env::current_dir()?;
-
         // Set local version
         VersionService::set_local(&cwd, name)?;
 

@@ -27,7 +27,7 @@ scoop() {
             fi
             return $ret
             ;;
-        activate|deactivate)
+        activate|deactivate|shell)
             # Pass through help/version flags without eval
             if [[ "$*" == *--help* ]] || [[ "$*" == *-h* ]] || [[ "$*" == *--version* ]] || [[ "$*" == *-V* ]]; then
                 command scoop "$@"
@@ -43,10 +43,27 @@ scoop() {
 
 # Auto-activate hook
 _scoop_hook() {
+    # Priority 1: SCOOP_VERSION environment variable (scoop shell)
+    if [[ -n "$SCOOP_VERSION" ]]; then
+        if [[ "$SCOOP_VERSION" == "system" ]]; then
+            if [[ -n "$SCOOP_ACTIVE" ]]; then
+                eval "$(command scoop deactivate)"
+            fi
+        elif [[ "$SCOOP_VERSION" != "$SCOOP_ACTIVE" ]]; then
+            eval "$(command scoop activate "$SCOOP_VERSION")"
+        fi
+        return
+    fi
+
+    # Priority 2-5: File-based resolution
     local env_name
     env_name="$(command scoop resolve 2>/dev/null)"
 
-    if [[ -n "$env_name" && "$env_name" != "$SCOOP_ACTIVE" ]]; then
+    if [[ "$env_name" == "system" ]]; then
+        if [[ -n "$SCOOP_ACTIVE" ]]; then
+            eval "$(command scoop deactivate)"
+        fi
+    elif [[ -n "$env_name" && "$env_name" != "$SCOOP_ACTIVE" ]]; then
         eval "$(command scoop activate "$env_name")"
     elif [[ -z "$env_name" && -n "$SCOOP_ACTIVE" ]]; then
         eval "$(command scoop deactivate)"
@@ -123,9 +140,10 @@ _scoop_complete() {
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             use)
-                local opts="--link --global --no-link -q --quiet --no-color --help"
+                local opts="--unset --link --global --no-link -q --quiet --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
+                        --unset) opts="${opts//--unset }" ;;
                         --global) opts="${opts//--global }" ;;
                         --link|--no-link) opts="${opts//--link }"; opts="${opts//--no-link }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
