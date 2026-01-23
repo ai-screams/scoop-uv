@@ -53,6 +53,7 @@ jobs:
             -w /workspace \
             -e CARGO_TERM_COLOR=always \
             -e RUST_BACKTRACE=1 \
+            -e SCOOP_LANG=en \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:slim \
             bash -c "
               cargo build --release &&
