@@ -12,6 +12,7 @@ use crate::config::Config;
 pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
     ("en", "English"),
     ("ko", "한국어"),
+    ("pt-BR", "Português (Brasil)"),
     // Coming Soon: ja (日本語), zh-CN (简体中文), fr (Français), ar (العربية)
 ];
 
