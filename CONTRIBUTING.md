@@ -51,7 +51,19 @@ Docs can always be clearer. PRs welcome for:
 - Typo fixes
 - Clarifications
 - New examples
-- Translations
+
+### 🌍 Translate scoop
+
+Help make scoop accessible to developers worldwide!
+
+**Quick start:**
+1. Add translations to `locales/app.yml` (106 keys)
+2. Register your language in `src/i18n.rs`
+3. Submit PR with title: `feat(i18n): add {Language} translation`
+
+**Philosophy:** We trust translators. Casual tone, creative expressions welcome — clarity is the only rule.
+
+📖 **[Full Translation Guide](https://ai-screams.github.io/scoop-uv/development/translation.html)**
 
 ---
 

@@ -34,6 +34,7 @@
 # Development
 
 - [Contributing](development/contributing.md)
+- [Translation](development/translation.md)
 - [Architecture](development/architecture.md)
 - [Testing](development/testing.md)
 - [Code Quality](development/code-quality.md)
