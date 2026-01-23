@@ -340,6 +340,29 @@ If you find this project useful, consider buying me a coffee (or an ice cream �
 
 ---
 
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/murillobazz"><img src="https://avatars.githubusercontent.com/u/64990540?v=4" width="80px;" alt="Murillo Bazilio"/><br /><sub><b>Murillo Bazilio</b></sub></a><br /><a href="#translation-murillobazz" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tosinibikunle"><img src="https://avatars.githubusercontent.com/u/87605729?v=4" width="80px;" alt="Tosinibikunle"/><br /><sub><b>Tosinibikunle</b></sub></a><br /><a href="#doc-Tosinibikunle" title="Documentation">📖</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+---
+
 ## Acknowledgments 🍨
 
 This project stands on the shoulders of giants:

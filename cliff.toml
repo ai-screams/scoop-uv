@@ -27,6 +27,9 @@ body = """
             {% if commit.remote.pr_number %} \
                 ([#{{ commit.remote.pr_number }}](https://github.com/ai-screams/scoop-uv/pull/{{ commit.remote.pr_number }}))\
             {% endif %}\
+            {% if commit.remote.username and commit.remote.username != "pignuante" %} \
+                (by [@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }}))\
+            {% endif %}\
     {% endfor %}
 {% endfor %}
 """

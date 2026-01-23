@@ -1,0 +1,30 @@
+{
+  "projectName": "scoop-uv",
+  "projectOwner": "ai-screams",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["README.md"],
+  "imageSize": 80,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributorsSortAlphabetically": true,
+  "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg?style=flat-square)](#contributors)",
+  "skipCi": true,
+  "contributors": [
+    {
+      "login": "murillobazz",
+      "name": "Murillo Bazilio",
+      "avatar_url": "https://avatars.githubusercontent.com/u/64990540?v=4",
+      "profile": "https://github.com/murillobazz",
+      "contributions": ["translation"]
+    },
+    {
+      "login": "Tosinibikunle",
+      "name": "Tosinibikunle",
+      "avatar_url": "https://avatars.githubusercontent.com/u/87605729?v=4",
+      "profile": "https://github.com/Tosinibikunle",
+      "contributions": ["doc"]
+    }
+  ]
+}
