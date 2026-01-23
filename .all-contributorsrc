@@ -3,7 +3,9 @@
   "projectOwner": "ai-screams",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": ["README.md"],
+  "files": [
+    "README.md"
+  ],
   "imageSize": 80,
   "commit": false,
   "commitConvention": "angular",
@@ -17,14 +19,28 @@
       "name": "Murillo Bazilio",
       "avatar_url": "https://avatars.githubusercontent.com/u/64990540?v=4",
       "profile": "https://github.com/murillobazz",
-      "contributions": ["translation"]
+      "contributions": [
+        "translation"
+      ]
     },
     {
       "login": "Tosinibikunle",
       "name": "Tosinibikunle",
       "avatar_url": "https://avatars.githubusercontent.com/u/87605729?v=4",
       "profile": "https://github.com/Tosinibikunle",
-      "contributions": ["doc"]
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "dependabot",
+      "name": "Dependabot",
+      "avatar_url": "https://avatars.githubusercontent.com/u/27347476?v=4",
+      "profile": "https://github.com/features/security",
+      "contributions": [
+        "infra"
+      ]
     }
-  ]
+  ],
+  "commitType": "docs"
 }
