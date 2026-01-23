@@ -50,7 +50,12 @@ function scoop
             return $ret
 
         case activate deactivate
-            eval (command scoop $argv)
+            # Pass through help/version flags without eval
+            if string match -qr -- '(-h|--help|-V|--version)' $argv
+                command scoop $argv
+            else
+                eval (command scoop $argv)
+            end
 
         case '*'
             command scoop $argv

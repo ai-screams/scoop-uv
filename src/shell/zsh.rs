@@ -31,7 +31,12 @@ scoop() {
             return $ret
             ;;
         activate|deactivate)
-            eval "$(command scoop "$@")"
+            # Pass through help/version flags without eval
+            if [[ "$*" == *--help* ]] || [[ "$*" == *-h* ]] || [[ "$*" == *--version* ]] || [[ "$*" == *-V* ]]; then
+                command scoop "$@"
+            else
+                eval "$(command scoop "$@")"
+            fi
             ;;
         *)
             command scoop "$@"
