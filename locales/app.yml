@@ -9,31 +9,37 @@ lang.current:
   en: "Current: %{lang} (%{name})"
   ko: "현재: %{lang} (%{name})"
   pt-BR: "Atual: %{lang} (%{name})"
+  ja: "現在: %{lang} (%{name})"
 
 lang.set:
   en: "Language set to %{lang}"
   ko: "언어가 %{lang}(으)로 설정됨"
   pt-BR: "Idioma definido para %{lang}"
+  ja: "%{lang} に設定しました"
 
 lang.reset:
   en: "Reset to system default: %{lang}"
   ko: "시스템 기본으로 리셋됨: %{lang}"
   pt-BR: "Redefinido para o padrão do sistema: %{lang}"
+  ja: "システムデフォルトにリセットしました: %{lang}"
 
 lang.unsupported:
   en: "Unsupported language: %{lang}"
   ko: "지원하지 않는 언어: %{lang}"
   pt-BR: "Idioma não suportado: %{lang}"
+  ja: "サポートされていない言語: %{lang}"
 
 lang.list_header:
   en: "Supported languages:"
   ko: "지원 언어:"
   pt-BR: "Idiomas suportados:"
+  ja: "対応言語:"
 
 lang.hint:
   en: "Run 'scoop lang --list' to see supported languages"
   ko: "'scoop lang --list'로 지원 언어 확인"
   pt-BR: "Execute 'scoop lang --list' para ver os idiomas suportados"
+  ja: "'scoop lang --list' を実行するとサポートされている言語を確認できます"
 
 # ============================================================================
 # Create command
@@ -42,26 +48,31 @@ create.removing_existing:
   en: "Removing existing '%{name}'..."
   ko: "기존 '%{name}' 삭제 중..."
   pt-BR: "Removendo '%{name}' existente..."
+  ja: "既存の '%{name}' を削除中..."
 
 create.creating:
   en: "Creating '%{name}' (Python %{python})..."
   ko: "'%{name}' 생성 중 (Python %{python})..."
   pt-BR: "Criando '%{name}' (Python %{python})..."
+  ja: "'%{name}' を作成中 (Python %{python})..."
 
 create.success:
   en: "Created '%{name}' environment"
   ko: "'%{name}' 환경 생성됨"
   pt-BR: "Ambiente '%{name}' criado"
+  ja: "'%{name}' 環境を作成しました"
 
 create.path:
   en: "  Path: %{path}"
   ko: "  경로: %{path}"
   pt-BR: "  Caminho: %{path}"
+  ja: "  パス: %{path}"
 
 create.activate_hint:
   en: "  Activate: scoop use %{name}"
   ko: "  활성화: scoop use %{name}"
   pt-BR: "  Ativar: scoop use %{name}"
+  ja: "  有効化: scoop use %{name}"
 
 # ============================================================================
 # Remove command
@@ -70,26 +81,31 @@ remove.path:
   en: "Path: %{path}"
   ko: "경로: %{path}"
   pt-BR: "Caminho: %{path}"
+  ja: "パス: %{path}"
 
 remove.confirm:
   en: "Remove '%{name}'?"
   ko: "'%{name}' 삭제?"
   pt-BR: "Remover '%{name}'?"
+  ja: "'%{name}' を削除しますか?"
 
 remove.cancelled:
   en: "Cancelled"
   ko: "취소됨"
   pt-BR: "Cancelado"
+  ja: "キャンセルしました"
 
 remove.removing:
   en: "Removing '%{name}'..."
   ko: "'%{name}' 삭제 중..."
   pt-BR: "Removendo '%{name}'..."
+  ja: "'%{name}' を削除中..."
 
 remove.success:
   en: "Removed '%{name}'"
   ko: "'%{name}' 삭제됨"
   pt-BR: "'%{name}' removido"
+  ja: "'%{name}' を削除しました"
 
 # ============================================================================
 # List command
@@ -98,21 +114,25 @@ list.no_envs:
   en: "No environments yet"
   ko: "환경 없음"
   pt-BR: "Nenhum ambiente ainda"
+  ja: "環境がまだありません"
 
 list.no_envs_hint:
   en: "→ Create one: scoop create myenv 3.12"
   ko: "→ 생성: scoop create myenv 3.12"
   pt-BR: "→ Criar um: scoop create myenv 3.12"
+  ja: "→ 新規作成: scoop create myenv 3.12"
 
 list.no_pythons:
   en: "No Python versions installed"
   ko: "설치된 Python 없음"
   pt-BR: "Nenhuma versão do Python instalada"
+  ja: "インストール済みの Python バージョンがありません"
 
 list.no_pythons_hint:
   en: "→ Install one: scoop install 3.12"
   ko: "→ 설치: scoop install 3.12"
   pt-BR: "→ Instalar um: scoop install 3.12"
+  ja: "→ インストール: scoop install 3.12"
 
 # ============================================================================
 # Use command
@@ -121,21 +141,25 @@ use.set_global:
   en: "Set '%{name}' as global environment"
   ko: "'%{name}' 전역 환경으로 설정됨"
   pt-BR: "'%{name}' definido como ambiente global"
+  ja: "'%{name}' をグローバル環境に設定しました"
 
 use.set_local:
   en: "Set '%{name}' as local environment"
   ko: "'%{name}' 로컬 환경으로 설정됨"
   pt-BR: "'%{name}' definido como ambiente local"
+  ja: "'%{name}' をローカル環境に設定しました"
 
 use.venv_not_symlink:
   en: ".venv exists but isn't a symlink, skipping"
   ko: ".venv가 심볼릭 링크가 아님, 건너뜀"
   pt-BR: ".venv existe mas não é um symlink, pulando"
+  ja: ".venv は存在しますがシンボリックリンクではないため、スキップします"
 
 use.linked:
   en: "Linked .venv -> %{path}"
   ko: ".venv -> %{path} 링크됨"
   pt-BR: ".venv -> %{path} vinculado"
+  ja: ".venv -> %{path} にリンクしました"
 
 # ============================================================================
 # Install command
@@ -144,11 +168,13 @@ install.installing:
   en: "Installing Python %{version}..."
   ko: "Python %{version} 설치 중..."
   pt-BR: "Instalando Python %{version}..."
+  ja: "Python %{version} をインストール中..."
 
 install.success:
   en: "Python %{version} installed"
   ko: "Python %{version} 설치됨"
   pt-BR: "Python %{version} instalado"
+  ja: "Python %{version} をインストールしました"
 
 # ============================================================================
 # Uninstall command
@@ -157,11 +183,13 @@ uninstall.uninstalling:
   en: "Uninstalling Python %{version}..."
   ko: "Python %{version} 삭제 중..."
   pt-BR: "Desinstalando Python %{version}..."
+  ja: "Python %{version} をアンインストール中..."
 
 uninstall.success:
   en: "Python %{version} uninstalled"
   ko: "Python %{version} 삭제됨"
   pt-BR: "Python %{version} desinstalado"
+  ja: "Python %{version} をアンインストールしました"
 
 # ============================================================================
 # Migrate command - scan/list
@@ -170,26 +198,31 @@ migrate.scanning:
   en: "Scanning %{source} for environments..."
   ko: "%{source}에서 환경 검색 중..."
   pt-BR: "Procurando ambientes em %{source}..."
+  ja: "%{source} から環境をスキャン中..."
 
 migrate.no_envs:
   en: "No %{source}environments found."
   ko: "%{source}환경을 찾지 못함."
   pt-BR: "Nenhum ambiente %{source} encontrado."
+  ja: "%{source} 環境が見つかりませんでした"
 
 migrate.found:
   en: "Found %{count} environment(s):"
   ko: "%{count}개 환경 발견:"
   pt-BR: "%{count} ambiente(s) encontrado(s):"
+  ja: "%{count}個の環境が見つかりました:"
 
 migrate.hint_single:
   en: "To migrate: scoop migrate @env <name>"
   ko: "마이그레이션: scoop migrate @env <name>"
   pt-BR: "Para migrar: scoop migrate @env <name>"
+  ja: "移行: scoop migrate @env <name>"
 
 migrate.hint_preview:
   en: "To preview: scoop migrate @env <name> --dry-run"
   ko: "미리보기: scoop migrate @env <name> --dry-run"
   pt-BR: "Para pré-visualizar: scoop migrate @env <name> --dry-run"
+  ja: "プレビュー: scoop migrate @env <name> --dry-run"
 
 # ============================================================================
 # Migrate command - single
@@ -198,121 +231,145 @@ migrate.dry_run_header:
   en: "[DRY-RUN] Migration preview:"
   ko: "[DRY-RUN] 마이그레이션 미리보기:"
   pt-BR: "[DRY-RUN] Prévia da migração:"
+  ja: "[DRY-RUN] 移行プレビュー:"
 
 migrate.from:
   en: "  From: %{path}"
   ko: "  원본: %{path}"
   pt-BR: "  De: %{path}"
+  ja: "  移行元: %{path}"
 
 migrate.to:
   en: "  To: %{path}"
   ko: "  대상: %{path}"
   pt-BR: "  Para: %{path}"
+  ja: "  移行先: %{path}"
 
 migrate.python:
   en: "  Python: %{version}"
   ko: "  Python: %{version}"
   pt-BR: "  Python: %{version}"
+  ja: "  Python: %{version}"
 
 migrate.packages:
   en: "  Packages: %{count}"
   ko: "  패키지: %{count}개"
   pt-BR: "  Pacotes: %{count}"
+  ja: "  パッケージ: %{count}"
 
 migrate.failed_packages:
   en: "  Failed packages (%{count}):"
   ko: "  실패한 패키지 (%{count}개):"
   pt-BR: "  Pacotes com falha (%{count}):"
+  ja: "  失敗したパッケージ (%{count}):"
 
 migrate.dry_run_hint:
   en: "→ Run without --dry-run to migrate"
   ko: "→ --dry-run 없이 실행하면 마이그레이션 진행"
   pt-BR: "→ Execute sem --dry-run para migrar"
+  ja: "→ --dry-run なしで実行すると移行を開始します"
 
 migrate.success:
   en: "Migrated '%{name}'"
   ko: "'%{name}' 마이그레이션 완료"
   pt-BR: "'%{name}' migrado"
+  ja: "'%{name}' を移行しました"
 
 migrate.activate_hint:
   en: "→ Activate: scoop use %{name}"
   ko: "→ 활성화: scoop use %{name}"
   pt-BR: "→ Ativar: scoop use %{name}"
+  ja: "→ 有効化: scoop use %{name}"
 
 migrate.source_path:
   en: "  Source: %{path}"
   ko: "  원본: %{path}"
   pt-BR: "  Origem: %{path}"
+  ja: "  ソース: %{path}"
 
 migrate.size:
   en: "  Size: %{size} MB"
   ko: "  크기: %{size} MB"
   pt-BR: "  Tamanho: %{size} MB"
+  ja: "  サイズ: %{size} MB"
 
 migrate.auto_rename:
   en: "Auto-renaming to '%{name}'"
   ko: "'%{name}'(으)로 자동 이름 변경"
   pt-BR: "Renomeando automaticamente para '%{name}'"
+  ja: "'%{name}' に自動リネーム中"
 
 migrate.will_overwrite:
   en: "Will overwrite existing environment"
   ko: "기존 환경 덮어쓰기"
   pt-BR: "Irá sobrescrever o ambiente existente"
+  ja: "既存の環境に上書きします"
 
 migrate.will_migrate_as:
   en: "Will migrate as '%{name}'"
   ko: "'%{name}'(으)로 마이그레이션"
   pt-BR: "Será migrado como '%{name}'"
+  ja: "'%{name}' に移行します"
 
 migrate.skipped:
   en: "Skipped"
   ko: "건너뜀"
   pt-BR: "Ignorado"
+  ja: "スキップしました"
 
 migrate.name_exists:
   en: "'%{name}' already exists"
   ko: "'%{name}'이(가) 이미 존재"
   pt-BR: "'%{name}' já existe"
+  ja: "'%{name}' はすでに存在します"
 
 migrate.use_flags:
   en: "→ Use --force, --rename, or --auto-rename"
   ko: "→ --force, --rename, --auto-rename 사용"
   pt-BR: "→ Use --force, --rename ou --auto-rename"
+  ja: "→ --force, --rename, --auto-rename を使用してください"
 
 migrate.overwriting:
   en: "Overwriting existing environment"
   ko: "기존 환경 덮어쓰기"
   pt-BR: "Sobrescrevendo ambiente existente"
+  ja: "既存の環境を上書きしています"
 
 migrate.eol_warning:
   en: "Python %{version} reached end-of-life"
   ko: "Python %{version}은 지원 종료됨"
   pt-BR: "Python %{version} chegou ao fim do suporte"
+  ja: "Python %{version} はサポートが終了しています (EOL)"
 
 migrate.eol_force_hint:
   en: "→ Use --force to proceed anyway"
   ko: "→ --force로 강제 진행"
   pt-BR: "→ Use --force para prosseguir mesmo assim"
+  ja: "→ --force で強制的に続行します"
 
 migrate.eol_proceeding:
   en: "Python %{version} is EOL, proceeding anyway"
   ko: "Python %{version} EOL이지만 계속 진행"
   pt-BR: "Python %{version} está EOL (fim de suporte), continuando mesmo assim"
+  ja: "Python %{version} はEOLですが、強制的に続行します "
 
 migrate.corrupted:
   en: "Corrupted: %{reason}"
   ko: "손상됨: %{reason}"
   pt-BR: "Corrompido: %{reason}"
+  ja: "破損: %{reason}"
 
 migrate.simulating:
   en: "[DRY-RUN] Simulating..."
   ko: "[DRY-RUN] 시뮬레이션 중..."
   pt-BR: "[DRY-RUN] Simulando..."
+  ja: "[DRY-RUN] シミュレート中..."
 
 migrate.migrating:
   en: "Migrating..."
   ko: "마이그레이션 중..."
   pt-BR: "Migrando..."
+  ja: "移行中..."
 
 # ============================================================================
 # Migrate command - batch
@@ -321,71 +378,85 @@ migrate.no_eligible:
   en: "No environments eligible for migration."
   ko: "마이그레이션 가능한 환경 없음."
   pt-BR: "Nenhum ambiente elegível para migração."
+  ja: "移行対象の環境が見つかりません"
 
 migrate.ready_count:
   en: "  %{count} ready to migrate"
   ko: "  %{count}개 마이그레이션 준비됨"
   pt-BR: "  %{count} pronto(s) para migrar"
+  ja: "  %{count}個が移行準備完了"
 
 migrate.skipped_count:
   en: "  %{count} skipped (name conflicts)"
   ko: "  %{count}개 건너뜀 (이름 충돌)"
   pt-BR: "  %{count} ignorado(s) (conflito de nome)"
+  ja: "  %{count}個スキップしました(名前の競合)"
 
 migrate.conflict_hint:
   en: "  → Use --auto-rename or migrate individually"
   ko: "  → --auto-rename 또는 개별 마이그레이션"
   pt-BR: "  → Use --auto-rename ou migre individualmente"
+  ja: "  → --auto-rename を使用または個別に移行してください"
 
 migrate.batch_cancelled:
   en: "Migration cancelled."
   ko: "마이그레이션 취소됨."
   pt-BR: "Migração cancelada."
+  ja: "移行がキャンセルされました"
 
 migrate.batch_dry_run:
   en: "[DRY-RUN] Simulating migration of all environments..."
   ko: "[DRY-RUN] 전체 환경 마이그레이션 시뮬레이션..."
   pt-BR: "[DRY-RUN] Simulando migração de todos os ambientes..."
+  ja: "[DRY-RUN] 全環境の移行をシミュレーション中..."
 
 migrate.batch_start:
   en: "Starting batch migration..."
   ko: "일괄 마이그레이션 시작..."
   pt-BR: "Iniciando migração em lote..."
+  ja: "一括移行を開始中..."
 
 migrate.batch_item:
   en: "Migrating '%{name}'..."
   ko: "'%{name}' 마이그레이션 중..."
   pt-BR: "Migrando '%{name}'..."
+  ja: "'%{name}' を移行中..."
 
 migrate.batch_item_success:
   en: "  '%{name}' migrated successfully"
   ko: "  '%{name}' 마이그레이션 성공"
   pt-BR: "  '%{name}' migrado com sucesso"
+  ja: "  '%{name}' の移行に成功しました"
 
 migrate.batch_item_failed:
   en: "  Failed: %{error}"
   ko: "  실패: %{error}"
   pt-BR: "  Falha: %{error}"
+  ja: "  失敗: %{error}"
 
 migrate.batch_summary_dry:
   en: "[DRY-RUN] Would migrate %{count} environment(s)"
   ko: "[DRY-RUN] %{count}개 환경 마이그레이션 예정"
   pt-BR: "[DRY-RUN] Migraria %{count} ambiente(s)"
+  ja: "[DRY-RUN] %{count}個の環境が移行対象です"
 
 migrate.batch_no_changes:
   en: "No changes made. Run without --dry-run to migrate."
   ko: "변경 없음. --dry-run 없이 실행하면 마이그레이션 진행."
   pt-BR: "Nenhuma alteração feita. Execute sem --dry-run para migrar."
+  ja: "変更はありません。 --dry-run なしで実行すると移行を開始します。"
 
 migrate.batch_summary:
   en: "Migration complete: %{success}/%{total} succeeded"
   ko: "마이그레이션 완료: %{success}/%{total} 성공"
   pt-BR: "Migração concluída: %{success}/%{total} com sucesso"
+  ja: "移行完了: %{success}/%{total} 成功"
 
 migrate.batch_failed_list:
   en: "Failed environments: %{names}"
   ko: "실패한 환경: %{names}"
   pt-BR: "Ambientes com falha: %{names}"
+  ja: "失敗した環境: %{names}"
 
 # ============================================================================
 # Migrate command - conflict
@@ -394,6 +465,7 @@ migrate.conflict_warning:
   en: "Environment '%{name}' already exists at %{path}"
   ko: "'%{name}' 환경이 이미 존재: %{path}"
   pt-BR: "Ambiente '%{name}' já existe em %{path}"
+  ja: "環境 '%{name}' はすでに存在します: %{path}"
 
 # ============================================================================
 # Error messages
@@ -402,126 +474,151 @@ error.virtualenv_not_found:
   en: "Can't find '%{name}' environment"
   ko: "'%{name}' 환경을 찾을 수 없음"
   pt-BR: "Não foi possível encontrar o ambiente '%{name}'"
+  ja: "'%{name}' 環境が見つかりません"
 
 error.virtualenv_exists:
   en: "'%{name}' already exists"
   ko: "'%{name}'이(가) 이미 존재"
   pt-BR: "'%{name}' já existe"
+  ja: "'%{name}' はすでに存在します"
 
 error.invalid_env_name:
   en: "Invalid name '%{name}': %{reason}"
   ko: "잘못된 이름 '%{name}': %{reason}"
   pt-BR: "Nome inválido '%{name}': %{reason}"
+  ja: "無効な名前 '%{name}': %{reason}"
 
 error.invalid_python_version:
   en: "Invalid Python version: %{version}"
   ko: "잘못된 Python 버전: %{version}"
   pt-BR: "Versão do Python inválida: %{version}"
+  ja: "無効な Python バージョン: %{version}"
 
 error.uv_not_found:
   en: "uv not found (scoop's core engine)"
   ko: "uv를 찾을 수 없음 (scoop 핵심 엔진)"
   pt-BR: "uv não encontrado (engine principal do scoop)"
+  ja: "uv が見つかりません (scoop のコアエンジン)"
 
 error.uv_command_failed:
   en: "uv %{command} failed: %{message}"
   ko: "uv %{command} 실패: %{message}"
   pt-BR: "uv %{command} falhou: %{message}"
+  ja: "uv %{command} 失敗: %{message}"
 
 error.path_error:
   en: "Path error: %{message}"
   ko: "경로 오류: %{message}"
   pt-BR: "Erro de caminho: %{message}"
+  ja: "パスエラー: %{message}"
 
 error.home_not_found:
   en: "Can't find home directory"
   ko: "홈 디렉토리를 찾을 수 없음"
   pt-BR: "Não foi possível encontrar o diretório home"
+  ja: "ホームディレクトリが見つかりません"
 
 error.io:
   en: "IO error: %{message}"
   ko: "IO 오류: %{message}"
   pt-BR: "Erro de IO: %{message}"
+  ja: "IO エラー: %{message}"
 
 error.json:
   en: "JSON error: %{message}"
   ko: "JSON 오류: %{message}"
   pt-BR: "Erro de JSON: %{message}"
+  ja: "JSON エラー: %{message}"
 
 error.version_file_not_found:
   en: "No version file in %{path} or parent directories"
   ko: "%{path} 또는 상위 디렉토리에 버전 파일 없음"
   pt-BR: "Nenhum arquivo de versão em %{path} ou diretórios superiores"
+  ja: "%{path} または親ディレクトリにバージョンファイルがありません"
 
 error.unsupported_shell:
   en: "Shell '%{shell}' not supported"
   ko: "'%{shell}' 셸은 지원하지 않음"
   pt-BR: "Shell '%{shell}' não suportado"
+  ja: "シェル '%{shell}' がサポートされていません"
 
 error.python_not_installed:
   en: "Python %{version} not installed"
   ko: "Python %{version} 미설치"
   pt-BR: "Python %{version} não instalado"
+  ja: "Python %{version} がインストールされていません"
 
 error.python_install_failed:
   en: "Couldn't install Python %{version}: %{message}"
   ko: "Python %{version} 설치 실패: %{message}"
   pt-BR: "Não foi possível instalar o Python %{version}: %{message}"
+  ja: "Python %{version} がインストールできませんでした: %{message}"
 
 error.python_uninstall_failed:
   en: "Couldn't uninstall Python %{version}: %{message}"
   ko: "Python %{version} 삭제 실패: %{message}"
   pt-BR: "Não foi possível desinstalar o Python %{version}: %{message}"
+  ja: "Python %{version} がアンインストールできませんでした: %{message}"
 
 error.no_python_versions:
   en: "No Python versions matching '%{pattern}'"
   ko: "'%{pattern}'와 일치하는 Python 버전 없음"
   pt-BR: "Nenhuma versão do Python correspondente a '%{pattern}'"
+  ja: "'%{pattern}' にマッチする Python バージョンがありません"
 
 error.invalid_argument:
   en: "%{message}"
   ko: "%{message}"
   pt-BR: "%{message}"
+  ja: "%{message}"
 
 error.pyenv_not_found:
   en: "pyenv not found"
   ko: "pyenv를 찾을 수 없음"
   pt-BR: "pyenv não encontrado"
+  ja: "pyenv が見つかりません"
 
 error.pyenv_env_not_found:
   en: "pyenv environment '%{name}' not found"
   ko: "pyenv 환경 '%{name}'을(를) 찾을 수 없음"
   pt-BR: "Ambiente pyenv '%{name}' não encontrado"
+  ja: "pyenv 環境 '%{name}' が見つかりません"
 
 error.venvwrapper_env_not_found:
   en: "virtualenvwrapper environment '%{name}' not found"
   ko: "virtualenvwrapper 환경 '%{name}'을(를) 찾을 수 없음"
   pt-BR: "Ambiente virtualenvwrapper '%{name}' não encontrado"
+  ja: "virtualenvwrapper 環境 '%{name}' が見つかりません"
 
 error.conda_env_not_found:
   en: "conda environment '%{name}' not found"
   ko: "conda 환경 '%{name}'을(를) 찾을 수 없음"
   pt-BR: "Ambiente conda '%{name}' não encontrado"
+  ja: "conda 環境 '%{name}' が見つかりません"
 
 error.corrupted_environment:
   en: "'%{name}' is corrupted: %{reason}"
   ko: "'%{name}' 손상됨: %{reason}"
   pt-BR: "'%{name}' está corrompido: %{reason}"
+  ja: "'%{name}' が破損しています: %{reason}"
 
 error.package_extraction_failed:
   en: "Couldn't extract packages: %{reason}"
   ko: "패키지 추출 실패: %{reason}"
   pt-BR: "Não foi possível extrair pacotes: %{reason}"
+  ja: "パッケージを抽出できませんでした: %{reason}"
 
 error.migration_failed:
   en: "Migration failed: %{reason} (rolled back)"
   ko: "마이그레이션 실패: %{reason} (롤백됨)"
   pt-BR: "Falha na migração: %{reason} (revertido)"
+  ja: "移行に失敗しました: %{reason} (ロールバック済み)"
 
 error.migration_name_conflict:
   en: "'%{name}' already exists at %{path}"
   ko: "'%{name}'이(가) %{path}에 이미 존재"
   pt-BR: "'%{name}' já existe em %{path}"
+  ja: "'%{name}' はすでに存在します: %{path}"
 
 # ============================================================================
 # Error suggestions
@@ -530,43 +627,52 @@ suggestion.virtualenv_not_found:
   en: "→ Create: scoop create %{name} 3.12"
   ko: "→ 생성: scoop create %{name} 3.12"
   pt-BR: "→ Criar: scoop create %{name} 3.12"
+  ja: "→ 作成: scoop create %{name} 3.12"
 
 suggestion.virtualenv_exists:
   en: "→ Use --force to overwrite"
   ko: "→ --force로 덮어쓰기"
   pt-BR: "→ Use --force para sobrescrever"
+  ja: "→ --force で上書き"
 
 suggestion.invalid_env_name:
   en: "→ Names must start with a letter: [a-zA-Z][a-zA-Z0-9_-]*"
   ko: "→ 이름은 문자로 시작: [a-zA-Z][a-zA-Z0-9_-]*"
   pt-BR: "→ Nomes devem começar com uma letra: [a-zA-Z][a-zA-Z0-9_-]*"
+  ja: "→ 名前は英字から始めてください: [a-zA-Z][a-zA-Z0-9_-]*"
 
 suggestion.uv_not_found:
   en: "→ Install: curl -LsSf https://astral.sh/uv/install.sh | sh"
   ko: "→ 설치: curl -LsSf https://astral.sh/uv/install.sh | sh"
   pt-BR: "→ Instalar: curl -LsSf https://astral.sh/uv/install.sh | sh"
+  ja: "→ インストール: curl -LsSf https://astral.sh/uv/install.sh | sh"
 
 suggestion.python_not_installed:
   en: "→ Install: scoop install %{version}"
   ko: "→ 설치: scoop install %{version}"
   pt-BR: "→ Instalar: scoop install %{version}"
+  ja: "→ インストール: scoop install %{version}"
 
 suggestion.no_python_versions:
   en: "→ See versions: scoop list --pythons"
   ko: "→ 버전 목록: scoop list --pythons"
   pt-BR: "→ Ver versões: scoop list --pythons"
+  ja: "→ バージョン一覧: scoop list --pythons"
 
 suggestion.pyenv_not_found:
   en: "→ Check PYENV_ROOT or ~/.pyenv directory\n→ Install: https://github.com/pyenv/pyenv#installation"
   ko: "→ PYENV_ROOT 또는 ~/.pyenv 확인\n→ 설치: https://github.com/pyenv/pyenv#installation"
   pt-BR: "→ Verifique PYENV_ROOT ou o diretório ~/.pyenv\n→ Instalar: https://github.com/pyenv/pyenv#installation"
+  ja: "→ PYENV_ROOT または ~/.pyenv を確認\n→ インストール: https://github.com/pyenv/pyenv#installation"
 
 suggestion.source_env_not_found:
   en: "→ See available: scoop migrate list"
   ko: "→ 목록 확인: scoop migrate list"
   pt-BR: "→ Ver disponíveis: scoop migrate list"
+  ja: "→ 利用可能一覧: scoop migrate list"
 
 suggestion.migration_name_conflict:
   en: "→ Use --force to overwrite, or pick a different name"
   ko: "→ --force로 덮어쓰기, 또는 다른 이름 사용"
   pt-BR: "→ Use --force para sobrescrever ou escolha outro nome"
+  ja: "→ --force で上書き、または別の名前を指定してください"
