@@ -620,8 +620,35 @@ mod shell_commands {
             .args(["shell", "system"])
             .assert()
             .success()
-            .stdout(predicate::str::contains("SCOOP_VERSION"))
-            .stdout(predicate::str::contains("system"));
+            // Security: verify quotes are present to prevent shell injection
+            .stdout(predicate::str::contains(r#"export SCOOP_VERSION="system""#))
+            .stdout(predicate::str::contains("unset VIRTUAL_ENV"));
+    }
+
+    #[test]
+    fn test_shell_bash_exports_quoted_version() {
+        let fixture = TestFixture::new();
+
+        // Explicitly test bash shell output format with quotes
+        scoop_cmd(&fixture.scoop_home)
+            .args(["shell", "--shell", "bash", "system"])
+            .assert()
+            .success()
+            // Security: double quotes prevent shell injection
+            .stdout(predicate::str::contains(r#"export SCOOP_VERSION="system""#));
+    }
+
+    #[test]
+    fn test_shell_fish_uses_single_quotes() {
+        let fixture = TestFixture::new();
+
+        // Fish shell should use single quotes for SCOOP_VERSION
+        scoop_cmd(&fixture.scoop_home)
+            .args(["shell", "--shell", "fish", "system"])
+            .assert()
+            .success()
+            // Fish uses single quotes which also prevent injection
+            .stdout(predicate::str::contains("set -gx SCOOP_VERSION 'system'"));
     }
 
     #[test]

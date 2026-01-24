@@ -75,6 +75,6 @@ pub fn print_unset_scoop_version(shell: ShellType) {
 pub fn print_export_scoop_version(shell: ShellType, value: &str) {
     match shell {
         ShellType::Fish => println!("set -gx SCOOP_VERSION '{}'", value),
-        _ => println!("export SCOOP_VERSION={}", value),
+        _ => println!("export SCOOP_VERSION=\"{}\"", value),
     }
 }
