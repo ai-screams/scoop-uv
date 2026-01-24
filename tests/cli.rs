@@ -584,3 +584,95 @@ mod requires_uv {
             .stdout(predicate::str::contains("PATH"));
     }
 }
+
+// =============================================================================
+// Shell Commands Tests (scoop shell, scoop use system)
+// =============================================================================
+
+mod shell_commands {
+    use super::*;
+
+    #[test]
+    #[ignore = "requires uv to be installed"]
+    fn test_shell_outputs_activation_script() {
+        let fixture = TestFixture::new();
+
+        // First create an environment
+        scoop_cmd(&fixture.scoop_home)
+            .args(["create", "shelltest", "3.12"])
+            .assert()
+            .success();
+
+        // Test shell command outputs activation script
+        scoop_cmd(&fixture.scoop_home)
+            .args(["shell", "shelltest"])
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("SCOOP_VERSION"))
+            .stdout(predicate::str::contains("VIRTUAL_ENV"));
+    }
+
+    #[test]
+    fn test_shell_system_outputs_deactivation() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home)
+            .args(["shell", "system"])
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("SCOOP_VERSION"))
+            .stdout(predicate::str::contains("system"));
+    }
+
+    #[test]
+    fn test_shell_unset_clears_version() {
+        let fixture = TestFixture::new();
+
+        scoop_cmd(&fixture.scoop_home)
+            .args(["shell", "--unset"])
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("unset SCOOP_VERSION"));
+    }
+
+    #[test]
+    fn test_use_system_creates_version_file() {
+        let fixture = TestFixture::new();
+        let project_dir = fixture.temp_dir.path().join("project");
+        std::fs::create_dir_all(&project_dir).unwrap();
+
+        scoop_cmd(&fixture.scoop_home)
+            .current_dir(&project_dir)
+            .args(["use", "system"])
+            .assert()
+            .success();
+
+        let version_file = project_dir.join(".scoop-version");
+        assert!(
+            version_file.exists(),
+            ".scoop-version file should be created"
+        );
+        let content = std::fs::read_to_string(&version_file).unwrap();
+        assert_eq!(content.trim(), "system");
+    }
+
+    #[test]
+    #[ignore = "requires uv to be installed"]
+    fn test_shell_fish_output_format() {
+        let fixture = TestFixture::new();
+
+        // First create an environment
+        scoop_cmd(&fixture.scoop_home)
+            .args(["create", "fishenv", "3.12"])
+            .assert()
+            .success();
+
+        // Test fish-specific output format
+        scoop_cmd(&fixture.scoop_home)
+            .args(["shell", "--shell", "fish", "fishenv"])
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("set -gx SCOOP_VERSION"))
+            .stdout(predicate::str::contains("set -gx VIRTUAL_ENV"));
+    }
+}
