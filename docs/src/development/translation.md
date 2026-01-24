@@ -79,7 +79,7 @@ SCOOP_LANG={lang} ./target/debug/scoop lang
 **PR Title Format:**
 
 ```
-feat(i18n): add {Language Name} translation
+docs(i18n): add {Language Name} translation
 ```
 
 ---

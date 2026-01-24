@@ -59,7 +59,7 @@ Help make scoop accessible to developers worldwide!
 **Quick start:**
 1. Add translations to `locales/app.yml` (106 keys)
 2. Register your language in `src/i18n.rs`
-3. Submit PR with title: `feat(i18n): add {Language} translation`
+3. Submit PR with title: `docs(i18n): add {Language} translation`
 
 **Philosophy:** We trust translators. Casual tone, creative expressions welcome — clarity is the only rule.
 
@@ -230,7 +230,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for clear
 |------|-------------|:-----:|
 | `feat` | New feature | ✨ |
 | `fix` | Bug fix | 🐛 |
-| `docs` | Documentation only | 📖 |
+| `docs` | Documentation & translations | 📖 |
 | `style` | Code style (no logic change) | 🎨 |
 | `refactor` | Code refactoring | ♻️ |
 | `perf` | Performance improvement | ⚡ |
@@ -241,7 +241,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for clear
 
 ### Scopes (optional)
 
-`cli`, `core`, `shell`, `uv`, `output`, `docs`, `deps`
+`cli`, `core`, `shell`, `uv`, `output`, `i18n`, `docs`, `deps`
 
 ### Examples
 
