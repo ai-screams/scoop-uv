@@ -201,8 +201,8 @@ migrate.scanning:
   ja: "%{source} から環境をスキャン中..."
 
 migrate.no_envs:
-  en: "No %{source}environments found."
-  ko: "%{source}환경을 찾지 못함."
+  en: "No %{source} environments found."
+  ko: "%{source} 환경을 찾지 못함."
   pt-BR: "Nenhum ambiente %{source} encontrado."
   ja: "%{source} 環境が見つかりませんでした"
 
@@ -351,7 +351,7 @@ migrate.eol_proceeding:
   en: "Python %{version} is EOL, proceeding anyway"
   ko: "Python %{version} EOL이지만 계속 진행"
   pt-BR: "Python %{version} está EOL (fim de suporte), continuando mesmo assim"
-  ja: "Python %{version} はEOLですが、強制的に続行します "
+  ja: "Python %{version} はEOLですが、強制的に続行します"
 
 migrate.corrupted:
   en: "Corrupted: %{reason}"

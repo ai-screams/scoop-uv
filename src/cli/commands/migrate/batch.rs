@@ -49,7 +49,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
         } else {
             let source_name = opts
                 .source_filter
-                .map(|s| format!("{} ", s))
+                .map(|s| format!("{}", s))
                 .unwrap_or_default();
             output.info(&t!("migrate.no_envs", source = source_name));
         }

@@ -65,7 +65,7 @@
 | pyenv-virtualenv is slow            | uv-powered, 100x+ faster             |
 | Which Python? Which venv? Chaos.    | `scoop doctor` checks everything     |
 | Migrating envs? Manual nightmare.   | `scoop migrate --all` does it all    |
-| English-only CLI                    | Multi-language support (en, ko)      |
+| English-only CLI                    | Multi-language support (en, ko, ja, pt-BR) |
 
 ---
 
@@ -158,7 +158,7 @@ scoop --version
 - ✅ **Tab completion** — commands, environments, Python versions
 - ✅ **Shell wrapper** — `scoop activate/deactivate` works correctly
 - ✅ **Migration ready** — import from pyenv, conda, virtualenvwrapper
-- ✅ **Multi-language** — Korean (ko) and English (en) supported
+- ✅ **Multi-language** — English, 한국어, 日本語, Português (BR)
 
 #### Using with pyenv
 
@@ -258,9 +258,11 @@ scoop remove myproject     # Melt it away 💧
 | Command               | Description                        |
 |-----------------------|------------------------------------|
 | `scoop lang`          | Show current language              |
-| `scoop lang <code>`   | Set language (en, ko)              |
+| `scoop lang <code>`   | Set language (en, ko, ja, pt-BR)   |
 | `scoop lang --list`   | List supported languages           |
 | `scoop lang --reset`  | Reset to system default            |
+
+> 🌍 **Want to help translate?** We welcome translations in any language! See [#44](https://github.com/ai-screams/scoop-uv/issues/44) to contribute.
 
 ### Shell Integration
 
@@ -292,7 +294,7 @@ src/
 ├── shell/         # 🐚 Shell integration (bash, zsh, fish)
 ├── uv/            # ⚡ uv CLI wrapper
 ├── output/        # 🎨 Terminal UI & JSON output
-├── i18n.rs        # 🌏 Internationalization (en, ko)
+├── i18n.rs        # 🌏 Internationalization (en, ko, ja, pt-BR)
 ├── config.rs      # ⚙️ User configuration
 └── error, paths, validate  # Utilities
 ```
@@ -350,6 +352,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tbody>
     <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/azamarassy"><img src="https://avatars.githubusercontent.com/u/143267784?v=4" width="80px;" alt="azamarassy"/><br /><sub><b>azamarassy</b></sub></a><br /><a href="#translation-azamarassy" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/murillobazz"><img src="https://avatars.githubusercontent.com/u/64990540?v=4" width="80px;" alt="Murillo Bazilio"/><br /><sub><b>Murillo Bazilio</b></sub></a><br /><a href="#translation-murillobazz" title="Translation">🌍</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tosinibikunle"><img src="https://avatars.githubusercontent.com/u/87605729?v=4" width="80px;" alt="Tosinibikunle"/><br /><sub><b>Tosinibikunle</b></sub></a><br /><a href="#doc-Tosinibikunle" title="Documentation">📖</a></td>
     </tr>

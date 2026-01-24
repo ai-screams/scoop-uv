@@ -113,14 +113,18 @@ mod tests {
     fn test_is_supported() {
         assert!(is_supported("en"));
         assert!(is_supported("ko"));
+        assert!(is_supported("ja"));
+        assert!(is_supported("pt-BR"));
         assert!(!is_supported("fr"));
-        assert!(!is_supported("ja")); // Not yet supported
+        assert!(!is_supported("zh-CN")); // Not yet supported
     }
 
     #[test]
     fn test_language_name() {
         assert_eq!(language_name("en"), Some("English"));
         assert_eq!(language_name("ko"), Some("한국어"));
+        assert_eq!(language_name("ja"), Some("日本語"));
+        assert_eq!(language_name("pt-BR"), Some("Português (Brasil)"));
         assert_eq!(language_name("fr"), None);
     }
 
