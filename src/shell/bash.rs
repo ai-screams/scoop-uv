@@ -1,8 +1,11 @@
 //! Bash shell integration
 
+use crate::{file_resolution_check, scoop_version_check};
+
 /// Generate bash initialization script
 pub fn init_script() -> &'static str {
-    r#"# scoop shell integration for bash
+    concat!(
+        r#"# scoop shell integration for bash
 
 # Wrapper function for scoop
 scoop() {
@@ -42,32 +45,10 @@ scoop() {
 }
 
 # Auto-activate hook
-_scoop_hook() {
-    # Priority 1: SCOOP_VERSION environment variable (scoop shell)
-    if [[ -n "$SCOOP_VERSION" ]]; then
-        if [[ "$SCOOP_VERSION" == "system" ]]; then
-            if [[ -n "$SCOOP_ACTIVE" ]]; then
-                eval "$(command scoop deactivate)"
-            fi
-        elif [[ "$SCOOP_VERSION" != "$SCOOP_ACTIVE" ]]; then
-            eval "$(command scoop activate "$SCOOP_VERSION")"
-        fi
-        return
-    fi
-
-    # Priority 2-5: File-based resolution
-    local env_name
-    env_name="$(command scoop resolve 2>/dev/null)"
-
-    if [[ "$env_name" == "system" ]]; then
-        if [[ -n "$SCOOP_ACTIVE" ]]; then
-            eval "$(command scoop deactivate)"
-        fi
-    elif [[ -n "$env_name" && "$env_name" != "$SCOOP_ACTIVE" ]]; then
-        eval "$(command scoop activate "$env_name")"
-    elif [[ -z "$env_name" && -n "$SCOOP_ACTIVE" ]]; then
-        eval "$(command scoop deactivate)"
-    fi
+_scoop_hook() {"#,
+        scoop_version_check!(bash),
+        file_resolution_check!(bash),
+        r#"
 }
 
 # Set up PROMPT_COMMAND for auto-activate
@@ -265,6 +246,7 @@ _scoop_complete() {
 }
 complete -o nosort -F _scoop_complete scoop
 "#
+    )
 }
 
 #[cfg(test)]

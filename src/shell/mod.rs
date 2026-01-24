@@ -4,6 +4,7 @@ use crate::cli::ShellType;
 use std::path::Path;
 
 pub mod bash;
+pub mod common;
 pub mod fish;
 pub mod zsh;
 
