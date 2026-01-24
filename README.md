@@ -270,6 +270,9 @@ scoop remove myproject     # Melt it away 💧
 |----------------------------|------------------------------------|
 | `scoop init <shell>`       | Output shell initialization script |
 | `scoop completions <shell>`| Generate completion script         |
+| `scoop use system`         | Switch to system Python            |
+| `scoop shell <name>`       | Set shell env (eval required)      |
+| `scoop shell --unset`      | Clear shell env setting            |
 
 > **Shells supported:** `bash`, `zsh`, `fish`, `powershell`
 
