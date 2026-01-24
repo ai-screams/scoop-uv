@@ -70,7 +70,7 @@ pub fn list_environments(
     }
 
     if environments.is_empty() {
-        let source_name = source_filter.map(|s| format!("{} ", s)).unwrap_or_default();
+        let source_name = source_filter.map(|s| format!("{}", s)).unwrap_or_default();
         output.info(&t!("migrate.no_envs", source = source_name));
         return Ok(());
     }
