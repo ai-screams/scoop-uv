@@ -309,13 +309,12 @@ pub enum Commands {
         shell: Option<ShellType>,
     },
 
-    /// Set shell-specific environment (current shell only, requires eval)
-    #[command(hide = true)]
+    /// Set environment for current shell session only (highest priority)
     Shell {
-        /// Environment name or "system"
+        /// Name of the virtual environment (or "system" for system Python)
         name: Option<String>,
 
-        /// Unset shell-specific environment
+        /// Clear shell-specific environment setting
         #[arg(long)]
         unset: bool,
 

@@ -261,6 +261,46 @@ fn test_list_pythons_bare() {
         .success();
 }
 
+#[test]
+fn test_list_shows_system_python() {
+    let fixture = TestFixture::new();
+
+    let output = scoop_cmd(&fixture.scoop_home).arg("list").output().unwrap();
+
+    // System Python should be shown at the bottom of the list
+    // At minimum, the command should succeed
+    assert!(output.status.success());
+
+    // Verify system Python is shown in output (if Python is installed)
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    // System should appear in the output when system Python is available
+    assert!(
+        stdout.contains("system"),
+        "List should show system Python when available"
+    );
+}
+
+#[test]
+fn test_list_bare_includes_system() {
+    let fixture = TestFixture::new();
+
+    // --bare mode SHOULD include system Python for tab completion
+    // (since `scoop use system` is a valid command)
+    let output = scoop_cmd(&fixture.scoop_home)
+        .args(["list", "--bare"])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success());
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    // System Python should be included in bare output for completion
+    assert!(
+        stdout.contains("system"),
+        "Bare mode should include system Python for completion"
+    );
+}
+
 // =============================================================================
 // Error Case Tests
 // =============================================================================
@@ -459,7 +499,9 @@ mod output_format {
 
         // User-facing subcommands that should be visible in help
         // Note: activate/deactivate are hidden (shell wrapper handles them)
-        let visible_subcommands = ["list", "create", "remove", "use", "install", "init"];
+        let visible_subcommands = [
+            "list", "create", "remove", "use", "install", "init", "shell",
+        ];
 
         for cmd in visible_subcommands {
             assert!(
