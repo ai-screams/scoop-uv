@@ -6,12 +6,17 @@ use std::path::Path;
 pub mod bash;
 pub mod common;
 pub mod fish;
+pub mod powershell;
 pub mod zsh;
 
 /// Detect current shell from environment variables
 pub fn detect_shell() -> ShellType {
+    // Check Fish first (has unique env var)
     if std::env::var("FISH_VERSION").is_ok() {
         ShellType::Fish
+    // Check PowerShell (PSModulePath exists in pwsh, but also check it's not Fish)
+    } else if std::env::var("PSModulePath").is_ok() {
+        ShellType::Powershell
     } else if std::env::var("ZSH_VERSION").is_ok() {
         ShellType::Zsh
     } else {
@@ -36,6 +41,29 @@ end"#
             println!("set -gx PATH '{}' $PATH", bin_path.display());
             println!("set -gx SCOOP_ACTIVE '{}'", name);
             println!("set -e PYTHONHOME");
+        }
+        ShellType::Powershell => {
+            // Save original PATH only on first activation
+            println!(
+                r#"if (-not $env:_SCOOP_OLD_PATH) {{
+    $env:_SCOOP_OLD_PATH = $env:PATH
+}}
+if ($env:PYTHONHOME) {{
+    $env:_SCOOP_OLD_PYTHONHOME = $env:PYTHONHOME
+}}"#
+            );
+            // Use [IO.Path]::PathSeparator for cross-platform
+            // Escape single quotes in paths by doubling them (PowerShell string escape)
+            let venv_escaped = venv_path.display().to_string().replace('\'', "''");
+            let bin_escaped = bin_path.display().to_string().replace('\'', "''");
+            let name_escaped = name.replace('\'', "''");
+            println!("$env:VIRTUAL_ENV = '{}'", venv_escaped);
+            println!(
+                "$env:PATH = '{}' + [IO.Path]::PathSeparator + $env:PATH",
+                bin_escaped
+            );
+            println!("$env:SCOOP_ACTIVE = '{}'", name_escaped);
+            println!("Remove-Item Env:\\PYTHONHOME -ErrorAction SilentlyContinue");
         }
         _ => {
             // Save original PATH only on first activation
@@ -77,6 +105,24 @@ pub fn print_deactivate_script(shell: ShellType) {
 end"#
             );
         }
+        ShellType::Powershell => {
+            println!(
+                r#"if ($env:VIRTUAL_ENV) {{
+    # Restore original PATH
+    if ($env:_SCOOP_OLD_PATH) {{
+        $env:PATH = $env:_SCOOP_OLD_PATH
+        Remove-Item Env:\\_SCOOP_OLD_PATH -ErrorAction SilentlyContinue
+    }}
+    # Restore PYTHONHOME if it was saved
+    if ($env:_SCOOP_OLD_PYTHONHOME) {{
+        $env:PYTHONHOME = $env:_SCOOP_OLD_PYTHONHOME
+        Remove-Item Env:\\_SCOOP_OLD_PYTHONHOME -ErrorAction SilentlyContinue
+    }}
+    Remove-Item Env:\\VIRTUAL_ENV -ErrorAction SilentlyContinue
+    Remove-Item Env:\\SCOOP_ACTIVE -ErrorAction SilentlyContinue
+}}"#
+            );
+        }
         _ => {
             println!(
                 r#"if [ -n "$VIRTUAL_ENV" ]; then
@@ -104,6 +150,9 @@ fi"#
 pub fn print_unset_scoop_version(shell: ShellType) {
     match shell {
         ShellType::Fish => println!("set -e SCOOP_VERSION"),
+        ShellType::Powershell => {
+            println!("Remove-Item Env:\\SCOOP_VERSION -ErrorAction SilentlyContinue")
+        }
         _ => println!("unset SCOOP_VERSION"),
     }
 }
@@ -111,7 +160,16 @@ pub fn print_unset_scoop_version(shell: ShellType) {
 /// Print export SCOOP_VERSION script for the given shell
 pub fn print_export_scoop_version(shell: ShellType, value: &str) {
     match shell {
-        ShellType::Fish => println!("set -gx SCOOP_VERSION '{}'", value),
+        ShellType::Fish => {
+            // Fish: escape single quotes by replacing ' with \'
+            let escaped = value.replace('\'', "\\'");
+            println!("set -gx SCOOP_VERSION '{}'", escaped);
+        }
+        ShellType::Powershell => {
+            // PowerShell: escape single quotes by doubling them
+            let escaped = value.replace('\'', "''");
+            println!("$env:SCOOP_VERSION = '{}'", escaped);
+        }
         _ => println!("export SCOOP_VERSION=\"{}\"", value),
     }
 }

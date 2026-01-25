@@ -10,7 +10,7 @@ pub fn execute(shell: ShellType) -> Result<()> {
         ShellType::Bash => shell::bash::init_script(),
         ShellType::Zsh => shell::zsh::init_script(),
         ShellType::Fish => shell::fish::init_script(),
-        ShellType::Powershell => todo!("PowerShell support not yet implemented"),
+        ShellType::Powershell => shell::powershell::init_script(),
     };
 
     print!("{script}");
