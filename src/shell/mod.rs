@@ -23,12 +23,32 @@ pub fn detect_shell() -> ShellType {
 pub fn print_activate_script(shell: ShellType, venv_path: &Path, bin_path: &Path, name: &str) {
     match shell {
         ShellType::Fish => {
+            // Save original PATH only on first activation
+            println!(
+                r#"if not set -q _SCOOP_OLD_PATH
+    set -gx _SCOOP_OLD_PATH $PATH
+end
+if set -q PYTHONHOME
+    set -gx _SCOOP_OLD_PYTHONHOME $PYTHONHOME
+end"#
+            );
             println!("set -gx VIRTUAL_ENV '{}'", venv_path.display());
             println!("set -gx PATH '{}' $PATH", bin_path.display());
             println!("set -gx SCOOP_ACTIVE '{}'", name);
             println!("set -e PYTHONHOME");
         }
         _ => {
+            // Save original PATH only on first activation
+            println!(
+                r#"if [ -z "$_SCOOP_OLD_PATH" ]; then
+    _SCOOP_OLD_PATH="$PATH"
+    export _SCOOP_OLD_PATH
+fi
+if [ -n "$PYTHONHOME" ]; then
+    _SCOOP_OLD_PYTHONHOME="$PYTHONHOME"
+    export _SCOOP_OLD_PYTHONHOME
+fi"#
+            );
             println!("export VIRTUAL_ENV=\"{}\"", venv_path.display());
             println!("export PATH=\"{}:$PATH\"", bin_path.display());
             println!("export SCOOP_ACTIVE=\"{}\"", name);
@@ -37,14 +57,20 @@ pub fn print_activate_script(shell: ShellType, venv_path: &Path, bin_path: &Path
     }
 }
 
-/// Print deactivation script for the given shell
 pub fn print_deactivate_script(shell: ShellType) {
     match shell {
         ShellType::Fish => {
             println!(
                 r#"if set -q VIRTUAL_ENV
-    if set -l idx (contains -i "$VIRTUAL_ENV/bin" $PATH)
-        set -e PATH[$idx]
+    # Restore original PATH
+    if set -q _SCOOP_OLD_PATH
+        set PATH $_SCOOP_OLD_PATH
+        set -e _SCOOP_OLD_PATH
+    end
+    # Restore PYTHONHOME if it was saved
+    if set -q _SCOOP_OLD_PYTHONHOME
+        set -gx PYTHONHOME $_SCOOP_OLD_PYTHONHOME
+        set -e _SCOOP_OLD_PYTHONHOME
     end
     set -e VIRTUAL_ENV
     set -e SCOOP_ACTIVE
@@ -54,8 +80,18 @@ end"#
         _ => {
             println!(
                 r#"if [ -n "$VIRTUAL_ENV" ]; then
-    PATH="${{PATH#$VIRTUAL_ENV/bin:}}"
-    export PATH
+    # Restore original PATH
+    if [ -n "$_SCOOP_OLD_PATH" ]; then
+        PATH="$_SCOOP_OLD_PATH"
+        export PATH
+        unset _SCOOP_OLD_PATH
+    fi
+    # Restore PYTHONHOME if it was saved
+    if [ -n "$_SCOOP_OLD_PYTHONHOME" ]; then
+        PYTHONHOME="$_SCOOP_OLD_PYTHONHOME"
+        export PYTHONHOME
+        unset _SCOOP_OLD_PYTHONHOME
+    fi
     unset VIRTUAL_ENV
     unset SCOOP_ACTIVE
 fi"#

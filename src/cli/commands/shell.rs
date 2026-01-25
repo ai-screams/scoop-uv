@@ -39,7 +39,7 @@ pub fn execute(
     })?;
 
     // Handle "system" special value
-    if name.to_lowercase() == "system" {
+    if name.eq_ignore_ascii_case("system") {
         print_export_scoop_version(shell_type, "system");
         // Also output deactivate script
         print_deactivate_script(shell_type);
