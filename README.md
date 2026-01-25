@@ -145,6 +145,13 @@ echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
 source ~/.config/fish/config.fish
 ```
 
+**PowerShell** (Core or Windows PowerShell):
+
+```powershell
+Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
+. $PROFILE
+```
+
 #### Step 2: Verify
 
 ```bash
@@ -294,7 +301,7 @@ src/
 │   ├── virtualenv # Virtualenv entity
 │   ├── doctor     # Health diagnostics
 │   └── migrate/   # Migration (pyenv, conda, venvwrapper)
-├── shell/         # 🐚 Shell integration (bash, zsh, fish)
+├── shell/         # 🐚 Shell integration (bash, zsh, fish, powershell)
 ├── uv/            # ⚡ uv CLI wrapper
 ├── output/        # 🎨 Terminal UI & JSON output
 ├── i18n.rs        # 🌏 Internationalization (en, ko, ja, pt-BR)
