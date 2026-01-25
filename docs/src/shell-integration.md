@@ -20,7 +20,7 @@ scoop() {
             command scoop "$@"
             eval "$(command scoop activate "$name")"
             ;;
-        activate|deactivate)
+        activate|deactivate|shell)
             eval "$(command scoop "$@")"
             ;;
         *)
@@ -80,21 +80,32 @@ end
 
 The hook checks for version files and activates/deactivates accordingly.
 
-## Version File Resolution
+## Version Resolution Priority
 
-scoop checks these files in order (first match wins):
+scoop checks these sources in order (first match wins):
 
-| File | Scope |
-|------|-------|
-| `.scoop-version` | Project-specific |
-| `.python-version` | pyenv compatibility |
-| `~/.scoop/version` | Global default |
+| Priority | Source | Set by |
+|----------|--------|--------|
+| 1 | `SCOOP_VERSION` env var | `scoop shell` |
+| 2 | `.scoop-version` file | `scoop use` |
+| 3 | `.python-version` file | pyenv compatibility |
+| 4 | `~/.scoop/version` file | `scoop use --global` |
+
+### The "system" Value
+
+When any source contains the value `system`, scoop deactivates the current virtual environment and uses the system Python.
+
+```bash
+scoop use system          # Write "system" to .scoop-version
+scoop shell system        # Set SCOOP_VERSION=system (this terminal only)
+```
 
 ## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `SCOOP_HOME` | Base directory | `~/.scoop` |
+| `SCOOP_VERSION` | Override version (highest priority) | (unset) |
 | `SCOOP_NO_AUTO` | Disable auto-activation | (unset) |
 | `SCOOP_ACTIVE` | Currently active environment | (set by scoop) |
 | `SCOOP_RESOLVE_MAX_DEPTH` | Limit parent directory traversal | (unlimited) |

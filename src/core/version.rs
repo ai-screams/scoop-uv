@@ -91,13 +91,21 @@ impl VersionService {
     /// Returns `None` if:
     /// - File doesn't exist or can't be read
     /// - Content is empty after trimming
-    /// - Content is not a valid environment name (security: prevents command injection)
+    /// - Content is not a valid environment name or "system" (security: prevents command injection)
     fn read_version_file(path: &PathBuf) -> Option<String> {
         fs::read_to_string(path)
             .ok()
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
-            .filter(|s| crate::validate::is_valid_env_name(s))
+            .filter(|s| s.eq_ignore_ascii_case("system") || crate::validate::is_valid_env_name(s))
+            // Normalize "system" to lowercase for consistent shell hook comparison
+            .map(|s| {
+                if s.eq_ignore_ascii_case("system") {
+                    "system".to_string()
+                } else {
+                    s
+                }
+            })
     }
 
     /// Unset local version
@@ -168,6 +176,23 @@ mod tests {
 
         // Unset on non-existent file should succeed
         assert!(VersionService::unset_local(dir).is_ok());
+    }
+
+    #[test]
+    fn test_read_version_file_normalizes_system_case() {
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        let version_file = dir.join(".scoop-version");
+
+        // Test various case combinations - all should normalize to lowercase "system"
+        for variant in ["system", "System", "SYSTEM", "sYsTeM"] {
+            std::fs::write(&version_file, format!("{variant}\n")).unwrap();
+            assert_eq!(
+                VersionService::get_local(dir),
+                Some("system".to_string()),
+                "'{variant}' should normalize to 'system'"
+            );
+        }
     }
 
     // =========================================================================

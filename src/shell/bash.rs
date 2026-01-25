@@ -1,8 +1,11 @@
 //! Bash shell integration
 
+use crate::{file_resolution_check, scoop_version_check};
+
 /// Generate bash initialization script
 pub fn init_script() -> &'static str {
-    r#"# scoop shell integration for bash
+    concat!(
+        r#"# scoop shell integration for bash
 
 # Wrapper function for scoop
 scoop() {
@@ -27,8 +30,13 @@ scoop() {
             fi
             return $ret
             ;;
-        activate|deactivate)
-            eval "$(command scoop "$@")"
+        activate|deactivate|shell)
+            # Pass through help/version flags without eval
+            if [[ "$*" == *--help* ]] || [[ "$*" == *-h* ]] || [[ "$*" == *--version* ]] || [[ "$*" == *-V* ]]; then
+                command scoop "$@"
+            else
+                eval "$(command scoop "$@")"
+            fi
             ;;
         *)
             command scoop "$@"
@@ -37,15 +45,10 @@ scoop() {
 }
 
 # Auto-activate hook
-_scoop_hook() {
-    local env_name
-    env_name="$(command scoop resolve 2>/dev/null)"
-
-    if [[ -n "$env_name" && "$env_name" != "$SCOOP_ACTIVE" ]]; then
-        eval "$(command scoop activate "$env_name")"
-    elif [[ -z "$env_name" && -n "$SCOOP_ACTIVE" ]]; then
-        eval "$(command scoop deactivate)"
-    fi
+_scoop_hook() {"#,
+        scoop_version_check!(bash),
+        file_resolution_check!(bash),
+        r#"
 }
 
 # Set up PROMPT_COMMAND for auto-activate
@@ -118,9 +121,10 @@ _scoop_complete() {
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             use)
-                local opts="--link --global --no-link -q --quiet --no-color --help"
+                local opts="--unset --link --global --no-link -q --quiet --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
+                        --unset) opts="${opts//--unset }" ;;
                         --global) opts="${opts//--global }" ;;
                         --link|--no-link) opts="${opts//--link }"; opts="${opts//--no-link }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
@@ -242,6 +246,7 @@ _scoop_complete() {
 }
 complete -o nosort -F _scoop_complete scoop
 "#
+    )
 }
 
 #[cfg(test)]

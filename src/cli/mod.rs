@@ -152,8 +152,12 @@ pub enum Commands {
 
     /// Set local environment for current directory
     Use {
-        /// Name of the virtual environment
-        name: String,
+        /// Name of the virtual environment (or "system" for system Python)
+        name: Option<String>,
+
+        /// Remove version file (unset local/global setting)
+        #[arg(long)]
+        unset: bool,
 
         /// Create .venv symlink to the virtual environment
         #[arg(long, conflicts_with = "no_link")]
@@ -291,11 +295,34 @@ pub enum Commands {
     Activate {
         /// Name of the virtual environment
         name: String,
+
+        /// Target shell type (auto-detected if not specified)
+        #[arg(long, value_enum)]
+        shell: Option<ShellType>,
     },
 
     /// Output deactivation script for eval
     #[command(hide = true)]
-    Deactivate,
+    Deactivate {
+        /// Target shell type (auto-detected if not specified)
+        #[arg(long, value_enum)]
+        shell: Option<ShellType>,
+    },
+
+    /// Set shell-specific environment (current shell only, requires eval)
+    #[command(hide = true)]
+    Shell {
+        /// Environment name or "system"
+        name: Option<String>,
+
+        /// Unset shell-specific environment
+        #[arg(long)]
+        unset: bool,
+
+        /// Target shell type (auto-detected if not specified)
+        #[arg(long, value_enum)]
+        shell: Option<ShellType>,
+    },
 
     /// Migrate environments from other tools (pyenv, virtualenvwrapper)
     Migrate {

@@ -5,6 +5,8 @@
 //! - Auto-activate hook via `--on-variable PWD`
 //! - Tab completion with option deduplication
 
+use crate::{file_resolution_check, scoop_version_check};
+
 /// Generate fish initialization script.
 ///
 /// Returns a static string containing the Fish shell integration script.
@@ -29,7 +31,8 @@
 /// assert!(script.contains("complete -c scoop"));
 /// ```
 pub fn init_script() -> &'static str {
-    r#"# scoop shell integration for fish
+    concat!(
+        r#"# scoop shell integration for fish
 
 # Wrapper function for scoop
 function scoop
@@ -49,8 +52,13 @@ function scoop
             end
             return $ret
 
-        case activate deactivate
-            eval (command scoop $argv)
+        case activate deactivate shell
+            # Pass through help/version flags without eval
+            if string match -qr -- '(-h|--help|-V|--version)' $argv
+                command scoop $argv
+            else
+                eval (command scoop $argv)
+            end
 
         case '*'
             command scoop $argv
@@ -59,13 +67,10 @@ end
 
 # Auto-activate hook
 function _scoop_hook --on-variable PWD
-    set -l env_name (command scoop resolve 2>/dev/null)
-
-    if test -n "$env_name" -a "$env_name" != "$SCOOP_ACTIVE"
-        eval (command scoop activate "$env_name")
-    else if test -z "$env_name" -a -n "$SCOOP_ACTIVE"
-        eval (command scoop deactivate)
-    end
+"#,
+        scoop_version_check!(fish),
+        file_resolution_check!(fish),
+        r#"
 end
 
 # Set up auto-activate on startup
@@ -101,6 +106,7 @@ complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_
 complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'use' (with duplicate prevention)
+complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt unset" -l unset -d "Remove version setting"
 complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt global" -l global -d "Set as global default"
 complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l link -d "Create .venv symlink"
 complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l no-link -d "Do not create .venv symlink"
@@ -167,6 +173,7 @@ complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_s
 complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "all" -d "Migrate all environments"
 complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "@env" -d "Migrate a specific environment"
 "#
+    )
 }
 
 #[cfg(test)]

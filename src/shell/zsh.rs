@@ -1,8 +1,11 @@
 //! Zsh shell integration
 
+use crate::{file_resolution_check, scoop_version_check};
+
 /// Generate zsh initialization script
 pub fn init_script() -> &'static str {
-    r#"# scoop shell integration for zsh
+    concat!(
+        r#"# scoop shell integration for zsh
 
 # Disable completion sorting for scoop (preserves command order)
 zstyle ':completion:*:scoop:*' sort false
@@ -30,8 +33,13 @@ scoop() {
             fi
             return $ret
             ;;
-        activate|deactivate)
-            eval "$(command scoop "$@")"
+        activate|deactivate|shell)
+            # Pass through help/version flags without eval
+            if [[ "$*" == *--help* ]] || [[ "$*" == *-h* ]] || [[ "$*" == *--version* ]] || [[ "$*" == *-V* ]]; then
+                command scoop "$@"
+            else
+                eval "$(command scoop "$@")"
+            fi
             ;;
         *)
             command scoop "$@"
@@ -41,14 +49,10 @@ scoop() {
 
 # Auto-activate hook
 _scoop_hook() {
-    local env_name
-    env_name="$(command scoop resolve 2>/dev/null)"
-
-    if [[ -n "$env_name" && "$env_name" != "$SCOOP_ACTIVE" ]]; then
-        eval "$(command scoop activate "$env_name")"
-    elif [[ -z "$env_name" && -n "$SCOOP_ACTIVE" ]]; then
-        eval "$(command scoop deactivate)"
-    fi
+"#,
+        scoop_version_check!(zsh),
+        file_resolution_check!(zsh),
+        r#"
 }
 
 # Set up chpwd hook for auto-activate
@@ -95,15 +99,17 @@ _scoop() {
                 use)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_global=false has_link=false has_quiet=false has_nocolor=false
+                        local has_unset=false has_global=false has_link=false has_quiet=false has_nocolor=false
                         for w in "${words[@]}"; do
                             case "$w" in
+                                --unset) has_unset=true ;;
                                 --global) has_global=true ;;
                                 --link|--no-link) has_link=true ;;
                                 -q|--quiet) has_quiet=true ;;
                                 --no-color) has_nocolor=true ;;
                             esac
                         done
+                        [[ $has_unset == false ]] && opts+=('--unset:Remove version setting')
                         [[ $has_link == false ]] && opts+=('--link:Create .venv symlink' '--no-link:Do not create .venv symlink')
                         [[ $has_global == false ]] && opts+=('--global:Set as global default')
                         [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
@@ -347,6 +353,7 @@ _scoop() {
 # Register completion only if compdef is available (requires compinit)
 (( $+functions[compdef] )) && compdef _scoop scoop
 "#
+    )
 }
 
 #[cfg(test)]

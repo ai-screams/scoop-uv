@@ -58,13 +58,14 @@ fn main() -> Result<()> {
         }
         Commands::Use {
             name,
+            unset,
             global,
             link,
             no_link: _, // explicit option, same as default (no symlink)
             json,
         } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::use_env(&output, &name, global, link)
+            scoop_uv::cli::commands::use_env(&output, name.as_deref(), unset, global, link)
         }
         Commands::Remove { name, force, json } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
@@ -89,8 +90,12 @@ fn main() -> Result<()> {
         Commands::Init { shell } => scoop_uv::cli::commands::init(shell),
         Commands::Completions { shell } => scoop_uv::cli::commands::completions(shell),
         Commands::Resolve => scoop_uv::cli::commands::resolve(),
-        Commands::Activate { name } => scoop_uv::cli::commands::activate(&name),
-        Commands::Deactivate => scoop_uv::cli::commands::deactivate(),
+        Commands::Activate { name, shell } => scoop_uv::cli::commands::activate(&name, shell),
+        Commands::Deactivate { shell } => scoop_uv::cli::commands::deactivate(shell),
+        Commands::Shell { name, unset, shell } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            scoop_uv::cli::commands::shell(&output, name.as_deref(), unset, shell)
+        }
         Commands::Migrate { command } => {
             let output = Output::new(0, cli.quiet, cli.no_color, false);
             scoop_uv::cli::commands::migrate(&output, command)

@@ -13,6 +13,7 @@ mod list;
 mod migrate;
 mod remove;
 mod resolve;
+mod shell;
 mod uninstall;
 mod use_env;
 
@@ -29,5 +30,6 @@ pub use list::execute as list;
 pub use migrate::execute as migrate;
 pub use remove::execute as remove;
 pub use resolve::execute as resolve;
+pub use shell::execute as shell;
 pub use uninstall::execute as uninstall;
 pub use use_env::execute as use_env;
