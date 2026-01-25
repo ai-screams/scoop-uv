@@ -165,21 +165,25 @@ use.system_local:
   en: "Using system Python in current directory"
   ko: "현재 디렉토리에서 시스템 Python 사용"
   pt-BR: "Usando Python do sistema no diretório atual"
+  ja: "現在のディレクトリでシステムPythonを使用します"
 
 use.system_global:
   en: "Using system Python globally"
   ko: "전역으로 시스템 Python 사용"
   pt-BR: "Usando Python do sistema globalmente"
+  ja: "グローバルでシステムPythonを使用します"
 
 use.local_unset:
   en: "Removed local environment setting"
   ko: "로컬 환경 설정 제거됨"
   pt-BR: "Configuração de ambiente local removida"
+  ja: "ローカル環境設定を削除しました"
 
 use.global_unset:
   en: "Removed global environment setting"
   ko: "전역 환경 설정 제거됨"
   pt-BR: "Configuração de ambiente global removida"
+  ja: "グローバル環境設定を削除しました"
 
 # ============================================================================
 # Shell command
@@ -188,16 +192,19 @@ shell.set:
   en: "Shell environment set to: %{name}"
   ko: "쉘 환경 설정됨: %{name}"
   pt-BR: "Ambiente do shell definido para: %{name}"
+  ja: "シェル環境を設定しました: %{name}"
 
 shell.system:
   en: "Shell environment set to system Python"
   ko: "쉘 환경이 시스템 Python으로 설정됨"
   pt-BR: "Ambiente do shell definido para Python do sistema"
+  ja: "シェル環境をシステムPythonに設定しました"
 
 shell.unset:
   en: "Shell environment unset"
   ko: "쉘 환경 설정 해제됨"
   pt-BR: "Ambiente do shell não definido"
+  ja: "シェル環境設定を解除しました"
 
 # ============================================================================
 # Install command
