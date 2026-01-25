@@ -27,6 +27,7 @@
 - [migrate](commands/migrate.md)
 - [lang](commands/lang.md)
 - [init](commands/init.md)
+- [shell](commands/shell.md)
 - [completions](commands/completions.md)
 
 ---
