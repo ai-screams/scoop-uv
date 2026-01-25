@@ -674,6 +674,7 @@ error.shell_missing_name:
   en: "Environment name required (use --unset to clear)"
   ko: "환경 이름 필요 (해제는 --unset 사용)"
   pt-BR: "Nome do ambiente necessário (use --unset para limpar)"
+  ja: "環境名が必要です (解除は --unset を使用)"
 
 # ============================================================================
 # Error suggestions
