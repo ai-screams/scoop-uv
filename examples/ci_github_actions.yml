@@ -1,0 +1,196 @@
+# GitHub Actions CI with scoop
+#
+# This workflow demonstrates:
+# - Installing scoop in CI
+# - Creating test environments
+# - Running tests across multiple Python versions
+# - Caching for faster builds
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test on Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Install Rust (required for scoop)
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      # 3. Cache Rust dependencies
+      - name: Cache Rust dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      # 4. Install uv
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      # 5. Install scoop
+      - name: Install scoop
+        run: cargo install scoop-uv
+
+      # 6. Verify installation
+      - name: Verify scoop installation
+        run: |
+          scoop --version
+          scoop doctor
+
+      # 7. Create test environment
+      - name: Create test environment
+        run: |
+          scoop create test-env ${{ matrix.python-version }}
+          scoop info test-env
+
+      # 8. Activate environment and install dependencies
+      - name: Install dependencies
+        run: |
+          eval "$(scoop shell test-env)"
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      # 9. Run tests
+      - name: Run tests
+        run: |
+          eval "$(scoop shell test-env)"
+          pytest tests/ -v --cov=src --cov-report=xml
+
+      # 10. Upload coverage
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+
+      # 11. Clean up (optional, runner is ephemeral anyway)
+      - name: Clean up
+        if: always()
+        run: scoop remove test-env
+
+  lint:
+    name: Lint and format check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv and scoop
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          cargo install scoop-uv
+
+      - name: Create lint environment
+        run: scoop create lint-env 3.12
+
+      - name: Install linting tools
+        run: |
+          eval "$(scoop shell lint-env)"
+          pip install ruff black mypy
+
+      - name: Run ruff
+        run: |
+          eval "$(scoop shell lint-env)"
+          ruff check .
+
+      - name: Run black
+        run: |
+          eval "$(scoop shell lint-env)"
+          black --check .
+
+      - name: Run mypy
+        run: |
+          eval "$(scoop shell lint-env)"
+          mypy src/
+
+  build:
+    name: Build and test installation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv and scoop
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          cargo install scoop-uv
+
+      - name: Create build environment
+        run: scoop create build-env 3.12
+
+      - name: Build package
+        run: |
+          eval "$(scoop shell build-env)"
+          pip install build
+          python -m build
+
+      - name: Test installation
+        run: |
+          eval "$(scoop shell build-env)"
+          pip install dist/*.whl
+          # Verify package works
+          python -c "import mypackage; print(mypackage.__version__)"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+# Advanced: Matrix testing across shells
+  shell-compatibility:
+    name: Test shell integration
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        shell: [bash, zsh, fish]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv and scoop
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          cargo install scoop-uv
+
+      - name: Install shell
+        if: matrix.shell != 'bash'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.shell }}
+
+      - name: Test shell integration
+        shell: ${{ matrix.shell }}
+        run: |
+          eval "$(scoop init ${{ matrix.shell }})"
+          scoop create test-${{ matrix.shell }} 3.12
+          scoop use test-${{ matrix.shell }}
+          # Verify auto-activation works
+          cd $(pwd)  # Trigger auto-activation
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV"
