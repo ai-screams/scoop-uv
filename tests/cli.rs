@@ -658,8 +658,9 @@ mod shell_commands {
     fn test_shell_system_outputs_deactivation() {
         let fixture = TestFixture::new();
 
+        // Explicitly specify bash to avoid CI environment detecting PowerShell
         scoop_cmd(&fixture.scoop_home)
-            .args(["shell", "system"])
+            .args(["shell", "--shell", "bash", "system"])
             .assert()
             .success()
             // Security: verify quotes are present to prevent shell injection
@@ -697,8 +698,9 @@ mod shell_commands {
     fn test_shell_unset_clears_version() {
         let fixture = TestFixture::new();
 
+        // Explicitly specify bash to avoid CI environment detecting PowerShell
         scoop_cmd(&fixture.scoop_home)
-            .args(["shell", "--unset"])
+            .args(["shell", "--shell", "bash", "--unset"])
             .assert()
             .success()
             .stdout(predicate::str::contains("unset SCOOP_VERSION"));
