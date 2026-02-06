@@ -552,9 +552,9 @@ impl Check for MyCheck {
         "My Custom Check"
     }
 
-    fn run(&self) -> CheckResult {
+    fn run(&self) -> Vec<CheckResult> {
         // Check logic
-        CheckResult::ok(self.id(), self.name())
+        vec![CheckResult::ok(self.id(), self.name())]
     }
 }
 
