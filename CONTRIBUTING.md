@@ -208,13 +208,17 @@ If not justified, don't bump.
 
 ```bash
 # 1. Update Cargo.toml
-sed -i 's/rust-version = "1.85"/rust-version = "1.86"/' Cargo.toml
+# macOS: sed -i '' 's/...' file
+# Linux: sed -i 's/...' file
+sed -i.bak 's/rust-version = "1.85"/rust-version = "1.86"/' Cargo.toml && rm Cargo.toml.bak
 
 # 2. Update rust-toolchain.toml
-sed -i 's/channel = "1.85"/channel = "1.86"/' rust-toolchain.toml
+sed -i.bak 's/channel = "1.85"/channel = "1.86"/' rust-toolchain.toml && rm rust-toolchain.toml.bak
 
 # 3. Update CI workflow
-sed -i 's/@1.85/@1.86/g' .github/workflows/ci.yml
+sed -i.bak 's/@1.85/@1.86/g' .github/workflows/ci.yml && rm .github/workflows/ci.yml.bak
+
+# Or manually edit the three files in your editor (safer)
 ```
 
 **Step 3: Test Locally**
@@ -830,12 +834,13 @@ cargo msrv verify
 3. Follow [MSRV bump guide](#bumping-msrv-step-by-step-guide)
 4. Update all documentation
 
-**Quick Reference**: Edition 2024 is Rust 1.85+, so you have access to:
-- ✅ Async-await
-- ✅ Const generics
-- ✅ Let-else statements
-- ✅ GATs (Generic Associated Types)
-- ✅ RPIT in traits (return impl Trait)
+**Quick Reference**: Since our MSRV is Rust 1.85+ (Edition 2024), you have access to:
+- ✅ Async-await (since 1.39)
+- ✅ Const generics (since 1.51)
+- ✅ Let-else statements (since 1.65)
+- ✅ GATs - Generic Associated Types (since 1.67)
+- ✅ RPIT in traits - return impl Trait (since 1.75)
+- ✅ Edition 2024 syntax: `gen` keyword reservation, unsafe extern blocks
 
 ---
 

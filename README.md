@@ -221,7 +221,7 @@ scoop follows an **N-1 MSRV policy**:
 
 All MSRV changes are documented in [CHANGELOG.md](CHANGELOG.md) with clear rationale.
 
-For more details, see our [MSRV policy in CLAUDE.md](CLAUDE.md#msrv-policy).
+For more details, see our [MSRV bump guide in CONTRIBUTING.md](CONTRIBUTING.md#bumping-msrv-step-by-step-guide).
 
 ---
 

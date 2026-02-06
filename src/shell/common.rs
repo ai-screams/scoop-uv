@@ -78,10 +78,9 @@ macro_rules! scoop_version_check {
 
 /// Generate file-based resolution script for the auto-activate hook.
 ///
-/// This handles Priority 2-5 in the resolution order:
+/// This handles Priority 2-3 in the resolution order:
 /// - .scoop-version in current directory
 /// - .scoop-version in parent directories
-/// - .python-version files
 /// - Global ~/.scoop/version
 #[macro_export]
 macro_rules! file_resolution_check {
