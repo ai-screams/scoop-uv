@@ -90,6 +90,8 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.target }}
           cache-to: type=gha,scope=${{ matrix.target }},mode=max
           no-cache: ${{ github.event.inputs.force_rebuild == 'true' }}
+          # Provenance only on push (incompatible with load on PRs)
+          provenance: ${{ github.event_name != 'pull_request' && 'mode=max' || 'false' }}
 
       # Verify build on PR (don't push)
       - name: Test build (PR only)
