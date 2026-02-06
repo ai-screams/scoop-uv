@@ -35,10 +35,12 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      # Shared cache for all stable-toolchain jobs (lint, test, shellcheck)
+      # Reduces cache entries from 5 to 1, saving ~1.5GB
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "lint"
+          shared-key: "stable-ci"
 
       - name: Check formatting
         run: cargo fmt --all --check
@@ -64,10 +66,11 @@ jobs:
         with:
           enable-cache: false
 
+      # Shared cache for all stable-toolchain jobs
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "test"
+          shared-key: "stable-ci"
 
       - name: Run tests
         run: cargo test --all-features --workspace
@@ -109,8 +112,9 @@ jobs:
         with:
           enable-cache: false
 
-      # Cache Rust build artifacts to speed up subsequent runs
-      # Separate cache key from other jobs (different toolchain = different artifacts)
+      # Separate cache for MSRV toolchain (1.85)
+      # Different compiler version = incompatible build artifacts
+      # Must NOT share cache with stable-toolchain jobs
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
@@ -149,10 +153,11 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      # Shared cache for all stable-toolchain jobs
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "shellcheck"
+          shared-key: "stable-ci"
 
       - name: Build binary
         run: cargo build

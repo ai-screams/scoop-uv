@@ -38,10 +38,11 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
+      # Shared cache for all stable-toolchain jobs
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "coverage"
+          shared-key: "stable-ci"
 
       - name: Generate coverage
         run: cargo llvm-cov --all-features --workspace --codecov --output-path codecov.json
