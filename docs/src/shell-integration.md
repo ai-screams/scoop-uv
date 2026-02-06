@@ -87,9 +87,10 @@ scoop checks these sources in order (first match wins):
 | Priority | Source | Set by |
 |----------|--------|--------|
 | 1 | `SCOOP_VERSION` env var | `scoop shell` |
-| 2 | `.scoop-version` file | `scoop use` |
-| 3 | `.python-version` file | pyenv compatibility |
-| 4 | `~/.scoop/version` file | `scoop use --global` |
+| 2 | `.scoop-version` file (current + parent dirs) | `scoop use` |
+| 3 | `~/.scoop/version` file | `scoop use --global` |
+
+> **Note**: `.python-version` is not currently supported. Use `.scoop-version` instead.
 
 ### The "system" Value
 
@@ -161,4 +162,4 @@ Completion is automatically enabled by `scoop init`.
 | Zsh | Full support (auto-activation, completion) |
 | Bash | Full support (auto-activation, completion) |
 | Fish | Full support (auto-activation, completion) |
-| PowerShell | Planned (P3) |
+| PowerShell | Full support (auto-activation, completion) |

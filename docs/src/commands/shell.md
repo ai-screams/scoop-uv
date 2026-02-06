@@ -42,9 +42,8 @@ scoop shell <name> | source     # Fish
 
 ```
 1. SCOOP_VERSION env var    <- scoop shell (highest)
-2. .scoop-version file      <- scoop use
-3. .python-version file     <- pyenv compatibility
-4. ~/.scoop/version         <- scoop use --global
+2. .scoop-version file      <- scoop use (walks up parent directories)
+3. ~/.scoop/version         <- scoop use --global
 ```
 
 This means `scoop shell` **overrides** any file-based settings until:

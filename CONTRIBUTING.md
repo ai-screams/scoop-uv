@@ -543,7 +543,7 @@ src/
 │   └── #[cfg(test)] mod tests { ... }  # Unit tests
 │
 tests/
-├── integration_test.rs                  # Integration tests
+├── cli.rs                               # Integration tests
 └── common/mod.rs                        # Shared test utilities
 ```
 
@@ -583,7 +583,7 @@ mod tests {
 Located in `tests/` directory:
 
 ```rust
-// tests/cli_test.rs
+// tests/cli.rs
 
 use assert_cmd::Command;
 use predicates::prelude::*;
@@ -669,8 +669,12 @@ scoop-uv/
 │   │   └── metadata.rs      # Metadata structs
 │   │
 │   ├── shell/               # Shell integration
+│   │   ├── mod.rs           # Shell module exports & detection
+│   │   ├── common.rs        # Shared shell utilities
 │   │   ├── bash.rs          # Bash init script
-│   │   └── zsh.rs           # Zsh init script
+│   │   ├── zsh.rs           # Zsh init script
+│   │   ├── fish.rs          # Fish init script
+│   │   └── powershell.rs    # PowerShell init script
 │   │
 │   ├── uv/                  # uv wrapper
 │   │   └── client.rs        # UvClient

@@ -19,7 +19,7 @@ The binary is installed to `~/.cargo/bin/scoop`.
 
 ```bash
 scoop --version
-# scoop 0.2.10
+# scoop 0.6.0
 ```
 
 ## Troubleshooting

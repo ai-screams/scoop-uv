@@ -37,7 +37,7 @@
 [![Top Language](https://img.shields.io/github/languages/top/ai-screams/scoop-uv?style=flat-square&logo=rust&color=orange)](https://github.com/ai-screams/scoop-uv)
 
 <!-- Project Identity -->
-[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos-blue?style=flat-square)](https://github.com/ai-screams/scoop-uv)
+[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows*-blue?style=flat-square)](https://github.com/ai-screams/scoop-uv)
 [![Rust](https://img.shields.io/badge/rust-1.85+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![Powered by uv](https://img.shields.io/badge/powered%20by-uv-blueviolet?style=flat-square&logo=python)](https://github.com/astral-sh/uv)
 [![Maintained](https://img.shields.io/badge/maintained-yes-green?style=flat-square)](https://github.com/ai-screams/scoop-uv)
@@ -84,10 +84,12 @@ Your ice cream parlor lives here:
 
 **Version file priority** (first match wins):
 ```
-.scoop-version    →  "I want THIS flavor here"
-.python-version   →  "pyenv compatibility mode"
-~/.scoop/version  →  "My usual order"
+SCOOP_VERSION (env)  →  "Override for this shell session"
+.scoop-version       →  "I want THIS flavor here"
+~/.scoop/version     →  "My usual order"
 ```
+
+> **Note**: `.python-version` is not currently supported. Use `.scoop-version` for version pinning.
 
 ---
 
@@ -156,7 +158,7 @@ Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
 
 ```bash
 scoop --version
-# → scoop 0.3.1 🍨
+# → scoop 0.6.0 🍨
 ```
 
 #### What this enables
@@ -317,7 +319,7 @@ scoop remove myproject     # Melt it away 💧
 
 > **Shells supported:** `bash`, `zsh`, `fish`, `powershell`
 
-For complete command reference, see [docs/commands.md](docs/commands.md).
+For complete command reference, see [docs/src/commands/README.md](docs/src/commands/README.md).
 
 ---
 

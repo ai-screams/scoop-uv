@@ -9,6 +9,7 @@ Complete reference for all scoop commands.
 | [`scoop list`](list.md) | `ls` | List virtualenvs or Python versions |
 | [`scoop create`](create.md) | - | Create virtualenv |
 | [`scoop use`](use.md) | - | Set + activate environment |
+| [`scoop shell`](shell.md) | - | Set shell-specific environment (temporary) |
 | [`scoop remove`](remove.md) | `rm`, `delete` | Remove virtualenv |
 | [`scoop install`](install.md) | - | Install Python version |
 | [`scoop uninstall`](uninstall.md) | - | Uninstall Python version |
@@ -36,7 +37,7 @@ Available for all commands:
 |----------|-------------|---------|
 | `SCOOP_HOME` | Base directory for scoop | `~/.scoop` |
 | `SCOOP_NO_AUTO` | Disable auto-activation | (unset) |
-| `SCOOP_LANG` | Display language (en, ko) | System locale |
+| `SCOOP_LANG` | Display language (en, ko, ja, pt-BR) | System locale |
 | `NO_COLOR` | Disable colored output | (unset) |
 
 ## Directory Layout
@@ -46,5 +47,4 @@ Available for all commands:
 | `~/.scoop/virtualenvs/` | Virtual environments storage |
 | `~/.scoop/version` | Global default environment |
 | `.scoop-version` | Local environment preference |
-| `.python-version` | pyenv compatibility (fallback) |
 | `.venv` | Symlink to active environment (with `--link`) |
