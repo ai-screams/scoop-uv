@@ -37,7 +37,18 @@
 - [Contributing](development/contributing.md)
 - [Translation](development/translation.md)
 - [Architecture](development/architecture.md)
+- [API Reference](api.md)
 - [Testing](development/testing.md)
 - [Code Quality](development/code-quality.md)
+
+---
+
+# Examples
+
+- [Examples Overview](../../../examples/README.md)
+- [Basic Workflow](../../../examples/basic_workflow.sh)
+- [Migration from pyenv](../../../examples/migration_from_pyenv.sh)
+- [Multi-Project Setup](../../../examples/multi_project_setup.sh)
+- [GitHub Actions CI](../../../examples/ci_github_actions.yml)
 
 ---
