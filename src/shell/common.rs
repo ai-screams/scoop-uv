@@ -86,7 +86,7 @@ macro_rules! scoop_version_check {
 macro_rules! file_resolution_check {
     (bash) => {
         r#"
-    # Priority 2-5: File-based resolution
+    # Priority 2-3: File-based resolution
     local env_name
     env_name="$(command scoop resolve 2>/dev/null)"
 
@@ -105,7 +105,7 @@ macro_rules! file_resolution_check {
     };
     (fish) => {
         r#"
-    # Priority 2-5: File-based resolution
+    # Priority 2-3: File-based resolution
     set -l env_name (command scoop resolve 2>/dev/null)
 
     if test "$env_name" = "system"
@@ -120,7 +120,7 @@ macro_rules! file_resolution_check {
     };
     (powershell) => {
         r#"
-    # Priority 2-5: File-based resolution
+    # Priority 2-3: File-based resolution
     $env_name = & $script:ScoopBin resolve 2>$null
 
     if ($env_name -eq 'system') {
