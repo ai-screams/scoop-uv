@@ -31,7 +31,7 @@ echo
 
 # 3. Migrate a single environment
 echo "3. Migrating a single environment..."
-echo "   Example: scoop migrate @myproject"
+echo "   Example: scoop migrate @env myproject"
 echo
 echo "   This will:"
 echo "   - Detect Python version from pyenv"
@@ -41,11 +41,11 @@ echo "   - Keep original pyenv env (safe operation)"
 echo
 
 # Uncomment to actually migrate (example environment name)
-# scoop migrate @myproject
+# scoop migrate @env myproject
 
 # 4. Migrate all environments
 echo "4. Batch migration (all environments):"
-echo "   Command: scoop migrate --all"
+echo "   Command: scoop migrate all"
 echo
 echo "   This will:"
 echo "   - Migrate all pyenv-virtualenv environments"
@@ -54,7 +54,7 @@ echo "   - Report success/failure for each"
 echo
 
 # Uncomment to migrate all
-# scoop migrate --all
+# scoop migrate all
 
 # 5. Handle naming conflicts
 echo "5. Handling naming conflicts:"

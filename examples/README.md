@@ -8,12 +8,8 @@ Real-world usage scenarios for scoop, the Python virtual environment manager.
 |---------|-------------|
 | [basic_workflow.sh](basic_workflow.sh) | Creating, using, and managing environments |
 | [migration_from_pyenv.sh](migration_from_pyenv.sh) | Migrating from pyenv-virtualenv |
-| [migration_from_conda.sh](migration_from_conda.sh) | Migrating from conda |
 | [multi_project_setup.sh](multi_project_setup.sh) | Managing multiple projects with different Python versions |
 | [ci_github_actions.yml](ci_github_actions.yml) | GitHub Actions CI integration |
-| [ci_gitlab_ci.yml](ci_gitlab_ci.yml) | GitLab CI integration |
-| [docker_integration.Dockerfile](docker_integration.Dockerfile) | Using scoop in Docker containers |
-| [troubleshooting.sh](troubleshooting.sh) | Common issues and solutions |
 
 ## Prerequisites
 

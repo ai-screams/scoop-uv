@@ -21,21 +21,21 @@ Represents basic information about a virtual environment.
 pub struct VirtualenvInfo {
     pub name: String,
     pub path: PathBuf,
-    pub python_version: String,
+    pub python_version: Option<String>,
 }
 ```
 
 **Fields:**
 - `name` - Environment name (e.g., `"myproject"`)
 - `path` - Absolute path to virtualenv directory
-- `python_version` - Python version string (e.g., `"3.12.1"`)
+- `python_version` - Python version string if metadata exists (e.g., `Some("3.12.1")`)
 
 **Example:**
 ```rust
 let info = VirtualenvInfo {
     name: "webapp".to_string(),
     path: PathBuf::from("/Users/x/.scoop/virtualenvs/webapp"),
-    python_version: "3.12.1".to_string(),
+    python_version: Some("3.12.1".to_string()),
 };
 ```
 
@@ -47,12 +47,12 @@ Primary service for virtualenv operations.
 
 ```rust
 pub struct VirtualenvService {
-    uv: UvWrapper,
+    uv: UvClient,
 }
 
 impl VirtualenvService {
     /// Creates a new service with custom uv wrapper
-    pub fn new(uv: UvWrapper) -> Self
+    pub fn new(uv: UvClient) -> Self
 
     /// Creates a service using system's uv installation
     pub fn auto() -> Result<Self>
@@ -61,7 +61,7 @@ impl VirtualenvService {
     pub fn list(&self) -> Result<Vec<VirtualenvInfo>>
 
     /// Creates a new virtualenv
-    pub fn create(&self, name: &str, version: &str) -> Result<()>
+    pub fn create(&self, name: &str, python_version: &str) -> Result<PathBuf>
 
     /// Deletes a virtualenv
     pub fn delete(&self, name: &str) -> Result<()>
@@ -72,11 +72,8 @@ impl VirtualenvService {
     /// Gets the path to a virtualenv
     pub fn get_path(&self, name: &str) -> Result<PathBuf>
 
-    /// Reads metadata for a virtualenv
-    pub fn read_metadata(&self, name: &str) -> Result<Metadata>
-
-    /// Writes metadata for a virtualenv
-    pub fn write_metadata(&self, name: &str, metadata: &Metadata) -> Result<()>
+    /// Reads metadata for a virtualenv (internal use)
+    pub fn read_metadata(&self, path: &Path) -> Option<Metadata>
 }
 ```
 
@@ -142,10 +139,10 @@ impl Metadata {
 Interface for health checks.
 
 ```rust
-pub trait Check {
+pub trait Check: Send + Sync {
     fn id(&self) -> &'static str;
     fn name(&self) -> &'static str;
-    fn run(&self) -> CheckResult;
+    fn run(&self) -> Vec<CheckResult>;  // Returns Vec - a check can produce multiple results
 }
 ```
 
@@ -165,9 +162,9 @@ Result status for health checks.
 
 ```rust
 pub enum CheckStatus {
-    Ok,      // ✅ Check passed
-    Warning, // ⚠️  Issue found, but not critical
-    Error,   // ❌ Critical issue
+    Ok,                  // ✅ Check passed
+    Warning(String),     // ⚠️  Issue found, but not critical
+    Error(String),       // ❌ Critical issue
 }
 ```
 
@@ -179,8 +176,8 @@ Detailed result from a health check.
 
 ```rust
 pub struct CheckResult {
-    pub id: String,
-    pub name: String,
+    pub id: &'static str,
+    pub name: &'static str,
     pub status: CheckStatus,
     pub suggestion: Option<String>,
     pub details: Option<String>,
@@ -188,13 +185,13 @@ pub struct CheckResult {
 
 impl CheckResult {
     /// Creates an OK result
-    pub fn ok(id: impl Into<String>, name: impl Into<String>) -> Self
+    pub fn ok(id: &'static str, name: &'static str) -> Self
 
     /// Creates a warning result
-    pub fn warn(id: impl Into<String>, name: impl Into<String>) -> Self
+    pub fn warn(id: &'static str, name: &'static str, message: impl Into<String>) -> Self
 
     /// Creates an error result
-    pub fn error(id: impl Into<String>, name: impl Into<String>) -> Self
+    pub fn error(id: &'static str, name: &'static str, message: impl Into<String>) -> Self
 
     /// Adds a suggestion for fixing the issue
     pub fn with_suggestion(mut self, suggestion: impl Into<String>) -> Self
@@ -222,13 +219,13 @@ impl Check for MyCustomCheck {
         "My Custom Check"
     }
 
-    fn run(&self) -> CheckResult {
+    fn run(&self) -> Vec<CheckResult> {
         if some_condition() {
-            CheckResult::ok(self.id(), self.name())
+            vec![CheckResult::ok(self.id(), self.name())]
         } else {
-            CheckResult::error(self.id(), self.name())
+            vec![CheckResult::error(self.id(), self.name(), "Error message here")
                 .with_suggestion("Run: scoop fix-it")
-                .with_details("Expected X, found Y")
+                .with_details("Expected X, found Y")]
         }
     }
 }
@@ -253,14 +250,7 @@ impl Doctor {
     pub fn run_all(&self) -> Vec<CheckResult>
 
     /// Runs checks and attempts to fix issues
-    pub fn run_and_fix(&self) -> Vec<CheckResult>
-
-    /// Attempts to fix a specific issue
-    pub fn try_fix(&self, check_id: &str) -> Result<()>
-
-    // Fix methods for specific issues
-    fn fix_home(&self) -> Result<()>
-    fn fix_symlink(&self) -> Result<()>
+    pub fn run_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult>
 }
 
 impl Default for Doctor {
@@ -277,15 +267,17 @@ let doctor = Doctor::new();
 // Run diagnostics
 let results = doctor.run_all();
 for result in results {
-    match result.status {
-        CheckStatus::Error => eprintln!("❌ {}: {}", result.name, result.id),
-        CheckStatus::Warning => println!("⚠️  {}: {}", result.name, result.id),
+    match &result.status {
+        CheckStatus::Error(msg) => eprintln!("❌ {}: {}", result.name, msg),
+        CheckStatus::Warning(msg) => println!("⚠️  {}: {}", result.name, msg),
         CheckStatus::Ok => println!("✅ {}", result.name),
     }
 }
 
-// Auto-fix issues
-let fixed_results = doctor.run_and_fix();
+// Auto-fix issues (requires Output for progress display)
+use scoop::output::Output;
+let output = Output::new(0, false, false, false);
+let fixed_results = doctor.run_and_fix(&output);
 ```
 
 ---

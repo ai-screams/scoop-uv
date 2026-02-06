@@ -13,9 +13,16 @@ src/
 │   ├── doctor.rs     # Health diagnostics
 │   ├── metadata.rs   # Virtualenv metadata (JSON)
 │   ├── version.rs    # Version file resolution
-│   └── virtualenv.rs # Virtualenv entity
+│   ├── virtualenv.rs # Virtualenv entity
+│   ├── doctor.rs     # Health check system
+│   └── migrate/      # Migration from pyenv/conda/virtualenvwrapper
+│       ├── mod.rs
+│       ├── discovery.rs  # Source detection
+│       ├── migrator.rs   # Migration orchestrator
+│       └── ...
 ├── shell/            # Shell integration
-│   ├── mod.rs        # Shell module exports
+│   ├── mod.rs        # Shell module exports & detection
+│   ├── common.rs     # Shared shell utilities & macros
 │   ├── bash.rs       # Bash init script
 │   ├── zsh.rs        # Zsh init script
 │   ├── fish.rs       # Fish init script
@@ -192,19 +199,19 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    Start([User runs command]) --> Env{SCOOP_VERSION<br/>env set?}
+    Start([User runs command]) --> Env{SCOOP_VERSION<br/>env set?<br/><small>shell hook</small>}
     Env -->|Yes| Use[Use env value]
-    Env -->|No| Local{.scoop-version<br/>exists?}
+    Env -->|No| Local{.scoop-version<br/>in current/parent<br/>dirs?}
     Local -->|Yes| Use
-    Local -->|No| Python{.python-version<br/>exists?}
-    Python -->|Yes| Use
-    Python -->|No| Global{~/.scoop/version<br/>exists?}
+    Local -->|No| Global{~/.scoop/version<br/>exists?}
     Global -->|Yes| Use
-    Global -->|No| Error[Error: No version]
+    Global -->|No| None[No version<br/>system Python]
 
     style Use fill:#c8e6c9
-    style Error fill:#ffcdd2
+    style None fill:#fff9c4
 ```
+
+> **Note**: `.python-version` is not currently supported. Version resolution walks up parent directories to find `.scoop-version`.
 
 ### Health Check Flow
 
