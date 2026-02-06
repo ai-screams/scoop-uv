@@ -13,6 +13,12 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
 
+# Cancel stale PR runs when new commits are pushed
+# Never cancel main branch runs (critical for merge validation)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   # ====================
   # Linting (fmt + clippy)

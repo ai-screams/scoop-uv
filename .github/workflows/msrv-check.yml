@@ -29,6 +29,12 @@ env:
   CARGO_TERM_COLOR: always  # Colored output for better readability
   RUST_BACKTRACE: 1         # Show backtraces on panic
 
+# Cancel stale PR runs when new commits are pushed
+# Never cancel main branch runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   msrv-verify:
     name: Verify MSRV with cargo-msrv

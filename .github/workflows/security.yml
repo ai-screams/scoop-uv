@@ -12,6 +12,12 @@ on:
     # Run weekly on Sunday at 00:00 UTC
     - cron: '0 0 * * 0'
 
+# Cancel stale PR runs when new commits are pushed
+# Never cancel main branch runs (protects scheduled security scans)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   # ====================
   # cargo-audit
