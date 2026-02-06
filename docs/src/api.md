@@ -351,10 +351,10 @@ impl ScoopError {
 **Error Code String Prefixes:**
 - `ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)
 - `PYTHON_*` - Python version errors (e.g., `PYTHON_NOT_INSTALLED`)
-- `UV_*` - uv errors (e.g., `UV_NOT_FOUND`, `UV_COMMAND_FAILED`)
+- `UV_*` - uv errors (e.g., `UV_NOT_INSTALLED`, `UV_COMMAND_FAILED`)
 - `IO_*` - Path/IO errors (e.g., `IO_ERROR`, `PATH_ERROR`)
 - `CONFIG_*` - Config errors (e.g., `CONFIG_VERSION_FILE_NOT_FOUND`)
-- `SHELL_*` - Shell errors (e.g., `SHELL_UNSUPPORTED`)
+- `SHELL_*` - Shell errors (e.g., `SHELL_NOT_SUPPORTED`)
 - `ARG_*` - CLI argument errors (e.g., `ARG_INVALID`)
 - `SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)
 - `MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)
