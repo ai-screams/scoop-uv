@@ -59,20 +59,34 @@ macro_rules! scoop_version_check {
     end
 "#
     };
+    (powershell) => {
+        r#"
+    # Priority 1: SCOOP_VERSION environment variable (scoop shell)
+    if ($env:SCOOP_VERSION) {
+        if ($env:SCOOP_VERSION -eq 'system') {
+            if ($env:SCOOP_ACTIVE) {
+                Invoke-Expression (& $script:ScoopBin deactivate)
+            }
+        } elseif ($env:SCOOP_VERSION -ne $env:SCOOP_ACTIVE) {
+            Invoke-Expression (& $script:ScoopBin activate $env:SCOOP_VERSION)
+        }
+        return
+    }
+"#
+    };
 }
 
 /// Generate file-based resolution script for the auto-activate hook.
 ///
-/// This handles Priority 2-5 in the resolution order:
+/// This handles Priority 2-3 in the resolution order:
 /// - .scoop-version in current directory
 /// - .scoop-version in parent directories
-/// - .python-version files
 /// - Global ~/.scoop/version
 #[macro_export]
 macro_rules! file_resolution_check {
     (bash) => {
         r#"
-    # Priority 2-5: File-based resolution
+    # Priority 2-3: File-based resolution
     local env_name
     env_name="$(command scoop resolve 2>/dev/null)"
 
@@ -91,7 +105,7 @@ macro_rules! file_resolution_check {
     };
     (fish) => {
         r#"
-    # Priority 2-5: File-based resolution
+    # Priority 2-3: File-based resolution
     set -l env_name (command scoop resolve 2>/dev/null)
 
     if test "$env_name" = "system"
@@ -103,6 +117,21 @@ macro_rules! file_resolution_check {
     else if test -z "$env_name" -a -n "$SCOOP_ACTIVE"
         eval (command scoop deactivate)
     end"#
+    };
+    (powershell) => {
+        r#"
+    # Priority 2-3: File-based resolution
+    $env_name = & $script:ScoopBin resolve 2>$null
+
+    if ($env_name -eq 'system') {
+        if ($env:SCOOP_ACTIVE) {
+            Invoke-Expression (& $script:ScoopBin deactivate)
+        }
+    } elseif ($env_name -and ($env_name -ne $env:SCOOP_ACTIVE)) {
+        Invoke-Expression (& $script:ScoopBin activate $env_name)
+    } elseif ((-not $env_name) -and $env:SCOOP_ACTIVE) {
+        Invoke-Expression (& $script:ScoopBin deactivate)
+    }"#
     };
 }
 
@@ -148,5 +177,22 @@ mod tests {
         let bash_version = scoop_version_check!(bash);
         let zsh_version = scoop_version_check!(zsh);
         assert_eq!(bash_version, zsh_version);
+    }
+
+    /// Verify PowerShell hook uses PowerShell syntax
+    #[test]
+    fn test_scoop_version_check_powershell_uses_powershell_syntax() {
+        let script = scoop_version_check!(powershell);
+        assert!(script.contains("$env:SCOOP_VERSION"));
+        assert!(script.contains("Invoke-Expression"));
+        assert!(script.contains("$script:ScoopBin"));
+    }
+
+    /// Verify PowerShell file resolution uses proper variable
+    #[test]
+    fn test_file_resolution_powershell_uses_env_name() {
+        let script = file_resolution_check!(powershell);
+        assert!(script.contains("$env_name"));
+        assert!(script.contains("$script:ScoopBin"));
     }
 }
