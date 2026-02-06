@@ -298,39 +298,37 @@ pub enum ScoopError {
 
     // Python errors
     PythonNotInstalled { version: String },
-    PythonInstallFailed { version: String, details: String },
-    PythonUninstallFailed { version: String, details: String },
+    PythonInstallFailed { version: String, message: String },
+    PythonUninstallFailed { version: String, message: String },
     InvalidPythonVersion { version: String },
-    NoPythonVersionsMatching { version: String },
+    NoPythonVersions { pattern: String },
 
     // uv errors
     UvNotFound,
-    UvCommandFailed { command: String, stderr: String },
+    UvCommandFailed { command: String, message: String },
 
     // Path/IO errors
-    PathError { path: PathBuf, source: std::io::Error },
+    PathError(String),                    // Tuple variant
     HomeNotFound,
-    IoError { source: std::io::Error },
+    Io(#[from] std::io::Error),          // Tuple variant with From
+    Json(#[from] serde_json::Error),     // Tuple variant with From
 
     // Config errors
     VersionFileNotFound { path: PathBuf },
     UnsupportedShell { shell: String },
 
-    // Internal errors
-    JsonError { source: serde_json::Error },
-
     // CLI errors
-    InvalidArgument { arg: String, reason: String },
+    InvalidArgument { message: String },
 
     // Migration errors
-    SourcePyenvNotFound,
-    SourcePyenvEnvNotFound { name: String },
-    SourceVenvwrapperEnvNotFound { name: String },
-    SourceCondaEnvNotFound { name: String },
-    MigrateCorrupted { name: String, details: String },
-    MigrateExtractionFailed { name: String, details: String },
-    MigrateFailed { name: String, details: String },
-    MigrateNameConflict { name: String },
+    PyenvNotFound,
+    PyenvEnvNotFound { name: String },
+    VenvWrapperEnvNotFound { name: String },
+    CondaEnvNotFound { name: String },
+    CorruptedEnvironment { name: String, reason: String },
+    PackageExtractionFailed { reason: String },
+    MigrationFailed { reason: String },
+    MigrationNameConflict { name: String, existing: PathBuf },
 }
 
 impl ScoopError {
@@ -429,32 +427,52 @@ pub fn scoop_home() -> Result<PathBuf>
 /// Returns virtualenvs directory
 pub fn virtualenvs_dir() -> Result<PathBuf>
 
-/// Returns global version file path
-pub fn version_file() -> Result<PathBuf>
+/// Returns global version file path (~/.scoop/version)
+pub fn global_version_file() -> Result<PathBuf>
 
-/// Returns local version file (.scoop-version)
-pub fn local_version_file() -> PathBuf
-
-/// Returns pyenv-compatible version file (.python-version)
-pub fn python_version_file() -> PathBuf
+/// Returns local version file path in the given directory
+pub fn local_version_file(dir: &std::path::Path) -> PathBuf
 ```
 
 ---
 
 ## Version Resolution (`core/version.rs`)
 
-**Priority Order:**
-1. `SCOOP_VERSION` environment variable
-2. `.scoop-version` (current directory)
-3. `.python-version` (pyenv compatibility)
+### `VersionService`
+
+Service for managing version files.
+
+```rust
+pub struct VersionService;
+
+impl VersionService {
+    /// Set the local version for a directory
+    pub fn set_local(dir: &Path, env_name: &str) -> Result<()>
+
+    /// Set the global version
+    pub fn set_global(env_name: &str) -> Result<()>
+
+    /// Get the local version for a directory
+    pub fn get_local(dir: &Path) -> Option<String>
+
+    /// Get the global version
+    pub fn get_global() -> Option<String>
+
+    /// Resolve the version for a directory (local -> parent walk -> global)
+    pub fn resolve(dir: &Path) -> Option<String>
+
+    /// Resolve from current directory
+    pub fn resolve_current() -> Option<String>
+}
+```
+
+**Resolution Priority Order:**
+1. `SCOOP_VERSION` environment variable (checked at shell hook level, not in VersionService)
+2. `.scoop-version` in current directory
+3. `.scoop-version` in parent directories (walks up)
 4. `~/.scoop/version` (global default)
 
-**Related Functions:**
-```rust
-pub fn resolve_version() -> Result<String>
-pub fn read_version_file(path: &Path) -> Result<String>
-pub fn write_version_file(path: &Path, version: &str) -> Result<()>
-```
+> **Note**: `.python-version` is not currently supported.
 
 ---
 
@@ -611,5 +629,5 @@ When analyzing or modifying this codebase:
 
 ---
 
-> **Last Updated:** 2026-02-05
-> **scoop Version:** 0.5.1
+> **Last Updated:** 2026-02-06
+> **scoop Version:** 0.6.0
