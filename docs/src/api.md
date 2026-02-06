@@ -349,7 +349,7 @@ impl ScoopError {
 ```
 
 **Error Code String Prefixes:**
-- `ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_EXISTS`)
+- `ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)
 - `PYTHON_*` - Python version errors (e.g., `PYTHON_NOT_INSTALLED`)
 - `UV_*` - uv errors (e.g., `UV_NOT_FOUND`, `UV_COMMAND_FAILED`)
 - `IO_*` - Path/IO errors (e.g., `IO_ERROR`, `PATH_ERROR`)
