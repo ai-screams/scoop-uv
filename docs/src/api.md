@@ -102,12 +102,15 @@ println!("Environment at: {}", path.display());
 Stores JSON metadata for each virtualenv.
 
 ```rust
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
 #[derive(Serialize, Deserialize)]
 pub struct Metadata {
     pub name: String,
     pub python_version: String,
-    pub created_at: String,          // ISO 8601 timestamp
-    pub created_by: String,          // "scoop-vX.Y.Z"
+    pub created_at: DateTime<Utc>,   // Timestamp (ISO 8601 when serialized)
+    pub created_by: String,          // "scoop X.Y.Z" format
     pub uv_version: Option<String>,  // uv version used
 }
 
@@ -125,10 +128,12 @@ impl Metadata {
   "name": "myproject",
   "python_version": "3.12.1",
   "created_at": "2024-01-15T10:30:00Z",
-  "created_by": "scoop-v0.5.1",
+  "created_by": "scoop 0.6.0",
   "uv_version": "0.1.0"
 }
 ```
+
+> **Note**: `created_at` is `DateTime<Utc>` in Rust but serializes to ISO 8601 string in JSON.
 
 ---
 
@@ -332,27 +337,27 @@ pub enum ScoopError {
 }
 
 impl ScoopError {
-    /// Returns error code for exit status
-    pub fn code(&self) -> i32
+    /// Returns error code string (e.g., "ENV_NOT_FOUND", "UV_COMMAND_FAILED")
+    pub fn code(&self) -> &'static str
 
     /// Returns user-friendly suggestion (if available)
     pub fn suggestion(&self) -> Option<String>
 
     /// Returns migration-specific exit code
-    pub fn migration_exit_code(&self) -> Option<MigrationExitCode>
+    pub fn migration_exit_code(&self) -> MigrationExitCode
 }
 ```
 
-**Error Code Conventions:**
-- `1-9` - Environment errors
-- `10-19` - Python version errors
-- `20-29` - uv errors
-- `30-39` - Path/IO errors
-- `40-49` - Config errors
-- `50-59` - Internal errors
-- `60-69` - CLI argument errors
-- `70-79` - Migration source errors
-- `80-89` - Migration process errors
+**Error Code String Prefixes:**
+- `ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_EXISTS`)
+- `PYTHON_*` - Python version errors (e.g., `PYTHON_NOT_INSTALLED`)
+- `UV_*` - uv errors (e.g., `UV_NOT_FOUND`, `UV_COMMAND_FAILED`)
+- `IO_*` - Path/IO errors (e.g., `IO_ERROR`, `PATH_ERROR`)
+- `CONFIG_*` - Config errors (e.g., `CONFIG_VERSION_FILE_NOT_FOUND`)
+- `SHELL_*` - Shell errors (e.g., `SHELL_UNSUPPORTED`)
+- `ARG_*` - CLI argument errors (e.g., `ARG_INVALID`)
+- `SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)
+- `MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)
 
 **Example Error Handling:**
 ```rust
@@ -398,16 +403,13 @@ pub enum ShellType {
     Powershell,
 }
 
-impl ShellType {
-    /// Detects shell from environment
-    pub fn detect() -> Result<Self>
-
-    /// Returns init script for this shell
-    pub fn init_script(&self) -> String
-
-    /// Returns completion script
-    pub fn completion_script(&self) -> String
-}
+// Note: ShellType is a plain enum without methods
+// Shell operations are handled by module-level functions:
+// - shell::detect_shell() -> ShellType  (in shell/mod.rs)
+// - shell::bash::init_script() -> &'static str
+// - shell::zsh::init_script() -> &'static str
+// - shell::fish::init_script() -> &'static str
+// - shell::powershell::init_script() -> &'static str
 ```
 
 **Auto-detection Priority:**
@@ -463,6 +465,12 @@ impl VersionService {
 
     /// Resolve from current directory
     pub fn resolve_current() -> Option<String>
+
+    /// Unset local version (removes .scoop-version)
+    pub fn unset_local(dir: &Path) -> Result<()>
+
+    /// Unset global version (removes ~/.scoop/version)
+    pub fn unset_global() -> Result<()>
 }
 ```
 
