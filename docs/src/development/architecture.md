@@ -10,7 +10,6 @@ src/
 │   ├── mod.rs        # Cli struct, Commands enum, ShellType
 │   └── commands/     # Individual command handlers
 ├── core/             # Domain logic
-│   ├── doctor.rs     # Health diagnostics
 │   ├── metadata.rs   # Virtualenv metadata (JSON)
 │   ├── version.rs    # Version file resolution
 │   ├── virtualenv.rs # Virtualenv entity
@@ -139,9 +138,22 @@ Uses [thiserror](https://docs.rs/thiserror) for error types:
 ```rust
 #[derive(Debug, Error)]
 pub enum ScoopError {
-    #[error("가상환경 '{name}'을(를) 찾을 수 없습니다")]
+    // thiserror for Error trait, but Display is manual for i18n
+    #[error("")]  // Placeholder - actual message from Display impl
     VirtualenvNotFound { name: String },
     // ...
+}
+
+// Manual Display implementation for i18n support
+impl std::fmt::Display for ScoopError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::VirtualenvNotFound { name } => {
+                write!(f, "{}", t!("error.virtualenv_not_found", name = name))
+            }
+            // ...
+        }
+    }
 }
 ```
 
@@ -151,7 +163,8 @@ Centralizes path logic in `paths.rs`:
 
 - `scoop_home()` - Returns `SCOOP_HOME` or `~/.scoop`
 - `virtualenvs_dir()` - Returns virtualenvs directory
-- `version_file()` - Returns global version file path
+- `global_version_file()` - Returns global version file path (~/.scoop/version)
+- `local_version_file(dir)` - Returns local version file path in directory
 
 ## Data Flow
 
@@ -339,10 +352,13 @@ pub enum ShellType {
 }
 ```
 
-3. Implement detection in `ShellType::detect()`:
+3. Add detection to `shell::detect_shell()` in `src/shell/mod.rs`:
 ```rust
-if env::var("MYSHELL_VERSION").is_ok() {
-    return Ok(ShellType::MyShell);
+pub fn detect_shell() -> ShellType {
+    if env::var("MYSHELL_VERSION").is_ok() {
+        return ShellType::MyShell;
+    }
+    // ... existing checks
 }
 ```
 
@@ -386,7 +402,7 @@ See [API Reference - Adding a New Health Check](../api.md#adding-a-new-health-ch
 | List envs | O(n) | n = number of virtualenvs |
 | Create env | O(1)* | *Depends on uv performance |
 | Delete env | O(1) | Simple directory removal |
-| Version resolution | O(1) | File reads, no recursion |
+| Version resolution | O(d) | d = directory depth (walks parents) |
 | Doctor checks | O(n) | n = number of checks (fixed) |
 
 ## Thread Safety
