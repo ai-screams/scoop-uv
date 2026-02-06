@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Docker:** Update Python versions to latest releases
+  - Python 3.11.9 → 3.11.14 (5 security-only releases)
+  - Python 3.12.4 → 3.12.12 (8 releases including security fixes)
+  - Addresses all security vulnerabilities patched in these versions
+
 ## [0.7.0] - 2026-02-06
 
 ### Added

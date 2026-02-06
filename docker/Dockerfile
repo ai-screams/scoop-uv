@@ -2,15 +2,15 @@
 # ============================================================
 # Multi-stage Dockerfile for scoop test environment
 # Best Practices: BuildKit cache mounts, ARG versioning, layer optimization
-# Updated: 2026-02-06
+# Updated: 2026-02-07
 # ============================================================
 
 # ============================================================
 # Build Arguments - Single Source of Truth
 # ============================================================
 ARG RUST_VERSION=1.85
-ARG PYTHON_311_VERSION=3.11.9
-ARG PYTHON_312_VERSION=3.12.4
+ARG PYTHON_311_VERSION=3.11.14
+ARG PYTHON_312_VERSION=3.12.12
 ARG UV_VERSION=0.5.14
 ARG MINICONDA_VERSION=py312_24.7.1-0
 
