@@ -1,3 +1,8 @@
+# Rust Toolchain Configuration
+# This file pins the project to the MSRV for local development.
+# See: https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file
+
 [toolchain]
-channel = "stable"
+channel = "1.85"          # MSRV from Cargo.toml
 components = ["rustfmt", "clippy"]
+profile = "minimal"

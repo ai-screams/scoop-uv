@@ -19,7 +19,7 @@
 <!-- Quality & Coverage -->
 [![Security](https://img.shields.io/github/actions/workflow/status/ai-screams/scoop-uv/security.yml?style=flat-square&logo=github&label=Security)](https://github.com/ai-screams/scoop-uv/actions/workflows/security.yml)
 [![Coverage](https://codecov.io/gh/ai-screams/scoop-uv/graph/badge.svg)](https://codecov.io/gh/ai-screams/scoop-uv)
-[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue?style=flat-square&logo=rust)](https://www.rust-lang.org/)
+[![MSRV](https://img.shields.io/crates/msrv/scoop-uv?style=flat-square&logo=rust&label=MSRV)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/crates/l/scoop-uv?style=flat-square)](LICENSE-MIT)
 [![Dependencies](https://img.shields.io/librariesio/release/cargo/scoop-uv?style=flat-square&label=dependencies)](https://libraries.io/cargo/scoop-uv)
 
@@ -188,6 +188,40 @@ eval "$(scoop init zsh)"     # 2. scoop second
 # Example: disable auto-activation
 echo 'export SCOOP_NO_AUTO=1' >> ~/.zshrc
 ```
+
+---
+
+## Minimum Supported Rust Version (MSRV) 🦀
+
+scoop follows an **N-1 MSRV policy**:
+
+- **Current MSRV**: 1.85 (required by Rust Edition 2024)
+- We support the current stable Rust and one previous version (~6 week lag)
+- MSRV updates are considered **non-breaking** for binary users per [Cargo RFC 3537](https://rust-lang.github.io/rfcs/3537-msrv-resolver.html)
+
+### Impact by User Type
+
+| User Type | MSRV Impact | Action |
+|-----------|-------------|--------|
+| **Binary users** | ✅ None | Download from [releases](https://github.com/ai-screams/scoop-uv/releases) or `cargo install` |
+| **Source builders** | ⚠️ Rust >= 1.85 required | Run `rustup update` if needed |
+| **Contributors** | 🔧 Test on MSRV before PR | `cargo +1.85 test --all-features` |
+
+### When We Bump MSRV
+
+✅ **We bump when:**
+- New Rust features provide significant user benefits
+- Critical dependencies require newer versions
+- Security fixes only available in newer Rust
+
+❌ **We don't bump for:**
+- Time-based schedules without clear benefits
+- Minor syntax sugar or aesthetic preferences
+- Personal developer preferences
+
+All MSRV changes are documented in [CHANGELOG.md](CHANGELOG.md) with clear rationale.
+
+For more details, see our [MSRV bump guide in CONTRIBUTING.md](CONTRIBUTING.md#bumping-msrv-step-by-step-guide).
 
 ---
 
