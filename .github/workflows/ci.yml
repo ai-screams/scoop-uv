@@ -37,11 +37,12 @@ jobs:
           components: rustfmt, clippy
 
       # Shared cache for all stable-toolchain jobs (lint, test, shellcheck)
-      # Reduces cache entries from 5 to 1, saving ~1.5GB
+      # Read-only consumer - test job is the authoritative writer
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "stable-ci"
+          save-if: "false"  # Don't save cache, only restore
 
       - name: Check formatting
         run: cargo fmt --all --check
@@ -69,10 +70,12 @@ jobs:
           enable-cache: false
 
       # Shared cache for all stable-toolchain jobs
+      # Authoritative writer - produces richest cache (includes test binaries)
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "stable-ci"
+          # save-if defaults to true - this job writes the cache
 
       - name: Run tests
         run: cargo test --all-features --workspace
@@ -158,10 +161,12 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       # Shared cache for all stable-toolchain jobs
+      # Read-only consumer - test job is the authoritative writer
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "stable-ci"
+          save-if: "false"  # Don't save cache, only restore
 
       - name: Build binary
         run: cargo build
