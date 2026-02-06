@@ -384,7 +384,8 @@ match my_function("123invalid") {
         if let Some(suggestion) = e.suggestion() {
             eprintln!("Suggestion: {}", suggestion);
         }
-        std::process::exit(e.code());
+        eprintln!("Error code: {}", e.code());
+        std::process::exit(1);  // Non-zero exit for error
     }
 }
 ```
@@ -624,10 +625,10 @@ When analyzing or modifying this codebase:
    - i18n: Use `t!()` macro for all user-facing strings
 
 3. **Preserve conventions**:
-   - Error codes follow the numbering scheme
-   - Exit codes: 0 = success, error.code() = failure
+   - Error codes are string constants (e.g., "ENV_NOT_FOUND", "UV_COMMAND_FAILED")
+   - Process exit codes: 0 = success, 1 = failure
    - Path handling via `paths.rs` utilities
-   - Shell detection via `ShellType::detect()`
+   - Shell detection via `shell::detect_shell()` function
 
 4. **Documentation requirements**:
    - All `pub fn` must have doc comments
