@@ -25,6 +25,7 @@ jobs:
   audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # cargo-audit check
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -44,6 +45,7 @@ jobs:
   deny:
     name: Dependency Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # cargo-deny check
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

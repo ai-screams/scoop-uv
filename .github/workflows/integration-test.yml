@@ -29,6 +29,7 @@ jobs:
   docker-integration:
     name: Docker Integration
     runs-on: ubuntu-latest
+    timeout-minutes: 45  # Docker pull/build + integration tests
 
     steps:
       - name: Checkout repository

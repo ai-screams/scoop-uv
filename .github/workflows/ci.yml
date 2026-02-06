@@ -26,6 +26,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # Prevent runaway linting jobs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -54,6 +55,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # Test suite + ignored tests
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -94,6 +96,7 @@ jobs:
   msrv:
     name: MSRV (1.85)
     runs-on: ubuntu-latest
+    timeout-minutes: 25  # MSRV can be slower than stable
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -146,6 +149,7 @@ jobs:
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Build + extract + shellcheck
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

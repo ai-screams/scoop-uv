@@ -39,6 +39,7 @@ jobs:
   msrv-verify:
     name: Verify MSRV with cargo-msrv
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # cargo-msrv verify + show
     steps:
       # Step 1: Get the code
       - name: Checkout repository
