@@ -5,5 +5,4 @@
 [toolchain]
 channel = "1.85"          # MSRV from Cargo.toml
 components = ["rustfmt", "clippy"]
-targets = []
 profile = "minimal"

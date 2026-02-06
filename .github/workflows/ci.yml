@@ -93,6 +93,16 @@ jobs:
   # ====================
   # MSRV (Minimum Supported Rust Version)
   # ====================
+  # Tests that code compiles and runs on our minimum supported Rust version.
+  # Part of N-1 policy: we support current stable + 1 previous version.
+  # Current MSRV: 1.85 (required by Rust Edition 2024)
+  #
+  # This job is MORE thorough than the test job:
+  # - Runs clippy to catch MSRV-specific lint warnings
+  # - Explicitly builds to verify compilation on MSRV
+  # - Runs full test suite including ignored tests
+  #
+  # Complements msrv-check.yml which verifies MSRV accuracy with cargo-msrv
   msrv:
     name: MSRV (1.85)
     runs-on: ubuntu-latest
@@ -100,30 +110,44 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # Install MSRV toolchain with clippy component
+      # Must match rust-version in Cargo.toml
       - name: Install Rust toolchain (MSRV)
         uses: dtolnay/rust-toolchain@1.85
         with:
-          components: clippy
+          components: clippy  # Needed for MSRV-specific lint checks
 
+      # Install uv for integration tests that require it
+      # Cache disabled to ensure latest uv version
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: false
 
+      # Cache Rust build artifacts to speed up subsequent runs
+      # Separate cache key from other jobs (different toolchain = different artifacts)
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "msrv"
 
+      # Step 1: Lint check - catches MSRV-specific clippy warnings
+      # Fails on any warnings (-D warnings)
       - name: Run Clippy on MSRV
         run: cargo clippy --all-targets --all-features -- -D warnings
 
+      # Step 2: Build check - verifies code compiles on MSRV
+      # Build artifacts are reused by test steps
       - name: Build on MSRV
         run: cargo build --all-features
 
+      # Step 3: Run unit and integration tests
+      # 520 unit tests + 43 integration tests
       - name: Run tests on MSRV
         run: cargo test --all-features --workspace
 
+      # Step 4: Run tests that require uv installed
+      # These are marked with #[ignore] and need --ignored flag
       - name: Run ignored tests on MSRV
         run: cargo test --all-features --workspace -- --ignored
 

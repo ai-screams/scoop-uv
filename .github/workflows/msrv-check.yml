@@ -1,54 +1,81 @@
+# MSRV (Minimum Supported Rust Version) Verification Workflow
+#
+# Purpose: Automatically verify that the MSRV declared in Cargo.toml is accurate
+# Trigger: Only runs when Cargo.toml, Cargo.lock, or this workflow file changes
+# Strategy: Uses cargo-msrv tool to validate that code compiles with declared MSRV
+#
+# This workflow is part of the N-1 MSRV policy implementation:
+# - Prevents accidental MSRV bumps through dependency updates
+# - Acts as safety net when updating dependencies
+# - Complements the main CI's MSRV testing (ci.yml)
+
 name: MSRV Check
 
 on:
   pull_request:
     paths:
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.github/workflows/msrv-check.yml'
+      # Only run when dependency-related files change
+      - 'Cargo.toml'     # Direct dependency declarations
+      - 'Cargo.lock'     # Resolved dependency versions
+      - '.github/workflows/msrv-check.yml'  # Self-awareness
   push:
     paths:
       - 'Cargo.toml'
       - 'Cargo.lock'
     branches:
-      - main
+      - main  # Only run on main branch pushes
 
 env:
-  CARGO_TERM_COLOR: always
-  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always  # Colored output for better readability
+  RUST_BACKTRACE: 1         # Show backtraces on panic
 
 jobs:
   msrv-verify:
     name: Verify MSRV with cargo-msrv
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Get the code
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # Step 2: Install stable Rust (cargo-msrv itself doesn't need MSRV)
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      # Step 3: Cache cargo-msrv binary to avoid reinstalling on every run
+      # Cache key includes v0.18 to prevent automatic upgrades
       - name: Cache cargo-msrv binary
         id: cache-cargo-msrv
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin/cargo-msrv
           key: ${{ runner.os }}-cargo-msrv-v0.18
+          # Cache strategy: Pin to v0.18 for stability
+          # Manual update needed when bumping cargo-msrv version
 
+      # Step 4: Install cargo-msrv only if not cached
+      # --locked ensures Cargo.lock is respected (security)
       - name: Install cargo-msrv
         if: steps.cache-cargo-msrv.outputs.cache-hit != 'true'
         run: cargo install cargo-msrv --locked
 
+      # Step 5: Cache project dependencies for faster verification
+      # Separate cache key from other jobs to avoid conflicts
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "msrv-verify"
 
+      # Step 6: Verify MSRV accuracy
+      # cargo-msrv reads rust-version from Cargo.toml and tests compilation
+      # Exits with non-zero if MSRV is incorrect
       - name: Verify MSRV
         run: |
           echo "Verifying MSRV from Cargo.toml..."
           cargo msrv verify --output-format human
 
+      # Step 7: Always show current MSRV, even on failure
+      # Helps diagnose issues when verification fails
       - name: Show current MSRV
         if: always()
         run: |
