@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **MSRV**: Adopted N-1 MSRV policy (current: 1.85, required by Edition 2024)
+  - Support current stable Rust + one previous version (~6 week lag)
+  - MSRV bumps are non-breaking for binary users per [Cargo RFC 3537](https://rust-lang.github.io/rfcs/3537-msrv-resolver.html)
+  - CI now tests both MSRV (1.85) and stable Rust versions
+  - Added cargo-msrv verification for automated MSRV checking
+  - See [README.md](README.md#minimum-supported-rust-version-msrv-) for full policy details
+
 ## [0.6.0] - 2026-02-05
 
 ### Added

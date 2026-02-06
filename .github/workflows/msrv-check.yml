@@ -1,0 +1,56 @@
+name: MSRV Check
+
+on:
+  pull_request:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/msrv-check.yml'
+  push:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  msrv-verify:
+    name: Verify MSRV with cargo-msrv
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo-msrv binary
+        id: cache-cargo-msrv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-msrv
+          key: ${{ runner.os }}-cargo-msrv
+
+      - name: Install cargo-msrv
+        if: steps.cache-cargo-msrv.outputs.cache-hit != 'true'
+        run: cargo install cargo-msrv --locked
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "msrv-verify"
+
+      - name: Verify MSRV
+        run: |
+          echo "Verifying MSRV from Cargo.toml..."
+          cargo msrv verify --output-format human
+
+      - name: Show current MSRV
+        if: always()
+        run: |
+          echo "Current MSRV:"
+          cargo msrv show

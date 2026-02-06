@@ -97,6 +97,99 @@ cargo test
 cargo run -- --help
 ```
 
+### Rust Version & MSRV
+
+scoop requires **Rust 1.85 or newer** (our MSRV - Minimum Supported Rust Version). The project uses `rust-toolchain.toml` to automatically select the correct version.
+
+#### First-Time Setup
+
+```bash
+# Clone repository
+git clone https://github.com/ai-screams/scoop-uv.git
+cd scoop-uv
+
+# Rust 1.85 will be automatically selected via rust-toolchain.toml
+rustc --version
+# Expected: rustc 1.85.0 (a28077b28 2025-02-20)
+
+# If you see a different version:
+rustup update
+rustup toolchain install 1.85
+```
+
+#### Updating Rust
+
+```bash
+# Update to latest within the MSRV channel
+rustup update 1.85
+
+# Or update to latest stable (for testing)
+rustup update stable
+```
+
+#### Testing on MSRV
+
+**Before submitting PRs**, verify compatibility with our MSRV:
+
+```bash
+# The project automatically uses 1.85 via rust-toolchain.toml
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-features --workspace
+cargo build --all-features
+
+# To explicitly test on stable:
+rustup override set stable
+cargo test --all-features
+rustup override unset  # Back to MSRV
+```
+
+CI automatically tests both MSRV (1.85) and stable Rust.
+
+#### Adding Dependencies
+
+When adding dependencies:
+
+1. **Check their MSRV**:
+   ```bash
+   cargo tree --duplicates
+   # Look for rust-version in dependencies' Cargo.toml
+   ```
+
+2. **Ensure compatibility** with our MSRV (1.85)
+
+3. **If dependency requires newer Rust**:
+   - Evaluate if benefit justifies MSRV bump
+   - Discuss in PR description
+   - Tag maintainers for MSRV policy review
+
+4. **Run cargo-msrv verification**:
+   ```bash
+   cargo install cargo-msrv
+   cargo msrv verify
+   ```
+
+#### MSRV Policy for Contributors
+
+- **Current MSRV**: 1.85 (Edition 2024 requirement)
+- **Policy**: N-1 (support current stable + 1 previous version)
+- **Updates**: MSRV bumps only for clear benefits (features, security, dependencies)
+- **Communication**: All MSRV changes documented in CHANGELOG with rationale
+
+See [README - MSRV Section](README.md#minimum-supported-rust-version-msrv-) for full policy.
+
+#### MSRV Verification Tools
+
+```bash
+# Verify current MSRV
+cargo msrv show
+
+# Verify MSRV is accurate
+cargo msrv verify
+
+# Find minimum possible MSRV (slow, ~10-20 minutes)
+cargo msrv find
+```
+
 ### IDE Setup
 
 #### VS Code
