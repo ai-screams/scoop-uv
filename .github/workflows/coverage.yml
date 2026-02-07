@@ -13,10 +13,17 @@ env:
   CARGO_TERM_COLOR: always
   SCOOP_LANG: en
 
+# Cancel stale PR runs when new commits are pushed
+# Never cancel main branch runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # llvm-cov instrumentation overhead
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -32,10 +39,11 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
+      # Shared cache for all stable-toolchain jobs
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "coverage"
+          shared-key: "stable-ci"
 
       - name: Generate coverage
         run: cargo llvm-cov --all-features --workspace --codecov --output-path codecov.json

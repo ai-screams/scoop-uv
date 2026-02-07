@@ -1,13 +1,23 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.10
 # ============================================================
 # Multi-stage Dockerfile for scoop test environment
-# Best Practices: layer caching, non-root user, BuildKit cache mounts
+# Best Practices: BuildKit cache mounts, ARG versioning, layer optimization
+# Updated: 2026-02-07
 # ============================================================
+
+# ============================================================
+# Build Arguments - Single Source of Truth
+# ============================================================
+ARG RUST_VERSION=1.85
+ARG PYTHON_311_VERSION=3.11.14
+ARG PYTHON_312_VERSION=3.12.12
+ARG UV_VERSION=0.5.14
+ARG MINICONDA_VERSION=py312_24.7.1-0
 
 # ============================================================
 # Stage 1: base - System dependencies and tools
 # ============================================================
-FROM rust:1.85-bookworm AS base
+FROM rust:${RUST_VERSION}-bookworm AS base
 
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -57,12 +67,16 @@ RUN pyenv --version
 # ============================================================
 FROM pyenv AS python
 
+# Re-declare ARGs for this stage (multi-stage scoping requirement)
+ARG PYTHON_311_VERSION
+ARG PYTHON_312_VERSION
+
 # Install Python versions with cache mount for build artifacts
 # NOTE: This layer takes ~10-20 minutes, so we cache it aggressively
 RUN --mount=type=cache,target=/root/.pyenv/cache,sharing=locked \
-    pyenv install 3.11.9 \
-    && pyenv install 3.12.4 \
-    && pyenv global 3.12.4
+    pyenv install ${PYTHON_311_VERSION} && \
+    pyenv install ${PYTHON_312_VERSION} && \
+    pyenv global ${PYTHON_312_VERSION}
 
 # Verify Python installation
 RUN python --version && pip --version
@@ -131,18 +145,23 @@ end\n\
 # ============================================================
 FROM shells AS full
 
-# Install uv (version pinned)
-ENV UV_VERSION=0.5.14
+# Re-declare ARGs for this stage
+ARG UV_VERSION
+ARG MINICONDA_VERSION
+ARG PYTHON_311_VERSION
+ARG PYTHON_312_VERSION
+
+# Install uv (version from ARG)
 RUN curl -LsSf "https://astral.sh/uv/${UV_VERSION}/install.sh" | sh
 ENV PATH="/root/.local/bin:$PATH"
 
-# Install Miniconda (architecture-aware)
+# Install Miniconda (architecture-aware, version from ARG)
 ENV CONDA_DIR="/opt/conda"
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
-        MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-py312_24.7.1-0-Linux-x86_64.sh"; \
+        MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh"; \
     elif [ "$ARCH" = "aarch64" ]; then \
-        MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-py312_24.7.1-0-Linux-aarch64.sh"; \
+        MINICONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-aarch64.sh"; \
     else \
         echo "Unsupported architecture: $ARCH" && exit 1; \
     fi && \
@@ -158,9 +177,9 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     && mkdir -p "$WORKON_HOME"
 
 # Create test fixtures
-# pyenv virtualenv
-RUN pyenv virtualenv 3.12.4 test-pyenv-312 \
-    && pyenv virtualenv 3.11.9 test-pyenv-311
+# pyenv virtualenv (versions from ARG)
+RUN pyenv virtualenv ${PYTHON_312_VERSION} test-pyenv-312 && \
+    pyenv virtualenv ${PYTHON_311_VERSION} test-pyenv-311
 
 # conda env
 RUN conda create -n test-conda-312 python=3.12 -y
@@ -184,13 +203,16 @@ CMD ["bash", "-l"]
 # ============================================================
 FROM shells AS slim
 
-# Install uv only
-ENV UV_VERSION=0.5.14
+# Re-declare ARGs for this stage
+ARG UV_VERSION
+ARG PYTHON_312_VERSION
+
+# Install uv only (version from ARG)
 RUN curl -LsSf "https://astral.sh/uv/${UV_VERSION}/install.sh" | sh
 ENV PATH="/root/.local/bin:$PATH"
 
-# Minimal test fixture
-RUN pyenv virtualenv 3.12.4 test-pyenv-312
+# Minimal test fixture (version from ARG)
+RUN pyenv virtualenv ${PYTHON_312_VERSION} test-pyenv-312
 
 # Copy entrypoint and shell config
 COPY docker/scripts/entrypoint.sh /entrypoint.sh

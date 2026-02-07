@@ -84,10 +84,12 @@ Your ice cream parlor lives here:
 
 **Version file priority** (first match wins):
 ```
-.scoop-version    →  "I want THIS flavor here"
-.python-version   →  "pyenv compatibility mode"
-~/.scoop/version  →  "My usual order"
+SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
+.scoop-version       →  "I want THIS flavor here" (local + parent walk)
+~/.scoop/version     →  "My usual order" (global default)
 ```
+
+> **Note**: `.python-version` is not currently supported. Use `.scoop-version` for version pinning.
 
 ---
 
@@ -156,7 +158,7 @@ Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
 
 ```bash
 scoop --version
-# → scoop 0.3.1 🍨
+# → scoop 0.7.0 🍨
 ```
 
 #### What this enables
@@ -251,7 +253,7 @@ scoop remove myproject     # Melt it away 💧
 
 ## Commands 🍨
 
-> **Tip:** All commands support `--json` for machine-readable output.
+> **Tip:** Most commands support `--json` for machine-readable output.
 
 ### Everyday Scooping
 
@@ -317,7 +319,7 @@ scoop remove myproject     # Melt it away 💧
 
 > **Shells supported:** `bash`, `zsh`, `fish`, `powershell`
 
-For complete command reference, see [docs/commands.md](docs/commands.md).
+For complete command reference, see [docs/src/commands/README.md](docs/src/commands/README.md).
 
 ---
 

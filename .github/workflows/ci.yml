@@ -13,6 +13,12 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
 
+# Cancel stale PR runs when new commits are pushed
+# Never cancel main branch runs (critical for merge validation)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   # ====================
   # Linting (fmt + clippy)
@@ -20,6 +26,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10  # Prevent runaway linting jobs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -29,10 +36,13 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      # Shared cache for all stable-toolchain jobs (lint, test, shellcheck)
+      # Read-only consumer - test job is the authoritative writer
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "lint"
+          shared-key: "stable-ci"
+          save-if: "false"  # Don't save cache, only restore
 
       - name: Check formatting
         run: cargo fmt --all --check
@@ -46,6 +56,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # Test suite + ignored tests
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -58,37 +69,19 @@ jobs:
         with:
           enable-cache: false
 
+      # Shared cache for all stable-toolchain jobs
+      # Authoritative writer - produces richest cache (includes test binaries)
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "test"
+          shared-key: "stable-ci"
+          # save-if defaults to true - this job writes the cache
 
       - name: Run tests
         run: cargo test --all-features --workspace
 
       - name: Run ignored tests (requires uv)
         run: cargo test --all-features --workspace -- --ignored
-
-  # ====================
-  # Build check
-  # ====================
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: "build"
-
-      - name: Build
-        run: cargo build --all-features
 
   # ====================
   # MSRV (Minimum Supported Rust Version)
@@ -106,6 +99,7 @@ jobs:
   msrv:
     name: MSRV (1.85)
     runs-on: ubuntu-latest
+    timeout-minutes: 25  # MSRV can be slower than stable
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -124,8 +118,9 @@ jobs:
         with:
           enable-cache: false
 
-      # Cache Rust build artifacts to speed up subsequent runs
-      # Separate cache key from other jobs (different toolchain = different artifacts)
+      # Separate cache for MSRV toolchain (1.85)
+      # Different compiler version = incompatible build artifacts
+      # Must NOT share cache with stable-toolchain jobs
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
@@ -157,6 +152,7 @@ jobs:
   shellcheck:
     name: ShellCheck
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Build + extract + shellcheck
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -164,10 +160,13 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      # Shared cache for all stable-toolchain jobs
+      # Read-only consumer - test job is the authoritative writer
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "shellcheck"
+          shared-key: "stable-ci"
+          save-if: "false"  # Don't save cache, only restore
 
       - name: Build binary
         run: cargo build

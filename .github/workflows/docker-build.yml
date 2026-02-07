@@ -27,6 +27,12 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+# Cancel stale PR runs when new commits are pushed
+# Never cancel main branch runs (protects image pushes)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   # ============================================================
   # Build and push Docker images
@@ -34,6 +40,7 @@ jobs:
   build:
     name: Build ${{ matrix.tag }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60  # Multi-stage builds can be slow
     permissions:
       contents: read
       packages: write
@@ -83,6 +90,8 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.target }}
           cache-to: type=gha,scope=${{ matrix.target }},mode=max
           no-cache: ${{ github.event.inputs.force_rebuild == 'true' }}
+          # Provenance only on push (incompatible with load on PRs)
+          provenance: ${{ github.event_name != 'pull_request' && 'mode=max' || 'false' }}
 
       # Verify build on PR (don't push)
       - name: Test build (PR only)
@@ -99,6 +108,7 @@ jobs:
     needs: build
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Image security scan
     permissions:
       contents: read
       packages: read
