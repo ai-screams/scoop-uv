@@ -14,38 +14,83 @@ scoop uninstall <version>
 |----------|----------|-------------|
 | `version` | Yes | Python version to remove |
 
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `--cascade` | Also remove all virtual environments using this Python version |
+| `--force`, `-f` | Skip confirmation for cascade removal (requires `--cascade`) |
+
 ## Examples
 
 ```bash
 scoop uninstall 3.12             # Remove Python 3.12
 scoop uninstall 3.11.8           # Remove specific version
+
+# Remove Python and all environments using it
+scoop uninstall 3.12 --cascade
+
+# Remove without confirmation prompt
+scoop uninstall 3.12 --cascade --force
 ```
 
-> **Important:** Uninstalling a Python version does **not** remove virtual environments that were created with it. Those environments will become broken (their Python symlink becomes invalid). See the workflow below to handle this safely.
+## Cascade Removal
 
-## Complete Uninstall Workflow
+The `--cascade` flag automatically removes all virtual environments that use the target Python version before uninstalling it. This replaces the manual multi-step workflow.
+
+```bash
+scoop uninstall 3.12 --cascade
+# Finding environments using Python 3.12...
+# Found 2 environments using Python 3.12:
+#   - myproject
+#   - webapp
+# Remove these environments and uninstall Python 3.12? [y/N]
+# Removing myproject...
+# Removing webapp...
+# Uninstalling Python 3.12...
+# ✓ Python 3.12 uninstalled
+```
+
+With `--force`, the confirmation prompt is skipped:
+
+```bash
+scoop uninstall 3.12 --cascade --force
+```
+
+With `--json`, the output includes the list of removed environments:
+
+```bash
+scoop uninstall 3.12 --cascade --json
+# {
+#   "status": "success",
+#   "command": "uninstall",
+#   "data": {
+#     "version": "3.12",
+#     "removed_envs": ["myproject", "webapp"]
+#   }
+# }
+```
+
+> **Note:** Without `--cascade`, uninstalling a Python version does **not** remove virtual environments that were created with it. Those environments will become broken. Use `--cascade` to handle this automatically, or follow the manual workflow below.
+
+## Manual Uninstall Workflow
+
+If you prefer manual control (without `--cascade`):
 
 ### Step 1: Identify affected environments
 
-Before uninstalling, check which environments use the target Python version:
-
 ```bash
-# List all environments with their Python versions
-scoop list
+# List environments filtered by Python version
+scoop list --python-version 3.12
 # Output:
-#   myproject      3.12.1  ← uses 3.12
-#   webapp         3.12.1  ← uses 3.12
-#   ml-env         3.11.8
+#   myproject      3.12.1
+#   webapp         3.12.1
 
 # Or use JSON for scripting
 scoop list --json
-# Filter by version in your script:
-# jq '.data.environments[] | select(.python_version | startswith("3.12"))'
 ```
 
 ### Step 2: Handle affected environments
-
-For each environment using the target Python version, choose one option:
 
 ```bash
 # Option A: Remove the environment entirely

@@ -29,19 +29,21 @@ fn main() -> Result<()> {
         Commands::List {
             pythons,
             bare,
+            python_version,
             json,
         } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::list(&output, pythons, bare)
+            scoop_uv::cli::commands::list(&output, pythons, bare, python_version.as_deref())
         }
         Commands::Create {
             name,
             python,
+            python_path,
             force,
             json,
         } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::create(&output, &name, &python, force)
+            scoop_uv::cli::commands::create(&output, &name, &python, python_path.as_deref(), force)
         }
         Commands::Doctor { verbose, json, fix } => {
             let output = Output::new(verbose, cli.quiet, cli.no_color, json);
@@ -82,10 +84,12 @@ fn main() -> Result<()> {
         }
         Commands::Uninstall {
             python_version,
+            cascade,
+            force,
             json,
         } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::uninstall(&output, &python_version)
+            scoop_uv::cli::commands::uninstall(&output, &python_version, cascade, force)
         }
         Commands::Init { shell } => scoop_uv::cli::commands::init(shell),
         Commands::Completions { shell } => scoop_uv::cli::commands::completions(shell),

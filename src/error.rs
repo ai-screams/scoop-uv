@@ -101,6 +101,12 @@ pub enum ScoopError {
 
     /// Name conflict with existing scoop environment
     MigrationNameConflict { name: String, existing: PathBuf },
+
+    /// Invalid Python path (not found, not executable, not a Python binary)
+    InvalidPythonPath { path: PathBuf, reason: String },
+
+    /// Cascade uninstall aborted by user
+    CascadeAborted,
 }
 
 // ============================================================================
@@ -231,6 +237,18 @@ impl fmt::Display for ScoopError {
                     )
                 )
             }
+            Self::InvalidPythonPath { path, reason } => {
+                write!(
+                    f,
+                    "{}",
+                    t!(
+                        "error.invalid_python_path",
+                        path = path.display(),
+                        reason = reason
+                    )
+                )
+            }
+            Self::CascadeAborted => write!(f, "{}", t!("error.cascade_aborted")),
         }
     }
 }
@@ -268,6 +286,8 @@ impl ScoopError {
             Self::PackageExtractionFailed { .. } => "MIGRATE_EXTRACTION_FAILED",
             Self::MigrationFailed { .. } => "MIGRATE_FAILED",
             Self::MigrationNameConflict { .. } => "MIGRATE_NAME_CONFLICT",
+            Self::InvalidPythonPath { .. } => "PYTHON_INVALID_PATH",
+            Self::CascadeAborted => "UNINSTALL_CASCADE_ABORTED",
         }
     }
 
@@ -292,6 +312,9 @@ impl ScoopError {
             }
             Self::MigrationNameConflict { .. } => {
                 Some(t!("suggestion.migration_name_conflict").to_string())
+            }
+            Self::InvalidPythonPath { .. } => {
+                Some(t!("suggestion.invalid_python_path").to_string())
             }
             _ => None,
         }
@@ -875,6 +898,37 @@ mod tests {
     }
 
     #[test]
+    fn test_error_code_invalid_python_path() {
+        let err = ScoopError::InvalidPythonPath {
+            path: PathBuf::from("/bad/python"),
+            reason: "not found".into(),
+        };
+        assert_eq!(err.code(), "PYTHON_INVALID_PATH");
+    }
+
+    #[test]
+    fn test_invalid_python_path_message() {
+        let err = ScoopError::InvalidPythonPath {
+            path: PathBuf::from("/usr/bin/fake-python"),
+            reason: "file not found".into(),
+        };
+        let msg = err.to_string();
+        assert!(msg.contains("/usr/bin/fake-python"));
+        assert!(msg.contains("file not found"));
+    }
+
+    #[test]
+    fn test_invalid_python_path_suggestion() {
+        let err = ScoopError::InvalidPythonPath {
+            path: PathBuf::from("/bad/path"),
+            reason: "not executable".into(),
+        };
+        let suggestion = err.suggestion().expect("should have suggestion");
+        assert!(suggestion.starts_with("→"));
+        assert!(suggestion.contains("Python executable"));
+    }
+
+    #[test]
     fn test_all_error_codes_are_unique() {
         use std::collections::HashSet;
 
@@ -931,6 +985,12 @@ mod tests {
                 existing: PathBuf::new(),
             }
             .code(),
+            ScoopError::InvalidPythonPath {
+                path: PathBuf::new(),
+                reason: "".into(),
+            }
+            .code(),
+            ScoopError::CascadeAborted.code(),
         ];
 
         let unique: HashSet<_> = codes.iter().collect();
@@ -964,6 +1024,11 @@ mod tests {
             ScoopError::MigrationNameConflict {
                 name: "".into(),
                 existing: PathBuf::new(),
+            }
+            .code(),
+            ScoopError::InvalidPythonPath {
+                path: PathBuf::new(),
+                reason: "".into(),
             }
             .code(),
         ];

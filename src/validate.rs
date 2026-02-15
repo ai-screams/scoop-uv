@@ -1,5 +1,8 @@
 //! Validation utilities for scoop
 
+use std::path::Path;
+use std::process::Command;
+
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -379,6 +382,100 @@ impl PartialOrd for PythonVersion {
 /// ```
 pub fn is_version_alias(version: &str) -> bool {
     matches!(version.trim().to_lowercase().as_str(), "latest" | "stable")
+}
+
+/// Validate that a path points to a valid Python executable.
+///
+/// Checks that the path:
+/// 1. Exists on the filesystem
+/// 2. Is a file (not a directory)
+/// 3. Is executable (Unix only: checks mode bits)
+///
+/// # Examples
+///
+/// ```no_run
+/// use std::path::Path;
+/// use scoop_uv::validate::validate_python_path;
+///
+/// // Valid Python path
+/// assert!(validate_python_path(Path::new("/usr/bin/python3")).is_ok());
+///
+/// // Non-existent path
+/// assert!(validate_python_path(Path::new("/nonexistent/python")).is_err());
+/// ```
+///
+/// # Errors
+///
+/// Returns [`ScoopError::InvalidPythonPath`] if the path is invalid.
+pub fn validate_python_path(path: &Path) -> Result<()> {
+    if !path.exists() {
+        return Err(ScoopError::InvalidPythonPath {
+            path: path.to_path_buf(),
+            reason: "file not found".to_string(),
+        });
+    }
+
+    if !path.is_file() {
+        return Err(ScoopError::InvalidPythonPath {
+            path: path.to_path_buf(),
+            reason: "not a file".to_string(),
+        });
+    }
+
+    // Check executable permission (Unix only)
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let metadata = std::fs::metadata(path)?;
+        if metadata.permissions().mode() & 0o111 == 0 {
+            return Err(ScoopError::InvalidPythonPath {
+                path: path.to_path_buf(),
+                reason: "not executable".to_string(),
+            });
+        }
+    }
+
+    Ok(())
+}
+
+/// Detect the Python version from a Python executable path.
+///
+/// Runs `<path> --version` and parses the output to extract the version string.
+/// Returns `None` if the version cannot be detected.
+///
+/// # Examples
+///
+/// ```no_run
+/// use std::path::Path;
+/// use scoop_uv::validate::detect_python_version;
+///
+/// let version = detect_python_version(Path::new("/usr/bin/python3"));
+/// // Returns Some("3.12.1") or None
+/// ```
+pub fn detect_python_version(path: &Path) -> Option<String> {
+    let output = Command::new(path).arg("--version").output().ok()?;
+
+    if !output.status.success() {
+        return None;
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    // Python prints version to stdout (Python 3) or stderr (Python 2)
+    let version_text = if stdout.starts_with("Python ") {
+        stdout
+    } else if stderr.starts_with("Python ") {
+        stderr
+    } else {
+        return None;
+    };
+
+    // Parse "Python X.Y.Z" -> "X.Y.Z"
+    version_text
+        .trim()
+        .strip_prefix("Python ")
+        .map(|v| v.trim().to_string())
 }
 
 #[cfg(test)]

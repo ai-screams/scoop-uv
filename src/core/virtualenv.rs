@@ -68,6 +68,35 @@ impl VirtualenvService {
 
     /// Create a new virtual environment
     pub fn create(&self, name: &str, python_version: &str) -> Result<PathBuf> {
+        self.create_inner(name, python_version, None)
+    }
+
+    /// Create a new virtual environment using a specific Python executable path.
+    ///
+    /// The `python_path` is passed directly to uv's `--python` flag, which
+    /// accepts both version strings and paths. The `python_version` should be
+    /// the detected version string from the binary. The canonical path is stored
+    /// in metadata.
+    pub fn create_with_python_path(
+        &self,
+        name: &str,
+        python_version: &str,
+        python_path: &Path,
+    ) -> Result<PathBuf> {
+        self.create_inner(
+            name,
+            &python_path.display().to_string(),
+            Some((python_version, python_path)),
+        )
+    }
+
+    /// Internal create implementation shared by both create methods.
+    fn create_inner(
+        &self,
+        name: &str,
+        uv_python_arg: &str,
+        python_path_info: Option<(&str, &Path)>,
+    ) -> Result<PathBuf> {
         validate::validate_env_name(name)?;
 
         let path = paths::virtualenv_path(name)?;
@@ -84,11 +113,21 @@ impl VirtualenvService {
         }
 
         // Create the virtual environment
-        self.uv.create_venv(&path, python_version)?;
+        self.uv.create_venv(&path, uv_python_arg)?;
 
         // Write metadata
         let uv_version = self.uv.version().ok();
-        let metadata = Metadata::new(name.to_string(), python_version.to_string(), uv_version);
+        // Resolve actual version: prefer pyvenv.cfg (handles specifiers like cpython@3.12),
+        // then explicit python_path version, then fall back to the raw uv arg.
+        let actual_version = super::parse_pyvenv_version(&path)
+            .or_else(|| python_path_info.map(|(ver, _)| ver.to_string()))
+            .unwrap_or_else(|| uv_python_arg.to_string());
+        let mut metadata = Metadata::new(name.to_string(), actual_version, uv_version);
+
+        if let Some((_, pp)) = python_path_info {
+            metadata = metadata.with_python_path(pp.display().to_string());
+        }
+
         self.write_metadata(&path, &metadata)?;
 
         Ok(path)

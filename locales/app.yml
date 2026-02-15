@@ -74,6 +74,12 @@ create.activate_hint:
   pt-BR: "  Ativar: scoop use %{name}"
   ja: "  有効化: scoop use %{name}"
 
+create.creating_with_path:
+  en: "Creating '%{name}' (Python: %{path})..."
+  ko: "'%{name}' 생성 중 (Python: %{path})..."
+  pt-BR: "Criando '%{name}' (Python: %{path})..."
+  ja: "'%{name}' を作成中 (Python: %{path})..."
+
 # ============================================================================
 # Remove command
 # ============================================================================
@@ -121,6 +127,18 @@ list.no_envs_hint:
   ko: "→ 생성: scoop create myenv 3.12"
   pt-BR: "→ Criar um: scoop create myenv 3.12"
   ja: "→ 新規作成: scoop create myenv 3.12"
+
+list.filtered_no_envs:
+  en: "No environments using Python %{version}"
+  ko: "Python %{version}을 사용하는 환경 없음"
+  pt-BR: "Nenhum ambiente usando Python %{version}"
+  ja: "Python %{version} を使用している環境はありません"
+
+list.filtered_hint:
+  en: "→ See all: scoop list"
+  ko: "→ 전체 보기: scoop list"
+  pt-BR: "→ Ver todos: scoop list"
+  ja: "→ 全件表示: scoop list"
 
 list.no_pythons:
   en: "No Python versions installed"
@@ -235,6 +253,48 @@ uninstall.success:
   ko: "Python %{version} 삭제됨"
   pt-BR: "Python %{version} desinstalado"
   ja: "Python %{version} をアンインストールしました"
+
+uninstall.cascade_found:
+  en: "Found %{count} environment(s) using Python %{version}:"
+  ko: "Python %{version}을 사용하는 %{count}개 환경 발견:"
+  pt-BR: "Encontrado(s) %{count} ambiente(s) usando Python %{version}:"
+  ja: "Python %{version} を使用している %{count}個の環境が見つかりました:"
+
+uninstall.cascade_env:
+  en: "  - %{name}"
+  ko: "  - %{name}"
+  pt-BR: "  - %{name}"
+  ja: "  - %{name}"
+
+uninstall.cascade_confirm:
+  en: "Remove these environments and uninstall Python %{version}?"
+  ko: "이 환경들을 삭제하고 Python %{version}을 삭제?"
+  pt-BR: "Remover estes ambientes e desinstalar Python %{version}?"
+  ja: "これらの環境を削除して Python %{version} をアンインストールしますか?"
+
+uninstall.cascade_removing:
+  en: "Removing '%{name}'..."
+  ko: "'%{name}' 삭제 중..."
+  pt-BR: "Removendo '%{name}'..."
+  ja: "'%{name}' を削除中..."
+
+uninstall.cascade_removed:
+  en: "Removed %{count} environment(s)"
+  ko: "%{count}개 환경 삭제됨"
+  pt-BR: "%{count} ambiente(s) removido(s)"
+  ja: "%{count}個の環境を削除しました"
+
+uninstall.cascade_none:
+  en: "No environments using Python %{version}"
+  ko: "Python %{version}을 사용하는 환경 없음"
+  pt-BR: "Nenhum ambiente usando Python %{version}"
+  ja: "Python %{version} を使用している環境はありません"
+
+uninstall.cascade_cancelled:
+  en: "Cancelled"
+  ko: "취소됨"
+  pt-BR: "Cancelado"
+  ja: "キャンセルしました"
 
 # ============================================================================
 # Migrate command - scan/list
@@ -665,6 +725,12 @@ error.migration_name_conflict:
   pt-BR: "'%{name}' já existe em %{path}"
   ja: "'%{name}' はすでに存在します: %{path}"
 
+error.cascade_aborted:
+  en: "Cascade uninstall cancelled by user"
+  ko: "연쇄 삭제가 사용자에 의해 취소됨"
+  pt-BR: "Desinstalação em cascata cancelada pelo usuário"
+  ja: "連鎖アンインストールがユーザーによりキャンセルされました"
+
 error.use_missing_name:
   en: "Environment name required (use --unset to remove setting)"
   ko: "환경 이름 필요 (설정 제거는 --unset 사용)"
@@ -732,3 +798,18 @@ suggestion.migration_name_conflict:
   ko: "→ --force로 덮어쓰기, 또는 다른 이름 사용"
   pt-BR: "→ Use --force para sobrescrever ou escolha outro nome"
   ja: "→ --force で上書き、または別の名前を指定してください"
+
+# ============================================================================
+# Create command - python path
+# ============================================================================
+error.invalid_python_path:
+  en: "Invalid Python path '%{path}': %{reason}"
+  ko: "잘못된 Python 경로 '%{path}': %{reason}"
+  pt-BR: "Caminho do Python inválido '%{path}': %{reason}"
+  ja: "無効な Python パス '%{path}': %{reason}"
+
+suggestion.invalid_python_path:
+  en: "→ Provide a path to a valid Python executable (e.g., /usr/bin/python3)"
+  ko: "→ 유효한 Python 실행 파일 경로 지정 (예: /usr/bin/python3)"
+  pt-BR: "→ Forneça um caminho para um executável Python válido (ex: /usr/bin/python3)"
+  ja: "→ 有効な Python 実行ファイルのパスを指定してください (例: /usr/bin/python3)"

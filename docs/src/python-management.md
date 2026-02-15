@@ -57,9 +57,28 @@ If the version you request matches a system Python, uv will use it. You only nee
 
 ## Using Custom Python Installations
 
-If you have a custom-built Python or an alternative interpreter (PyPy, GraalPy) in a non-standard location, you can make it available to scoop by ensuring uv can discover it.
+If you have a custom-built Python or an alternative interpreter (PyPy, GraalPy) in a non-standard location, you can point scoop directly to the executable.
 
-### Add custom Python to PATH
+### Use --python-path (recommended)
+
+The simplest approach is to pass the Python executable path directly:
+
+```bash
+# Custom Python built from source
+scoop create debug-env --python-path /opt/python-debug/bin/python3
+
+# PyPy interpreter
+scoop create pypy-env --python-path /opt/pypy/bin/pypy3
+
+# GraalPy
+scoop create graal-env --python-path /opt/graalpy/bin/graalpy
+```
+
+scoop validates the path, auto-detects the version, and stores the custom path in metadata. See [create command](commands/create.md) for details.
+
+### Alternative: Add custom Python to PATH
+
+You can also add the Python to your `PATH` so uv discovers it automatically:
 
 ```bash
 # Example: custom Python built from source in /opt/python-debug/
@@ -173,16 +192,38 @@ scoop info myenv
 
 ## Removing Python Versions
 
-Uninstalling a Python version does **not** automatically remove virtual environments that use it. Those environments will break (their Python symlink becomes invalid). Follow this workflow to clean up safely.
+### Quick: Cascade removal (recommended)
 
-### Step-by-step
+Use `--cascade` to automatically remove all environments using a Python version:
+
+```bash
+# Remove Python 3.12 and all environments using it
+scoop uninstall 3.12 --cascade
+
+# Skip confirmation prompt
+scoop uninstall 3.12 --cascade --force
+```
+
+### Preview affected environments
+
+Before uninstalling, you can check which environments would be affected:
+
+```bash
+# Filter environments by Python version
+scoop list --python-version 3.12
+#   myproject      3.12.1
+#   webapp         3.12.0
+```
+
+### Manual workflow
+
+If you prefer manual control (without `--cascade`):
 
 ```bash
 # 1. Identify environments using the target Python version
-scoop list
-#   myproject      3.12.1  ← uses 3.12
-#   webapp         3.12.1  ← uses 3.12
-#   ml-env         3.11.8
+scoop list --python-version 3.12
+#   myproject      3.12.1
+#   webapp         3.12.1
 
 # 2. Remove or recreate affected environments
 scoop remove myproject --force
@@ -200,7 +241,7 @@ scoop doctor                  # Check for broken environments
 
 ### Recovery from accidental uninstall
 
-If you already uninstalled Python without cleaning up environments:
+If you uninstalled Python without cleaning up environments:
 
 ```bash
 # Detect broken environments
@@ -223,10 +264,12 @@ See [uninstall command](commands/uninstall.md) and [doctor command](commands/doc
 |----------|------------|
 | Standard Python version | `scoop install 3.12` then `scoop create myenv 3.12` |
 | System Python (Homebrew, apt) | Just `scoop create myenv 3.12` — uv finds it automatically |
+| Custom Python executable | `scoop create myenv --python-path /path/to/python` |
 | Custom Python in non-standard path | Add to `PATH`, then `scoop create myenv <version>` |
-| PyPy or alternative interpreter | Add to `PATH`, uv discovers it automatically |
+| PyPy or alternative interpreter | `scoop create myenv --python-path /opt/pypy/bin/pypy3` |
 | Existing pyenv/conda environments | `scoop migrate --all` |
 | Shared Python installations | Set `UV_PYTHON_INSTALL_DIR` |
 | Force system-only Python | Set `UV_PYTHON_PREFERENCE=only-system` |
-| Uninstall Python + cleanup envs | Identify envs → `scoop remove` → `scoop uninstall` → `scoop doctor` |
+| Uninstall Python + cleanup envs | `scoop uninstall 3.12 --cascade` (or manual workflow) |
+| Find envs using a Python version | `scoop list --python-version 3.12` |
 | Fix broken environments | `scoop doctor --fix` (after reinstalling the Python version) |

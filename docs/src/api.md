@@ -63,6 +63,9 @@ impl VirtualenvService {
     /// Creates a new virtualenv
     pub fn create(&self, name: &str, python_version: &str) -> Result<PathBuf>
 
+    /// Creates a new virtualenv with a specific Python executable
+    pub fn create_with_python_path(&self, name: &str, python_version: &str, python_path: &Path) -> Result<PathBuf>
+
     /// Deletes a virtualenv
     pub fn delete(&self, name: &str) -> Result<()>
 
@@ -112,6 +115,7 @@ pub struct Metadata {
     pub created_at: DateTime<Utc>,   // Timestamp (ISO 8601 when serialized)
     pub created_by: String,          // "scoop X.Y.Z" format
     pub uv_version: Option<String>,  // uv version used
+    pub python_path: Option<String>, // Custom Python executable path (if --python-path was used)
 }
 
 impl Metadata {
@@ -334,6 +338,12 @@ pub enum ScoopError {
     PackageExtractionFailed { reason: String },
     MigrationFailed { reason: String },
     MigrationNameConflict { name: String, existing: PathBuf },
+
+    // Python path errors
+    InvalidPythonPath { path: PathBuf, reason: String },
+
+    // Cascade errors
+    CascadeAborted,
 }
 
 impl ScoopError {
@@ -358,6 +368,7 @@ impl ScoopError {
 - `ARG_*` - CLI argument errors (e.g., `ARG_INVALID`)
 - `SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)
 - `MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)
+- `UNINSTALL_*` - Uninstall errors (e.g., `UNINSTALL_CASCADE_ABORTED`)
 
 **Example Error Handling:**
 ```rust

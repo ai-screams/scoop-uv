@@ -66,15 +66,31 @@ Invoke-Expression (& scoop init powershell)
 
 ## Can I use a custom or pre-existing Python with scoop?
 
-Yes. scoop uses [uv](https://github.com/astral-sh/uv) for Python discovery, which automatically finds Python installations on your system — not just versions installed via `scoop install`.
+Yes, in two ways:
 
-**uv searches for Python in this order:**
-1. uv-managed installations (`~/.local/share/uv/python/`)
-2. System Python on `PATH` (`python3`, `python3.x`)
-3. Platform-specific locations (Windows registry, etc.)
+### Option 1: Use --python-path (recommended for custom builds)
+
+Point directly to any Python executable:
 
 ```bash
-# Check what Python versions uv can discover on your system
+# Custom-built Python
+scoop create debug-env --python-path /opt/python-debug/bin/python3
+
+# PyPy interpreter
+scoop create pypy-env --python-path /opt/pypy/bin/pypy3
+
+# GraalPy
+scoop create graal-env --python-path /opt/graalpy/bin/graalpy
+```
+
+scoop validates the path, auto-detects the version, and stores it in metadata.
+
+### Option 2: System Python via uv discovery
+
+scoop uses [uv](https://github.com/astral-sh/uv) for Python discovery, which automatically finds Python installations on your system:
+
+```bash
+# Check what Python versions uv can discover
 uv python list
 
 # Example output:
@@ -86,13 +102,10 @@ uv python list
 scoop create myenv 3.13
 ```
 
-For a custom-built Python in a non-standard location, add it to your `PATH`:
+For a custom Python in a non-standard location, add it to your `PATH`:
 
 ```bash
-# Custom Python in /opt/python-debug/
 export PATH="/opt/python-debug/bin:$PATH"
-
-# uv now discovers it — scoop can use it
 scoop create debug-env 3.13
 ```
 

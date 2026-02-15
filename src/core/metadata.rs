@@ -20,6 +20,10 @@ pub struct Metadata {
 
     /// Version of uv used
     pub uv_version: Option<String>,
+
+    /// Custom Python path used to create this environment
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub python_path: Option<String>,
 }
 
 impl Metadata {
@@ -31,7 +35,14 @@ impl Metadata {
             created_at: Utc::now(),
             created_by: format!("scoop {}", env!("CARGO_PKG_VERSION")),
             uv_version,
+            python_path: None,
         }
+    }
+
+    /// Create new metadata with a custom Python path
+    pub fn with_python_path(mut self, python_path: String) -> Self {
+        self.python_path = Some(python_path);
+        self
     }
 
     /// Metadata file name

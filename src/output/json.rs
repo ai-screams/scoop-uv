@@ -101,6 +101,8 @@ pub struct ListPythonsData {
 pub struct PythonInfo {
     pub version: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub implementation: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
 }
 
@@ -110,6 +112,8 @@ pub struct CreateData {
     pub name: String,
     pub python: String,
     pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub python_path: Option<String>,
 }
 
 /// Use response data
@@ -142,6 +146,9 @@ pub struct InstallData {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct UninstallData {
     pub version: String,
+    /// Environments removed by cascade (only present if --cascade used)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub removed_envs: Option<Vec<String>>,
 }
 
 /// Package info for JSON output
@@ -270,6 +277,7 @@ mod tests {
                 name: "myenv".into(),
                 python: "3.12".into(),
                 path: "/path/to/env".into(),
+                python_path: None,
             },
         );
         let json = serde_json::to_string(&response).unwrap();
@@ -423,10 +431,12 @@ mod tests {
             pythons: vec![
                 PythonInfo {
                     version: "3.12.0".into(),
+                    implementation: Some("cpython".into()),
                     path: Some("/usr/bin/python3.12".into()),
                 },
                 PythonInfo {
                     version: "3.11.0".into(),
+                    implementation: None,
                     path: None,
                 },
             ],
@@ -441,20 +451,36 @@ mod tests {
     fn test_python_info_without_path_omits_field() {
         let info = PythonInfo {
             version: "3.12".into(),
+            implementation: None,
             path: None,
         };
         let json = serde_json::to_string(&info).unwrap();
         assert!(!json.contains("path"));
+        assert!(!json.contains("implementation"));
     }
 
     #[test]
     fn test_python_info_with_path() {
         let info = PythonInfo {
             version: "3.12".into(),
+            implementation: Some("cpython".into()),
             path: Some("/usr/bin/python3".into()),
         };
         let json = serde_json::to_string(&info).unwrap();
         assert!(json.contains(r#""path":"/usr/bin/python3""#));
+        assert!(json.contains(r#""implementation":"cpython""#));
+    }
+
+    #[test]
+    fn test_python_info_without_implementation_omits_field() {
+        let info = PythonInfo {
+            version: "3.12".into(),
+            implementation: None,
+            path: Some("/usr/bin/python3".into()),
+        };
+        let json = serde_json::to_string(&info).unwrap();
+        assert!(!json.contains("implementation"));
+        assert!(json.contains(r#""version":"3.12""#));
     }
 
     // ========================================
@@ -467,6 +493,7 @@ mod tests {
             name: "myenv".into(),
             python: "3.12".into(),
             path: "/home/user/.scoop/virtualenvs/myenv".into(),
+            python_path: None,
         };
         let json = serde_json::to_string(&data).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
@@ -568,6 +595,7 @@ mod tests {
     fn test_uninstall_data_serialization() {
         let data = UninstallData {
             version: "3.11.0".into(),
+            removed_envs: None,
         };
         let json = serde_json::to_string(&data).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
@@ -599,6 +627,7 @@ mod tests {
             name: "".into(),
             python: "".into(),
             path: "".into(),
+            python_path: None,
         };
         let json = serde_json::to_string(&data).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
@@ -612,6 +641,7 @@ mod tests {
             name: r#"test"env"#.into(),
             python: "3.12".into(),
             path: r#"/path/with\backslash"#.into(),
+            python_path: None,
         };
         let json = serde_json::to_string(&data).unwrap();
         // JSON escaping should handle special chars
@@ -627,6 +657,7 @@ mod tests {
             name: long_name.clone(),
             python: "3.12".into(),
             path: "/path".into(),
+            python_path: None,
         };
         let json = serde_json::to_string(&data).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
@@ -639,6 +670,7 @@ mod tests {
             name: "myenv".into(),
             python: "3.12".into(),
             path: "/path/with spaces/to/env".into(),
+            python_path: None,
         };
         let json = serde_json::to_string(&data).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
