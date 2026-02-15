@@ -171,6 +171,52 @@ scoop info myenv
 # Path:    ~/.scoop/virtualenvs/myenv
 ```
 
+## Removing Python Versions
+
+Uninstalling a Python version does **not** automatically remove virtual environments that use it. Those environments will break (their Python symlink becomes invalid). Follow this workflow to clean up safely.
+
+### Step-by-step
+
+```bash
+# 1. Identify environments using the target Python version
+scoop list
+#   myproject      3.12.1  ← uses 3.12
+#   webapp         3.12.1  ← uses 3.12
+#   ml-env         3.11.8
+
+# 2. Remove or recreate affected environments
+scoop remove myproject --force
+scoop remove webapp --force
+# Or recreate with a different version:
+# scoop remove myproject --force && scoop create myproject 3.13
+
+# 3. Uninstall the Python version
+scoop uninstall 3.12
+
+# 4. Verify everything is clean
+scoop list --pythons          # Confirm Python removed
+scoop doctor                  # Check for broken environments
+```
+
+### Recovery from accidental uninstall
+
+If you already uninstalled Python without cleaning up environments:
+
+```bash
+# Detect broken environments
+scoop doctor -v
+#   ⚠ Environment 'myproject': Python symlink broken
+
+# Fix by reinstalling the Python version
+scoop install 3.12
+scoop doctor --fix
+
+# Or remove the broken environments and start fresh
+scoop remove myproject --force
+```
+
+See [uninstall command](commands/uninstall.md) and [doctor command](commands/doctor.md) for details.
+
 ## Summary
 
 | Scenario | What to do |
@@ -182,3 +228,5 @@ scoop info myenv
 | Existing pyenv/conda environments | `scoop migrate --all` |
 | Shared Python installations | Set `UV_PYTHON_INSTALL_DIR` |
 | Force system-only Python | Set `UV_PYTHON_PREFERENCE=only-system` |
+| Uninstall Python + cleanup envs | Identify envs → `scoop remove` → `scoop uninstall` → `scoop doctor` |
+| Fix broken environments | `scoop doctor --fix` (after reinstalling the Python version) |
