@@ -89,6 +89,7 @@ _scoop() {
                 'completions:Output shell completion script'
                 'activate:Activate a virtual environment'
                 'deactivate:Deactivate current virtual environment'
+                'shell:Set shell-specific environment'
                 'migrate:Migrate environments from other tools'
                 'lang:Set or show language preference'
             )
@@ -332,8 +333,36 @@ _scoop() {
                         [[ $has_json == false ]] && opts+=('--json:Output as JSON')
                         _describe 'option' opts
                     else
-                        local langs=('en:English' 'ko:Korean')
+                        local langs=('en:English' 'ko:Korean' 'ja:Japanese' 'pt-BR:Portuguese (Brazilian)')
                         _describe 'language' langs
+                    fi
+                    ;;
+                shell)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        local has_unset=false has_quiet=false has_nocolor=false
+                        for w in "${words[@]}"; do
+                            case "$w" in
+                                --unset) has_unset=true ;;
+                                -q|--quiet) has_quiet=true ;;
+                                --no-color) has_nocolor=true ;;
+                            esac
+                        done
+                        [[ $has_unset == false ]] && opts+=('--unset:Clear shell-specific environment')
+                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _describe 'option' opts
+                    else
+                        # Check if env name already provided (exclude current word being typed)
+                        local has_env=false
+                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                        for w in "${prev_args[@]}"; do
+                            [[ $w != -* && -n $w ]] && has_env=true && break
+                        done
+                        if [[ $has_env == false ]]; then
+                            local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                            compadd -a envs
+                        fi
                     fi
                     ;;
                 migrate)

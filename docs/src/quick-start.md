@@ -18,6 +18,20 @@ echo 'eval "$(scoop init bash)"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
+**Fish**:
+
+```fish
+echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
+source ~/.config/fish/config.fish
+```
+
+**PowerShell**:
+
+```powershell
+Add-Content -Path $PROFILE -Value 'Invoke-Expression (& scoop init powershell)'
+. $PROFILE
+```
+
 ## 2. Install Python
 
 ```bash

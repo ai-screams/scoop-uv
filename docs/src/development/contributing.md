@@ -56,16 +56,20 @@ src/
 │       ├── mod.rs
 │       ├── list.rs
 │       ├── create.rs
-│       ├── use_env.rs
+│       ├── use_env/     # Use command (normal, system, unset, symlink)
 │       ├── remove.rs
 │       ├── install.rs
 │       ├── doctor.rs
+│       ├── migrate/     # Migration subcommands
 │       └── ...
 
 ├── shell/               # Shell integration
 │   ├── mod.rs
+│   ├── common.rs        # Shared utilities (version check macros)
 │   ├── bash.rs
-│   └── zsh.rs
+│   ├── zsh.rs
+│   ├── fish.rs
+│   └── powershell.rs
 
 └── output/              # Output formatting
     ├── mod.rs
@@ -227,4 +231,4 @@ See `.docs/` for internal technical references:
 - Keep functions small and focused
 - Document public APIs with `///` comments
 - Use `thiserror` for error types
-- Korean error messages with solutions (per CLAUDE.md)
+- Translated error messages with solutions (en, ko, ja, pt-BR)

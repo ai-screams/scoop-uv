@@ -1,0 +1,25 @@
+{
+  "projectTitle": "scoop",
+  "description": "Centralized Python virtual environment manager — pyenv-style workflow powered by uv. Written in Rust.",
+  "branch": "main",
+  "folders": [
+    "docs/src",
+    "examples",
+    "llms.txt",
+    "llms-full.txt"
+  ],
+  "excludeFolders": [
+    "target",
+    "docs/book",
+    ".github",
+    ".docs",
+    "assets",
+    "docker"
+  ],
+  "excludeFiles": [
+    "CHANGELOG.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
+  ],
+  "rules": "scoop is a CLI tool installed via `cargo install scoop-uv`. The binary name is `scoop`, the crate name is `scoop-uv`. Config lives at ~/.scoop/config.json (JSON, not TOML). Virtual environments are stored in ~/.scoop/virtualenvs/. Shell integration uses eval pattern (like pyenv). Supports 4 shells: bash, zsh, fish, powershell. Supports 4 languages: en, ko, ja, pt-BR. MSRV is 1.85 (Rust Edition 2024). For complete LLM reference, see llms-full.txt."
+}

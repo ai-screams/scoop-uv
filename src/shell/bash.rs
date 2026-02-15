@@ -77,7 +77,7 @@ _scoop_complete() {
 
     # First argument: complete subcommands
     if [[ ${COMP_CWORD} -eq 1 ]]; then
-        COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate migrate lang" -- "$cur"))
+        COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang" -- "$cur"))
         return
     fi
 
@@ -192,6 +192,17 @@ _scoop_complete() {
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
+            shell)
+                local opts="--unset -q --quiet --no-color --help"
+                for word in "${COMP_WORDS[@]}"; do
+                    case "$word" in
+                        --unset) opts="${opts//--unset }" ;;
+                        -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --no-color) opts="${opts//--no-color }" ;;
+                    esac
+                done
+                COMPREPLY=($(compgen -W "$opts" -- "$cur"))
+                ;;
             migrate)
                 local opts="--help"
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
@@ -202,7 +213,7 @@ _scoop_complete() {
 
     # Argument completion (by subcommand)
     case "$cmd" in
-        use|remove|info|activate)
+        use|remove|info|activate|shell)
             # Check if env name already provided
             local has_arg=false
             for ((i=2; i<COMP_CWORD; i++)); do
@@ -236,7 +247,7 @@ _scoop_complete() {
             ;;
         lang)
             # Complete language codes
-            COMPREPLY=($(compgen -W "en ko" -- "$cur"))
+            COMPREPLY=($(compgen -W "en ko ja pt-BR" -- "$cur"))
             ;;
         migrate)
             # Complete migrate subcommands

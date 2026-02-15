@@ -82,7 +82,7 @@ end
 complete -c scoop -f
 
 # Subcommands
-set -l commands list use create remove info install uninstall doctor init completions activate deactivate migrate lang
+set -l commands list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang
 
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "list" -d "List all virtual environments"
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "use" -d "Set local environment for current directory"
@@ -96,6 +96,7 @@ complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "init" -d "O
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "completions" -d "Output shell completion script"
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "activate" -d "Activate a virtual environment"
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "deactivate" -d "Deactivate current virtual environment"
+complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "shell" -d "Set shell-specific environment"
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "migrate" -d "Migrate environments from other tools"
 complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "lang" -d "Set or show language preference"
 
@@ -146,8 +147,13 @@ complete -c scoop -n "__fish_seen_subcommand_from doctor; and not __fish_contain
 complete -c scoop -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
 complete -c scoop -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
+# Options for 'shell' (with duplicate prevention)
+complete -c scoop -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt unset" -l unset -d "Clear shell-specific environment"
+complete -c scoop -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scoop -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+
 # Dynamic completions: virtual environment names
-complete -c scoop -n "__fish_seen_subcommand_from use remove info activate" -a "(command scoop list --bare 2>/dev/null)" -d "Virtual environment"
+complete -c scoop -n "__fish_seen_subcommand_from use remove info activate shell" -a "(command scoop list --bare 2>/dev/null)" -d "Virtual environment"
 
 # Dynamic completions: Python versions for uninstall
 # Note: scoop list --pythons --bare already returns unique, sorted versions
@@ -167,6 +173,8 @@ complete -c scoop -n "__fish_seen_subcommand_from lang; and not __fish_contains_
 # Language codes for lang command
 complete -c scoop -n "__fish_seen_subcommand_from lang" -a "en" -d "English"
 complete -c scoop -n "__fish_seen_subcommand_from lang" -a "ko" -d "Korean"
+complete -c scoop -n "__fish_seen_subcommand_from lang" -a "ja" -d "Japanese"
+complete -c scoop -n "__fish_seen_subcommand_from lang" -a "pt-BR" -d "Portuguese (Brazilian)"
 
 # Subcommands for 'migrate'
 complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "list" -d "List environments available for migration"

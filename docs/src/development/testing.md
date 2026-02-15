@@ -96,7 +96,7 @@ cargo test test_name -- --nocapture --test-threads=1
 
 ## Test Categories
 
-### Unit Tests (239 tests)
+### Unit Tests (520 tests)
 
 Located within source files using `#[cfg(test)]`:
 

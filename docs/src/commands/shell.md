@@ -8,7 +8,7 @@ Unlike `scoop use` which writes to a file, `scoop shell` sets the `SCOOP_VERSION
 
 ```bash
 eval "$(scoop shell <name>)"    # Bash/Zsh
-scoop shell <name> | source     # Fish
+eval (scoop shell <name>)       # Fish
 ```
 
 > **Note:** If you have shell integration set up (`scoop init`), the `eval` is automatic:
@@ -43,8 +43,7 @@ scoop shell <name> | source     # Fish
 ```
 1. SCOOP_VERSION env var    <- scoop shell (highest)
 2. .scoop-version file      <- scoop use
-3. .python-version file     <- pyenv compatibility
-4. ~/.scoop/version         <- scoop use --global
+3. ~/.scoop/version         <- scoop use --global
 ```
 
 This means `scoop shell` **overrides** any file-based settings until:

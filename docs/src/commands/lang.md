@@ -38,11 +38,13 @@ scoop lang --reset
 |------|----------|
 | `en` | English (default) |
 | `ko` | 한국어 (Korean) |
+| `ja` | 日本語 (Japanese) |
+| `pt-BR` | Português (Brazilian Portuguese) |
 
 ## Language Detection Priority
 
 1. `SCOOP_LANG` environment variable
-2. `~/.config/scoop/config.toml` setting
+2. `~/.scoop/config.json` setting
 3. System locale (via `sys-locale`)
 4. Default: `en`
 
@@ -69,6 +71,8 @@ $ scoop lang --list
 Supported languages:
   en - English
   ko - 한국어 (Korean)
+  ja - 日本語 (Japanese)
+  pt-BR - Português (Brazilian Portuguese)
 ```
 
 ### Reset to System Default
@@ -96,9 +100,12 @@ $ scoop lang --json
 
 Language preference is stored in:
 
-```toml
-# ~/.config/scoop/config.toml
-lang = "ko"
+```
+~/.scoop/config.json
+```
+
+```json
+{"lang": "ko"}
 ```
 
 ## Environment Variable Override
