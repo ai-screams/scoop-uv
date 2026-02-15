@@ -64,7 +64,7 @@
 | Manual `source .venv/bin/activate`  | Auto-activate on directory entry     |
 | pyenv-virtualenv is slow            | uv-powered, 100x+ faster             |
 | Which Python? Which venv? Chaos.    | `scoop doctor` checks everything     |
-| Migrating envs? Manual nightmare.   | `scoop migrate --all` does it all    |
+| Migrating envs? Manual nightmare.   | `scoop migrate all` does it all      |
 | English-only CLI                    | Multi-language support (en, ko, ja, pt-BR) |
 
 ---
@@ -251,7 +251,7 @@ Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
 
 ```bash
 scoop --version
-# → scoop 0.7.0 🍨
+# → scoop 0.8.0 🍨
 ```
 
 #### What this enables
@@ -366,8 +366,8 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | Command                     | Description                              |
 |-----------------------------|------------------------------------------|
 | `scoop migrate list`        | Show environments to migrate             |
-| `scoop migrate @<name>`     | Migrate a single environment             |
-| `scoop migrate --all`       | Migrate all environments                 |
+| `scoop migrate @env <name>` | Migrate a single environment             |
+| `scoop migrate all`         | Migrate all environments                 |
 
 > **Supported sources:** pyenv-virtualenv, virtualenvwrapper, conda
 

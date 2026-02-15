@@ -85,8 +85,8 @@ Verify: `scoop --version`
 | Command | Description |
 |---------|-------------|
 | `scoop migrate list` | Show environments to migrate |
-| `scoop migrate @<name>` | Migrate a single environment |
-| `scoop migrate --all` | Migrate all environments |
+| `scoop migrate @env <name>` | Migrate a single environment |
+| `scoop migrate all` | Migrate all environments |
 
 Supported sources: pyenv-virtualenv, virtualenvwrapper, conda
 

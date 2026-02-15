@@ -38,8 +38,8 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 | `scoop completions <shell>` | Generate completion script |
 | `scoop lang [code]` | Get/set language (en, ko, ja, pt-BR) |
 | `scoop migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
-| `scoop migrate @<name>` | Migrate single environment |
-| `scoop migrate --all` | Migrate all environments |
+| `scoop migrate @env <name>` | Migrate single environment |
+| `scoop migrate all` | Migrate all environments |
 
 Most commands support `--json` for machine-readable output.
 

@@ -132,7 +132,7 @@ impl Metadata {
   "name": "myproject",
   "python_version": "3.12.1",
   "created_at": "2024-01-15T10:30:00Z",
-  "created_by": "scoop 0.6.0",
+  "created_by": "scoop <version>",
   "uv_version": "0.1.0"
 }
 ```
@@ -159,7 +159,7 @@ pub trait Check: Send + Sync {
 - `UvCheck` - Verifies uv is installed
 - `HomeCheck` - Checks `SCOOP_HOME` directory
 - `VirtualenvCheck` - Validates virtualenvs directory
-- `SymlinkCheck` - Checks for broken `.venv` symlinks
+- `SymlinkCheck` - Checks for broken virtualenv Python symlinks (e.g., `<env>/bin/python`)
 - `ShellCheck` - Verifies shell integration
 - `VersionCheck` - Validates version files
 

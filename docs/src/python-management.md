@@ -156,17 +156,17 @@ scoop migrate list
 #   ml-env (Python 3.10.4)
 
 # Migrate a specific environment
-scoop migrate @myproject
+scoop migrate @env myproject
 
 # Migrate everything at once
-scoop migrate --all
+scoop migrate all
 ```
 
 The migration process:
 1. Discovers environments from pyenv (`~/.pyenv/versions/`), conda (`conda info --envs`), or virtualenvwrapper (`$WORKON_HOME`)
 2. Creates a new scoop environment with the same Python version
 3. Reinstalls packages using uv for improved performance
-4. **Preserves** the original environment (no deletion)
+4. Preserves originals by default (use `--delete-source` to remove source envs after success)
 
 See [migrate command](commands/migrate.md) for details.
 
@@ -311,7 +311,7 @@ See [uninstall command](commands/uninstall.md) and [doctor command](commands/doc
 | Custom Python executable | `scoop create myenv --python-path /path/to/python` |
 | Custom Python in non-standard path | Add to `PATH`, then `scoop create myenv <version>` |
 | PyPy or alternative interpreter | `scoop create myenv --python-path /opt/pypy/bin/pypy3` |
-| Existing pyenv/conda environments | `scoop migrate --all` |
+| Existing pyenv/conda environments | `scoop migrate all` |
 | Shared Python installations | Set `UV_PYTHON_INSTALL_DIR` |
 | Force system-only Python | Set `UV_PYTHON_PREFERENCE=only-system` |
 | Uninstall Python + cleanup envs | `scoop uninstall 3.12 --cascade` (or manual workflow) |

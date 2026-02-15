@@ -307,10 +307,10 @@ scoop migrate list
 #   ml-env (Python 3.10.4)
 
 # Migrate a specific environment
-scoop migrate @myproject
+scoop migrate @env myproject
 
 # Migrate everything at once
-scoop migrate --all
+scoop migrate all
 ```
 
-The original environments are **preserved** (not deleted). See [migrate command](commands/migrate.md) for details.
+The original environments are preserved by default. Use `--delete-source` to remove source envs after successful migration. See [migrate command](commands/migrate.md) for details.

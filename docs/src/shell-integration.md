@@ -18,7 +18,17 @@ scoop() {
     case "$1" in
         use)
             command scoop "$@"
-            eval "$(command scoop activate "$name")"
+            local name=""
+            shift
+            for arg in "$@"; do
+                case "$arg" in
+                    -*) ;;
+                    *) name="$arg"; break ;;
+                esac
+            done
+            if [[ -n "$name" ]]; then
+                eval "$(command scoop activate "$name")"
+            fi
             ;;
         activate|deactivate|shell)
             eval "$(command scoop "$@")"
