@@ -190,6 +190,20 @@ scoop info myproject
 If `3.9.5` is missing, run `uv python list` and `scoop list --pythons`, then
 install `3.9.5` and retry.
 
+**Uninstall Python Version + Associated Environments**:
+
+Use `--cascade` for full cleanup:
+
+```bash
+scoop list --python-version 3.12
+scoop uninstall 3.12 --cascade
+scoop list --pythons
+scoop doctor
+```
+
+Use `--force` to skip the cascade confirmation prompt in automation.
+Without `--cascade`, dependent environments remain and can become broken.
+
 **Shell Type Detection**:
 1. `FISH_VERSION` env → Fish
 2. `PSModulePath` env → PowerShell

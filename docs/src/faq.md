@@ -70,6 +70,31 @@ scoop install 3.9.5
 scoop create myproject 3.9.5
 ```
 
+## How do I uninstall a specific Python version and all its associated virtual environments managed by scoop?
+
+Use `--cascade` to remove both the Python version and every environment that depends on it:
+
+```bash
+# 1) Optional: preview affected environments
+scoop list --python-version 3.12
+
+# 2) Remove Python 3.12 and all associated environments
+scoop uninstall 3.12 --cascade
+
+# 3) Verify cleanup
+scoop list --pythons
+scoop doctor
+```
+
+Useful variants:
+
+- Non-interactive mode: `scoop uninstall 3.12 --cascade --force`
+- JSON output for automation: `scoop uninstall 3.12 --cascade --json`
+
+Important detail:
+
+- Without `--cascade`, environments are not removed and can become broken.
+
 ## Can I use scoop with conda environments?
 
 Not directly. They serve different purposes and operate independently:

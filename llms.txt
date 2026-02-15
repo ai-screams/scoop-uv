@@ -109,6 +109,18 @@ scoop info myproject
 If `3.9.5` is not found, check discovery with `uv python list` and
 `scoop list --pythons`, then install and retry.
 
+### Uninstall a Python Version and Associated Environments
+
+```bash
+scoop list --python-version 3.12
+scoop uninstall 3.12 --cascade
+scoop list --pythons
+scoop doctor
+```
+
+Use `--force` for non-interactive workflows.
+Without `--cascade`, dependent environments are not removed and may break.
+
 ### Version Files
 
 Priority (first match wins):
