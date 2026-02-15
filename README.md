@@ -85,7 +85,7 @@ scoop create myproject 3.12
 
 # 4. Use it (auto-activates when you enter the directory!)
 scoop use myproject
-(myproject) $ pip install requests
+(myproject) $ pip install -r requirements.txt
 ```
 
 **That's it!** 🎉 Your environment is ready. For detailed docs, see **[Full Documentation →](https://ai-screams.github.io/scoop-uv/)**

@@ -136,6 +136,15 @@ scoop shell --unset
 
 Avoid `--global` when you want temporary or directory-only behavior.
 
+### Install Dependencies from requirements.txt in Active Environment
+
+```bash
+pip install -r requirements.txt
+```
+
+If needed, use `pip install -r path/to/requirements.txt`.
+Verify with `pip list`.
+
 ### Version Files
 
 Priority (first match wins):

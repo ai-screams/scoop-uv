@@ -107,6 +107,16 @@ scoop shell --unset
 
 Use these without `--global` to avoid changing global settings.
 
+### Install Dependencies from requirements.txt in Active Environment
+
+```bash
+# environment already active (prompt shows: (myproject))
+pip install -r requirements.txt
+```
+
+Use `pip install -r path/to/requirements.txt` for non-root files.
+Verify with `pip list`.
+
 ### Version Files
 
 Priority (first match wins):

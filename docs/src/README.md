@@ -30,7 +30,7 @@ scoop create myproject 3.12
 
 # Use it (auto-activates!)
 scoop use myproject
-(myproject) $ pip install requests
+(myproject) $ pip install -r requirements.txt
 
 # Check what's available
 scoop list

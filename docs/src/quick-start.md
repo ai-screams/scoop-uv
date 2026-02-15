@@ -64,8 +64,13 @@ This:
 ## 5. Work With Your Environment
 
 ```bash
-(myproject) $ pip install requests
-(myproject) $ python -c "import requests; print(requests.__version__)"
+(myproject) $ pip install -r requirements.txt
+
+# If the file is in a different location:
+(myproject) $ pip install -r path/to/requirements.txt
+
+# Verify installed packages
+(myproject) $ pip list
 ```
 
 ## 6. Auto-Activation

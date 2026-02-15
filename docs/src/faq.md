@@ -124,6 +124,22 @@ Notes:
 - `.scoop-version` changes from `scoop use ...` are local to the project directory (and inherited by subdirectories).
 - `scoop shell ...` affects only the current terminal session.
 
+## Once a Scoop-uv environment is active, how would you install project dependencies from a `requirements.txt` file into it?
+
+Run pip inside the active environment:
+
+```bash
+# Prompt shows active environment, e.g. (myproject)
+pip install -r requirements.txt
+```
+
+Useful variants:
+
+- Different file location: `pip install -r path/to/requirements.txt`
+- Verify installed dependencies: `pip list`
+
+If `requirements.txt` is in the project root, run the command from that directory.
+
 ## Can I use scoop with conda environments?
 
 Not directly. They serve different purposes and operate independently:

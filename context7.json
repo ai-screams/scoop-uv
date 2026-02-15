@@ -39,6 +39,8 @@
     "Without `--cascade`, uninstalling Python does not delete dependent environments and they may become broken; verify cleanup with `scoop list --pythons` and `scoop doctor`.",
     "For temporary auto-activation disable without global impact, use `export SCOOP_NO_AUTO=1` in the current shell and `unset SCOOP_NO_AUTO` when done.",
     "For project-specific behavior, use local `.scoop-version` via `scoop use <env>` or `scoop use system`; for terminal-only override use `scoop shell <env|system>` and `scoop shell --unset`.",
+    "Once an environment is active, install dependencies from requirements file with `pip install -r requirements.txt`.",
+    "For non-root dependency files, use `pip install -r path/to/requirements.txt`; verify installed packages with `pip list`.",
     ".python-version is NOT supported. Use .scoop-version for version pinning.",
     "Environment names must match ^[a-zA-Z][a-zA-Z0-9_-]*$ (max 64 chars, must start with letter).",
     "Most commands support --json for machine-readable output.",

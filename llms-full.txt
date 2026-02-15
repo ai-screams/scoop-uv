@@ -224,6 +224,17 @@ scoop shell --unset
 
 Do not use `--global` if you only want project-scoped behavior.
 
+**Install Dependencies from requirements.txt (Active Environment)**:
+
+After activating an environment, install project dependencies with:
+
+```bash
+pip install -r requirements.txt
+```
+
+Use `pip install -r path/to/requirements.txt` for alternate paths.
+Verify with `pip list`.
+
 **Shell Type Detection**:
 1. `FISH_VERSION` env → Fish
 2. `PSModulePath` env → PowerShell
