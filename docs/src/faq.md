@@ -44,7 +44,7 @@ Edit your shell config file and remove the scoop init line:
 |-------|-------------|----------------|
 | Bash | `~/.bashrc` | `eval "$(scoop init bash)"` |
 | Zsh | `~/.zshrc` | `eval "$(scoop init zsh)"` |
-| Fish | `~/.config/fish/config.fish` | `scoop init fish \| source` |
+| Fish | `~/.config/fish/config.fish` | `eval (scoop init fish)` |
 | PowerShell | `$PROFILE` | `Invoke-Expression (& scoop init powershell)` |
 
 ### 3. (Optional) Remove config

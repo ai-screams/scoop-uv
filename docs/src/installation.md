@@ -15,6 +15,22 @@ cargo install scoop-uv
 
 The binary is installed to `~/.cargo/bin/scoop`.
 
+## Upgrade
+
+To upgrade scoop to the latest version:
+
+```bash
+cargo install scoop-uv
+```
+
+This overwrites the existing binary in `~/.cargo/bin/scoop`. Your virtual environments in `~/.scoop/` are preserved.
+
+Verify the upgrade:
+
+```bash
+scoop --version
+```
+
 ## Verify Installation
 
 ```bash

@@ -51,10 +51,6 @@
 
 # Examples
 
-- [Examples Overview](../../../examples/README.md)
-- [Basic Workflow](../../../examples/basic_workflow.sh)
-- [Migration from pyenv](../../../examples/migration_from_pyenv.sh)
-- [Multi-Project Setup](../../../examples/multi_project_setup.sh)
-- [GitHub Actions CI](../../../examples/ci_github_actions.yml)
+- [Examples](examples.md)
 
 ---

@@ -50,6 +50,24 @@ jobs:
       - name: Run Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
+      - name: Check llms.txt consistency
+        run: |
+          set -e
+
+          # Extract MSRV from Cargo.toml
+          CARGO_MSRV=$(grep '^rust-version = ' Cargo.toml | head -1 | sed 's/rust-version = "\(.*\)"/\1/')
+          echo "Cargo.toml MSRV: $CARGO_MSRV"
+
+          # Check llms-full.txt MSRV
+          if grep -q "MSRV $CARGO_MSRV" llms-full.txt; then
+            echo "✅ llms-full.txt MSRV is in sync with Cargo.toml"
+          else
+            echo "❌ llms-full.txt MSRV mismatch"
+            echo "Expected: MSRV $CARGO_MSRV"
+            grep 'MSRV' llms-full.txt || echo "No MSRV found in llms-full.txt"
+            exit 1
+          fi
+
   # ====================
   # Tests
   # ====================

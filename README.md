@@ -69,27 +69,26 @@
 
 ---
 
-## The Freezer 🧊
+## 60-Second Quick Start ⚡
 
-Your ice cream parlor lives here:
+```bash
+# 1. Install prerequisites
+curl -LsSf https://astral.sh/uv/install.sh | sh  # uv
+cargo install scoop-uv                           # scoop
 
-```
-~/.scoop/                    # 🧊 The Freezer
-├── virtualenvs/             # 🍨 All your flavors
-│   ├── myproject/           #    → Python 3.12 flavor
-│   ├── webapp/              #    → Python 3.11 flavor
-│   └── experiment/          #    → Python 3.13 flavor
-└── version                  # 🥄 Default scoop preference
+# 2. Initialize your shell (zsh example)
+echo 'eval "$(scoop init zsh)"' >> ~/.zshrc && source ~/.zshrc
+
+# 3. Create your first environment
+scoop install 3.12
+scoop create myproject 3.12
+
+# 4. Use it (auto-activates when you enter the directory!)
+scoop use myproject
+(myproject) $ pip install requests
 ```
 
-**Version file priority** (first match wins):
-```
-SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
-.scoop-version       →  "I want THIS flavor here" (local + parent walk)
-~/.scoop/version     →  "My usual order" (global default)
-```
-
-> **Note**: `.python-version` is not supported. Use `.scoop-version` for version pinning.
+**That's it!** 🎉 Your environment is ready. For detailed docs, see **[Full Documentation →](https://ai-screams.github.io/scoop-uv/)**
 
 ---
 
@@ -193,67 +192,49 @@ echo 'export SCOOP_NO_AUTO=1' >> ~/.zshrc
 
 ---
 
-## Minimum Supported Rust Version (MSRV) 🦀
+## The Freezer 🧊
 
-scoop follows an **N-1 MSRV policy**:
+Your ice cream parlor lives here:
 
-- **Current MSRV**: 1.85 (required by Rust Edition 2024)
-- We support the current stable Rust and one previous version (~6 week lag)
-- MSRV updates are considered **non-breaking** for binary users per [Cargo RFC 3537](https://rust-lang.github.io/rfcs/3537-msrv-resolver.html)
-
-### Impact by User Type
-
-| User Type | MSRV Impact | Action |
-|-----------|-------------|--------|
-| **Binary users** | ✅ None | Download from [releases](https://github.com/ai-screams/scoop-uv/releases) or `cargo install` |
-| **Source builders** | ⚠️ Rust >= 1.85 required | Run `rustup update` if needed |
-| **Contributors** | 🔧 Test on MSRV before PR | `cargo +1.85 test --all-features` |
-
-### When We Bump MSRV
-
-✅ **We bump when:**
-- New Rust features provide significant user benefits
-- Critical dependencies require newer versions
-- Security fixes only available in newer Rust
-
-❌ **We don't bump for:**
-- Time-based schedules without clear benefits
-- Minor syntax sugar or aesthetic preferences
-- Personal developer preferences
-
-All MSRV changes are documented in [CHANGELOG.md](CHANGELOG.md) with clear rationale.
-
-For more details, see our [MSRV bump guide in CONTRIBUTING.md](CONTRIBUTING.md#bumping-msrv-step-by-step-guide).
-
----
-
-## Quick Start 🍨
-
-```bash
-# Stock up the freezer 🧊
-scoop install 3.12
-
-# Mix a new flavor 🍦
-scoop create myproject 3.12
-
-# Pick your flavor for this directory (auto-activates!)
-scoop use myproject
-(myproject) $ pip install requests
-
-# Check what's in the freezer
-scoop list                 # List all flavors
-scoop list --pythons       # List Python versions
-scoop list --json          # For the data nerds 🤓
-
-# Clean up
-scoop remove myproject     # Melt it away 💧
 ```
+~/.scoop/                    # 🧊 The Freezer
+├── virtualenvs/             # 🍨 All your flavors
+│   ├── myproject/           #    → Python 3.12 flavor
+│   ├── webapp/              #    → Python 3.11 flavor
+│   └── experiment/          #    → Python 3.13 flavor
+└── version                  # 🥄 Default scoop preference
+```
+
+**Version file priority** (first match wins):
+```
+SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
+.scoop-version       →  "I want THIS flavor here" (local + parent walk)
+~/.scoop/version     →  "My usual order" (global default)
+```
+
+> **Note**: `.python-version` is not supported. Use `.scoop-version` for version pinning.
 
 ---
 
 ## Commands 🍨
 
 > **Tip:** Most commands support `--json` for machine-readable output.
+
+### Essential Commands
+
+| Command | Description |
+|---------|-------------|
+| `scoop create <name> [version]` | Create a new environment |
+| `scoop use <name>` | Activate environment (auto-activates in directory) |
+| `scoop list` | List all environments |
+| `scoop remove <name>` | Delete an environment |
+| `scoop install [version]` | Install Python version |
+| `scoop doctor` | Health check your setup |
+
+**For the complete command reference**, see **[Commands Documentation →](https://ai-screams.github.io/scoop-uv/commands/)**
+
+<details>
+<summary>📖 Full command reference (click to expand)</summary>
 
 ### Everyday Scooping
 
@@ -319,11 +300,80 @@ scoop remove myproject     # Melt it away 💧
 
 > **Shells supported:** `bash`, `zsh`, `fish`, `powershell`
 
-For complete command reference, see [docs/src/commands/README.md](docs/src/commands/README.md).
+</details>
 
 ---
 
-## Architecture 🏗️
+## Documentation 📚
+
+📖 **[Read the Full Documentation →](https://ai-screams.github.io/scoop-uv/)**
+
+| Guide | Description |
+|-------|-------------|
+| **[Installation Guide](https://ai-screams.github.io/scoop-uv/installation.html)** | Prerequisites, shell setup, and troubleshooting |
+| **[Quick Start](https://ai-screams.github.io/scoop-uv/quick-start.html)** | Get productive in 5 minutes |
+| **[Command Reference](https://ai-screams.github.io/scoop-uv/commands/)** | Detailed documentation for every command |
+| **[Shell Integration](https://ai-screams.github.io/scoop-uv/shell-integration.html)** | Auto-activation, version files, and configuration |
+| **[Migration Guide](https://ai-screams.github.io/scoop-uv/migration.html)** | Move from pyenv, conda, or virtualenvwrapper |
+| **[Contributing](https://ai-screams.github.io/scoop-uv/development/contributing.html)** | Development setup and contribution guidelines |
+
+---
+
+## Minimum Supported Rust Version (MSRV) 🦀
+
+**Current MSRV:** 1.85 (required by Rust Edition 2024)
+
+scoop follows an **N-1 MSRV policy** — we support the current stable Rust and one previous version (~6 week lag).
+
+| User Type | MSRV Impact | Action |
+|-----------|-------------|--------|
+| **Binary users** | ✅ None | Download from [releases](https://github.com/ai-screams/scoop-uv/releases) or `cargo install` |
+| **Source builders** | ⚠️ Rust >= 1.85 required | Run `rustup update` if needed |
+| **Contributors** | 🔧 Test on MSRV before PR | `cargo +1.85 test --all-features` |
+
+<details>
+<summary>📋 Full MSRV policy (click to expand)</summary>
+
+### About N-1 Policy
+
+We support the current stable Rust and one previous version (~6 week lag). MSRV updates are considered **non-breaking** for binary users per [Cargo RFC 3537](https://rust-lang.github.io/rfcs/3537-msrv-resolver.html).
+
+### When We Bump MSRV
+
+✅ **We bump when:**
+- New Rust features provide significant user benefits
+- Critical dependencies require newer versions
+- Security fixes only available in newer Rust
+
+❌ **We don't bump for:**
+- Time-based schedules without clear benefits
+- Minor syntax sugar or aesthetic preferences
+- Personal developer preferences
+
+All MSRV changes are documented in [CHANGELOG.md](CHANGELOG.md) with clear rationale.
+
+### Edition 2024 Constraints
+
+scoop uses **Rust Edition 2024**, which requires:
+- Minimum Rust 1.85 (hard floor)
+- MSRV-aware resolver enabled by default
+- Cannot downgrade below 1.85 without changing edition to 2021
+
+### Automation
+
+- **CI**: Tests on both MSRV (1.85) and stable automatically
+- **cargo-msrv**: Verifies MSRV on Cargo.toml changes in CI
+- **Badge**: README badge auto-updates from Cargo.toml via shields.io
+- **Local**: rust-toolchain.toml auto-selects 1.85 in project directory
+
+For more details, see our [MSRV bump guide in CONTRIBUTING.md](CONTRIBUTING.md#bumping-msrv-step-by-step-guide).
+
+</details>
+
+---
+
+<details>
+<summary>🏗️ Architecture (for contributors and curious minds)</summary>
 
 Built with Rust for speed and reliability:
 
@@ -347,19 +397,7 @@ src/
 
 **Design principle:** The CLI outputs shell code to stdout, your shell evaluates it. Just like pyenv — battle-tested pattern.
 
----
-
-## Documentation 🍨
-
-📖 **[Full Documentation](https://ai-screams.github.io/scoop-uv/)**
-
-| Guide | Description |
-|-------|-------------|
-| [Installation](https://ai-screams.github.io/scoop-uv/installation.html) | Prerequisites and setup |
-| [Quick Start](https://ai-screams.github.io/scoop-uv/quick-start.html) | Get started in 5 minutes |
-| [Commands](https://ai-screams.github.io/scoop-uv/commands/) | Complete command reference |
-| [Shell Integration](https://ai-screams.github.io/scoop-uv/shell-integration.html) | Auto-activation and configuration |
-| [Contributing](https://ai-screams.github.io/scoop-uv/development/contributing.html) | Development guide |
+</details>
 
 ---
 

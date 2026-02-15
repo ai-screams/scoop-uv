@@ -98,8 +98,8 @@ Register-ArgumentCompleter -Native -CommandName scoop -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
     $commands = @('list', 'create', 'use', 'remove', 'info', 'install', 'uninstall',
-                  'doctor', 'init', 'completions', 'activate', 'deactivate', 'migrate',
-                  'lang', 'shell', 'resolve')
+                  'doctor', 'init', 'completions', 'activate', 'deactivate', 'shell',
+                  'migrate', 'lang')
 
     $tokens = $commandAst.ToString() -split '\s+'
     $cmd = if ($tokens.Count -gt 1) { $tokens[1] } else { '' }
@@ -113,7 +113,7 @@ Register-ArgumentCompleter -Native -CommandName scoop -ScriptBlock {
     }
 
     # Environment name completion for specific commands
-    if ($cmd -in 'use', 'remove', 'info', 'activate') {
+    if ($cmd -in 'use', 'remove', 'info', 'activate', 'shell') {
         $envs = & $script:ScoopBin list --bare 2>$null
         if ($envs) {
             $envs | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {

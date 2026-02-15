@@ -100,8 +100,11 @@ $ scoop lang --json
 
 Language preference is stored in:
 
+```
+~/.scoop/config.json
+```
+
 ```json
-// ~/.scoop/config.json
 {"lang": "ko"}
 ```
 
