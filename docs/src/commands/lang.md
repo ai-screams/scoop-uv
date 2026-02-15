@@ -38,6 +38,8 @@ scoop lang --reset
 |------|----------|
 | `en` | English (default) |
 | `ko` | 한국어 (Korean) |
+| `ja` | 日本語 (Japanese) |
+| `pt-BR` | Português (Brazilian Portuguese) |
 
 ## Language Detection Priority
 
@@ -69,6 +71,8 @@ $ scoop lang --list
 Supported languages:
   en - English
   ko - 한국어 (Korean)
+  ja - 日本語 (Japanese)
+  pt-BR - Português (Brazilian Portuguese)
 ```
 
 ### Reset to System Default

@@ -31,6 +31,11 @@ eval "$(scoop init zsh)"
 eval (scoop init fish)
 ```
 
+```powershell
+# PowerShell ($PROFILE)
+Invoke-Expression (& scoop init powershell)
+```
+
 ## Features Enabled
 
 - Auto-activation when entering directories with `.scoop-version`
@@ -43,4 +48,5 @@ eval (scoop init fish)
 scoop init bash                  # Output bash init script
 scoop init zsh                   # Output zsh init script
 scoop init fish                  # Output fish init script
+scoop init powershell            # Output PowerShell init script
 ```

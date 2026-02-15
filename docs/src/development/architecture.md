@@ -225,7 +225,7 @@ graph LR
     style None fill:#fff9c4
 ```
 
-> **Note**: `.python-version` is not currently supported. Version resolution walks up parent directories to find `.scoop-version`.
+> **Note**: `.python-version` is not supported. Version resolution walks up parent directories to find `.scoop-version`.
 
 ### Health Check Flow
 

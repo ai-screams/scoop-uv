@@ -481,7 +481,7 @@ impl VersionService {
 3. `.scoop-version` in parent directories (walks up)
 4. `~/.scoop/version` (global default)
 
-> **Note**: `.python-version` is not currently supported.
+> **Note**: `.python-version` is not supported.
 
 ---
 

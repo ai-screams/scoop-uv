@@ -16,6 +16,7 @@ Complete reference for all scoop commands.
 | [`scoop info`](info.md) | - | Show virtualenv details |
 | [`scoop migrate`](migrate.md) | - | Migrate from pyenv/conda/venvwrapper |
 | [`scoop lang`](lang.md) | - | Get/set display language |
+| [`scoop shell`](shell.md) | - | Set shell-specific env (temporary) |
 | [`scoop init`](init.md) | - | Shell init script |
 | [`scoop completions`](completions.md) | - | Completion script |
 
@@ -36,7 +37,7 @@ Available for all commands:
 |----------|-------------|---------|
 | `SCOOP_HOME` | Base directory for scoop | `~/.scoop` |
 | `SCOOP_NO_AUTO` | Disable auto-activation | (unset) |
-| `SCOOP_LANG` | Display language (en, ko) | System locale |
+| `SCOOP_LANG` | Display language (en, ko, ja, pt-BR) | System locale |
 | `NO_COLOR` | Disable colored output | (unset) |
 
 ## Directory Layout
@@ -46,5 +47,4 @@ Available for all commands:
 | `~/.scoop/virtualenvs/` | Virtual environments storage |
 | `~/.scoop/version` | Global default environment |
 | `.scoop-version` | Local environment preference |
-| `.python-version` | pyenv compatibility (fallback) |
 | `.venv` | Symlink to active environment (with `--link`) |
