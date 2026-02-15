@@ -84,6 +84,20 @@ Global options: `--quiet`, `--no-color`
 
 All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME` env var.
 
+### Set a Specific Python Version as Global Default
+
+To set Python `3.11.0` as the global default for new shells:
+
+```bash
+scoop install 3.11.0
+scoop create py311 3.11.0
+scoop use py311 --global
+```
+
+Important: `--global` stores an environment name (`py311`) in `~/.scoop/version`,
+not the raw Python version string. Local `.scoop-version` and `SCOOP_VERSION`
+override the global default.
+
 ### Version Files
 
 Priority (first match wins):

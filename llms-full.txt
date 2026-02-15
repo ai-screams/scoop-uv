@@ -164,6 +164,19 @@ process directly.
 3. `.scoop-version` in parent directories (walks up)
 4. `~/.scoop/version` (global default)
 
+**Set Python 3.11.0 as Global Default**:
+
+Use an environment-based workflow:
+
+```bash
+scoop install 3.11.0
+scoop create py311 3.11.0
+scoop use py311 --global
+```
+
+`--global` writes the environment name (`py311`) to `~/.scoop/version`.
+If `SCOOP_VERSION` or local `.scoop-version` exists, that value takes precedence.
+
 **Shell Type Detection**:
 1. `FISH_VERSION` env → Fish
 2. `PSModulePath` env → PowerShell
