@@ -45,21 +45,21 @@ Edit your shell config file and remove the scoop init line:
 | Bash | `~/.bashrc` | `eval "$(scoop init bash)"` |
 | Zsh | `~/.zshrc` | `eval "$(scoop init zsh)"` |
 | Fish | `~/.config/fish/config.fish` | `scoop init fish \| source` |
+| PowerShell | `$PROFILE` | `Invoke-Expression (& scoop init powershell)` |
 
 ### 3. (Optional) Remove config
 
-    rm -rf ~/.config/scoop
+    rm -f ~/.scoop/config.json
 
 ### 4. Restart your terminal
 
 ## Does scoop work on Windows?
 
-Yes! Since scoop is built on top of [uv](https://github.com/astral-sh/uv), it has *excellent cross-platform support*.
+scoop supports **PowerShell** on Windows (both PowerShell Core 7.x+ and Windows PowerShell 5.1+). Shell integration including auto-activation and tab completion works fully.
 
-You can use it via:
+```powershell
+# Add to $PROFILE
+Invoke-Expression (& scoop init powershell)
+```
 
-- **PowerShell** (Recommended)
-- **Command Prompt** (cmd.exe)
-- **Git Bash** or **WSL**
-
-> **Note:** Make sure to follow the Windows-specific shell integration steps in the [Installation guide](installation.md).
+> **Note:** Command Prompt (cmd.exe) is not supported. Use PowerShell for the full scoop experience.

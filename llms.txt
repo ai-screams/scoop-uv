@@ -110,11 +110,11 @@ Import environments from pyenv-virtualenv, virtualenvwrapper, and conda.
 
 Supported languages: English (`en`), Korean (`ko`), Japanese (`ja`), Portuguese-BR (`pt-BR`)
 
-Priority: `SCOOP_LANG` env > `~/.config/scoop/config.toml` > system locale > `en`
+Priority: `SCOOP_LANG` env > `~/.scoop/config.json` > system locale > `en`
 
 ## Configuration
 
-- Config file: `~/.config/scoop/config.toml`
+- Config file: `~/.scoop/config.json`
 - Home directory: `~/.scoop/` (override: `SCOOP_HOME`)
 - Metadata: `~/.scoop/virtualenvs/<name>/.scoop-metadata.json`
 

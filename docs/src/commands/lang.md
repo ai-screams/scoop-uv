@@ -44,7 +44,7 @@ scoop lang --reset
 ## Language Detection Priority
 
 1. `SCOOP_LANG` environment variable
-2. `~/.config/scoop/config.toml` setting
+2. `~/.scoop/config.json` setting
 3. System locale (via `sys-locale`)
 4. Default: `en`
 
@@ -100,9 +100,9 @@ $ scoop lang --json
 
 Language preference is stored in:
 
-```toml
-# ~/.config/scoop/config.toml
-lang = "ko"
+```json
+// ~/.scoop/config.json
+{"lang": "ko"}
 ```
 
 ## Environment Variable Override

@@ -89,7 +89,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 ~/.scoop/version     →  "My usual order" (global default)
 ```
 
-> **Note**: `.python-version` is not currently supported. Use `.scoop-version` for version pinning.
+> **Note**: `.python-version` is not supported. Use `.scoop-version` for version pinning.
 
 ---
 

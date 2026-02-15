@@ -27,7 +27,9 @@ Located in `rustfmt.toml`:
 ```toml
 edition = "2024"
 max_width = 100
-use_small_heuristics = "Default"
+tab_spaces = 4
+use_field_init_shorthand = true
+use_try_shorthand = true
 ```
 
 ### Commands

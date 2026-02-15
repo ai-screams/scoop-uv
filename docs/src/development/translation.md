@@ -34,7 +34,7 @@ create.success:
 
 **Important:**
 
-- Add translations to ALL ~106 keys
+- Add translations to all ~115 keys
 - Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc.
 - Preserve special characters: `→`, quotes, backticks
 
@@ -73,7 +73,7 @@ SCOOP_LANG={lang} ./target/debug/scoop lang
 
 **Required files in PR:**
 
-- [ ] `locales/app.yml` - All 106 keys translated
+- [ ] `locales/app.yml` - All 115 keys translated
 - [ ] `src/i18n.rs` - Language registered in SUPPORTED_LANGS
 
 **PR Title Format:**
@@ -237,7 +237,7 @@ scoop uses ice cream metaphors in documentation:
 ```rust
 // Language detection priority:
 // 1. SCOOP_LANG environment variable
-// 2. Config file (~/.config/scoop/config.toml)
+// 2. Config file (~/.scoop/config.json)
 // 3. System locale
 // 4. Default: "en"
 
@@ -288,7 +288,7 @@ All languages must have ALL keys. Missing keys fall back to English.
 
 Before submitting PR:
 
-- [ ] All 106 keys translated
+- [ ] All 115 keys translated
 - [ ] All placeholders preserved (`%{name}`, `%{version}`, etc.)
 - [ ] Language registered in SUPPORTED_LANGS
 - [ ] `cargo build` succeeds

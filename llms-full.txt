@@ -140,7 +140,7 @@ src/
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
-└── config.rs      # Config management (~/.config/scoop/config.toml)
+└── config.rs      # Config management (~/.scoop/config.json)
 
 locales/
 └── app.yml        # Translation strings (en, ko, ja, pt-BR) — 115 keys
@@ -407,7 +407,7 @@ pub fn is_supported(lang: &str) -> bool;
 pub fn language_name(code: &str) -> Option<&'static str>;
 ```
 
-Locale priority: `SCOOP_LANG` env → `~/.config/scoop/config.toml` → system locale → `en`
+Locale priority: `SCOOP_LANG` env → `~/.scoop/config.json` → system locale → `en`
 
 Usage in code: `t!("key", arg = value)` macro from rust-i18n.
 
