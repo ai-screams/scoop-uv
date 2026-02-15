@@ -63,3 +63,58 @@ Invoke-Expression (& scoop init powershell)
 ```
 
 > **Note:** Command Prompt (cmd.exe) is not supported. Use PowerShell for the full scoop experience.
+
+## Can I use a custom or pre-existing Python with scoop?
+
+Yes. scoop uses [uv](https://github.com/astral-sh/uv) for Python discovery, which automatically finds Python installations on your system — not just versions installed via `scoop install`.
+
+**uv searches for Python in this order:**
+1. uv-managed installations (`~/.local/share/uv/python/`)
+2. System Python on `PATH` (`python3`, `python3.x`)
+3. Platform-specific locations (Windows registry, etc.)
+
+```bash
+# Check what Python versions uv can discover on your system
+uv python list
+
+# Example output:
+# cpython-3.13.1    /opt/homebrew/bin/python3.13     (system)
+# cpython-3.12.8    ~/.local/share/uv/python/...     (managed)
+# cpython-3.11.5    /usr/bin/python3.11               (system)
+
+# Use a system-installed Python directly (no scoop install needed)
+scoop create myenv 3.13
+```
+
+For a custom-built Python in a non-standard location, add it to your `PATH`:
+
+```bash
+# Custom Python in /opt/python-debug/
+export PATH="/opt/python-debug/bin:$PATH"
+
+# uv now discovers it — scoop can use it
+scoop create debug-env 3.13
+```
+
+> **See also:** [Python Management](python-management.md) for the full guide on Python discovery, system Python, custom interpreters, and environment variables.
+
+## Can I migrate environments from pyenv or conda?
+
+Yes. scoop can discover and migrate existing environments from pyenv-virtualenv, conda, and virtualenvwrapper:
+
+```bash
+# See what can be migrated
+scoop migrate list
+# pyenv-virtualenv:
+#   myproject (Python 3.12.0)
+# conda:
+#   ml-env (Python 3.10.4)
+
+# Migrate a specific environment
+scoop migrate @myproject
+
+# Migrate everything at once
+scoop migrate --all
+```
+
+The original environments are **preserved** (not deleted). See [migrate command](commands/migrate.md) for details.

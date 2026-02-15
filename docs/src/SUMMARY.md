@@ -9,6 +9,7 @@
 - [Installation](installation.md)
 - [Quick Start](quick-start.md)
 - [Shell Integration](shell-integration.md)
+- [Python Management](python-management.md)
 - [FAQ](faq.md)
 
 ---
