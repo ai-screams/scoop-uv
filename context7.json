@@ -1,4 +1,40 @@
 {
+  "$schema": "https://context7.com/schema/context7.json",
   "url": "https://context7.com/ai-screams/scoop-uv",
-  "public_key": "pk_ZQZFyT7POrCDe0fKgNLzM"
+  "public_key": "pk_ZQZFyT7POrCDe0fKgNLzM",
+  "projectTitle": "scoop",
+  "description": "Centralized Python virtual environment manager — pyenv-style workflow powered by uv. Written in Rust.",
+  "branch": "main",
+  "folders": [
+    "docs/src",
+    "examples",
+    "README.md"
+  ],
+  "excludeFolders": [
+    "target",
+    "docs/book",
+    ".github",
+    ".docs",
+    "assets",
+    "docker"
+  ],
+  "excludeFiles": [
+    "CHANGELOG.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
+  ],
+  "rules": [
+    "scoop is installed via `cargo install scoop-uv`. The binary name is `scoop`, the crate name is `scoop-uv`.",
+    "Configuration file is at ~/.scoop/config.json (JSON format, NOT TOML). Never reference ~/.config/scoop/config.toml.",
+    "Virtual environments are stored centrally in ~/.scoop/virtualenvs/.",
+    "Shell integration uses the eval pattern (like pyenv): `eval \"$(scoop init zsh)\"`.",
+    "Supported shells: bash, zsh, fish, powershell.",
+    "Supported languages: en, ko, ja, pt-BR. Set via `scoop lang <code>` or SCOOP_LANG env var.",
+    "Version file priority: SCOOP_VERSION env > .scoop-version (local + parent walk) > ~/.scoop/version (global).",
+    ".python-version is NOT supported. Use .scoop-version for version pinning.",
+    "Environment names must match ^[a-zA-Z][a-zA-Z0-9_-]*$ (max 64 chars, must start with letter).",
+    "Most commands support --json for machine-readable output.",
+    "MSRV is 1.85 (Rust Edition 2024). N-1 MSRV policy.",
+    "For complete LLM reference, see llms-full.txt in the repository root."
+  ]
 }
