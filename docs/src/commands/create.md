@@ -34,6 +34,22 @@ scoop create myenv --python-path /opt/python-debug/bin/python3
 scoop create graal --python-path /opt/graalpy/bin/graalpy
 ```
 
+### Create a Project Environment with Python 3.9.5
+
+```bash
+# Install exact Python version (skip if already available)
+scoop install 3.9.5
+
+# Create a new project environment using that exact version
+scoop create myproject 3.9.5
+
+# Verify the environment uses Python 3.9.5
+scoop info myproject
+```
+
+If `3.9.5` is not available, install it first with `scoop install 3.9.5`, then check discovery with
+`uv python list` and `scoop list --pythons`.
+
 ## Python Version Resolution
 
 scoop delegates Python discovery to [uv](https://github.com/astral-sh/uv). The `python-version` argument is passed to `uv venv --python`, which searches for a match in:

@@ -61,6 +61,17 @@ Important: `--global` stores an environment name (`py311`) in `~/.scoop/version`
 not the raw Python version string. Local `.scoop-version` and `SCOOP_VERSION`
 override the global default.
 
+### Create a Project Environment with Python 3.9.5
+
+```bash
+scoop install 3.9.5
+scoop create myproject 3.9.5
+scoop info myproject
+```
+
+If `3.9.5` is not found, check discovery with `uv python list` and
+`scoop list --pythons`, then install and retry.
+
 ### Version Files
 
 Priority (first match wins):

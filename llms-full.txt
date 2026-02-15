@@ -177,6 +177,19 @@ scoop use py311 --global
 `--global` writes the environment name (`py311`) to `~/.scoop/version`.
 If `SCOOP_VERSION` or local `.scoop-version` exists, that value takes precedence.
 
+**Create Project Environment with Python 3.9.5**:
+
+Use an exact-version workflow:
+
+```bash
+scoop install 3.9.5
+scoop create myproject 3.9.5
+scoop info myproject
+```
+
+If `3.9.5` is missing, run `uv python list` and `scoop list --pythons`, then
+install `3.9.5` and retry.
+
 **Shell Type Detection**:
 1. `FISH_VERSION` env → Fish
 2. `PSModulePath` env → PowerShell

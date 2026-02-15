@@ -103,6 +103,19 @@ scoop use py311 --global
 This writes `py311` to `~/.scoop/version`.
 Priority still applies: `SCOOP_VERSION` (shell override) and local `.scoop-version` take precedence.
 
+### Create a Project Env with Python 3.9.5
+
+Use this when you want a new project environment pinned to an exact Python patch version:
+
+```bash
+scoop install 3.9.5
+scoop create myproject 3.9.5
+scoop info myproject
+```
+
+If `3.9.5` is missing, check available versions with `uv python list` and
+`scoop list --pythons`, then install and retry.
+
 ---
 
 ## Installation 🍨

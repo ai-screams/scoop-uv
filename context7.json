@@ -33,6 +33,8 @@
     "Version file priority: SCOOP_VERSION env > .scoop-version (local + parent walk) > ~/.scoop/version (global).",
     "To set a specific Python version globally, create an environment with that version, then run `scoop use <env> --global`.",
     "`scoop use --global` writes an environment name to ~/.scoop/version, not a raw Python version string.",
+    "To create a new environment with an exact Python version (for example 3.9.5), use `scoop install 3.9.5` then `scoop create <name> 3.9.5`.",
+    "Verify environment Python with `scoop info <name>`. If version resolution fails, inspect `uv python list` and `scoop list --pythons`.",
     ".python-version is NOT supported. Use .scoop-version for version pinning.",
     "Environment names must match ^[a-zA-Z][a-zA-Z0-9_-]*$ (max 64 chars, must start with letter).",
     "Most commands support --json for machine-readable output.",

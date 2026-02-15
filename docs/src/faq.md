@@ -41,6 +41,35 @@ To remove the global default later:
 scoop use --unset --global
 ```
 
+## How do I create a new virtual environment for a project, explicitly specifying Python 3.9.5?
+
+Use this end-to-end workflow:
+
+```bash
+# 1) Install Python 3.9.5 (skip if already available on your system)
+scoop install 3.9.5
+
+# 2) Create a new project environment with that exact version
+scoop create myproject 3.9.5
+
+# 3) Verify which Python the environment uses
+scoop info myproject
+```
+
+If creation fails because `3.9.5` is not found, run:
+
+```bash
+uv python list
+scoop list --pythons
+```
+
+Then install the exact version and retry:
+
+```bash
+scoop install 3.9.5
+scoop create myproject 3.9.5
+```
+
 ## Can I use scoop with conda environments?
 
 Not directly. They serve different purposes and operate independently:
