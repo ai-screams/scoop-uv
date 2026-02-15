@@ -3,7 +3,7 @@
 > Centralized Python virtual environment manager — pyenv-style workflow powered by uv
 
 <!-- MAINTENANCE NOTE: When updating version or MSRV in Cargo.toml, also update references in this file.
-     CI will verify version/MSRV consistency between Cargo.toml and llms.txt/llms-full.txt. -->
+     CI will verify MSRV consistency between Cargo.toml and llms-full.txt. -->
 
 - Package: scoop-uv (binary name: `scoop`)
 - Language: Rust, Edition 2024, MSRV 1.85

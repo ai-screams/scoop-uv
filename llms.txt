@@ -2,8 +2,8 @@
 
 > Centralized Python virtual environment manager — pyenv-style workflow powered by uv
 
-<!-- MAINTENANCE NOTE: When updating version in Cargo.toml, also update version references in this file.
-     CI will verify version consistency between Cargo.toml and llms.txt/llms-full.txt. -->
+<!-- MAINTENANCE NOTE: When updating version or MSRV in Cargo.toml, also update references in this file.
+     CI will verify MSRV consistency between Cargo.toml and llms-full.txt. -->
 
 scoop manages Python virtual environments from a single central location (`~/.scoop/`),
 combining pyenv-virtualenv's familiar workflow with uv's speed. Written in Rust.

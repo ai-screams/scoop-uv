@@ -333,7 +333,7 @@ _scoop() {
                         [[ $has_json == false ]] && opts+=('--json:Output as JSON')
                         _describe 'option' opts
                     else
-                        local langs=('en:English' 'ko:Korean')
+                        local langs=('en:English' 'ko:Korean' 'ja:Japanese' 'pt-BR:Portuguese (Brazilian)')
                         _describe 'language' langs
                     fi
                     ;;

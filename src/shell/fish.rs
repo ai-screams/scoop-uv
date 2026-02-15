@@ -173,6 +173,8 @@ complete -c scoop -n "__fish_seen_subcommand_from lang; and not __fish_contains_
 # Language codes for lang command
 complete -c scoop -n "__fish_seen_subcommand_from lang" -a "en" -d "English"
 complete -c scoop -n "__fish_seen_subcommand_from lang" -a "ko" -d "Korean"
+complete -c scoop -n "__fish_seen_subcommand_from lang" -a "ja" -d "Japanese"
+complete -c scoop -n "__fish_seen_subcommand_from lang" -a "pt-BR" -d "Portuguese (Brazilian)"
 
 # Subcommands for 'migrate'
 complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "list" -d "List environments available for migration"

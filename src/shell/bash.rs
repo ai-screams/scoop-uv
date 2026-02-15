@@ -247,7 +247,7 @@ _scoop_complete() {
             ;;
         lang)
             # Complete language codes
-            COMPREPLY=($(compgen -W "en ko" -- "$cur"))
+            COMPREPLY=($(compgen -W "en ko ja pt-BR" -- "$cur"))
             ;;
         migrate)
             # Complete migrate subcommands
