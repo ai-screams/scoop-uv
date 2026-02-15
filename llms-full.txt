@@ -235,6 +235,25 @@ pip install -r requirements.txt
 Use `pip install -r path/to/requirements.txt` for alternate paths.
 Verify with `pip list`.
 
+**List Python Versions + Associated Environments**:
+
+Use this sequence:
+
+```bash
+scoop list --pythons
+scoop list
+scoop list --python-version 3.12
+```
+
+For automation, use `--json`.
+For shell loops, use `--bare` and iterate versions:
+
+```bash
+for v in $(scoop list --pythons --bare); do
+  scoop list --python-version "$v" --bare
+done
+```
+
 **Shell Type Detection**:
 1. `FISH_VERSION` env → Fish
 2. `PSModulePath` env → PowerShell

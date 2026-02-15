@@ -140,6 +140,37 @@ Useful variants:
 
 If `requirements.txt` is in the project root, run the command from that directory.
 
+## How can a developer list all Python versions and their associated virtual environments currently managed by Scoop-uv?
+
+Use this sequence:
+
+```bash
+# 1) Show all managed Python versions
+scoop list --pythons
+
+# 2) Show all environments and their Python versions
+scoop list
+
+# 3) Show environments for one specific Python version
+scoop list --python-version 3.12
+```
+
+For automation:
+
+- Use `--json` for machine-readable output.
+- Use `--bare` for name-only output in shell scripts.
+
+Example script to iterate each Python version and print associated environments:
+
+```bash
+for v in $(scoop list --pythons --bare); do
+  echo "== Python $v =="
+  scoop list --python-version "$v" --bare
+done
+```
+
+If no versions or environments exist yet, these commands simply return empty results.
+
 ## Can I use scoop with conda environments?
 
 Not directly. They serve different purposes and operate independently:

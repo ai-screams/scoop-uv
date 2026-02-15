@@ -41,6 +41,8 @@
     "For project-specific behavior, use local `.scoop-version` via `scoop use <env>` or `scoop use system`; for terminal-only override use `scoop shell <env|system>` and `scoop shell --unset`.",
     "Once an environment is active, install dependencies from requirements file with `pip install -r requirements.txt`.",
     "For non-root dependency files, use `pip install -r path/to/requirements.txt`; verify installed packages with `pip list`.",
+    "To inspect managed versions and associations: `scoop list --pythons` (versions), `scoop list` (envs), and `scoop list --python-version <VERSION>` (envs for one version).",
+    "Use `--json` for machine-readable output and `--bare` for script-friendly output when listing versions or environments.",
     ".python-version is NOT supported. Use .scoop-version for version pinning.",
     "Environment names must match ^[a-zA-Z][a-zA-Z0-9_-]*$ (max 64 chars, must start with letter).",
     "Most commands support --json for machine-readable output.",

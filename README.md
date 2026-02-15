@@ -134,6 +134,23 @@ scoop doctor
 
 For CI/scripts, add `--force` to skip confirmation.
 
+### List Python Versions + Associated Envs
+
+Use this to inspect what scoop currently manages:
+
+```bash
+# All managed Python versions
+scoop list --pythons
+
+# All environments and their Python versions
+scoop list
+
+# Environments associated with one Python version
+scoop list --python-version 3.12
+```
+
+For scripts, use `--json` or `--bare`.
+
 ### Project-Scoped Auto-Activation Control
 
 Need temporary or directory-specific behavior without touching global settings?

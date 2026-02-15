@@ -145,6 +145,16 @@ pip install -r requirements.txt
 If needed, use `pip install -r path/to/requirements.txt`.
 Verify with `pip list`.
 
+### List Python Versions and Associated Environments
+
+```bash
+scoop list --pythons
+scoop list
+scoop list --python-version 3.12
+```
+
+Use `--json` for machine-readable output and `--bare` for shell scripts.
+
 ### Version Files
 
 Priority (first match wins):

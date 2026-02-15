@@ -117,6 +117,18 @@ pip install -r requirements.txt
 Use `pip install -r path/to/requirements.txt` for non-root files.
 Verify with `pip list`.
 
+### List Python Versions and Associated Environments
+
+```bash
+scoop list --pythons
+scoop list
+scoop list --python-version 3.12
+```
+
+Use `--json` for automation and `--bare` for script-friendly output.
+For full mapping in shell scripts, iterate versions from `scoop list --pythons --bare`
+and query each with `scoop list --python-version <VERSION> --bare`.
+
 ### Version Files
 
 Priority (first match wins):
