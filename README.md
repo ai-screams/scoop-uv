@@ -134,6 +134,24 @@ scoop doctor
 
 For CI/scripts, add `--force` to skip confirmation.
 
+### Project-Scoped Auto-Activation Control
+
+Need temporary or directory-specific behavior without touching global settings?
+
+```bash
+# Temporary: current shell only
+export SCOOP_NO_AUTO=1
+unset SCOOP_NO_AUTO
+
+# Directory-local behavior (writes .scoop-version in current directory)
+scoop use system      # force system Python for this project
+scoop use myproject   # pin this project to a specific env
+
+# Terminal-only override (no file changes)
+scoop shell system
+scoop shell --unset
+```
+
 ---
 
 ## Installation 🍨

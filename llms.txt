@@ -121,6 +121,21 @@ scoop doctor
 Use `--force` for non-interactive workflows.
 Without `--cascade`, dependent environments are not removed and may break.
 
+### Project-Scoped Auto-Activation Control
+
+```bash
+export SCOOP_NO_AUTO=1
+unset SCOOP_NO_AUTO
+
+scoop use system
+scoop use myproject
+
+scoop shell system
+scoop shell --unset
+```
+
+Avoid `--global` when you want temporary or directory-only behavior.
+
 ### Version Files
 
 Priority (first match wins):

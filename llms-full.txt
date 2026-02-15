@@ -204,6 +204,26 @@ scoop doctor
 Use `--force` to skip the cascade confirmation prompt in automation.
 Without `--cascade`, dependent environments remain and can become broken.
 
+**Temporarily Disable or Customize Auto-Activation (Project/Directory Scope)**:
+
+Use non-global controls:
+
+```bash
+# Disable auto-activation in current shell only
+export SCOOP_NO_AUTO=1
+unset SCOOP_NO_AUTO
+
+# Project-local behavior via .scoop-version
+scoop use system
+scoop use myproject
+
+# Terminal-only override (no file writes)
+scoop shell system
+scoop shell --unset
+```
+
+Do not use `--global` if you only want project-scoped behavior.
+
 **Shell Type Detection**:
 1. `FISH_VERSION` env → Fish
 2. `PSModulePath` env → PowerShell

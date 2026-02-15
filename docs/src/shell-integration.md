@@ -123,6 +123,36 @@ scoop shell system        # Set SCOOP_VERSION=system (this terminal only)
 export SCOOP_NO_AUTO=1
 ```
 
+### Temporary and Project-Scoped Control
+
+Disable only in the current shell session (does not affect global settings):
+
+```bash
+export SCOOP_NO_AUTO=1
+# ...work without auto-activation...
+unset SCOOP_NO_AUTO
+```
+
+For one project directory, use local version files instead of global settings:
+
+```bash
+cd ~/project
+
+# Keep auto-activation, but force system Python in this project only
+scoop use system
+
+# Or pin a specific environment for this project only
+scoop use myproject
+```
+
+For temporary per-terminal overrides without changing files:
+
+```bash
+scoop shell system    # this terminal only
+# ...test...
+scoop shell --unset   # return to file-based behavior
+```
+
 ### Custom Home Directory
 
 ```bash

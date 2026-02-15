@@ -95,6 +95,35 @@ Important detail:
 
 - Without `--cascade`, environments are not removed and can become broken.
 
+## Given Scoop-uv's auto-activation feature, how would a developer temporarily disable or customize its behavior for a specific project or directory without affecting global settings?
+
+Use one of these local or temporary patterns:
+
+```bash
+# Option 1) Disable auto-activation only in the current shell session
+export SCOOP_NO_AUTO=1
+# ...work here...
+unset SCOOP_NO_AUTO
+
+# Option 2) For one project directory, force system Python locally
+cd ~/project
+scoop use system
+
+# Option 3) For one project directory, pin a specific environment locally
+scoop use myproject
+
+# Option 4) Temporary override in this terminal only (no file changes)
+scoop shell system
+# ...test...
+scoop shell --unset
+```
+
+Notes:
+
+- These approaches avoid `--global`, so global defaults are unchanged.
+- `.scoop-version` changes from `scoop use ...` are local to the project directory (and inherited by subdirectories).
+- `scoop shell ...` affects only the current terminal session.
+
 ## Can I use scoop with conda environments?
 
 Not directly. They serve different purposes and operate independently:

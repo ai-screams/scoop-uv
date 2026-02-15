@@ -89,6 +89,24 @@ scoop doctor
 For automation, use `scoop uninstall 3.12 --cascade --force`.
 Without `--cascade`, dependent environments are not removed and may become broken.
 
+### Temporarily Disable or Customize Auto-Activation (Project-Scoped)
+
+```bash
+# Current shell only (temporary disable)
+export SCOOP_NO_AUTO=1
+unset SCOOP_NO_AUTO
+
+# Project-local behavior (writes .scoop-version in current dir)
+scoop use system
+scoop use myproject
+
+# Terminal-only override (no file changes)
+scoop shell system
+scoop shell --unset
+```
+
+Use these without `--global` to avoid changing global settings.
+
 ### Version Files
 
 Priority (first match wins):
