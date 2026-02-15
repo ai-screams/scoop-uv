@@ -98,6 +98,75 @@ Important: `--global` stores an environment name (`py311`) in `~/.scoop/version`
 not the raw Python version string. Local `.scoop-version` and `SCOOP_VERSION`
 override the global default.
 
+### Create a Project Environment with Python 3.9.5
+
+```bash
+scoop install 3.9.5
+scoop create myproject 3.9.5
+scoop info myproject
+```
+
+If `3.9.5` is not found, check discovery with `uv python list` and
+`scoop list --pythons`, then install and retry.
+
+### Uninstall a Python Version and Associated Environments
+
+```bash
+scoop list --python-version 3.12
+scoop uninstall 3.12 --cascade
+scoop list --pythons
+scoop doctor
+```
+
+Use `--force` for non-interactive workflows.
+Without `--cascade`, dependent environments are not removed and may break.
+
+### Project-Scoped Auto-Activation Control
+
+```bash
+export SCOOP_NO_AUTO=1
+unset SCOOP_NO_AUTO
+
+scoop use system
+scoop use myproject
+
+scoop shell system
+scoop shell --unset
+```
+
+Avoid `--global` when you want temporary or directory-only behavior.
+
+### Install Dependencies from requirements.txt in Active Environment
+
+```bash
+pip install -r requirements.txt
+```
+
+If needed, use `pip install -r path/to/requirements.txt`.
+Verify with `pip list`.
+
+### List Python Versions and Associated Environments
+
+```bash
+scoop list --pythons
+scoop list
+scoop list --python-version 3.12
+```
+
+Use `--json` for machine-readable output and `--bare` for shell scripts.
+
+### Integrate Custom or Pre-Existing Python
+
+```bash
+scoop create myenv --python-path /opt/python-debug/bin/python3
+
+export PATH="/opt/python-debug/bin:$PATH"
+scoop create myenv 3.13
+```
+
+Verify with `uv python list`, `scoop info myenv`, and `scoop doctor -v`.
+Custom interpreter path is recorded in metadata (`python_path`).
+
 ### Version Files
 
 Priority (first match wins):

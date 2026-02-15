@@ -59,6 +59,14 @@ If the version you request matches a system Python, uv will use it. You only nee
 
 If you have a custom-built Python or an alternative interpreter (PyPy, GraalPy) in a non-standard location, you can point scoop directly to the executable.
 
+### When the required version is not in default sources
+
+If `scoop install <version>` and normal uv discovery do not provide the interpreter you need,
+integrate your own Python using one of these patterns:
+
+1. **Direct path (recommended):** `scoop create <env> --python-path /path/to/python`
+2. **PATH-based discovery:** add your Python to `PATH`, then run `scoop create <env> <version>`
+
 ### Use --python-path (recommended)
 
 The simplest approach is to pass the Python executable path directly:
@@ -74,7 +82,18 @@ scoop create pypy-env --python-path /opt/pypy/bin/pypy3
 scoop create graal-env --python-path /opt/graalpy/bin/graalpy
 ```
 
-scoop validates the path, auto-detects the version, and stores the custom path in metadata. See [create command](commands/create.md) for details.
+scoop validates the path, auto-detects the version, and stores the custom path in metadata.
+
+```bash
+# Verify what was integrated
+scoop info debug-env
+# Name:         debug-env
+# Python:       3.13.0
+# Python Path:  /opt/python-debug/bin/python3
+```
+
+Metadata is stored in `~/.scoop/virtualenvs/<name>/.scoop-metadata.json` (`python_path` field).
+See [create command](commands/create.md) for details.
 
 ### Alternative: Add custom Python to PATH
 
@@ -165,6 +184,31 @@ scoop install 3.14
 # Solution 2: Check what's available
 uv python list
 scoop list --pythons
+```
+
+### Invalid custom Python path
+
+```bash
+# Example custom path flow
+scoop create myenv --python-path /opt/custom/python3
+
+# Verify the binary exists and runs
+/opt/custom/python3 --version
+```
+
+If the path is invalid or not executable, provide a valid Python binary path and retry.
+
+### Verify custom integration end-to-end
+
+```bash
+# 1) Confirm uv can see your interpreter (PATH-based flow)
+uv python list
+
+# 2) Confirm scoop recorded the interpreter path
+scoop info myenv
+
+# 3) Diagnose broken links or metadata issues
+scoop doctor -v
 ```
 
 ### Using a different Python than expected

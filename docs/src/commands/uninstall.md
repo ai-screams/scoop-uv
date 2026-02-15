@@ -34,6 +34,34 @@ scoop uninstall 3.12 --cascade
 scoop uninstall 3.12 --cascade --force
 ```
 
+### Uninstall a Python Version and All Associated Environments
+
+Recommended workflow for a full cleanup:
+
+```bash
+# 1) Optional: preview which environments would be removed
+scoop list --python-version 3.12
+
+# 2) Remove Python 3.12 and all environments using it
+scoop uninstall 3.12 --cascade
+
+# 3) Verify cleanup
+scoop list --pythons
+scoop doctor
+```
+
+For non-interactive scripts, skip the confirmation prompt:
+
+```bash
+scoop uninstall 3.12 --cascade --force
+```
+
+If the target version is not installed, check available versions first:
+
+```bash
+scoop list --pythons
+```
+
 ## Cascade Removal
 
 The `--cascade` flag automatically removes all virtual environments that use the target Python version before uninstalling it. This replaces the manual multi-step workflow.

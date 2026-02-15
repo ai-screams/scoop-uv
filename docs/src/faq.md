@@ -41,6 +41,162 @@ To remove the global default later:
 scoop use --unset --global
 ```
 
+## How do I create a new virtual environment for a project, explicitly specifying Python 3.9.5?
+
+Use this end-to-end workflow:
+
+```bash
+# 1) Install Python 3.9.5 (skip if already available on your system)
+scoop install 3.9.5
+
+# 2) Create a new project environment with that exact version
+scoop create myproject 3.9.5
+
+# 3) Verify which Python the environment uses
+scoop info myproject
+```
+
+If creation fails because `3.9.5` is not found, run:
+
+```bash
+uv python list
+scoop list --pythons
+```
+
+Then install the exact version and retry:
+
+```bash
+scoop install 3.9.5
+scoop create myproject 3.9.5
+```
+
+## How do I uninstall a specific Python version and all its associated virtual environments managed by scoop?
+
+Use `--cascade` to remove both the Python version and every environment that depends on it:
+
+```bash
+# 1) Optional: preview affected environments
+scoop list --python-version 3.12
+
+# 2) Remove Python 3.12 and all associated environments
+scoop uninstall 3.12 --cascade
+
+# 3) Verify cleanup
+scoop list --pythons
+scoop doctor
+```
+
+Useful variants:
+
+- Non-interactive mode: `scoop uninstall 3.12 --cascade --force`
+- JSON output for automation: `scoop uninstall 3.12 --cascade --json`
+
+Important detail:
+
+- Without `--cascade`, environments are not removed and can become broken.
+
+## Given Scoop-uv's auto-activation feature, how would a developer temporarily disable or customize its behavior for a specific project or directory without affecting global settings?
+
+Use one of these local or temporary patterns:
+
+```bash
+# Option 1) Disable auto-activation only in the current shell session
+export SCOOP_NO_AUTO=1
+# ...work here...
+unset SCOOP_NO_AUTO
+
+# Option 2) For one project directory, force system Python locally
+cd ~/project
+scoop use system
+
+# Option 3) For one project directory, pin a specific environment locally
+scoop use myproject
+
+# Option 4) Temporary override in this terminal only (no file changes)
+scoop shell system
+# ...test...
+scoop shell --unset
+```
+
+Notes:
+
+- These approaches avoid `--global`, so global defaults are unchanged.
+- `.scoop-version` changes from `scoop use ...` are local to the project directory (and inherited by subdirectories).
+- `scoop shell ...` affects only the current terminal session.
+
+## Once a Scoop-uv environment is active, how would you install project dependencies from a `requirements.txt` file into it?
+
+Run pip inside the active environment:
+
+```bash
+# Prompt shows active environment, e.g. (myproject)
+pip install -r requirements.txt
+```
+
+Useful variants:
+
+- Different file location: `pip install -r path/to/requirements.txt`
+- Verify installed dependencies: `pip list`
+
+If `requirements.txt` is in the project root, run the command from that directory.
+
+## How can a developer list all Python versions and their associated virtual environments currently managed by Scoop-uv?
+
+Use this sequence:
+
+```bash
+# 1) Show all managed Python versions
+scoop list --pythons
+
+# 2) Show all environments and their Python versions
+scoop list
+
+# 3) Show environments for one specific Python version
+scoop list --python-version 3.12
+```
+
+For automation:
+
+- Use `--json` for machine-readable output.
+- Use `--bare` for name-only output in shell scripts.
+
+Example script to iterate each Python version and print associated environments:
+
+```bash
+for v in $(scoop list --pythons --bare); do
+  echo "== Python $v =="
+  scoop list --python-version "$v" --bare
+done
+```
+
+If no versions or environments exist yet, these commands simply return empty results.
+
+## If a project requires a Python version not directly available through Scoop-uv's default sources, how could a developer integrate a custom or pre-existing Python installation into Scoop-uv's management system?
+
+Use one of these two approaches:
+
+```bash
+# Option 1) Recommended: point directly to a Python executable
+scoop create myenv --python-path /opt/python-debug/bin/python3
+
+# Option 2) Add custom Python to PATH, then use normal version selection
+export PATH="/opt/python-debug/bin:$PATH"
+scoop create myenv 3.13
+```
+
+Validation and diagnostics:
+
+```bash
+uv python list      # confirm interpreter discovery
+scoop info myenv    # confirm selected Python + Python Path
+scoop doctor -v     # detect broken links/metadata issues
+```
+
+Where scoop stores this integration:
+
+- Environment metadata file: `~/.scoop/virtualenvs/myenv/.scoop-metadata.json`
+- Custom interpreter path is recorded in the `python_path` field.
+
 ## Can I use scoop with conda environments?
 
 Not directly. They serve different purposes and operate independently:

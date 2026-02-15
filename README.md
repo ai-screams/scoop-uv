@@ -85,7 +85,7 @@ scoop create myproject 3.12
 
 # 4. Use it (auto-activates when you enter the directory!)
 scoop use myproject
-(myproject) $ pip install requests
+(myproject) $ pip install -r requirements.txt
 ```
 
 **That's it!** 🎉 Your environment is ready. For detailed docs, see **[Full Documentation →](https://ai-screams.github.io/scoop-uv/)**
@@ -102,6 +102,87 @@ scoop use py311 --global
 
 This writes `py311` to `~/.scoop/version`.
 Priority still applies: `SCOOP_VERSION` (shell override) and local `.scoop-version` take precedence.
+
+### Create a Project Env with Python 3.9.5
+
+Use this when you want a new project environment pinned to an exact Python patch version:
+
+```bash
+scoop install 3.9.5
+scoop create myproject 3.9.5
+scoop info myproject
+```
+
+If `3.9.5` is missing, check available versions with `uv python list` and
+`scoop list --pythons`, then install and retry.
+
+### Uninstall Python + Associated Envs
+
+Use this to remove one Python version and every environment using it:
+
+```bash
+# Optional preview
+scoop list --python-version 3.12
+
+# Remove Python 3.12 and all dependent environments
+scoop uninstall 3.12 --cascade
+
+# Verify cleanup
+scoop list --pythons
+scoop doctor
+```
+
+For CI/scripts, add `--force` to skip confirmation.
+
+### List Python Versions + Associated Envs
+
+Use this to inspect what scoop currently manages:
+
+```bash
+# All managed Python versions
+scoop list --pythons
+
+# All environments and their Python versions
+scoop list
+
+# Environments associated with one Python version
+scoop list --python-version 3.12
+```
+
+For scripts, use `--json` or `--bare`.
+
+### Integrate Custom or Pre-Existing Python
+
+If the required version is not available from default scoop/uv sources:
+
+```bash
+# Recommended: explicit interpreter path
+scoop create myenv --python-path /opt/python-debug/bin/python3
+
+# Alternative: PATH-based discovery
+export PATH="/opt/python-debug/bin:$PATH"
+scoop create myenv 3.13
+```
+
+Verify integration with `uv python list`, `scoop info myenv`, and `scoop doctor -v`.
+
+### Project-Scoped Auto-Activation Control
+
+Need temporary or directory-specific behavior without touching global settings?
+
+```bash
+# Temporary: current shell only
+export SCOOP_NO_AUTO=1
+unset SCOOP_NO_AUTO
+
+# Directory-local behavior (writes .scoop-version in current directory)
+scoop use system      # force system Python for this project
+scoop use myproject   # pin this project to a specific env
+
+# Terminal-only override (no file changes)
+scoop shell system
+scoop shell --unset
+```
 
 ---
 

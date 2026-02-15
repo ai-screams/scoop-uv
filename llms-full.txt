@@ -177,6 +177,107 @@ scoop use py311 --global
 `--global` writes the environment name (`py311`) to `~/.scoop/version`.
 If `SCOOP_VERSION` or local `.scoop-version` exists, that value takes precedence.
 
+**Create Project Environment with Python 3.9.5**:
+
+Use an exact-version workflow:
+
+```bash
+scoop install 3.9.5
+scoop create myproject 3.9.5
+scoop info myproject
+```
+
+If `3.9.5` is missing, run `uv python list` and `scoop list --pythons`, then
+install `3.9.5` and retry.
+
+**Uninstall Python Version + Associated Environments**:
+
+Use `--cascade` for full cleanup:
+
+```bash
+scoop list --python-version 3.12
+scoop uninstall 3.12 --cascade
+scoop list --pythons
+scoop doctor
+```
+
+Use `--force` to skip the cascade confirmation prompt in automation.
+Without `--cascade`, dependent environments remain and can become broken.
+
+**Temporarily Disable or Customize Auto-Activation (Project/Directory Scope)**:
+
+Use non-global controls:
+
+```bash
+# Disable auto-activation in current shell only
+export SCOOP_NO_AUTO=1
+unset SCOOP_NO_AUTO
+
+# Project-local behavior via .scoop-version
+scoop use system
+scoop use myproject
+
+# Terminal-only override (no file writes)
+scoop shell system
+scoop shell --unset
+```
+
+Do not use `--global` if you only want project-scoped behavior.
+
+**Install Dependencies from requirements.txt (Active Environment)**:
+
+After activating an environment, install project dependencies with:
+
+```bash
+pip install -r requirements.txt
+```
+
+Use `pip install -r path/to/requirements.txt` for alternate paths.
+Verify with `pip list`.
+
+**List Python Versions + Associated Environments**:
+
+Use this sequence:
+
+```bash
+scoop list --pythons
+scoop list
+scoop list --python-version 3.12
+```
+
+For automation, use `--json`.
+For shell loops, use `--bare` and iterate versions:
+
+```bash
+for v in $(scoop list --pythons --bare); do
+  scoop list --python-version "$v" --bare
+done
+```
+
+**Integrate Custom or Pre-Existing Python (When Default Sources Miss a Version)**:
+
+Use one of these:
+
+```bash
+# Recommended: explicit interpreter path
+scoop create myenv --python-path /opt/python-debug/bin/python3
+
+# Alternative: PATH-based discovery
+export PATH="/opt/python-debug/bin:$PATH"
+scoop create myenv 3.13
+```
+
+Verification workflow:
+
+```bash
+uv python list
+scoop info myenv
+scoop doctor -v
+```
+
+The custom interpreter path is persisted in
+`~/.scoop/virtualenvs/<name>/.scoop-metadata.json` as `python_path`.
+
 **Shell Type Detection**:
 1. `FISH_VERSION` env → Fish
 2. `PSModulePath` env → PowerShell
