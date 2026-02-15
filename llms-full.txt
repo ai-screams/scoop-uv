@@ -1,0 +1,599 @@
+# scoop — Full Reference
+
+> Centralized Python virtual environment manager — pyenv-style workflow powered by uv
+
+- Package: scoop-uv (binary name: `scoop`)
+- Language: Rust, Edition 2024, MSRV 1.85
+- License: MIT OR Apache-2.0
+- Repository: https://github.com/ai-screams/scoop-uv
+- Documentation: https://ai-screams.github.io/scoop-uv/
+
+---
+
+## Installation
+
+Prerequisites:
+- [uv](https://github.com/astral-sh/uv): `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- Rust 1.85+: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+
+```bash
+cargo install scoop-uv
+```
+
+### Shell Setup
+
+```bash
+# Bash
+echo 'eval "$(scoop init bash)"' >> ~/.bashrc
+
+# Zsh
+echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
+
+# Fish
+echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
+
+# PowerShell
+Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
+```
+
+Verify: `scoop --version`
+
+---
+
+## CLI Commands
+
+### Everyday Usage
+
+| Command | Description |
+|---------|-------------|
+| `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scoop use <name>` | Set + activate environment |
+| `scoop use <name> --link` | Also create `.venv` symlink for IDE |
+| `scoop use <name> --global` | Set as global default |
+| `scoop use system` | Deactivate, use system Python |
+| `scoop use --unset` | Remove version file |
+| `scoop list` | List virtualenvs (aliases: `ls`) |
+| `scoop list --pythons` | List installed Python versions |
+| `scoop list --bare` | List names only (for scripting) |
+| `scoop info <name>` | Show virtualenv details |
+| `scoop remove <name>` | Delete virtualenv (aliases: `rm`, `delete`) |
+
+### Python Management
+
+| Command | Description |
+|---------|-------------|
+| `scoop install [version]` | Install Python version via uv |
+| `scoop install --stable` | Install oldest supported Python (3.10) |
+| `scoop uninstall <version>` | Remove Python version |
+
+### Health Check
+
+| Command | Description |
+|---------|-------------|
+| `scoop doctor` | Run all health checks |
+| `scoop doctor --fix` | Auto-fix issues where possible |
+| `scoop doctor --json` | Output diagnostics as JSON |
+
+### Migration
+
+| Command | Description |
+|---------|-------------|
+| `scoop migrate list` | Show environments to migrate |
+| `scoop migrate @<name>` | Migrate a single environment |
+| `scoop migrate --all` | Migrate all environments |
+
+Supported sources: pyenv-virtualenv, virtualenvwrapper, conda
+
+### Shell Integration
+
+| Command | Description |
+|---------|-------------|
+| `scoop init <shell>` | Output shell init script |
+| `scoop completions <shell>` | Generate completion script |
+| `scoop shell <name>` | Set shell-specific env (temporary, eval required) |
+| `scoop shell --unset` | Clear shell-specific setting |
+
+### Language
+
+| Command | Description |
+|---------|-------------|
+| `scoop lang` | Show current language |
+| `scoop lang <code>` | Set language (en, ko, ja, pt-BR) |
+| `scoop lang --list` | List supported languages |
+| `scoop lang --reset` | Reset to system default |
+
+### Global Options
+
+- `--quiet`: Minimal output
+- `--no-color`: Disable colors (also respects `NO_COLOR` env var)
+- `--json`: JSON output (available on most commands)
+- `-h` / `--help`: Show help
+- `-V` / `--version`: Show version
+
+---
+
+## Architecture
+
+```
+src/
+├── cli/           # CLI parsing (clap)
+│   ├── mod.rs     # Cli struct, Commands enum, ShellType
+│   └── commands/  # Subcommand handlers (execute functions)
+│       ├── use_env/   # Use command (normal, system, unset, symlink)
+│       └── migrate/   # Migration subcommands (list, single, batch)
+├── core/          # Domain logic
+│   ├── version.rs     # Version file resolution (.scoop-version)
+│   ├── metadata.rs    # Virtualenv metadata (JSON)
+│   ├── virtualenv.rs  # VirtualenvService (CRUD operations)
+│   ├── doctor.rs      # Health check (Doctor, Check trait)
+│   └── migrate/       # Migration from pyenv/conda/virtualenvwrapper
+├── shell/         # Shell integration (bash, zsh, fish, powershell)
+│   ├── bash.rs, zsh.rs, fish.rs, powershell.rs
+│   └── common.rs  # Shared utilities and macros
+├── uv/            # uv CLI wrapper
+│   └── client.rs  # UvClient struct
+├── output/        # Terminal UI & JSON output
+│   ├── mod.rs     # Output struct
+│   ├── json.rs    # JSON response types
+│   └── spinner.rs # Progress indicator
+├── error.rs       # ScoopError enum (25 variants, i18n Display)
+├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
+├── validate.rs    # Validation logic (env names, Python versions)
+├── i18n.rs        # Internationalization (locale detection, t! macro)
+└── config.rs      # Config management (~/.config/scoop/config.toml)
+
+locales/
+└── app.yml        # Translation strings (en, ko, ja, pt-BR) — 115 keys
+```
+
+### Design Principles
+
+**Shell Integration Pattern**: CLI outputs shell code to stdout; shell function uses
+`eval` to execute it (same pattern as pyenv). This avoids modifying the parent shell
+process directly.
+
+**Version File Priority**:
+1. `SCOOP_VERSION` env var (set by `scoop shell`)
+2. `.scoop-version` in current directory
+3. `.scoop-version` in parent directories (walks up)
+4. `~/.scoop/version` (global default)
+
+**Shell Type Detection**:
+1. `FISH_VERSION` env → Fish
+2. `PSModulePath` env → PowerShell
+3. `ZSH_VERSION` env → Zsh
+4. Default → Bash
+
+Override with `--shell` option on `init` and `completions` commands.
+
+---
+
+## API Reference
+
+### Core Types
+
+#### VirtualenvInfo
+
+```rust
+pub struct VirtualenvInfo {
+    pub name: String,
+    pub path: PathBuf,
+    pub python_version: Option<String>,
+}
+```
+
+#### VirtualenvService
+
+Primary service for virtualenv operations.
+
+```rust
+pub struct VirtualenvService {
+    uv: UvClient,
+}
+
+impl VirtualenvService {
+    pub fn new(uv: UvClient) -> Self;
+    pub fn auto() -> Result<Self>;            // Find uv automatically
+    pub fn list(&self) -> Result<Vec<VirtualenvInfo>>;
+    pub fn create(&self, name: &str, python_version: &str) -> Result<PathBuf>;
+    pub fn delete(&self, name: &str) -> Result<()>;
+    pub fn exists(&self, name: &str) -> Result<bool>;
+    pub fn get_path(&self, name: &str) -> Result<PathBuf>;
+    pub fn read_metadata(&self, path: &Path) -> Option<Metadata>;
+}
+```
+
+Usage:
+```rust
+let service = VirtualenvService::auto()?;
+if !service.exists("myenv")? {
+    service.create("myenv", "3.12")?;
+}
+let path = service.get_path("myenv")?;
+```
+
+#### Metadata
+
+```rust
+pub struct Metadata {
+    pub name: String,
+    pub python_version: String,
+    pub created_at: DateTime<Utc>,
+    pub created_by: String,          // "scoop X.Y.Z"
+    pub uv_version: Option<String>,
+}
+
+impl Metadata {
+    pub fn new(name: String, python_version: String, uv_version: Option<String>) -> Self;
+}
+```
+
+Storage: `~/.scoop/virtualenvs/<name>/.scoop-metadata.json`
+
+#### VersionService
+
+```rust
+pub struct VersionService;
+
+impl VersionService {
+    pub fn set_local(dir: &Path, env_name: &str) -> Result<()>;
+    pub fn set_global(env_name: &str) -> Result<()>;
+    pub fn get_local(dir: &Path) -> Option<String>;
+    pub fn get_global() -> Option<String>;
+    pub fn resolve(dir: &Path) -> Option<String>;  // local → parent walk → global
+    pub fn resolve_current() -> Option<String>;
+    pub fn unset_local(dir: &Path) -> Result<()>;
+    pub fn unset_global() -> Result<()>;
+}
+```
+
+#### Doctor (Health Check)
+
+```rust
+pub trait Check: Send + Sync {
+    fn id(&self) -> &'static str;
+    fn name(&self) -> &'static str;
+    fn run(&self) -> Vec<CheckResult>;
+}
+
+pub struct Doctor {
+    checks: Vec<Box<dyn Check>>,
+}
+
+impl Doctor {
+    pub fn new() -> Self;
+    pub fn run_all(&self) -> Vec<CheckResult>;
+    pub fn run_and_fix(&self, output: &Output) -> Vec<CheckResult>;
+}
+```
+
+Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck
+
+#### UvClient
+
+```rust
+pub struct PythonInfo {
+    pub version: String,
+    pub path: Option<PathBuf>,
+    pub installed: bool,
+    pub implementation: String,
+}
+
+pub struct UvClient {
+    path: PathBuf,
+}
+
+impl UvClient {
+    pub fn new() -> Result<Self>;               // Find uv in PATH
+    pub fn with_path(path: PathBuf) -> Self;
+    pub fn version(&self) -> Result<String>;
+    pub fn create_venv(&self, path: &Path, python_version: &str) -> Result<()>;
+    pub fn install_python(&self, version: &str) -> Result<()>;
+    pub fn uninstall_python(&self, version: &str) -> Result<()>;
+    pub fn list_pythons(&self) -> Result<Vec<String>>;
+    pub fn list_installed_pythons(&self) -> Result<Vec<PythonInfo>>;
+    pub fn find_python(&self, version: &str) -> Result<PythonInfo>;
+    pub fn pip_install(&self, venv_path: &Path, packages: &[&str]) -> Result<()>;
+    pub fn pip_install_requirements(&self, venv_path: &Path, req_file: &Path) -> Result<()>;
+    pub fn latest_installed_python(&self) -> Result<PythonInfo>;
+}
+```
+
+### Shell Types
+
+```rust
+pub enum ShellType {
+    Bash,
+    Zsh,
+    Fish,
+    Powershell,
+}
+```
+
+### Shell Functions
+
+```rust
+pub fn detect_shell() -> ShellType;
+pub fn print_activate_script(shell: ShellType, venv_path: &Path, bin_path: &Path, name: &str);
+pub fn print_deactivate_script(shell: ShellType);
+pub fn print_unset_scoop_version(shell: ShellType);
+pub fn print_export_scoop_version(shell: ShellType, value: &str);
+```
+
+### Path Utilities
+
+```rust
+pub const SCOOP_HOME_ENV: &str = "SCOOP_HOME";
+pub const VERSION_FILE: &str = ".scoop-version";
+
+pub fn scoop_home() -> Result<PathBuf>;             // SCOOP_HOME or ~/.scoop
+pub fn virtualenvs_dir() -> Result<PathBuf>;
+pub fn pythons_dir() -> Result<PathBuf>;
+pub fn global_version_file() -> Result<PathBuf>;
+pub fn local_version_file(dir: &Path) -> PathBuf;
+pub fn virtualenv_path(name: &str) -> Result<PathBuf>;
+pub fn virtualenv_bin(name: &str) -> Result<PathBuf>;
+pub fn virtualenv_python(name: &str) -> Result<PathBuf>;
+pub fn virtualenv_activate(name: &str) -> Result<PathBuf>;
+pub fn ensure_scoop_dirs() -> Result<()>;
+pub fn virtualenv_exists(name: &str) -> Result<bool>;
+pub fn calculate_dir_size(path: &Path) -> std::io::Result<u64>;
+pub fn abbreviate_home(path: &Path) -> String;
+```
+
+### Validation
+
+```rust
+pub fn is_valid_env_name(name: &str) -> bool;
+pub fn validate_env_name(name: &str) -> Result<()>;
+pub fn is_valid_python_version(version: &str) -> bool;
+pub fn validate_python_version(version: &str) -> Result<()>;
+pub fn parse_python_version(version: &str) -> Result<PythonVersion>;
+pub fn normalize_python_version(version: &str) -> String;
+```
+
+Environment name rules:
+- Pattern: `^[a-zA-Z][a-zA-Z0-9_-]*$`
+- Max length: 64 characters
+- Must start with a letter
+- Cannot be reserved words
+
+Python version rules:
+- Pattern: `^\d+(\.\d+)*((a|b|rc)\d+)?$`
+- Examples: `3`, `3.12`, `3.12.0`, `3.12.0a1`, `3.12.0rc1`
+
+### Output
+
+```rust
+pub struct Output {
+    verbose: u8,
+    quiet: bool,
+    no_color: bool,
+    json: bool,
+}
+
+impl Output {
+    pub fn new(verbose: u8, quiet: bool, no_color: bool, json: bool) -> Self;
+    pub fn success(&self, msg: &str);
+    pub fn error(&self, msg: &str);
+    pub fn info(&self, msg: &str);
+    pub fn warn(&self, msg: &str);
+    pub fn debug(&self, msg: &str);
+    pub fn println(&self, msg: &str);
+    pub fn is_json(&self) -> bool;
+    pub fn is_quiet(&self) -> bool;
+    pub fn use_color(&self) -> bool;
+    pub fn json_success<T: Serialize>(&self, command: &'static str, data: T);
+    pub fn json_error(&self, command: &'static str, error: &ScoopError);
+}
+
+pub fn format_size(bytes: u64) -> String;
+```
+
+### i18n
+
+```rust
+pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
+    ("en", "English"),
+    ("ko", "한국어"),
+    ("pt-BR", "Português (Brasil)"),
+    ("ja", "日本語"),
+];
+
+pub fn init();                           // Initialize locale on startup
+pub fn detect_locale() -> String;
+pub fn current() -> String;
+pub fn is_supported(lang: &str) -> bool;
+pub fn language_name(code: &str) -> Option<&'static str>;
+```
+
+Locale priority: `SCOOP_LANG` env → `~/.config/scoop/config.toml` → system locale → `en`
+
+Usage in code: `t!("key", arg = value)` macro from rust-i18n.
+
+### Config
+
+```rust
+pub struct Config {
+    pub lang: Option<String>,
+}
+
+impl Config {
+    pub fn path() -> Result<PathBuf>;       // ~/.scoop/config.json
+    pub fn load() -> Result<Self>;
+    pub fn save(&self) -> Result<()>;
+    pub fn set_lang(&mut self, lang: Option<String>);
+}
+```
+
+---
+
+## Error Handling
+
+### ScoopError
+
+All operations return `Result<T>` where `type Result<T> = std::result::Result<T, ScoopError>`.
+
+```rust
+#[derive(Error, Debug)]
+pub enum ScoopError {
+    // Virtualenv errors
+    VirtualenvNotFound { name: String },
+    VirtualenvExists { name: String },
+    InvalidEnvName { name: String, reason: String },
+
+    // Python errors
+    InvalidPythonVersion { version: String },
+    PythonNotInstalled { version: String },
+    PythonInstallFailed { version: String, message: String },
+    PythonUninstallFailed { version: String, message: String },
+    NoPythonVersions { pattern: String },
+
+    // uv errors
+    UvNotFound,
+    UvCommandFailed { command: String, message: String },
+
+    // Path/IO errors
+    PathError(String),
+    HomeNotFound,
+    Io(std::io::Error),
+    Json(serde_json::Error),
+
+    // Config errors
+    VersionFileNotFound { path: PathBuf },
+    UnsupportedShell { shell: String },
+    InvalidArgument { message: String },
+
+    // Migration errors
+    PyenvNotFound,
+    PyenvEnvNotFound { name: String },
+    VenvWrapperEnvNotFound { name: String },
+    CondaEnvNotFound { name: String },
+    CorruptedEnvironment { name: String, reason: String },
+    PackageExtractionFailed { reason: String },
+    MigrationFailed { reason: String },
+    MigrationNameConflict { name: String, existing: PathBuf },
+}
+
+impl ScoopError {
+    pub fn code(&self) -> &'static str;                    // e.g., "ENV_NOT_FOUND"
+    pub fn suggestion(&self) -> Option<String>;            // User-friendly fix suggestion
+    pub fn migration_exit_code(&self) -> MigrationExitCode;
+}
+```
+
+Error code prefixes: `ENV_*`, `PYTHON_*`, `UV_*`, `IO_*`, `CONFIG_*`, `SHELL_*`, `ARG_*`, `SOURCE_*`, `MIGRATE_*`
+
+Display uses i18n via manual `Display` impl with `t!()` macro for all user-facing messages.
+
+### MigrationExitCode
+
+```rust
+pub enum MigrationExitCode {
+    Success = 0,
+    PartialSuccess = 1,
+    CompleteFailure = 2,
+    SourceError = 3,
+}
+```
+
+---
+
+## JSON Output Format
+
+Success response:
+```json
+{
+  "status": "success",
+  "command": "list",
+  "data": { ... }
+}
+```
+
+Error response:
+```json
+{
+  "status": "error",
+  "command": "create",
+  "error": {
+    "code": "ENV_ALREADY_EXISTS",
+    "message": "Virtual environment 'myenv' already exists",
+    "suggestion": "Use a different name or remove the existing environment"
+  }
+}
+```
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `SCOOP_HOME` | Override home directory (default: `~/.scoop`) |
+| `SCOOP_VERSION` | Override version resolution (set by `scoop shell`) |
+| `SCOOP_LANG` | Override language |
+| `SCOOP_NO_AUTO` | Disable auto-activation when set to `1` |
+| `SCOOP_ACTIVE` | Set when a virtualenv is active (internal) |
+| `SCOOP_RESOLVE_MAX_DEPTH` | Limit parent directory traversal (for NFS/SSHFS) |
+| `NO_COLOR` | Disable colored output (standard) |
+| `VIRTUAL_ENV` | Standard Python virtualenv path (set on activation) |
+
+---
+
+## Extending scoop
+
+### Adding a New Command
+
+1. Add variant to `Commands` enum in `cli/mod.rs`
+2. Create handler in `cli/commands/<name>.rs` with `pub fn execute(...) -> Result<()>`
+3. Re-export in `cli/commands/mod.rs`
+4. Wire up in `main.rs` match statement
+
+### Adding a New Health Check
+
+1. Implement the `Check` trait in `core/doctor.rs`
+2. Register in `Doctor::new()` checks vector
+
+### Adding a New Migration Source
+
+1. Implement `EnvironmentSource` trait in `core/migrate/`
+2. Add variant to `MigrateSource` enum
+3. Register in discovery module
+
+### Adding Translations
+
+1. Add keys to `locales/app.yml` under all 4 language sections
+2. Use via `t!("key", arg = value)` macro
+
+---
+
+## Testing
+
+- 579 tests (520 unit + 43 integration + 16 doctest), 0 clippy warnings
+- Unit tests: inline `mod tests` blocks in each source file
+- Integration tests: `tests/cli.rs` with `assert_cmd` + `predicates`
+- Test isolation: `tests/common::TestFixture` for `SCOOP_HOME` isolation
+- Property-based: `proptest` for validation logic
+
+```bash
+cargo test                                                    # All tests
+cargo test <name>                                             # Single test
+cargo clippy --all-targets --all-features -- -D warnings      # Lint
+cargo fmt --check                                             # Format check
+```
+
+---
+
+## MSRV Policy
+
+N-1 policy: supports current stable Rust + one previous version.
+Current MSRV: 1.85 (required by Edition 2024, cannot go lower).
+
+---
+
+## Links
+
+- Repository: https://github.com/ai-screams/scoop-uv
+- Documentation: https://ai-screams.github.io/scoop-uv/
+- Crates.io: https://crates.io/crates/scoop-uv
+- API Reference: https://docs.rs/scoop-uv
