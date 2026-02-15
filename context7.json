@@ -1,4 +1,6 @@
 {
+  "url": "https://context7.com/ai-screams/scoop-uv",
+  "public_key": "pk_ZQZFyT7POrCDe0fKgNLzM",
   "projectTitle": "scoop",
   "description": "Centralized Python virtual environment manager — pyenv-style workflow powered by uv. Written in Rust.",
   "branch": "main",
