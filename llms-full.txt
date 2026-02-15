@@ -254,6 +254,30 @@ for v in $(scoop list --pythons --bare); do
 done
 ```
 
+**Integrate Custom or Pre-Existing Python (When Default Sources Miss a Version)**:
+
+Use one of these:
+
+```bash
+# Recommended: explicit interpreter path
+scoop create myenv --python-path /opt/python-debug/bin/python3
+
+# Alternative: PATH-based discovery
+export PATH="/opt/python-debug/bin:$PATH"
+scoop create myenv 3.13
+```
+
+Verification workflow:
+
+```bash
+uv python list
+scoop info myenv
+scoop doctor -v
+```
+
+The custom interpreter path is persisted in
+`~/.scoop/virtualenvs/<name>/.scoop-metadata.json` as `python_path`.
+
 **Shell Type Detection**:
 1. `FISH_VERSION` env → Fish
 2. `PSModulePath` env → PowerShell

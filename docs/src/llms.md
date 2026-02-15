@@ -129,6 +129,21 @@ Use `--json` for automation and `--bare` for script-friendly output.
 For full mapping in shell scripts, iterate versions from `scoop list --pythons --bare`
 and query each with `scoop list --python-version <VERSION> --bare`.
 
+### Integrate Custom or Pre-Existing Python
+
+```bash
+# Preferred: explicit interpreter path
+scoop create myenv --python-path /opt/python-debug/bin/python3
+
+# Alternative: make interpreter discoverable via PATH
+export PATH="/opt/python-debug/bin:$PATH"
+scoop create myenv 3.13
+```
+
+Verify with `uv python list`, `scoop info myenv`, and `scoop doctor -v`.
+Custom interpreter path is stored in `~/.scoop/virtualenvs/<name>/.scoop-metadata.json`
+(`python_path` field).
+
 ### Version Files
 
 Priority (first match wins):

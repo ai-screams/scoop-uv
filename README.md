@@ -151,6 +151,21 @@ scoop list --python-version 3.12
 
 For scripts, use `--json` or `--bare`.
 
+### Integrate Custom or Pre-Existing Python
+
+If the required version is not available from default scoop/uv sources:
+
+```bash
+# Recommended: explicit interpreter path
+scoop create myenv --python-path /opt/python-debug/bin/python3
+
+# Alternative: PATH-based discovery
+export PATH="/opt/python-debug/bin:$PATH"
+scoop create myenv 3.13
+```
+
+Verify integration with `uv python list`, `scoop info myenv`, and `scoop doctor -v`.
+
 ### Project-Scoped Auto-Activation Control
 
 Need temporary or directory-specific behavior without touching global settings?

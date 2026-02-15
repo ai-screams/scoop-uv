@@ -171,6 +171,32 @@ done
 
 If no versions or environments exist yet, these commands simply return empty results.
 
+## If a project requires a Python version not directly available through Scoop-uv's default sources, how could a developer integrate a custom or pre-existing Python installation into Scoop-uv's management system?
+
+Use one of these two approaches:
+
+```bash
+# Option 1) Recommended: point directly to a Python executable
+scoop create myenv --python-path /opt/python-debug/bin/python3
+
+# Option 2) Add custom Python to PATH, then use normal version selection
+export PATH="/opt/python-debug/bin:$PATH"
+scoop create myenv 3.13
+```
+
+Validation and diagnostics:
+
+```bash
+uv python list      # confirm interpreter discovery
+scoop info myenv    # confirm selected Python + Python Path
+scoop doctor -v     # detect broken links/metadata issues
+```
+
+Where scoop stores this integration:
+
+- Environment metadata file: `~/.scoop/virtualenvs/myenv/.scoop-metadata.json`
+- Custom interpreter path is recorded in the `python_path` field.
+
 ## Can I use scoop with conda environments?
 
 Not directly. They serve different purposes and operate independently:
