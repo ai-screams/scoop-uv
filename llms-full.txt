@@ -597,3 +597,4 @@ Current MSRV: 1.85 (required by Edition 2024, cannot go lower).
 - Documentation: https://ai-screams.github.io/scoop-uv/
 - Crates.io: https://crates.io/crates/scoop-uv
 - API Reference: https://docs.rs/scoop-uv
+- Concise LLM Reference: See llms.txt in this repository

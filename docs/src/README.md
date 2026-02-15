@@ -41,8 +41,8 @@ scoop list
 - **Fast** — Powered by uv, virtualenv creation is nearly instant
 - **Centralized** — All environments live in `~/.scoop/virtualenvs/`
 - **Auto-activation** — Enter a directory, environment activates automatically
-- **Shell integration** — Works with bash and zsh
-- **pyenv compatible** — Reads `.python-version` files
+- **Shell integration** — Works with bash, zsh, fish, and PowerShell
+- **IDE friendly** — `scoop use --link` creates `.venv` symlink for IDE discovery
 - **Health checks** — `scoop doctor` diagnoses your setup
 
 ## Getting Started
@@ -51,6 +51,8 @@ Ready to scoop? Head to the [Installation](installation.md) guide to get started
 
 ## Links
 
-- [GitHub Repository](https://github.com/ai-screams/uvenv)
+- [GitHub Repository](https://github.com/ai-screams/scoop-uv)
 - [API Reference (docs.rs)](https://docs.rs/scoop-uv)
 - [Crates.io](https://crates.io/crates/scoop-uv)
+- [llms.txt](https://github.com/ai-screams/scoop-uv/blob/main/llms.txt) — AI/LLM-friendly project reference
+- [llms-full.txt](https://github.com/ai-screams/scoop-uv/blob/main/llms-full.txt) — Full API reference for AI tools
