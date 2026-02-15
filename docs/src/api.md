@@ -486,6 +486,20 @@ impl VersionService {
 }
 ```
 
+**CLI Equivalent (User Workflow):**
+
+`VersionService::set_global()` is exposed by the `scoop use <name> --global` command.
+To set Python 3.11.0 as the global default in practice:
+
+```bash
+scoop install 3.11.0
+scoop create py311 3.11.0
+scoop use py311 --global
+```
+
+This writes `py311` to `~/.scoop/version`. The global value is used when no local
+`.scoop-version` or `SCOOP_VERSION` override is present.
+
 **Resolution Priority Order:**
 1. `SCOOP_VERSION` environment variable (checked at shell hook level, not in VersionService)
 2. `.scoop-version` in current directory

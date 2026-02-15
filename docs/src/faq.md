@@ -14,6 +14,33 @@ While both tools help you manage Python, they focus on different parts of the wo
 
 > **Summary:** You might use pyenv to install Python 3.11 on your machine, but you use scoop to actually build and run your application within a lightning-fast virtual environment using that Python version.
 
+## How do I set Python 3.11.0 as the global default for all new shells and environments?
+
+Use this workflow:
+
+```bash
+# 1) Install Python 3.11.0 (skip if already available on your system)
+scoop install 3.11.0
+
+# 2) Create an environment that uses 3.11.0
+scoop create py311 3.11.0
+
+# 3) Make that environment the global default
+scoop use py311 --global
+```
+
+Important details:
+
+- `--global` stores an environment name in `~/.scoop/version`, not a raw version like `3.11.0`.
+- This global default is applied in new shells and directories without a local `.scoop-version`.
+- Priority is: `SCOOP_VERSION` env var > local `.scoop-version` > global `~/.scoop/version`.
+
+To remove the global default later:
+
+```bash
+scoop use --unset --global
+```
+
 ## Can I use scoop with conda environments?
 
 Not directly. They serve different purposes and operate independently:

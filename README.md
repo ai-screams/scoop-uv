@@ -90,6 +90,19 @@ scoop use myproject
 
 **That's it!** 🎉 Your environment is ready. For detailed docs, see **[Full Documentation →](https://ai-screams.github.io/scoop-uv/)**
 
+### Set Python 3.11.0 as Global Default
+
+Use this when you want new shell sessions to default to an environment built on Python 3.11.0:
+
+```bash
+scoop install 3.11.0
+scoop create py311 3.11.0
+scoop use py311 --global
+```
+
+This writes `py311` to `~/.scoop/version`.
+Priority still applies: `SCOOP_VERSION` (shell override) and local `.scoop-version` take precedence.
+
 ---
 
 ## Installation 🍨
