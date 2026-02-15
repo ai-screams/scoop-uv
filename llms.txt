@@ -50,7 +50,9 @@ scoop remove myproject        # Delete a virtualenv
 |---------|-------------|
 | `scoop list` | List virtualenvs (aliases: `ls`) |
 | `scoop list --pythons` | List installed Python versions |
+| `scoop list --python-version <VER>` | Filter environments by Python version |
 | `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scoop create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
 | `scoop use <name>` | Set + activate environment |
 | `scoop use <name> --global` | Set as global default |
 | `scoop use <name> --link` | Also create `.venv` symlink for IDE |
@@ -59,6 +61,7 @@ scoop remove myproject        # Delete a virtualenv
 | `scoop remove <name>` | Delete virtualenv (aliases: `rm`, `delete`) |
 | `scoop install [version]` | Install Python version |
 | `scoop uninstall <version>` | Remove Python version |
+| `scoop uninstall <version> --cascade` | Remove Python version + all environments using it |
 | `scoop info <name>` | Show virtualenv details |
 | `scoop doctor` | Health check |
 | `scoop doctor --fix` | Auto-fix issues |

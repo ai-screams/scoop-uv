@@ -2,6 +2,8 @@
 
 pub mod commands;
 
+use std::path::PathBuf;
+
 use clap::{ArgAction, Parser, Subcommand};
 
 /// scoop - Python virtual environment manager powered by uv
@@ -145,6 +147,10 @@ pub enum Commands {
         #[arg(long, hide = true)]
         bare: bool,
 
+        /// Filter environments by Python version (e.g., 3.12)
+        #[arg(long, value_name = "VERSION", conflicts_with = "pythons")]
+        python_version: Option<String>,
+
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -181,9 +187,13 @@ pub enum Commands {
         /// Name of the virtual environment
         name: String,
 
-        /// Python version to use (e.g., 3.12, 3.11.8)
+        /// Python version or specifier (e.g., 3.12, cpython@3.12, pypy@3.10)
         #[arg(default_value = "3")]
         python: String,
+
+        /// Path to a specific Python interpreter to use instead of a version
+        #[arg(long = "python-path", value_name = "PATH")]
+        python_path: Option<PathBuf>,
 
         /// Overwrite existing environment
         #[arg(short, long)]
@@ -233,6 +243,14 @@ pub enum Commands {
         /// Python version to uninstall
         #[arg(name = "VERSION")]
         python_version: String,
+
+        /// Also remove all virtual environments using this Python version
+        #[arg(long)]
+        cascade: bool,
+
+        /// Skip confirmation for cascade removal
+        #[arg(short, long, requires = "cascade")]
+        force: bool,
 
         /// Output as JSON
         #[arg(long)]

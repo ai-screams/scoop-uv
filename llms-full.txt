@@ -50,6 +50,7 @@ Verify: `scoop --version`
 | Command | Description |
 |---------|-------------|
 | `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scoop create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
 | `scoop use <name>` | Set + activate environment |
 | `scoop use <name> --link` | Also create `.venv` symlink for IDE |
 | `scoop use <name> --global` | Set as global default |
@@ -57,6 +58,7 @@ Verify: `scoop --version`
 | `scoop use --unset` | Remove version file |
 | `scoop list` | List virtualenvs (aliases: `ls`) |
 | `scoop list --pythons` | List installed Python versions |
+| `scoop list --python-version <VER>` | Filter environments by Python version |
 | `scoop list --bare` | List names only (for scripting) |
 | `scoop info <name>` | Show virtualenv details |
 | `scoop remove <name>` | Delete virtualenv (aliases: `rm`, `delete`) |
@@ -68,6 +70,7 @@ Verify: `scoop --version`
 | `scoop install [version]` | Install Python version via uv |
 | `scoop install --stable` | Install oldest supported Python (3.10) |
 | `scoop uninstall <version>` | Remove Python version |
+| `scoop uninstall <version> --cascade` | Remove Python version + all environments using it |
 
 ### Health Check
 
@@ -139,14 +142,14 @@ src/
 │   ├── mod.rs     # Output struct
 │   ├── json.rs    # JSON response types
 │   └── spinner.rs # Progress indicator
-├── error.rs       # ScoopError enum (25 variants, i18n Display)
+├── error.rs       # ScoopError enum (27 variants, i18n Display)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
 └── config.rs      # Config management (~/.scoop/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR) — 115 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR) — 136 keys
 ```
 
 ### Design Principles
@@ -199,6 +202,7 @@ impl VirtualenvService {
     pub fn auto() -> Result<Self>;            // Find uv automatically
     pub fn list(&self) -> Result<Vec<VirtualenvInfo>>;
     pub fn create(&self, name: &str, python_version: &str) -> Result<PathBuf>;
+    pub fn create_with_python_path(&self, name: &str, python_version: &str, python_path: &Path) -> Result<PathBuf>;
     pub fn delete(&self, name: &str) -> Result<()>;
     pub fn exists(&self, name: &str) -> Result<bool>;
     pub fn get_path(&self, name: &str) -> Result<PathBuf>;
@@ -224,6 +228,7 @@ pub struct Metadata {
     pub created_at: DateTime<Utc>,
     pub created_by: String,          // "scoop X.Y.Z"
     pub uv_version: Option<String>,
+    pub python_path: Option<String>, // Custom Python executable path (if --python-path was used)
 }
 
 impl Metadata {
@@ -353,6 +358,8 @@ pub fn is_valid_python_version(version: &str) -> bool;
 pub fn validate_python_version(version: &str) -> Result<()>;
 pub fn parse_python_version(version: &str) -> Result<PythonVersion>;
 pub fn normalize_python_version(version: &str) -> String;
+pub fn validate_python_path(path: &Path) -> Result<()>;       // Validate Python executable path
+pub fn detect_python_version(path: &Path) -> Option<String>;  // Detect version from Python binary
 ```
 
 Environment name rules:
@@ -476,6 +483,12 @@ pub enum ScoopError {
     PackageExtractionFailed { reason: String },
     MigrationFailed { reason: String },
     MigrationNameConflict { name: String, existing: PathBuf },
+
+    // Python path errors
+    InvalidPythonPath { path: PathBuf, reason: String },
+
+    // Cascade errors
+    CascadeAborted,
 }
 
 impl ScoopError {
@@ -485,7 +498,7 @@ impl ScoopError {
 }
 ```
 
-Error code prefixes: `ENV_*`, `PYTHON_*`, `UV_*`, `IO_*`, `CONFIG_*`, `SHELL_*`, `ARG_*`, `SOURCE_*`, `MIGRATE_*`
+Error code prefixes: `ENV_*`, `PYTHON_*`, `UV_*`, `IO_*`, `CONFIG_*`, `SHELL_*`, `ARG_*`, `SOURCE_*`, `MIGRATE_*`, `UNINSTALL_*`
 
 Display uses i18n via manual `Display` impl with `t!()` macro for all user-facing messages.
 

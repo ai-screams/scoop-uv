@@ -31,6 +31,8 @@
     "Supported shells: bash, zsh, fish, powershell.",
     "Supported languages: en, ko, ja, pt-BR. Set via `scoop lang <code>` or SCOOP_LANG env var.",
     "Version file priority: SCOOP_VERSION env > .scoop-version (local + parent walk) > ~/.scoop/version (global).",
+    "To set a specific Python version globally, create an environment with that version, then run `scoop use <env> --global`.",
+    "`scoop use --global` writes an environment name to ~/.scoop/version, not a raw Python version string.",
     ".python-version is NOT supported. Use .scoop-version for version pinning.",
     "Environment names must match ^[a-zA-Z][a-zA-Z0-9_-]*$ (max 64 chars, must start with letter).",
     "Most commands support --json for machine-readable output.",

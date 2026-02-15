@@ -13,28 +13,55 @@ use crate::uv::UvClient;
 use crate::validate::PythonVersion;
 
 /// Execute the list command
-pub fn execute(output: &Output, pythons: bool, bare: bool) -> Result<()> {
+pub fn execute(
+    output: &Output,
+    pythons: bool,
+    bare: bool,
+    python_version: Option<&str>,
+) -> Result<()> {
     if pythons {
         list_pythons(output, bare)
     } else {
-        list_virtualenvs(output, bare)
+        list_virtualenvs(output, bare, python_version)
     }
 }
 
 /// List virtual environments
-fn list_virtualenvs(output: &Output, bare: bool) -> Result<()> {
+fn list_virtualenvs(output: &Output, bare: bool, python_version: Option<&str>) -> Result<()> {
     use crate::core::VersionService;
+    use crate::validate::validate_python_version;
+
+    // Validate and parse version filter
+    let version_filter = if let Some(ver_str) = python_version {
+        validate_python_version(ver_str)?;
+        PythonVersion::parse(ver_str)
+    } else {
+        None
+    };
 
     let service = VirtualenvService::auto()?;
-    let envs = service.list()?;
+    let mut envs = service.list()?;
     let active_env = get_active_env();
+
+    // Apply python version filter
+    if let Some(ref filter) = version_filter {
+        envs.retain(|env| {
+            env.python_version
+                .as_ref()
+                .and_then(|v| PythonVersion::parse(v))
+                .is_some_and(|v| filter.matches(&v))
+        });
+    }
 
     // Check if "system" is the resolved version
     let resolved = VersionService::resolve_current();
     let system_active = resolved.as_deref() == Some("system");
 
-    // Get system Python info
-    let system_python = get_system_python_info();
+    // Get system Python info, filtered if needed
+    let system_python = get_system_python_info().filter(|(version, _)| match version_filter {
+        Some(ref filter) => PythonVersion::parse(version).is_some_and(|v| filter.matches(&v)),
+        None => true,
+    });
 
     // JSON output
     if output.is_json() {
@@ -65,8 +92,13 @@ fn list_virtualenvs(output: &Output, bare: bool) -> Result<()> {
 
     if envs.is_empty() && system_python.is_none() {
         if !bare {
-            output.info(&t!("list.no_envs"));
-            output.info(&t!("list.no_envs_hint"));
+            if let Some(ver_str) = python_version {
+                output.info(&t!("list.filtered_no_envs", version = ver_str));
+                output.info(&t!("list.filtered_hint"));
+            } else {
+                output.info(&t!("list.no_envs"));
+                output.info(&t!("list.no_envs_hint"));
+            }
         }
         return Ok(());
     }
@@ -170,6 +202,7 @@ fn list_pythons(output: &Output, bare: bool) -> Result<()> {
             .iter()
             .map(|p| PythonInfo {
                 version: p.version.clone(),
+                implementation: Some(p.implementation.clone()),
                 path: p.path.as_ref().map(|path| path.display().to_string()),
             })
             .collect();
@@ -204,22 +237,24 @@ fn list_pythons(output: &Output, bare: bool) -> Result<()> {
             println!("{version}");
         }
     } else {
-        // Calculate max version length for alignment
-        let max_ver_len = pythons.iter().map(|p| p.version.len()).max().unwrap_or(0);
+        // Build display labels: "implementation-version" (e.g., "cpython-3.12.0")
+        let labels: Vec<String> = pythons
+            .iter()
+            .map(|p| format!("{}-{}", p.implementation, p.version))
+            .collect();
+
+        // Calculate max label length for alignment
+        let max_label_len = labels.iter().map(|l| l.len()).max().unwrap_or(0);
 
         // Normal output with path info
-        for python in pythons {
+        for (python, label) in pythons.iter().zip(&labels) {
             let path_str = python
                 .path
+                .as_ref()
                 .map(|p| format!("({})", p.display()))
                 .unwrap_or_default();
 
-            println!(
-                "{:<width$}  {}",
-                python.version,
-                path_str,
-                width = max_ver_len
-            );
+            println!("{:<width$}  {}", label, path_str, width = max_label_len);
         }
     }
 
@@ -270,4 +305,122 @@ fn get_system_python_info() -> Option<(String, String)> {
         .to_string();
 
     Some((version, path))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Helper: simulate the filtering logic used in list_virtualenvs
+    fn filter_envs_by_version<'a>(
+        envs: &'a [(String, Option<String>)],
+        version_str: &str,
+    ) -> Vec<&'a str> {
+        let filter = PythonVersion::parse(version_str).expect("valid version filter");
+        envs.iter()
+            .filter(|(_, ver)| {
+                ver.as_ref()
+                    .and_then(|v| PythonVersion::parse(v))
+                    .is_some_and(|v| filter.matches(&v))
+            })
+            .map(|(name, _)| name.as_str())
+            .collect()
+    }
+
+    #[test]
+    fn test_filter_by_major_minor_prefix() {
+        let envs = vec![
+            ("web".into(), Some("3.12.0".into())),
+            ("api".into(), Some("3.12.1".into())),
+            ("old".into(), Some("3.11.5".into())),
+            ("ml".into(), Some("3.13.0".into())),
+        ];
+
+        let result = filter_envs_by_version(&envs, "3.12");
+        assert_eq!(result, vec!["web", "api"]);
+    }
+
+    #[test]
+    fn test_filter_by_exact_patch_version() {
+        let envs = vec![
+            ("web".into(), Some("3.12.0".into())),
+            ("api".into(), Some("3.12.1".into())),
+        ];
+
+        let result = filter_envs_by_version(&envs, "3.12.0");
+        assert_eq!(result, vec!["web"]);
+    }
+
+    #[test]
+    fn test_filter_by_major_only() {
+        let envs = vec![
+            ("py3".into(), Some("3.12.0".into())),
+            ("py2".into(), Some("2.7.18".into())),
+        ];
+
+        let result = filter_envs_by_version(&envs, "3");
+        assert_eq!(result, vec!["py3"]);
+    }
+
+    #[test]
+    fn test_filter_no_matches() {
+        let envs = vec![
+            ("web".into(), Some("3.12.0".into())),
+            ("api".into(), Some("3.11.5".into())),
+        ];
+
+        let result = filter_envs_by_version(&envs, "3.10");
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_filter_skips_envs_without_version() {
+        let envs = vec![
+            ("web".into(), Some("3.12.0".into())),
+            ("broken".into(), None),
+            ("api".into(), Some("3.12.1".into())),
+        ];
+
+        let result = filter_envs_by_version(&envs, "3.12");
+        assert_eq!(result, vec!["web", "api"]);
+    }
+
+    #[test]
+    fn test_filter_all_envs_match() {
+        let envs = vec![
+            ("a".into(), Some("3.12.0".into())),
+            ("b".into(), Some("3.12.1".into())),
+            ("c".into(), Some("3.12.3".into())),
+        ];
+
+        let result = filter_envs_by_version(&envs, "3.12");
+        assert_eq!(result, vec!["a", "b", "c"]);
+    }
+
+    #[test]
+    fn test_filter_empty_envs() {
+        let envs: Vec<(String, Option<String>)> = vec![];
+        let result = filter_envs_by_version(&envs, "3.12");
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_system_python_filtered_by_version() {
+        // Simulate the system python filter logic from list_virtualenvs
+        let system_python = Some(("3.12.1".to_string(), "/usr/bin/python3".to_string()));
+        let filter = PythonVersion::parse("3.12").unwrap();
+
+        let filtered = system_python.filter(|(version, _)| {
+            PythonVersion::parse(version).is_some_and(|v| filter.matches(&v))
+        });
+        assert!(filtered.is_some());
+
+        // Non-matching filter
+        let filter_311 = PythonVersion::parse("3.11").unwrap();
+        let system_python2 = Some(("3.12.1".to_string(), "/usr/bin/python3".to_string()));
+        let filtered2 = system_python2.filter(|(version, _)| {
+            PythonVersion::parse(version).is_some_and(|v| filter_311.matches(&v))
+        });
+        assert!(filtered2.is_none());
+    }
 }

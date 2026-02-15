@@ -79,6 +79,23 @@ scoop use --unset
 scoop use --unset --global
 ```
 
+### Set Python 3.11.0 as Global Default
+
+`--global` stores an environment name, not a raw Python version string.
+Create an environment with Python 3.11.0, then set that environment globally:
+
+```bash
+scoop install 3.11.0
+scoop create py311 3.11.0
+scoop use py311 --global
+```
+
+This writes `py311` to `~/.scoop/version`, which is used in new shell sessions and
+directories that do not have a local `.scoop-version`.
+
+If a local `.scoop-version` file or `SCOOP_VERSION` environment variable is present,
+it takes precedence over the global setting.
+
 ## Version File Format
 
 The `.scoop-version` file contains a single line with either:
