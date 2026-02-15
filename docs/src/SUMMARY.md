@@ -43,6 +43,12 @@
 
 ---
 
+# AI/LLM Integration
+
+- [LLM Reference](llms.md)
+
+---
+
 # Examples
 
 - [Examples Overview](../../../examples/README.md)
