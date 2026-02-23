@@ -44,7 +44,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Terminal UI
-owo-colors = "4.0"
+owo-colors = "4.3"
 console = "0.16.2"
 indicatif = "0.18"
 dialoguer = "0.12"
@@ -69,7 +69,7 @@ clap_mangen = "0.2"
 assert_cmd = "2.0"
 predicates = "3.1"
 tempfile = "3.10"
-serial_test = "3.2"
+serial_test = "3.4"
 proptest = "1.5"
 insta = { version = "1.46", features = ["yaml"] }
 
