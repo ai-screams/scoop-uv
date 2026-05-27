@@ -25,6 +25,10 @@ git_release_enable = true
 # Release PR labels
 pr_labels = ["release"]
 
+# Only trigger releases for meaningful code changes
+# (chore, ci, build, docs, test, style won't create standalone releases)
+release_commits = "^(feat|fix|perf|refactor|revert)"
+
 # Disable semantic versioning check (v0.x allows breaking changes in minor)
 semver_check = false
 
