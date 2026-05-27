@@ -8,6 +8,7 @@ use std::process::Command;
 use crate::core::metadata::Metadata;
 use crate::paths;
 use crate::uv::UvClient;
+use crate::uv::version as uv_version;
 
 // ============================================================================
 // Types
@@ -424,6 +425,19 @@ impl Default for Doctor {
 /// Check for uv installation.
 struct UvCheck;
 
+impl UvCheck {
+    /// Platform-appropriate install or upgrade command for uv.
+    fn install_hint() -> &'static str {
+        if cfg!(target_os = "macos") {
+            "brew install uv  OR  curl -LsSf https://astral.sh/uv/install.sh | sh"
+        } else if cfg!(target_os = "windows") {
+            "powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\""
+        } else {
+            "curl -LsSf https://astral.sh/uv/install.sh | sh"
+        }
+    }
+}
+
 impl Check for UvCheck {
     fn id(&self) -> &'static str {
         "uv"
@@ -436,24 +450,37 @@ impl Check for UvCheck {
     fn run(&self) -> Vec<CheckResult> {
         match Command::new("uv").arg("--version").output() {
             Ok(output) if output.status.success() => {
-                let version = String::from_utf8_lossy(&output.stdout);
-                let version = version.trim();
-                vec![CheckResult::ok(self.id(), self.name()).with_details(version)]
+                let raw = String::from_utf8_lossy(&output.stdout);
+                let raw = raw.trim();
+
+                // Enforce the minimum supported uv version when parseable.
+                // Unparseable output (custom build, unknown format) is treated
+                // as a soft pass so we don't block users on a banner change.
+                if let Some(version) = uv_version::parse(raw) {
+                    if !uv_version::meets_minimum(version) {
+                        return vec![
+                            CheckResult::error(
+                                self.id(),
+                                self.name(),
+                                format!(
+                                    "uv {} is older than the supported minimum ({})",
+                                    uv_version::format_version(version),
+                                    uv_version::format_version(uv_version::MIN_VERSION),
+                                ),
+                            )
+                            .with_details(raw.to_string())
+                            .with_suggestion(format!("Upgrade uv: {}", Self::install_hint())),
+                        ];
+                    }
+                }
+
+                vec![CheckResult::ok(self.id(), self.name()).with_details(raw.to_string())]
             }
             _ => {
-                // Provide OS-specific installation guidance
-                let install_cmd = if cfg!(target_os = "macos") {
-                    "brew install uv  OR  curl -LsSf https://astral.sh/uv/install.sh | sh"
-                } else if cfg!(target_os = "windows") {
-                    "powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\""
-                } else {
-                    "curl -LsSf https://astral.sh/uv/install.sh | sh"
-                };
-
                 vec![
                     CheckResult::error(self.id(), self.name(), "uv not found in PATH")
                         .with_details("scoop requires uv to manage Python environments")
-                        .with_suggestion(format!("Install uv: {}", install_cmd)),
+                        .with_suggestion(format!("Install uv: {}", Self::install_hint())),
                 ]
             }
         }
