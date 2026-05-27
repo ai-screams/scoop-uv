@@ -192,8 +192,10 @@ scoop shell --unset
 
 | Dependency | Install | Why |
 |------------|---------|-----|
-| **uv** | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | The secret ingredient 🔮 |
+| **uv** (>= 0.5.14) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | The secret ingredient 🔮 |
 | **Rust** | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` | Build from source |
+
+> Minimum supported `uv` is **0.5.14**. Run `scoop doctor` to verify your installation.
 
 ### Install scoop
 
