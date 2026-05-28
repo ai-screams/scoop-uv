@@ -133,6 +133,33 @@ pub enum MigrateCommand {
     },
 }
 
+/// Self-management subcommands (under `scoop self ...`).
+#[derive(Subcommand, Debug)]
+pub enum SelfCommand {
+    /// Reinstall scoop from crates.io to the latest version
+    // Disable clap's auto `--version` flag here so `--version <VER>` can be
+    // a real arg meaning "install this specific version". `scoop --version`
+    // and the auto flag on other subcommands are unaffected.
+    #[command(disable_version_flag = true)]
+    Update {
+        /// Reinstall even if already on the latest version
+        #[arg(long)]
+        force: bool,
+
+        /// Install a specific version instead of the latest
+        #[arg(long, value_name = "VERSION")]
+        version: Option<String>,
+
+        /// Skip the post-install environment verification (`scoop doctor`)
+        #[arg(long)]
+        no_verify: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
 /// Available commands
 #[derive(Subcommand, Debug)]
 pub enum Commands {
@@ -364,6 +391,13 @@ pub enum Commands {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+    },
+
+    /// Manage scoop itself (update, etc.)
+    #[command(name = "self")]
+    Self_ {
+        #[command(subcommand)]
+        command: SelfCommand,
     },
 }
 

@@ -326,6 +326,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
 | `scoop doctor` | Health check your setup |
+| `scoop self update` | Update scoop itself to the latest version |
 
 **For the complete command reference**, see **[Commands Documentation →](https://ai-screams.github.io/scoop-uv/commands/)**
 

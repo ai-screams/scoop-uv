@@ -3,7 +3,7 @@
 use clap::Parser;
 use color_eyre::eyre::Result;
 
-use scoop_uv::cli::{Cli, Commands};
+use scoop_uv::cli::{Cli, Commands, SelfCommand};
 use scoop_uv::output::Output;
 
 fn main() -> Result<()> {
@@ -113,6 +113,17 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::lang(&output, lang.as_deref(), list, reset)
         }
+        Commands::Self_ { command } => match command {
+            SelfCommand::Update {
+                force,
+                version,
+                no_verify,
+                json,
+            } => {
+                let output = Output::new(0, cli.quiet, cli.no_color, json);
+                scoop_uv::cli::commands::self_update(&output, force, version.as_deref(), no_verify)
+            }
+        },
     };
 
     // Handle errors
