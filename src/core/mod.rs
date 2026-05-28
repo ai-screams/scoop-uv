@@ -45,7 +45,7 @@ pub fn parse_pyvenv_version(venv_path: &std::path::Path) -> Option<String> {
 /// codebase handles both keys identically.
 pub(crate) fn pyvenv_version_from_line(line: &str) -> Option<String> {
     let (key, value) = line.split_once('=')?;
-    matches!(key.trim(), "version" | "version_info").then(|| normalize_python_version(value.trim()))
+    matches!(key.trim(), "version" | "version_info").then(|| normalize_pyvenv_version(value.trim()))
 }
 
 /// Keep only the leading `MAJOR.MINOR.PATCH` numeric dotted components.
@@ -54,7 +54,7 @@ pub(crate) fn pyvenv_version_from_line(line: &str) -> Option<String> {
 /// `3.14.3`. A clean `MAJOR.MINOR.PATCH` (or shorter) passes through
 /// unchanged. Falls back to the original string if there is no leading
 /// numeric segment.
-fn normalize_python_version(raw: &str) -> String {
+fn normalize_pyvenv_version(raw: &str) -> String {
     let numeric: Vec<&str> = raw
         .split('.')
         .take_while(|seg| !seg.is_empty() && seg.bytes().all(|b| b.is_ascii_digit()))
@@ -119,16 +119,20 @@ mod tests {
     }
 
     #[test]
-    fn normalize_python_version_truncates_suffix() {
-        assert_eq!(normalize_python_version("3.14.3.final.0"), "3.14.3");
-        assert_eq!(normalize_python_version("3.12.12"), "3.12.12");
-        assert_eq!(normalize_python_version("3.12"), "3.12");
-        assert_eq!(normalize_python_version("3"), "3");
+    fn normalize_pyvenv_version_truncates_suffix() {
+        assert_eq!(normalize_pyvenv_version("3.14.3.final.0"), "3.14.3");
+        assert_eq!(normalize_pyvenv_version("3.12.12"), "3.12.12");
+        assert_eq!(normalize_pyvenv_version("3.12"), "3.12");
+        assert_eq!(normalize_pyvenv_version("3"), "3");
     }
 
     #[test]
-    fn normalize_python_version_non_numeric_falls_back() {
-        assert_eq!(normalize_python_version("garbage"), "garbage");
-        assert_eq!(normalize_python_version(""), "");
+    fn normalize_pyvenv_version_non_numeric_falls_back() {
+        assert_eq!(normalize_pyvenv_version("garbage"), "garbage");
+        assert_eq!(normalize_pyvenv_version(""), "");
+        // Stops at the first empty/non-numeric segment; a leading `v` has no
+        // numeric prefix at all, so the original string is returned.
+        assert_eq!(normalize_pyvenv_version("3..4"), "3");
+        assert_eq!(normalize_pyvenv_version("v3.12"), "v3.12");
     }
 }
