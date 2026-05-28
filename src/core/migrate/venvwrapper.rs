@@ -42,12 +42,12 @@ impl VenvWrapperDiscovery {
         let cfg_path = path.join("pyvenv.cfg");
         let content = fs::read_to_string(&cfg_path).ok()?;
 
-        for line in content.lines() {
-            let line = line.trim();
-            if let Some(version) = line.strip_prefix("version") {
-                let version = version.trim_start_matches([' ', '=']);
-                return Some(version.trim().to_string());
-            }
+        // Reads both `version` (stdlib venv) and `version_info` (uv) keys.
+        if let Some(version) = content
+            .lines()
+            .find_map(crate::core::pyvenv_version_from_line)
+        {
+            return Some(version);
         }
 
         // Fallback: try to extract from home path
