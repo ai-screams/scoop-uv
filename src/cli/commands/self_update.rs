@@ -1,14 +1,19 @@
 //! `scoop self update` — reinstall scoop-uv from crates.io.
 //!
-//! Active update flow:
-//! 1. Resolve target version (explicit `--version` or latest via `cargo search`).
-//! 2. Skip when already on latest (unless `--force`).
-//! 3. Shell out to `cargo install --force --locked scoop-uv --version <V>`.
-//! 4. Re-spawn the freshly installed binary as `scoop doctor` so users
-//!    immediately see any environment drift (e.g. uv below the new minimum)
-//!    without having to run a verify command themselves. Skip with `--no-verify`.
+//! Layered design:
+//! * [`execute`] orchestrates; it owns user-facing output and never inspects
+//!   exit codes or stdout itself.
+//! * Helpers (`resolve_target_version`, `run_cargo_install`,
+//!   `verify_with_new_binary`) each do one thing: resolve a version, shell
+//!   out to cargo, or run doctor and report what happened.
+//! * [`VerifyOutcome`] is the explicit domain type returned by the verify
+//!   step. It carries everything a machine consumer needs (doctor exit-code
+//!   semantics, launch failures) and serializes to the JSON envelope with a
+//!   `status` tag so callers can branch precisely instead of guessing what
+//!   `verified: bool` meant.
 
-use std::process::Command;
+use std::path::PathBuf;
+use std::process::{Command, Stdio};
 
 use rust_i18n::t;
 use serde::Serialize;
@@ -20,32 +25,48 @@ const CRATE_NAME: &str = "scoop-uv";
 const BINARY_NAME: &str = "scoop";
 const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-#[derive(Serialize)]
+// ============================================================================
+// Domain types
+// ============================================================================
+
+/// Outcome of the post-install `scoop doctor` step.
+///
+/// Tagged JSON shape: `{ "status": "...", ... }`. Adding new variants is
+/// backward-compatible for consumers that branch on `status`.
+#[derive(Debug, Serialize, PartialEq, Eq)]
+#[serde(tag = "status", rename_all = "snake_case")]
+enum VerifyOutcome {
+    /// `--no-verify` was passed.
+    Skipped,
+    /// doctor exited 0.
+    Passed,
+    /// doctor exited 1 (warnings only).
+    Warned,
+    /// doctor exited 2 or higher (one or more errors).
+    Errored,
+    /// doctor never ran (binary not found, IO error spawning, ...).
+    LaunchFailed { error: String },
+}
+
+#[derive(Debug, Serialize)]
 struct UpdateData {
     from: &'static str,
     to: String,
     skipped: bool,
-    verified: bool,
+    verify: VerifyOutcome,
 }
+
+// ============================================================================
+// Entry point
+// ============================================================================
 
 /// Execute `scoop self update`.
 pub fn execute(output: &Output, force: bool, version: Option<&str>, no_verify: bool) -> Result<()> {
+    let requested_explicit = version.is_some();
     let target = resolve_target_version(output, version)?;
 
     if target == CURRENT_VERSION && !force {
-        if output.is_json() {
-            output.json_success(
-                "self update",
-                UpdateData {
-                    from: CURRENT_VERSION,
-                    to: target,
-                    skipped: true,
-                    verified: false,
-                },
-            );
-        } else {
-            output.success(&t!("selfupdate.already_latest", version = CURRENT_VERSION));
-        }
+        emit_skip(output, &target, requested_explicit);
         return Ok(());
     }
 
@@ -54,17 +75,16 @@ pub fn execute(output: &Output, force: bool, version: Option<&str>, no_verify: b
         from = CURRENT_VERSION,
         to = target.as_str()
     ));
-
-    run_cargo_install(&target)?;
-
+    run_cargo_install(&target, output.is_json())?;
     output.success(&t!("selfupdate.installed", version = target.as_str()));
 
-    let verified = if no_verify {
-        false
+    let verify = if no_verify {
+        VerifyOutcome::Skipped
     } else {
-        verify_with_new_binary(output);
-        true
+        output.info(&t!("selfupdate.verifying"));
+        verify_with_new_binary(output.is_json())
     };
+    emit_verify(output, &verify);
 
     if output.is_json() {
         output.json_success(
@@ -73,13 +93,55 @@ pub fn execute(output: &Output, force: bool, version: Option<&str>, no_verify: b
                 from: CURRENT_VERSION,
                 to: target,
                 skipped: false,
-                verified,
+                verify,
             },
         );
     }
-
     Ok(())
 }
+
+// ============================================================================
+// Output helpers — keep text & JSON branches in lockstep
+// ============================================================================
+
+fn emit_skip(output: &Output, target: &str, requested_explicit: bool) {
+    if output.is_json() {
+        output.json_success(
+            "self update",
+            UpdateData {
+                from: CURRENT_VERSION,
+                to: target.to_string(),
+                skipped: true,
+                verify: VerifyOutcome::Skipped,
+            },
+        );
+        return;
+    }
+    // Distinguish "you asked for this version" from "you're already current".
+    let key = if requested_explicit {
+        "selfupdate.already_on_requested"
+    } else {
+        "selfupdate.already_latest"
+    };
+    output.success(&t!(key, version = CURRENT_VERSION));
+}
+
+fn emit_verify(output: &Output, outcome: &VerifyOutcome) {
+    match outcome {
+        // Silent: nothing to add. Either we didn't run, or it passed cleanly.
+        VerifyOutcome::Skipped | VerifyOutcome::Passed => {}
+        VerifyOutcome::Warned => output.warn(&t!("selfupdate.verify_doctor_warnings")),
+        VerifyOutcome::Errored => output.warn(&t!("selfupdate.verify_doctor_errors")),
+        VerifyOutcome::LaunchFailed { error } => output.warn(&t!(
+            "selfupdate.verify_launch_failed",
+            error = error.as_str()
+        )),
+    }
+}
+
+// ============================================================================
+// Version resolution
+// ============================================================================
 
 fn resolve_target_version(output: &Output, requested: Option<&str>) -> Result<String> {
     if let Some(v) = requested {
@@ -116,30 +178,37 @@ fn latest_version_from_cargo_search() -> Result<String> {
 /// Parse the first matching `<crate> = "X.Y.Z"` line from `cargo search` stdout.
 fn parse_cargo_search_version(stdout: &str) -> Option<String> {
     let prefix = format!("{CRATE_NAME} = \"");
-    for line in stdout.lines() {
-        if let Some(rest) = line.trim_start().strip_prefix(&prefix) {
-            if let Some(end) = rest.find('"') {
-                return Some(rest[..end].to_string());
-            }
-        }
-    }
-    None
+    stdout
+        .lines()
+        .filter_map(|line| line.trim_start().strip_prefix(&prefix))
+        .find_map(|rest| rest.find('"').map(|end| rest[..end].to_string()))
 }
 
-fn run_cargo_install(version: &str) -> Result<()> {
-    let status = Command::new("cargo")
-        .args([
-            "install",
-            "--force",
-            "--locked",
-            CRATE_NAME,
-            "--version",
-            version,
-        ])
-        .status()
-        .map_err(|e| ScoopError::SelfUpdateFailed {
-            message: format!("could not invoke `cargo install`: {e}"),
-        })?;
+// ============================================================================
+// Install
+// ============================================================================
+
+fn run_cargo_install(version: &str, json_mode: bool) -> Result<()> {
+    let mut cmd = Command::new("cargo");
+    cmd.args([
+        "install",
+        "--force",
+        "--locked",
+        CRATE_NAME,
+        "--version",
+        version,
+    ]);
+
+    if json_mode {
+        // Keep stdout clean so the trailing JSON envelope is parseable.
+        // Cargo's progress goes to stderr, which we leave inherited.
+        cmd.arg("--quiet");
+        cmd.stdout(Stdio::null());
+    }
+
+    let status = cmd.status().map_err(|e| ScoopError::SelfUpdateFailed {
+        message: format!("could not invoke `cargo install`: {e}"),
+    })?;
 
     if !status.success() {
         return Err(ScoopError::SelfUpdateFailed {
@@ -149,33 +218,87 @@ fn run_cargo_install(version: &str) -> Result<()> {
     Ok(())
 }
 
-/// Spawn the freshly installed `scoop doctor` so the user immediately sees
-/// any new minimum-version mismatches. Failures here are surfaced as warnings
-/// but never promoted to errors — the install itself already succeeded.
-fn verify_with_new_binary(output: &Output) {
-    let new_bin = match which::which(BINARY_NAME) {
-        Ok(p) => p,
-        Err(_) => {
-            output.warn(&t!("selfupdate.verify_skipped_no_binary"));
-            return;
-        }
+// ============================================================================
+// Verify
+// ============================================================================
+
+/// Run `<new_binary> doctor` and translate its exit code into a [`VerifyOutcome`].
+///
+/// This function deliberately returns an outcome instead of printing — output
+/// is the caller's responsibility (see [`emit_verify`]). That keeps the verify
+/// path testable in isolation and keeps the text/JSON branches in one place.
+fn verify_with_new_binary(json_mode: bool) -> VerifyOutcome {
+    let Some(new_bin) = installed_binary_path() else {
+        return VerifyOutcome::LaunchFailed {
+            error: format!(
+                "could not locate the freshly installed `{BINARY_NAME}` binary in CARGO_INSTALL_ROOT/CARGO_HOME/PATH"
+            ),
+        };
     };
 
-    output.info(&t!("selfupdate.verifying"));
+    let mut cmd = Command::new(&new_bin);
+    cmd.arg("doctor");
+    if json_mode {
+        // doctor prints free-form text; muffle both streams in JSON mode so the
+        // envelope on stdout stays parseable. The VerifyOutcome carries
+        // everything a JSON consumer needs.
+        cmd.stdout(Stdio::null());
+        cmd.stderr(Stdio::null());
+    }
 
-    match Command::new(&new_bin).arg("doctor").status() {
-        Ok(status) if status.success() => {}
-        Ok(_) => output.warn(&t!("selfupdate.verify_doctor_warnings")),
-        Err(e) => output.warn(&t!(
-            "selfupdate.verify_skipped_error",
-            error = e.to_string()
-        )),
+    match cmd.status() {
+        Ok(s) if s.success() => VerifyOutcome::Passed,
+        Ok(s) => match s.code() {
+            Some(1) => VerifyOutcome::Warned,
+            _ => VerifyOutcome::Errored,
+        },
+        Err(e) => VerifyOutcome::LaunchFailed {
+            error: e.to_string(),
+        },
     }
 }
+
+/// Locate the binary `cargo install` just wrote.
+///
+/// Prefer the deterministic cargo install target
+/// (`$CARGO_INSTALL_ROOT/bin` → `$CARGO_HOME/bin` → `~/.cargo/bin`) over
+/// `which::which`, because the user's `PATH` may have an older `scoop`
+/// from a different install channel ranked higher. Falling back to
+/// `which` only when the deterministic path doesn't exist preserves
+/// compatibility with non-cargo install layouts (manual symlinks, etc.).
+fn installed_binary_path() -> Option<PathBuf> {
+    let filename = binary_filename();
+    cargo_install_root()
+        .map(|root| root.join("bin").join(&filename))
+        .filter(|p| p.exists())
+        .or_else(|| which::which(BINARY_NAME).ok())
+}
+
+/// Resolve cargo's install root from env first, then user home.
+fn cargo_install_root() -> Option<PathBuf> {
+    std::env::var_os("CARGO_INSTALL_ROOT")
+        .map(PathBuf::from)
+        .or_else(|| std::env::var_os("CARGO_HOME").map(PathBuf::from))
+        .or_else(|| dirs::home_dir().map(|h| h.join(".cargo")))
+}
+
+fn binary_filename() -> String {
+    if cfg!(windows) {
+        format!("{BINARY_NAME}.exe")
+    } else {
+        BINARY_NAME.to_string()
+    }
+}
+
+// ============================================================================
+// Tests
+// ============================================================================
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // ---- parse_cargo_search_version -----------------------------------------
 
     #[test]
     fn parse_cargo_search_extracts_first_match() {
@@ -217,5 +340,51 @@ scoop = \"5.0.0\"       # Decentralized command-line installer ...
             parse_cargo_search_version(stdout),
             Some("0.1.0".to_string())
         );
+    }
+
+    // ---- VerifyOutcome JSON shape -------------------------------------------
+
+    #[test]
+    fn verify_outcome_skipped_serializes_with_status_tag() {
+        let v = serde_json::to_value(VerifyOutcome::Skipped).unwrap();
+        assert_eq!(v["status"], "skipped");
+    }
+
+    #[test]
+    fn verify_outcome_passed_warned_errored_have_distinct_tags() {
+        assert_eq!(
+            serde_json::to_value(VerifyOutcome::Passed).unwrap()["status"],
+            "passed"
+        );
+        assert_eq!(
+            serde_json::to_value(VerifyOutcome::Warned).unwrap()["status"],
+            "warned"
+        );
+        assert_eq!(
+            serde_json::to_value(VerifyOutcome::Errored).unwrap()["status"],
+            "errored"
+        );
+    }
+
+    #[test]
+    fn verify_outcome_launch_failed_carries_error_message() {
+        let v = serde_json::to_value(VerifyOutcome::LaunchFailed {
+            error: "permission denied".into(),
+        })
+        .unwrap();
+        assert_eq!(v["status"], "launch_failed");
+        assert_eq!(v["error"], "permission denied");
+    }
+
+    // ---- Platform binary name ----------------------------------------------
+
+    #[test]
+    fn binary_filename_matches_platform() {
+        let f = binary_filename();
+        if cfg!(windows) {
+            assert!(f.ends_with(".exe"));
+        } else {
+            assert_eq!(f, BINARY_NAME);
+        }
     }
 }

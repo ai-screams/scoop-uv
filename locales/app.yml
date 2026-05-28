@@ -829,6 +829,12 @@ selfupdate.already_latest:
   pt-BR: "Já está na versão mais recente (%{version})"
   ja: "すでに最新バージョンです (%{version})"
 
+selfupdate.already_on_requested:
+  en: "Already on the requested version (%{version})"
+  ko: "이미 요청하신 버전이에요 (%{version})"
+  pt-BR: "Já está na versão solicitada (%{version})"
+  ja: "すでに指定されたバージョンです (%{version})"
+
 selfupdate.installing:
   en: "Updating scoop %{from} → %{to}..."
   ko: "scoop %{from} → %{to} 업데이트 중..."
@@ -848,22 +854,22 @@ selfupdate.verifying:
   ja: "新しいバイナリで環境を検証中..."
 
 selfupdate.verify_doctor_warnings:
-  en: "Update complete, but `scoop doctor` reported issues. Please review the output above."
-  ko: "업데이트는 완료했지만 `scoop doctor`가 문제를 알려줬어요. 위 출력을 확인해 주세요."
-  pt-BR: "Atualização concluída, mas `scoop doctor` reportou problemas. Verifique a saída acima."
-  ja: "更新は完了しましたが、`scoop doctor` が問題を報告しました。上の出力を確認してください。"
+  en: "Update complete, but `scoop doctor` reported warnings. Please review the output above."
+  ko: "업데이트는 완료했지만 `scoop doctor`가 경고를 알려줬어요. 위 출력을 확인해 주세요."
+  pt-BR: "Atualização concluída, mas `scoop doctor` reportou avisos. Verifique a saída acima."
+  ja: "更新は完了しましたが、`scoop doctor` が警告を報告しました。上の出力を確認してください。"
 
-selfupdate.verify_skipped_no_binary:
-  en: "Verification skipped: could not locate the newly installed `scoop` binary."
-  ko: "검증을 건너뛰었어요: 새로 설치된 `scoop` 바이너리를 찾을 수 없어요."
-  pt-BR: "Verificação ignorada: não foi possível localizar o binário `scoop` recém-instalado."
-  ja: "検証をスキップ: 新しくインストールされた `scoop` バイナリが見つかりませんでした。"
+selfupdate.verify_doctor_errors:
+  en: "Update complete, but `scoop doctor` reported errors (e.g. uv below the new minimum). Please review the output above."
+  ko: "업데이트는 완료했지만 `scoop doctor`가 오류를 알려줬어요 (예: uv가 새 최소 버전 미달). 위 출력을 확인해 주세요."
+  pt-BR: "Atualização concluída, mas `scoop doctor` reportou erros (ex: uv abaixo do novo mínimo). Verifique a saída acima."
+  ja: "更新は完了しましたが、`scoop doctor` がエラーを報告しました (例: uv が新しい最小バージョン未満)。上の出力を確認してください。"
 
-selfupdate.verify_skipped_error:
-  en: "Verification skipped: %{error}"
-  ko: "검증을 건너뛰었어요: %{error}"
-  pt-BR: "Verificação ignorada: %{error}"
-  ja: "検証をスキップ: %{error}"
+selfupdate.verify_launch_failed:
+  en: "Verification skipped — could not run doctor: %{error}"
+  ko: "검증을 건너뛰었어요 — doctor 실행 실패: %{error}"
+  pt-BR: "Verificação ignorada — não foi possível executar o doctor: %{error}"
+  ja: "検証をスキップ — doctor の実行に失敗: %{error}"
 
 error.self_update_failed:
   en: "Self-update failed: %{message}"
