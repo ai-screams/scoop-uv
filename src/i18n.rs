@@ -100,6 +100,7 @@ fn normalize(locale: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
 
     #[test]
     fn test_normalize() {
@@ -129,6 +130,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_detect_with_env() {
         // Save original
         let original = std::env::var("SCOOP_LANG").ok();
@@ -152,6 +154,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_detect_with_unsupported_env() {
         // Save original
         let original = std::env::var("SCOOP_LANG").ok();

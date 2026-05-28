@@ -348,9 +348,11 @@ impl ScoopError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
     use std::io;
 
     #[test]
+    #[serial]
     fn test_virtualenv_not_found_message() {
         let err = ScoopError::VirtualenvNotFound {
             name: "myenv".to_string(),
@@ -359,6 +361,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_virtualenv_exists_message() {
         let err = ScoopError::VirtualenvExists {
             name: "existing".to_string(),
@@ -367,6 +370,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_invalid_env_name_message() {
         let err = ScoopError::InvalidEnvName {
             name: "123bad".to_string(),
@@ -377,6 +381,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_invalid_python_version_message() {
         let err = ScoopError::InvalidPythonVersion {
             version: "abc".to_string(),
@@ -385,6 +390,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_uv_not_found_message() {
         let err = ScoopError::UvNotFound;
         let msg = err.to_string();
@@ -393,6 +399,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_uv_command_failed_message() {
         let err = ScoopError::UvCommandFailed {
             command: "venv".to_string(),
@@ -403,18 +410,21 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_path_error_message() {
         let err = ScoopError::PathError("invalid UTF-8".to_string());
         assert_eq!(err.to_string(), "Path error: invalid UTF-8");
     }
 
     #[test]
+    #[serial]
     fn test_home_not_found_message() {
         let err = ScoopError::HomeNotFound;
         assert!(err.to_string().contains("Can't find home directory"));
     }
 
     #[test]
+    #[serial]
     fn test_io_error_conversion() {
         let io_err = io::Error::new(io::ErrorKind::NotFound, "file missing");
         let err: ScoopError = io_err.into();
@@ -423,6 +433,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_json_error_conversion() {
         let json_str = "{ invalid json }";
         let json_err: serde_json::Error =
@@ -432,6 +443,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_version_file_not_found_message() {
         let err = ScoopError::VersionFileNotFound {
             path: PathBuf::from("/some/path"),
@@ -441,6 +453,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_unsupported_shell_message() {
         let err = ScoopError::UnsupportedShell {
             shell: "fish".to_string(),
@@ -449,6 +462,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_python_not_installed_message() {
         let err = ScoopError::PythonNotInstalled {
             version: "3.13".to_string(),
@@ -459,6 +473,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_python_install_failed_message() {
         let err = ScoopError::PythonInstallFailed {
             version: "3.12".to_string(),
@@ -470,6 +485,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_python_uninstall_failed_message() {
         let err = ScoopError::PythonUninstallFailed {
             version: "3.11".to_string(),
@@ -481,6 +497,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_python_versions_message() {
         let err = ScoopError::NoPythonVersions {
             pattern: "2.7".to_string(),
@@ -489,6 +506,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_invalid_argument_message() {
         let err = ScoopError::InvalidArgument {
             message: "Cannot use --stable and --latest together".to_string(),
@@ -501,6 +519,7 @@ mod tests {
     // ==========================================================================
 
     #[test]
+    #[serial]
     fn test_io_error_not_found() {
         let io_err = io::Error::new(io::ErrorKind::NotFound, "file not found");
         let err: ScoopError = io_err.into();
@@ -509,6 +528,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_io_error_permission_denied() {
         let io_err = io::Error::new(io::ErrorKind::PermissionDenied, "access denied");
         let err: ScoopError = io_err.into();
@@ -517,6 +537,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_io_error_already_exists() {
         let io_err = io::Error::new(io::ErrorKind::AlreadyExists, "file exists");
         let err: ScoopError = io_err.into();
@@ -524,6 +545,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_io_error_preserves_kind() {
         let original = io::Error::new(io::ErrorKind::TimedOut, "operation timed out");
         let err: ScoopError = original.into();
@@ -536,6 +558,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_json_error_details() {
         // Invalid JSON syntax
         let json_err: serde_json::Error =
@@ -549,6 +572,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_result_type_alias() {
         // Verify that Result<T> is an alias for std::result::Result<T, ScoopError>
         fn returns_result() -> Result<i32> {
@@ -564,6 +588,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_source_chain() {
         use std::error::Error;
 
@@ -588,6 +613,7 @@ mod tests {
     // ==========================================================================
 
     #[test]
+    #[serial]
     fn test_error_messages_are_user_friendly() {
         // All error messages should be complete sentences or clear phrases
         let errors = vec![
@@ -616,6 +642,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_messages_include_context() {
         // Errors with context should include that context in the message
         let err = ScoopError::VirtualenvNotFound {
@@ -644,6 +671,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_suggestions_provide_hints() {
         // UvNotFound suggestion should include installation instructions
         let err = ScoopError::UvNotFound;
@@ -665,6 +693,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_messages_no_sensitive_info() {
         // Ensure error messages don't leak sensitive paths or info
         let err = ScoopError::PathError("test path error".to_string());
@@ -677,6 +706,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_invalid_env_name_provides_reason() {
         let err = ScoopError::InvalidEnvName {
             name: "123".to_string(),
@@ -691,6 +721,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_uv_command_failed_includes_details() {
         let err = ScoopError::UvCommandFailed {
             command: "venv".to_string(),
@@ -708,6 +739,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_version_file_not_found_shows_path() {
         let err = ScoopError::VersionFileNotFound {
             path: PathBuf::from("/project/dir"),
@@ -725,18 +757,21 @@ mod tests {
     // ==========================================================================
 
     #[test]
+    #[serial]
     fn test_error_code_env_not_found() {
         let err = ScoopError::VirtualenvNotFound { name: "x".into() };
         assert_eq!(err.code(), "ENV_NOT_FOUND");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_env_already_exists() {
         let err = ScoopError::VirtualenvExists { name: "x".into() };
         assert_eq!(err.code(), "ENV_ALREADY_EXISTS");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_env_invalid_name() {
         let err = ScoopError::InvalidEnvName {
             name: "x".into(),
@@ -746,6 +781,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_python_invalid_version() {
         let err = ScoopError::InvalidPythonVersion {
             version: "x".into(),
@@ -754,12 +790,14 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_uv_not_installed() {
         let err = ScoopError::UvNotFound;
         assert_eq!(err.code(), "UV_NOT_INSTALLED");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_uv_command_failed() {
         let err = ScoopError::UvCommandFailed {
             command: "x".into(),
@@ -769,24 +807,28 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_io_path_error() {
         let err = ScoopError::PathError("x".into());
         assert_eq!(err.code(), "IO_PATH_ERROR");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_io_home_not_found() {
         let err = ScoopError::HomeNotFound;
         assert_eq!(err.code(), "IO_HOME_NOT_FOUND");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_io_error() {
         let err = ScoopError::Io(io::Error::other("test"));
         assert_eq!(err.code(), "IO_ERROR");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_internal_json_error() {
         let json_err: serde_json::Error =
             serde_json::from_str::<serde_json::Value>("invalid").expect_err("should fail");
@@ -795,6 +837,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_config_version_file_not_found() {
         let err = ScoopError::VersionFileNotFound {
             path: PathBuf::new(),
@@ -803,12 +846,14 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_shell_not_supported() {
         let err = ScoopError::UnsupportedShell { shell: "x".into() };
         assert_eq!(err.code(), "SHELL_NOT_SUPPORTED");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_python_not_installed() {
         let err = ScoopError::PythonNotInstalled {
             version: "x".into(),
@@ -817,6 +862,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_python_install_failed() {
         let err = ScoopError::PythonInstallFailed {
             version: "x".into(),
@@ -826,6 +872,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_python_uninstall_failed() {
         let err = ScoopError::PythonUninstallFailed {
             version: "x".into(),
@@ -835,6 +882,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_python_no_matching_version() {
         let err = ScoopError::NoPythonVersions {
             pattern: "x".into(),
@@ -843,6 +891,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_arg_invalid() {
         let err = ScoopError::InvalidArgument {
             message: "x".into(),
@@ -851,30 +900,35 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_source_pyenv_not_found() {
         let err = ScoopError::PyenvNotFound;
         assert_eq!(err.code(), "SOURCE_PYENV_NOT_FOUND");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_source_pyenv_env_not_found() {
         let err = ScoopError::PyenvEnvNotFound { name: "x".into() };
         assert_eq!(err.code(), "SOURCE_PYENV_ENV_NOT_FOUND");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_source_venvwrapper_env_not_found() {
         let err = ScoopError::VenvWrapperEnvNotFound { name: "x".into() };
         assert_eq!(err.code(), "SOURCE_VENVWRAPPER_ENV_NOT_FOUND");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_source_conda_env_not_found() {
         let err = ScoopError::CondaEnvNotFound { name: "x".into() };
         assert_eq!(err.code(), "SOURCE_CONDA_ENV_NOT_FOUND");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_migrate_corrupted() {
         let err = ScoopError::CorruptedEnvironment {
             name: "x".into(),
@@ -884,18 +938,21 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_migrate_extraction_failed() {
         let err = ScoopError::PackageExtractionFailed { reason: "x".into() };
         assert_eq!(err.code(), "MIGRATE_EXTRACTION_FAILED");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_migrate_failed() {
         let err = ScoopError::MigrationFailed { reason: "x".into() };
         assert_eq!(err.code(), "MIGRATE_FAILED");
     }
 
     #[test]
+    #[serial]
     fn test_error_code_migrate_name_conflict() {
         let err = ScoopError::MigrationNameConflict {
             name: "x".into(),
@@ -905,6 +962,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_code_invalid_python_path() {
         let err = ScoopError::InvalidPythonPath {
             path: PathBuf::from("/bad/python"),
@@ -914,6 +972,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_invalid_python_path_message() {
         let err = ScoopError::InvalidPythonPath {
             path: PathBuf::from("/usr/bin/fake-python"),
@@ -925,6 +984,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_invalid_python_path_suggestion() {
         let err = ScoopError::InvalidPythonPath {
             path: PathBuf::from("/bad/path"),
@@ -936,6 +996,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_all_error_codes_are_unique() {
         use std::collections::HashSet;
 
@@ -1009,6 +1070,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_error_codes_follow_naming_convention() {
         // All codes should be SCREAMING_SNAKE_CASE
         let codes = vec![
@@ -1054,6 +1116,7 @@ mod tests {
     // ==========================================================================
 
     #[test]
+    #[serial]
     fn test_suggestion_virtualenv_not_found_includes_name() {
         let err = ScoopError::VirtualenvNotFound {
             name: "myenv".into(),
@@ -1065,6 +1128,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_suggestion_virtualenv_exists() {
         let err = ScoopError::VirtualenvExists {
             name: "existing".into(),
@@ -1075,6 +1139,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_suggestion_invalid_env_name() {
         let err = ScoopError::InvalidEnvName {
             name: "123".into(),
@@ -1086,6 +1151,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_suggestion_uv_not_found() {
         let err = ScoopError::UvNotFound;
         let suggestion = err.suggestion().unwrap();
@@ -1095,6 +1161,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_suggestion_python_not_installed_includes_version() {
         let err = ScoopError::PythonNotInstalled {
             version: "3.13".into(),
@@ -1106,6 +1173,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_suggestion_no_python_versions() {
         let err = ScoopError::NoPythonVersions {
             pattern: "2.7".into(),
@@ -1116,12 +1184,14 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_io_error() {
         let err = ScoopError::Io(io::Error::other("test"));
         assert!(err.suggestion().is_none());
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_json_error() {
         let json_err: serde_json::Error =
             serde_json::from_str::<serde_json::Value>("invalid").expect_err("should fail");
@@ -1130,6 +1200,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_uv_command_failed() {
         let err = ScoopError::UvCommandFailed {
             command: "venv".into(),
@@ -1139,18 +1210,21 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_path_error() {
         let err = ScoopError::PathError("invalid path".into());
         assert!(err.suggestion().is_none());
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_home_not_found() {
         let err = ScoopError::HomeNotFound;
         assert!(err.suggestion().is_none());
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_version_file_not_found() {
         let err = ScoopError::VersionFileNotFound {
             path: PathBuf::from("/project"),
@@ -1159,6 +1233,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_unsupported_shell() {
         let err = ScoopError::UnsupportedShell {
             shell: "fish".into(),
@@ -1167,6 +1242,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_python_install_failed() {
         let err = ScoopError::PythonInstallFailed {
             version: "3.12".into(),
@@ -1176,6 +1252,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_python_uninstall_failed() {
         let err = ScoopError::PythonUninstallFailed {
             version: "3.11".into(),
@@ -1185,6 +1262,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_invalid_python_version() {
         let err = ScoopError::InvalidPythonVersion {
             version: "abc".into(),
@@ -1193,6 +1271,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_suggestion_for_invalid_argument() {
         let err = ScoopError::InvalidArgument {
             message: "conflicting flags".into(),
