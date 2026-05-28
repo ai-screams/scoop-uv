@@ -14,6 +14,34 @@ use crate::paths::SCOOP_HOME_ENV;
 /// All tests that modify SCOOP_HOME must acquire this lock first.
 pub static ENV_LOCK: Mutex<()> = Mutex::new(());
 
+/// RAII guard that captures the current i18n locale and restores it on drop.
+///
+/// rust-i18n stores the active locale as process-global state, so a test that
+/// calls `set_locale` (directly or via the `lang` command) would otherwise
+/// leak its locale into later tests that assume the default. [`with_temp_scoop_home`]
+/// holds one for the duration of its closure, so the many command tests that
+/// mutate the locale need no per-test bookkeeping. Standalone locale tests can
+/// construct one directly. Pair with `#[serial]` to also exclude concurrent
+/// observers of the global locale.
+pub struct LocaleGuard {
+    previous: String,
+}
+
+impl LocaleGuard {
+    /// Capture the current locale; it is restored when the guard drops.
+    pub fn capture() -> Self {
+        Self {
+            previous: rust_i18n::locale().to_string(),
+        }
+    }
+}
+
+impl Drop for LocaleGuard {
+    fn drop(&mut self) {
+        rust_i18n::set_locale(&self.previous);
+    }
+}
+
 /// Execute a test function with SCOOP_HOME environment variable unset.
 ///
 /// This helper ensures safe testing of default behavior when SCOOP_HOME is not set.
@@ -90,6 +118,9 @@ where
 {
     // Recover from poisoned mutex if a previous test panicked
     let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    // Restore the global i18n locale on exit so locale-mutating command tests
+    // (e.g. `scoop lang ko`) don't leak into later tests.
+    let _locale = LocaleGuard::capture();
     let temp_dir = TempDir::new().expect("Failed to create temp dir for SCOOP_HOME");
 
     // SAFETY: Protected by ENV_LOCK mutex - only one test modifies this at a time
