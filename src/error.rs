@@ -107,6 +107,9 @@ pub enum ScoopError {
 
     /// Cascade uninstall aborted by user
     CascadeAborted,
+
+    /// `scoop self update` failed (search, install, or post-install verify).
+    SelfUpdateFailed { message: String },
 }
 
 // ============================================================================
@@ -249,6 +252,9 @@ impl fmt::Display for ScoopError {
                 )
             }
             Self::CascadeAborted => write!(f, "{}", t!("error.cascade_aborted")),
+            Self::SelfUpdateFailed { message } => {
+                write!(f, "{}", t!("error.self_update_failed", message = message))
+            }
         }
     }
 }
@@ -288,6 +294,7 @@ impl ScoopError {
             Self::MigrationNameConflict { .. } => "MIGRATE_NAME_CONFLICT",
             Self::InvalidPythonPath { .. } => "PYTHON_INVALID_PATH",
             Self::CascadeAborted => "UNINSTALL_CASCADE_ABORTED",
+            Self::SelfUpdateFailed { .. } => "SELF_UPDATE_FAILED",
         }
     }
 

@@ -813,3 +813,66 @@ suggestion.invalid_python_path:
   ko: "→ 유효한 Python 실행 파일 경로 지정 (예: /usr/bin/python3)"
   pt-BR: "→ Forneça um caminho para um executável Python válido (ex: /usr/bin/python3)"
   ja: "→ 有効な Python 実行ファイルのパスを指定してください (例: /usr/bin/python3)"
+
+# ============================================================================
+# Self-update command (`scoop self update`)
+# ============================================================================
+selfupdate.checking_latest:
+  en: "Checking latest version on crates.io..."
+  ko: "crates.io에서 최신 버전 확인 중..."
+  pt-BR: "Verificando a versão mais recente no crates.io..."
+  ja: "crates.io で最新バージョンを確認中..."
+
+selfupdate.already_latest:
+  en: "Already on the latest version (%{version})"
+  ko: "이미 최신 버전이에요 (%{version})"
+  pt-BR: "Já está na versão mais recente (%{version})"
+  ja: "すでに最新バージョンです (%{version})"
+
+selfupdate.already_on_requested:
+  en: "Already on the requested version (%{version})"
+  ko: "이미 요청하신 버전이에요 (%{version})"
+  pt-BR: "Já está na versão solicitada (%{version})"
+  ja: "すでに指定されたバージョンです (%{version})"
+
+selfupdate.installing:
+  en: "Updating scoop %{from} → %{to}..."
+  ko: "scoop %{from} → %{to} 업데이트 중..."
+  pt-BR: "Atualizando scoop %{from} → %{to}..."
+  ja: "scoop %{from} → %{to} を更新中..."
+
+selfupdate.installed:
+  en: "Updated to %{version}"
+  ko: "%{version}(으)로 업데이트 완료"
+  pt-BR: "Atualizado para %{version}"
+  ja: "%{version} に更新しました"
+
+selfupdate.verifying:
+  en: "Verifying environment with the new binary..."
+  ko: "새 바이너리로 환경을 검증하는 중..."
+  pt-BR: "Verificando o ambiente com o novo binário..."
+  ja: "新しいバイナリで環境を検証中..."
+
+selfupdate.verify_doctor_warnings:
+  en: "Update complete, but `scoop doctor` reported warnings. Please review the output above."
+  ko: "업데이트는 완료했지만 `scoop doctor`가 경고를 알려줬어요. 위 출력을 확인해 주세요."
+  pt-BR: "Atualização concluída, mas `scoop doctor` reportou avisos. Verifique a saída acima."
+  ja: "更新は完了しましたが、`scoop doctor` が警告を報告しました。上の出力を確認してください。"
+
+selfupdate.verify_doctor_errors:
+  en: "Update complete, but `scoop doctor` reported errors (e.g. uv below the new minimum). Please review the output above."
+  ko: "업데이트는 완료했지만 `scoop doctor`가 오류를 알려줬어요 (예: uv가 새 최소 버전 미달). 위 출력을 확인해 주세요."
+  pt-BR: "Atualização concluída, mas `scoop doctor` reportou erros (ex: uv abaixo do novo mínimo). Verifique a saída acima."
+  ja: "更新は完了しましたが、`scoop doctor` がエラーを報告しました (例: uv が新しい最小バージョン未満)。上の出力を確認してください。"
+
+selfupdate.verify_launch_failed:
+  en: "Verification skipped — could not run doctor: %{error}"
+  ko: "검증을 건너뛰었어요 — doctor 실행 실패: %{error}"
+  pt-BR: "Verificação ignorada — não foi possível executar o doctor: %{error}"
+  ja: "検証をスキップ — doctor の実行に失敗: %{error}"
+
+error.self_update_failed:
+  en: "Self-update failed: %{message}"
+  ko: "자체 업데이트 실패: %{message}"
+  pt-BR: "Falha na auto-atualização: %{message}"
+  ja: "セルフアップデート失敗: %{message}"
