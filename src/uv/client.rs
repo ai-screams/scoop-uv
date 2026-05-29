@@ -336,6 +336,38 @@ mod tests {
         }
     }
 
+    /// `UvClient::default()` panics by contract when uv is absent from PATH.
+    /// This is the one production `.expect()` worth a `#[should_panic]` test —
+    /// everything else returns `Result`/`Option` and is asserted via `is_err()`.
+    #[test]
+    #[serial_test::serial]
+    #[should_panic(expected = "uv not found in PATH")]
+    fn default_panics_when_uv_absent() {
+        // RAII guard restores PATH during the should_panic unwind, so emptying
+        // it can't leak into other tests on this thread.
+        struct PathGuard(Option<std::ffi::OsString>);
+        impl Drop for PathGuard {
+            fn drop(&mut self) {
+                // SAFETY: serialized by ENV_LOCK + #[serial].
+                unsafe {
+                    match self.0.take() {
+                        Some(v) => std::env::set_var("PATH", v),
+                        None => std::env::remove_var("PATH"),
+                    }
+                }
+            }
+        }
+
+        let _lock = crate::test_utils::ENV_LOCK
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        let _guard = PathGuard(std::env::var_os("PATH"));
+        // SAFETY: serialized; restored by PathGuard even on the panic unwind.
+        unsafe { std::env::set_var("PATH", "") };
+
+        let _ = UvClient::default();
+    }
+
     #[test]
     fn test_parse_python_list_with_paths() {
         let json = r#"[

@@ -481,50 +481,41 @@ pub fn detect_python_version(path: &Path) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn test_valid_env_names() {
-        assert!(is_valid_env_name("myenv"));
-        assert!(is_valid_env_name("MyEnv"));
-        assert!(is_valid_env_name("my-env"));
-        assert!(is_valid_env_name("my_env"));
-        assert!(is_valid_env_name("env123"));
-        assert!(is_valid_env_name("a"));
+    #[rstest]
+    #[case::simple("myenv", true)]
+    #[case::mixed_case("MyEnv", true)]
+    #[case::hyphen("my-env", true)]
+    #[case::underscore("my_env", true)]
+    #[case::trailing_digits("env123", true)]
+    #[case::single_char("a", true)]
+    #[case::empty("", false)]
+    #[case::digit_start("123", false)]
+    #[case::version_like("3.12", false)]
+    #[case::hyphen_start("-env", false)]
+    #[case::underscore_start("_env", false)]
+    #[case::space("my env", false)]
+    #[case::dot("my.env", false)]
+    #[case::reserved_activate("activate", false)]
+    #[case::reserved_activate_upper("ACTIVATE", false)]
+    #[case::reserved_list("list", false)]
+    #[case::reserved_version("version", false)]
+    fn is_valid_env_name_cases(#[case] input: &str, #[case] expected: bool) {
+        assert_eq!(is_valid_env_name(input), expected);
     }
 
-    #[test]
-    fn test_invalid_env_names() {
-        assert!(!is_valid_env_name(""));
-        assert!(!is_valid_env_name("123"));
-        assert!(!is_valid_env_name("3.12"));
-        assert!(!is_valid_env_name("-env"));
-        assert!(!is_valid_env_name("_env"));
-        assert!(!is_valid_env_name("my env"));
-        assert!(!is_valid_env_name("my.env"));
-    }
-
-    #[test]
-    fn test_reserved_names() {
-        assert!(!is_valid_env_name("activate"));
-        assert!(!is_valid_env_name("ACTIVATE"));
-        assert!(!is_valid_env_name("list"));
-        assert!(!is_valid_env_name("version"));
-    }
-
-    #[test]
-    fn test_valid_python_versions() {
-        assert!(is_valid_python_version("3"));
-        assert!(is_valid_python_version("3.12"));
-        assert!(is_valid_python_version("3.12.0"));
-        assert!(is_valid_python_version("3.12.0a1"));
-    }
-
-    #[test]
-    fn test_invalid_python_versions() {
-        assert!(!is_valid_python_version(""));
-        assert!(!is_valid_python_version("abc"));
-        assert!(!is_valid_python_version("v3.12")); // "v" prefix is invalid
-        assert!(!is_valid_python_version("3.12-beta")); // Hyphen is invalid
+    #[rstest]
+    #[case::major_only("3", true)]
+    #[case::major_minor("3.12", true)]
+    #[case::major_minor_patch("3.12.0", true)]
+    #[case::alpha_suffix("3.12.0a1", true)]
+    #[case::empty("", false)]
+    #[case::non_numeric("abc", false)]
+    #[case::v_prefix("v3.12", false)]
+    #[case::hyphen_beta("3.12-beta", false)]
+    fn is_valid_python_version_cases(#[case] input: &str, #[case] expected: bool) {
+        assert_eq!(is_valid_python_version(input), expected);
     }
 
     #[test]
