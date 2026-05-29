@@ -65,66 +65,39 @@ impl UvClient {
 
     /// Get the uv version
     pub fn version(&self) -> Result<String> {
-        let output = Command::new(&self.path)
-            .arg("--version")
-            .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
-                command: "uv --version".to_string(),
-                message: e.to_string(),
-            })?;
-
-        if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
-                command: "uv --version".to_string(),
-                message: String::from_utf8_lossy(&output.stderr).to_string(),
-            });
-        }
-
-        Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("--version");
+        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: "uv --version".to_string(),
+            message,
+        })?;
+        Ok(String::from_utf8_lossy(&stdout).trim().to_string())
     }
 
     /// Create a virtual environment
     pub fn create_venv(&self, path: &Path, python_version: &str) -> Result<()> {
-        let output = Command::new(&self.path)
-            .arg("venv")
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("venv")
             .arg(path)
             .arg("--python")
-            .arg(python_version)
-            .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
-                command: format!("uv venv {} --python {}", path.display(), python_version),
-                message: e.to_string(),
-            })?;
-
-        if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
-                command: format!("uv venv {} --python {}", path.display(), python_version),
-                message: String::from_utf8_lossy(&output.stderr).to_string(),
-            });
-        }
-
+            .arg(python_version);
+        let display = format!("uv venv {} --python {}", path.display(), python_version);
+        run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: display.clone(),
+            message,
+        })?;
         Ok(())
     }
 
     /// Install a Python version
     pub fn install_python(&self, version: &str) -> Result<()> {
-        let output = Command::new(&self.path)
-            .arg("python")
-            .arg("install")
-            .arg(version)
-            .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
-                command: format!("uv python install {version}"),
-                message: e.to_string(),
-            })?;
-
-        if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
-                command: format!("uv python install {version}"),
-                message: String::from_utf8_lossy(&output.stderr).to_string(),
-            });
-        }
-
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("python").arg("install").arg(version);
+        let display = format!("uv python install {version}");
+        run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: display.clone(),
+            message,
+        })?;
         Ok(())
     }
 
@@ -158,41 +131,21 @@ impl UvClient {
             "uv python list --output-format=json"
         };
 
-        let output = cmd.output().map_err(|e| ScoopError::UvCommandFailed {
+        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
             command: display.to_string(),
-            message: e.to_string(),
+            message,
         })?;
-
-        if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
-                command: display.to_string(),
-                message: String::from_utf8_lossy(&output.stderr).to_string(),
-            });
-        }
-
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        parse_python_list_json(&stdout)
+        parse_python_list_json(&String::from_utf8_lossy(&stdout))
     }
 
     /// Uninstall a Python version
     pub fn uninstall_python(&self, version: &str) -> Result<()> {
-        let output = Command::new(&self.path)
-            .arg("python")
-            .arg("uninstall")
-            .arg(version)
-            .output()
-            .map_err(|e| ScoopError::PythonUninstallFailed {
-                version: version.to_string(),
-                message: e.to_string(),
-            })?;
-
-        if !output.status.success() {
-            return Err(ScoopError::PythonUninstallFailed {
-                version: version.to_string(),
-                message: String::from_utf8_lossy(&output.stderr).to_string(),
-            });
-        }
-
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("python").arg("uninstall").arg(version);
+        run_uv(cmd, |message| ScoopError::PythonUninstallFailed {
+            version: version.to_string(),
+            message,
+        })?;
         Ok(())
     }
 
@@ -238,18 +191,11 @@ impl UvClient {
             cmd.arg(package);
         }
 
-        let output = cmd.output().map_err(|e| ScoopError::UvCommandFailed {
-            command: format!("uv pip install (into {})", venv_path.display()),
-            message: e.to_string(),
+        let display = format!("uv pip install (into {})", venv_path.display());
+        run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: display.clone(),
+            message,
         })?;
-
-        if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
-                command: format!("uv pip install (into {})", venv_path.display()),
-                message: String::from_utf8_lossy(&output.stderr).to_string(),
-            });
-        }
-
         Ok(())
     }
 
@@ -263,26 +209,18 @@ impl UvClient {
         venv_path: &Path,
         requirements_path: &Path,
     ) -> Result<()> {
-        let output = Command::new(&self.path)
-            .arg("pip")
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("pip")
             .arg("install")
             .arg("--python")
             .arg(venv_path.join("bin").join("python"))
             .arg("-r")
-            .arg(requirements_path)
-            .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
-                command: format!("uv pip install -r {}", requirements_path.display()),
-                message: e.to_string(),
-            })?;
-
-        if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
-                command: format!("uv pip install -r {}", requirements_path.display()),
-                message: String::from_utf8_lossy(&output.stderr).to_string(),
-            });
-        }
-
+            .arg(requirements_path);
+        let display = format!("uv pip install -r {}", requirements_path.display());
+        run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: display.clone(),
+            message,
+        })?;
         Ok(())
     }
 
@@ -290,6 +228,22 @@ impl UvClient {
     pub fn latest_installed_python(&self) -> Result<Option<PythonInfo>> {
         Ok(pick_latest_python(self.list_installed_pythons()?))
     }
+}
+
+/// Run a built uv `Command`, returning captured stdout on success.
+///
+/// Centralizes the spawn + non-zero-exit handling every uv call repeats.
+/// `make_err` builds the error from the failure message, letting each caller
+/// pick its own variant (most use [`ScoopError::UvCommandFailed`]; uninstall
+/// uses [`ScoopError::PythonUninstallFailed`]). It is invoked at most once.
+fn run_uv(mut cmd: Command, make_err: impl Fn(String) -> ScoopError) -> Result<Vec<u8>> {
+    let output = cmd.output().map_err(|e| make_err(e.to_string()))?;
+    if !output.status.success() {
+        return Err(make_err(
+            String::from_utf8_lossy(&output.stderr).to_string(),
+        ));
+    }
+    Ok(output.stdout)
 }
 
 /// Pick the highest-versioned entry using [`PythonVersion`]'s full `Ord`
