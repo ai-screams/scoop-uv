@@ -96,9 +96,9 @@ cargo test test_name -- --nocapture --test-threads=1
 
 ## Test Categories
 
-### Unit Tests (520 tests)
+### Unit Tests
 
-Located within source files using `#[cfg(test)]`:
+The bulk of the suite (600+ tests) lives within source files using `#[cfg(test)]`:
 
 ```rust
 #[cfg(test)]
@@ -184,6 +184,46 @@ proptest! {
 ```
 
 Located in `src/validate.rs`.
+
+### Parameterized Tests
+
+Using `rstest` `#[case]` tables for input/output matrices (e.g. version parsing,
+env-name validation) so each case reports independently:
+
+```rust
+use rstest::rstest;
+
+#[rstest]
+#[case::simple("myenv", true)]
+#[case::digit_start("123", false)]
+#[case::reserved("activate", false)]
+fn is_valid_env_name_cases(#[case] input: &str, #[case] expected: bool) {
+    assert_eq!(is_valid_env_name(input), expected);
+}
+```
+
+### Mutation Testing
+
+`cargo-mutants` verifies the suite actually *catches* bugs (not just that lines
+run). Config in `.cargo/mutants.toml`; CI runs it on changed lines per PR
+(`--in-diff`) and a full pass weekly.
+
+```bash
+cargo install cargo-mutants
+cargo mutants                 # full (scoped via mutants.toml)
+git diff origin/main.. | cargo mutants --in-diff /dev/stdin   # changed lines
+```
+
+### Fuzz Testing
+
+`cargo-fuzz` (libFuzzer) fuzzes the untrusted-input parsers. It lives in an
+isolated `fuzz/` workspace pinned to nightly, so it never affects the
+MSRV-1.85 build; CI runs the targets on a weekly schedule.
+
+```bash
+cargo install cargo-fuzz
+cargo +nightly fuzz run fuzz_env_name -- -max_total_time=60
+```
 
 ## Writing Tests
 
