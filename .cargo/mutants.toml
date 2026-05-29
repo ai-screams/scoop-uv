@@ -1,0 +1,25 @@
+# cargo-mutants configuration for scoop-uv
+# Docs: https://mutants.rs/
+#
+# Mutation testing verifies the test suite actually catches bugs (not just that
+# lines execute). We exclude code where a "missed" mutant is an acceptable gap
+# rather than a real test hole:
+#   - shell/**     : emits shell-script strings, validated at the integration level
+#   - cli/**       : thin handlers that shell out to `uv` (no uv on CI runners)
+#   - output/**    : terminal formatting and spinners (cosmetic)
+#   - i18n.rs      : locale glue
+#   - main.rs      : process entry / arg wiring
+#   - test_utils.rs: test-only helpers
+exclude_globs = [
+    "src/shell/**",
+    "src/cli/**",
+    "src/output/**",
+    "src/i18n.rs",
+    "src/main.rs",
+    "src/test_utils.rs",
+]
+
+# `cargo test` runs in well under a second; give each mutant generous headroom
+# so a slow machine doesn't report false timeouts.
+timeout_multiplier = 8.0
+minimum_test_timeout = 30

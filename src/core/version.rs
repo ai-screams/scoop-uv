@@ -335,6 +335,34 @@ mod tests {
         });
     }
 
+    /// Pins the exact depth boundary: with limit=1, traversal must still reach
+    /// the *immediate* parent. Distinguishes `depth > max` from `depth >= max`
+    /// (the latter would stop one directory too early).
+    #[test]
+    #[serial]
+    fn test_resolve_max_depth_reaches_immediate_parent() {
+        with_temp_scoop_home(|_temp_dir| {
+            let temp = TempDir::new().unwrap();
+            let parent = temp.path().join("a").join("b");
+            let deep = parent.join("c");
+            std::fs::create_dir_all(&deep).unwrap();
+
+            VersionService::set_local(&parent, "parentenv").unwrap();
+            VersionService::set_global("globalenv").unwrap();
+
+            // SAFETY: serial test, no concurrent env access.
+            unsafe {
+                std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "1");
+                assert_eq!(
+                    VersionService::resolve(&deep),
+                    Some("parentenv".to_string()),
+                    "limit=1 must still reach the immediate parent"
+                );
+                std::env::remove_var("SCOOP_RESOLVE_MAX_DEPTH");
+            }
+        });
+    }
+
     #[test]
     #[serial]
     fn test_resolve_fallback_to_global() {

@@ -832,6 +832,105 @@ mod tests {
         let err = result.unwrap_err();
         assert!(err.to_string().contains("must start with a letter"));
     }
+
+    // ==========================================================================
+    // Boundary / branch coverage (kills mutation-testing gaps)
+    // ==========================================================================
+
+    /// `validate_env_name` length check: exactly MAX is allowed, MAX+1 rejected.
+    #[test]
+    fn validate_env_name_length_boundary() {
+        assert!(validate_env_name(&"a".repeat(MAX_ENV_NAME_LENGTH)).is_ok());
+        let too_long = validate_env_name(&"a".repeat(MAX_ENV_NAME_LENGTH + 1));
+        assert!(too_long.is_err());
+        assert!(too_long.unwrap_err().to_string().contains("maximum length"));
+    }
+
+    #[test]
+    fn normalize_python_version_trims_whitespace() {
+        assert_eq!(normalize_python_version("  3.12  "), "3.12");
+        assert_eq!(normalize_python_version("3.12.0"), "3.12.0");
+        assert_eq!(normalize_python_version("\t3.13\n"), "3.13");
+    }
+
+    /// The digit/dot fallback accepts version-shaped strings the regex rejects
+    /// (e.g. a trailing dot). Pins the `||` fallback branch.
+    #[test]
+    fn is_valid_python_version_digit_dot_fallback() {
+        assert!(!VERSION_REGEX.is_match("3."), "precondition: regex rejects");
+        assert!(is_valid_python_version("3."));
+        assert!(is_valid_python_version("3.12.4.5"));
+    }
+
+    #[test]
+    fn validate_python_path_rejects_nonexistent() {
+        let err = validate_python_path(Path::new("/no/such/python")).unwrap_err();
+        assert!(err.to_string().contains("file not found"));
+    }
+
+    #[test]
+    fn validate_python_path_rejects_directory() {
+        let dir = tempfile::tempdir().unwrap();
+        let err = validate_python_path(dir.path()).unwrap_err();
+        assert!(err.to_string().contains("not a file"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn validate_python_path_rejects_non_executable_file() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("python");
+        std::fs::write(&file, "").unwrap();
+        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o644)).unwrap();
+        let err = validate_python_path(&file).unwrap_err();
+        assert!(err.to_string().contains("not executable"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn validate_python_path_accepts_executable_file() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("python");
+        std::fs::write(&file, "").unwrap();
+        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o755)).unwrap();
+        assert!(validate_python_path(&file).is_ok());
+    }
+
+    /// Create an executable shell script for `detect_python_version` tests.
+    #[cfg(unix)]
+    fn write_exec_script(dir: &Path, name: &str, body: &str) -> std::path::PathBuf {
+        use std::os::unix::fs::PermissionsExt;
+        let path = dir.join(name);
+        std::fs::write(&path, body).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        path
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn detect_python_version_parses_stdout() {
+        let dir = tempfile::tempdir().unwrap();
+        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\necho \"Python 3.12.7\"\n");
+        assert_eq!(detect_python_version(&script), Some("3.12.7".to_string()));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn detect_python_version_none_on_failure_exit() {
+        let dir = tempfile::tempdir().unwrap();
+        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\nexit 1\n");
+        assert_eq!(detect_python_version(&script), None);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn detect_python_version_none_on_non_python_output() {
+        let dir = tempfile::tempdir().unwrap();
+        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\necho \"bash 5.2\"\n");
+        assert_eq!(detect_python_version(&script), None);
+    }
 }
 
 // =============================================================================
