@@ -1,0 +1,103 @@
+# Mutation Testing (cargo-mutants)
+# Verifies the test suite catches injected bugs.
+#  - On PRs: only mutate changed lines (--in-diff) so it stays fast.
+#  - Weekly / manual: full run over the configured scope.
+
+name: Mutants
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * 1" # Monday 03:00 UTC
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  SCOOP_LANG: en
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  # Fast PR gate: mutate only the lines this PR changed.
+  incremental:
+    name: Mutants (diff)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: false
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "stable-ci"
+
+      - name: Install cargo-mutants
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants
+
+      - name: Build diff against base
+        run: git diff "origin/${{ github.base_ref }}"... > git.diff
+
+      - name: Run mutation tests on changed lines
+        run: cargo mutants --no-shuffle -vV --in-diff git.diff
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-incremental.out
+          path: mutants.out
+
+  # Weekly / on-demand: full run over the configured scope.
+  full:
+    name: Mutants (full)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: false
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "stable-ci"
+
+      - name: Install cargo-mutants
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants
+
+      - name: Run full mutation suite
+        run: cargo mutants --no-shuffle -vV
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutants-full.out
+          path: mutants.out

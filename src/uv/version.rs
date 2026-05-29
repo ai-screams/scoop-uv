@@ -46,34 +46,21 @@ pub fn format_version(version: (u32, u32, u32)) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn parse_plain() {
-        assert_eq!(parse("uv 0.5.14"), Some((0, 5, 14)));
-        assert_eq!(parse("uv 0.11.16"), Some((0, 11, 16)));
-    }
-
-    #[test]
-    fn parse_homebrew_suffix() {
-        assert_eq!(
-            parse("uv 0.11.16 (Homebrew 2026-05-21 aarch64-apple-darwin)"),
-            Some((0, 11, 16))
-        );
-    }
-
-    #[test]
-    fn parse_build_suffix() {
-        assert_eq!(parse("uv 0.5.14 (build 1234)"), Some((0, 5, 14)));
-    }
-
-    #[test]
-    fn parse_rejects_garbage() {
-        assert_eq!(parse(""), None);
-        assert_eq!(parse("uv"), None);
-        assert_eq!(parse("uv abc"), None);
-        assert_eq!(parse("uv 0.5"), None);
-        assert_eq!(parse("uv 0.5.abc"), None);
-        assert_eq!(parse("uv 0.5.14.1"), Some((0, 5, 14))); // extra segments ignored
+    #[rstest]
+    #[case::plain("uv 0.5.14", Some((0, 5, 14)))]
+    #[case::plain_higher("uv 0.11.16", Some((0, 11, 16)))]
+    #[case::homebrew_suffix("uv 0.11.16 (Homebrew 2026-05-21 aarch64-apple-darwin)", Some((0, 11, 16)))]
+    #[case::build_suffix("uv 0.5.14 (build 1234)", Some((0, 5, 14)))]
+    #[case::extra_segments_ignored("uv 0.5.14.1", Some((0, 5, 14)))]
+    #[case::empty("", None)]
+    #[case::name_only("uv", None)]
+    #[case::non_numeric("uv abc", None)]
+    #[case::missing_patch("uv 0.5", None)]
+    #[case::non_numeric_patch("uv 0.5.abc", None)]
+    fn parse_cases(#[case] input: &str, #[case] expected: Option<(u32, u32, u32)>) {
+        assert_eq!(parse(input), expected);
     }
 
     #[test]

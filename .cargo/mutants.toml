@@ -1,0 +1,40 @@
+# cargo-mutants configuration for scoop-uv
+# Docs: https://mutants.rs/
+#
+# Mutation testing verifies the test suite actually catches bugs (not just that
+# lines execute). We exclude code where a "missed" mutant is an acceptable gap
+# rather than a real test hole:
+#   - shell/**     : emits shell-script strings, validated at the integration level
+#   - cli/**       : thin handlers that shell out to `uv` (no uv on CI runners)
+#   - output/**    : terminal formatting and spinners (cosmetic)
+#   - i18n.rs      : locale glue
+#   - main.rs      : process entry / arg wiring
+#   - test_utils.rs: test-only helpers
+exclude_globs = [
+    "src/shell/**",
+    "src/cli/**",
+    "src/output/**",
+    "src/i18n.rs",
+    "src/main.rs",
+    "src/test_utils.rs",
+]
+
+# These UvClient methods only spawn `uv` and forward the result; the logic they
+# wrap (parsing, version matching, error mapping) lives in run_uv /
+# parse_python_list_json / PythonVersion and IS mutation-tested. Their own
+# success path is exercised only by #[ignore]d integration tests (need a real
+# uv + network), so unit-level mutation can't kill "return Ok(...)" mutants —
+# an acceptable gap, not a test hole.
+exclude_re = [
+    "UvClient::version",
+    "UvClient::create_venv",
+    "UvClient::install_python",
+    "UvClient::run_python_list",
+    "UvClient::uninstall_python",
+    "UvClient::pip_install",
+]
+
+# `cargo test` runs in well under a second; give each mutant generous headroom
+# so a slow machine doesn't report false timeouts.
+timeout_multiplier = 8.0
+minimum_test_timeout = 30

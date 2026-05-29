@@ -72,6 +72,8 @@ tempfile = "3.27"
 serial_test = "3.2"
 proptest = "1.11"
 insta = { version = "1.47", features = ["yaml"] }
+rstest = "0.26"
+serde_yaml = "0.9"
 
 [profile.release]
 lto = true

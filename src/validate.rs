@@ -481,50 +481,41 @@ pub fn detect_python_version(path: &Path) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn test_valid_env_names() {
-        assert!(is_valid_env_name("myenv"));
-        assert!(is_valid_env_name("MyEnv"));
-        assert!(is_valid_env_name("my-env"));
-        assert!(is_valid_env_name("my_env"));
-        assert!(is_valid_env_name("env123"));
-        assert!(is_valid_env_name("a"));
+    #[rstest]
+    #[case::simple("myenv", true)]
+    #[case::mixed_case("MyEnv", true)]
+    #[case::hyphen("my-env", true)]
+    #[case::underscore("my_env", true)]
+    #[case::trailing_digits("env123", true)]
+    #[case::single_char("a", true)]
+    #[case::empty("", false)]
+    #[case::digit_start("123", false)]
+    #[case::version_like("3.12", false)]
+    #[case::hyphen_start("-env", false)]
+    #[case::underscore_start("_env", false)]
+    #[case::space("my env", false)]
+    #[case::dot("my.env", false)]
+    #[case::reserved_activate("activate", false)]
+    #[case::reserved_activate_upper("ACTIVATE", false)]
+    #[case::reserved_list("list", false)]
+    #[case::reserved_version("version", false)]
+    fn is_valid_env_name_cases(#[case] input: &str, #[case] expected: bool) {
+        assert_eq!(is_valid_env_name(input), expected);
     }
 
-    #[test]
-    fn test_invalid_env_names() {
-        assert!(!is_valid_env_name(""));
-        assert!(!is_valid_env_name("123"));
-        assert!(!is_valid_env_name("3.12"));
-        assert!(!is_valid_env_name("-env"));
-        assert!(!is_valid_env_name("_env"));
-        assert!(!is_valid_env_name("my env"));
-        assert!(!is_valid_env_name("my.env"));
-    }
-
-    #[test]
-    fn test_reserved_names() {
-        assert!(!is_valid_env_name("activate"));
-        assert!(!is_valid_env_name("ACTIVATE"));
-        assert!(!is_valid_env_name("list"));
-        assert!(!is_valid_env_name("version"));
-    }
-
-    #[test]
-    fn test_valid_python_versions() {
-        assert!(is_valid_python_version("3"));
-        assert!(is_valid_python_version("3.12"));
-        assert!(is_valid_python_version("3.12.0"));
-        assert!(is_valid_python_version("3.12.0a1"));
-    }
-
-    #[test]
-    fn test_invalid_python_versions() {
-        assert!(!is_valid_python_version(""));
-        assert!(!is_valid_python_version("abc"));
-        assert!(!is_valid_python_version("v3.12")); // "v" prefix is invalid
-        assert!(!is_valid_python_version("3.12-beta")); // Hyphen is invalid
+    #[rstest]
+    #[case::major_only("3", true)]
+    #[case::major_minor("3.12", true)]
+    #[case::major_minor_patch("3.12.0", true)]
+    #[case::alpha_suffix("3.12.0a1", true)]
+    #[case::empty("", false)]
+    #[case::non_numeric("abc", false)]
+    #[case::v_prefix("v3.12", false)]
+    #[case::hyphen_beta("3.12-beta", false)]
+    fn is_valid_python_version_cases(#[case] input: &str, #[case] expected: bool) {
+        assert_eq!(is_valid_python_version(input), expected);
     }
 
     #[test]
@@ -840,6 +831,105 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(err.to_string().contains("must start with a letter"));
+    }
+
+    // ==========================================================================
+    // Boundary / branch coverage (kills mutation-testing gaps)
+    // ==========================================================================
+
+    /// `validate_env_name` length check: exactly MAX is allowed, MAX+1 rejected.
+    #[test]
+    fn validate_env_name_length_boundary() {
+        assert!(validate_env_name(&"a".repeat(MAX_ENV_NAME_LENGTH)).is_ok());
+        let too_long = validate_env_name(&"a".repeat(MAX_ENV_NAME_LENGTH + 1));
+        assert!(too_long.is_err());
+        assert!(too_long.unwrap_err().to_string().contains("maximum length"));
+    }
+
+    #[test]
+    fn normalize_python_version_trims_whitespace() {
+        assert_eq!(normalize_python_version("  3.12  "), "3.12");
+        assert_eq!(normalize_python_version("3.12.0"), "3.12.0");
+        assert_eq!(normalize_python_version("\t3.13\n"), "3.13");
+    }
+
+    /// The digit/dot fallback accepts version-shaped strings the regex rejects
+    /// (e.g. a trailing dot). Pins the `||` fallback branch.
+    #[test]
+    fn is_valid_python_version_digit_dot_fallback() {
+        assert!(!VERSION_REGEX.is_match("3."), "precondition: regex rejects");
+        assert!(is_valid_python_version("3."));
+        assert!(is_valid_python_version("3.12.4.5"));
+    }
+
+    #[test]
+    fn validate_python_path_rejects_nonexistent() {
+        let err = validate_python_path(Path::new("/no/such/python")).unwrap_err();
+        assert!(err.to_string().contains("file not found"));
+    }
+
+    #[test]
+    fn validate_python_path_rejects_directory() {
+        let dir = tempfile::tempdir().unwrap();
+        let err = validate_python_path(dir.path()).unwrap_err();
+        assert!(err.to_string().contains("not a file"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn validate_python_path_rejects_non_executable_file() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("python");
+        std::fs::write(&file, "").unwrap();
+        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o644)).unwrap();
+        let err = validate_python_path(&file).unwrap_err();
+        assert!(err.to_string().contains("not executable"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn validate_python_path_accepts_executable_file() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("python");
+        std::fs::write(&file, "").unwrap();
+        std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o755)).unwrap();
+        assert!(validate_python_path(&file).is_ok());
+    }
+
+    /// Create an executable shell script for `detect_python_version` tests.
+    #[cfg(unix)]
+    fn write_exec_script(dir: &Path, name: &str, body: &str) -> std::path::PathBuf {
+        use std::os::unix::fs::PermissionsExt;
+        let path = dir.join(name);
+        std::fs::write(&path, body).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        path
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn detect_python_version_parses_stdout() {
+        let dir = tempfile::tempdir().unwrap();
+        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\necho \"Python 3.12.7\"\n");
+        assert_eq!(detect_python_version(&script), Some("3.12.7".to_string()));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn detect_python_version_none_on_failure_exit() {
+        let dir = tempfile::tempdir().unwrap();
+        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\nexit 1\n");
+        assert_eq!(detect_python_version(&script), None);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn detect_python_version_none_on_non_python_output() {
+        let dir = tempfile::tempdir().unwrap();
+        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\necho \"bash 5.2\"\n");
+        assert_eq!(detect_python_version(&script), None);
     }
 }
 

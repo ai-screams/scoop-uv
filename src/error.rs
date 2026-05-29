@@ -116,146 +116,149 @@ pub enum ScoopError {
 // Display Implementation (i18n-aware)
 // ============================================================================
 
-impl fmt::Display for ScoopError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl ScoopError {
+    /// Render the localized message in an explicit `locale`, bypassing the
+    /// process-global current locale.
+    ///
+    /// rust-i18n stores the active locale as process-global state, so tests
+    /// that assert on [`Display`] output must serialize against any test that
+    /// flips the locale. Asserting via `message_in("en")` / `message_in("ko")`
+    /// instead is race-free and needs no `#[serial]`.
+    ///
+    /// [`Display`]: std::fmt::Display
+    pub fn message_in(&self, locale: &str) -> String {
         match self {
             Self::VirtualenvNotFound { name } => {
-                write!(f, "{}", t!("error.virtualenv_not_found", name = name))
+                t!("error.virtualenv_not_found", locale = locale, name = name).to_string()
             }
             Self::VirtualenvExists { name } => {
-                write!(f, "{}", t!("error.virtualenv_exists", name = name))
+                t!("error.virtualenv_exists", locale = locale, name = name).to_string()
             }
-            Self::InvalidEnvName { name, reason } => {
-                write!(
-                    f,
-                    "{}",
-                    t!("error.invalid_env_name", name = name, reason = reason)
-                )
-            }
-            Self::InvalidPythonVersion { version } => {
-                write!(
-                    f,
-                    "{}",
-                    t!("error.invalid_python_version", version = version)
-                )
-            }
-            Self::UvNotFound => write!(f, "{}", t!("error.uv_not_found")),
-            Self::UvCommandFailed { command, message } => {
-                write!(
-                    f,
-                    "{}",
-                    t!(
-                        "error.uv_command_failed",
-                        command = command,
-                        message = message
-                    )
-                )
-            }
+            Self::InvalidEnvName { name, reason } => t!(
+                "error.invalid_env_name",
+                locale = locale,
+                name = name,
+                reason = reason
+            )
+            .to_string(),
+            Self::InvalidPythonVersion { version } => t!(
+                "error.invalid_python_version",
+                locale = locale,
+                version = version
+            )
+            .to_string(),
+            Self::UvNotFound => t!("error.uv_not_found", locale = locale).to_string(),
+            Self::UvCommandFailed { command, message } => t!(
+                "error.uv_command_failed",
+                locale = locale,
+                command = command,
+                message = message
+            )
+            .to_string(),
             Self::PathError(msg) => {
-                write!(f, "{}", t!("error.path_error", message = msg))
+                t!("error.path_error", locale = locale, message = msg).to_string()
             }
-            Self::HomeNotFound => write!(f, "{}", t!("error.home_not_found")),
-            Self::Io(err) => {
-                write!(f, "{}", t!("error.io", message = err.to_string()))
-            }
+            Self::HomeNotFound => t!("error.home_not_found", locale = locale).to_string(),
+            Self::Io(err) => t!("error.io", locale = locale, message = err.to_string()).to_string(),
             Self::Json(err) => {
-                write!(f, "{}", t!("error.json", message = err.to_string()))
+                t!("error.json", locale = locale, message = err.to_string()).to_string()
             }
-            Self::VersionFileNotFound { path } => {
-                write!(
-                    f,
-                    "{}",
-                    t!("error.version_file_not_found", path = path.display())
-                )
-            }
+            Self::VersionFileNotFound { path } => t!(
+                "error.version_file_not_found",
+                locale = locale,
+                path = path.display()
+            )
+            .to_string(),
             Self::UnsupportedShell { shell } => {
-                write!(f, "{}", t!("error.unsupported_shell", shell = shell))
+                t!("error.unsupported_shell", locale = locale, shell = shell).to_string()
             }
-            Self::PythonNotInstalled { version } => {
-                write!(f, "{}", t!("error.python_not_installed", version = version))
-            }
-            Self::PythonInstallFailed { version, message } => {
-                write!(
-                    f,
-                    "{}",
-                    t!(
-                        "error.python_install_failed",
-                        version = version,
-                        message = message
-                    )
-                )
-            }
-            Self::PythonUninstallFailed { version, message } => {
-                write!(
-                    f,
-                    "{}",
-                    t!(
-                        "error.python_uninstall_failed",
-                        version = version,
-                        message = message
-                    )
-                )
-            }
-            Self::NoPythonVersions { pattern } => {
-                write!(f, "{}", t!("error.no_python_versions", pattern = pattern))
-            }
+            Self::PythonNotInstalled { version } => t!(
+                "error.python_not_installed",
+                locale = locale,
+                version = version
+            )
+            .to_string(),
+            Self::PythonInstallFailed { version, message } => t!(
+                "error.python_install_failed",
+                locale = locale,
+                version = version,
+                message = message
+            )
+            .to_string(),
+            Self::PythonUninstallFailed { version, message } => t!(
+                "error.python_uninstall_failed",
+                locale = locale,
+                version = version,
+                message = message
+            )
+            .to_string(),
+            Self::NoPythonVersions { pattern } => t!(
+                "error.no_python_versions",
+                locale = locale,
+                pattern = pattern
+            )
+            .to_string(),
             Self::InvalidArgument { message } => {
-                write!(f, "{}", t!("error.invalid_argument", message = message))
+                t!("error.invalid_argument", locale = locale, message = message).to_string()
             }
-            Self::PyenvNotFound => write!(f, "{}", t!("error.pyenv_not_found")),
+            Self::PyenvNotFound => t!("error.pyenv_not_found", locale = locale).to_string(),
             Self::PyenvEnvNotFound { name } => {
-                write!(f, "{}", t!("error.pyenv_env_not_found", name = name))
+                t!("error.pyenv_env_not_found", locale = locale, name = name).to_string()
             }
-            Self::VenvWrapperEnvNotFound { name } => {
-                write!(f, "{}", t!("error.venvwrapper_env_not_found", name = name))
-            }
+            Self::VenvWrapperEnvNotFound { name } => t!(
+                "error.venvwrapper_env_not_found",
+                locale = locale,
+                name = name
+            )
+            .to_string(),
             Self::CondaEnvNotFound { name } => {
-                write!(f, "{}", t!("error.conda_env_not_found", name = name))
+                t!("error.conda_env_not_found", locale = locale, name = name).to_string()
             }
-            Self::CorruptedEnvironment { name, reason } => {
-                write!(
-                    f,
-                    "{}",
-                    t!("error.corrupted_environment", name = name, reason = reason)
-                )
-            }
-            Self::PackageExtractionFailed { reason } => {
-                write!(
-                    f,
-                    "{}",
-                    t!("error.package_extraction_failed", reason = reason)
-                )
-            }
+            Self::CorruptedEnvironment { name, reason } => t!(
+                "error.corrupted_environment",
+                locale = locale,
+                name = name,
+                reason = reason
+            )
+            .to_string(),
+            Self::PackageExtractionFailed { reason } => t!(
+                "error.package_extraction_failed",
+                locale = locale,
+                reason = reason
+            )
+            .to_string(),
             Self::MigrationFailed { reason } => {
-                write!(f, "{}", t!("error.migration_failed", reason = reason))
+                t!("error.migration_failed", locale = locale, reason = reason).to_string()
             }
-            Self::MigrationNameConflict { name, existing } => {
-                write!(
-                    f,
-                    "{}",
-                    t!(
-                        "error.migration_name_conflict",
-                        name = name,
-                        path = existing.display()
-                    )
-                )
-            }
-            Self::InvalidPythonPath { path, reason } => {
-                write!(
-                    f,
-                    "{}",
-                    t!(
-                        "error.invalid_python_path",
-                        path = path.display(),
-                        reason = reason
-                    )
-                )
-            }
-            Self::CascadeAborted => write!(f, "{}", t!("error.cascade_aborted")),
-            Self::SelfUpdateFailed { message } => {
-                write!(f, "{}", t!("error.self_update_failed", message = message))
-            }
+            Self::MigrationNameConflict { name, existing } => t!(
+                "error.migration_name_conflict",
+                locale = locale,
+                name = name,
+                path = existing.display()
+            )
+            .to_string(),
+            Self::InvalidPythonPath { path, reason } => t!(
+                "error.invalid_python_path",
+                locale = locale,
+                path = path.display(),
+                reason = reason
+            )
+            .to_string(),
+            Self::CascadeAborted => t!("error.cascade_aborted", locale = locale).to_string(),
+            Self::SelfUpdateFailed { message } => t!(
+                "error.self_update_failed",
+                locale = locale,
+                message = message
+            )
+            .to_string(),
         }
+    }
+}
+
+impl fmt::Display for ScoopError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let locale = rust_i18n::locale();
+        write!(f, "{}", self.message_in(&locale))
     }
 }
 
@@ -298,30 +301,51 @@ impl ScoopError {
         }
     }
 
-    /// Returns a suggested fix for the error (if available)
-    pub fn suggestion(&self) -> Option<String> {
+    /// Returns a suggested fix for the error in an explicit `locale`.
+    ///
+    /// Locale-explicit sibling of [`suggestion`](Self::suggestion); use it in
+    /// tests to assert hint text without depending on the process-global locale.
+    pub fn suggestion_in(&self, locale: &str) -> Option<String> {
         match self {
-            Self::VirtualenvNotFound { name } => {
-                Some(t!("suggestion.virtualenv_not_found", name = name).to_string())
+            Self::VirtualenvNotFound { name } => Some(
+                t!(
+                    "suggestion.virtualenv_not_found",
+                    locale = locale,
+                    name = name
+                )
+                .to_string(),
+            ),
+            Self::VirtualenvExists { .. } => {
+                Some(t!("suggestion.virtualenv_exists", locale = locale).to_string())
             }
-            Self::VirtualenvExists { .. } => Some(t!("suggestion.virtualenv_exists").to_string()),
-            Self::InvalidEnvName { .. } => Some(t!("suggestion.invalid_env_name").to_string()),
-            Self::UvNotFound => Some(t!("suggestion.uv_not_found").to_string()),
-            Self::PythonNotInstalled { version } => {
-                Some(t!("suggestion.python_not_installed", version = version).to_string())
+            Self::InvalidEnvName { .. } => {
+                Some(t!("suggestion.invalid_env_name", locale = locale).to_string())
             }
-            Self::NoPythonVersions { .. } => Some(t!("suggestion.no_python_versions").to_string()),
-            Self::PyenvNotFound => Some(t!("suggestion.pyenv_not_found").to_string()),
+            Self::UvNotFound => Some(t!("suggestion.uv_not_found", locale = locale).to_string()),
+            Self::PythonNotInstalled { version } => Some(
+                t!(
+                    "suggestion.python_not_installed",
+                    locale = locale,
+                    version = version
+                )
+                .to_string(),
+            ),
+            Self::NoPythonVersions { .. } => {
+                Some(t!("suggestion.no_python_versions", locale = locale).to_string())
+            }
+            Self::PyenvNotFound => {
+                Some(t!("suggestion.pyenv_not_found", locale = locale).to_string())
+            }
             Self::PyenvEnvNotFound { .. }
             | Self::VenvWrapperEnvNotFound { .. }
             | Self::CondaEnvNotFound { .. } => {
-                Some(t!("suggestion.source_env_not_found").to_string())
+                Some(t!("suggestion.source_env_not_found", locale = locale).to_string())
             }
             Self::MigrationNameConflict { .. } => {
-                Some(t!("suggestion.migration_name_conflict").to_string())
+                Some(t!("suggestion.migration_name_conflict", locale = locale).to_string())
             }
             Self::InvalidPythonPath { .. } => {
-                Some(t!("suggestion.invalid_python_path").to_string())
+                Some(t!("suggestion.invalid_python_path", locale = locale).to_string())
             }
             // uv-backed operations failing mid-command often trace back to an
             // unhealthy uv (missing, too old, broken PATH). Point users at the
@@ -329,9 +353,17 @@ impl ScoopError {
             // don't run the version/health checks that doctor and self update do.
             Self::UvCommandFailed { .. }
             | Self::PythonInstallFailed { .. }
-            | Self::PythonUninstallFailed { .. } => Some(t!("suggestion.run_doctor").to_string()),
+            | Self::PythonUninstallFailed { .. } => {
+                Some(t!("suggestion.run_doctor", locale = locale).to_string())
+            }
             _ => None,
         }
+    }
+
+    /// Returns a suggested fix for the error (if available), in the current locale.
+    pub fn suggestion(&self) -> Option<String> {
+        let locale = rust_i18n::locale();
+        self.suggestion_in(&locale)
     }
 
     /// Returns the migration exit code for this error.
@@ -355,92 +387,124 @@ impl ScoopError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serial_test::serial;
+    use rstest::rstest;
     use std::io;
 
     #[test]
-    #[serial]
     fn test_virtualenv_not_found_message() {
         let err = ScoopError::VirtualenvNotFound {
             name: "myenv".to_string(),
         };
-        assert_eq!(err.to_string(), "Can't find 'myenv' environment");
+        assert_eq!(err.message_in("en"), "Can't find 'myenv' environment");
+    }
+
+    // ==========================================================================
+    // Localized rendering (per-call locale, no global mutation → no #[serial])
+    // ==========================================================================
+
+    #[test]
+    fn message_renders_in_korean() {
+        let err = ScoopError::VirtualenvNotFound {
+            name: "myenv".to_string(),
+        };
+        let ko = err.message_in("ko");
+        // Structural assertion: keeps the interpolated name, and is not English.
+        assert!(ko.contains("myenv"));
+        assert_ne!(ko, err.message_in("en"));
+    }
+
+    /// Every supported locale renders a non-empty message that preserves the
+    /// interpolated environment name. Runs in parallel — no global locale touched.
+    #[rstest]
+    #[case::en("en")]
+    #[case::ko("ko")]
+    #[case::ja("ja")]
+    #[case::pt_br("pt-BR")]
+    fn message_in_all_locales_keeps_name(#[case] locale: &str) {
+        let err = ScoopError::VirtualenvNotFound {
+            name: "proj-env".to_string(),
+        };
+        let msg = err.message_in(locale);
+        assert!(!msg.is_empty(), "[{locale}] message must not be empty");
+        assert!(msg.contains("proj-env"), "[{locale}] must keep the name");
     }
 
     #[test]
-    #[serial]
+    fn suggestion_renders_in_korean() {
+        let err = ScoopError::VirtualenvNotFound {
+            name: "myenv".to_string(),
+        };
+        let ko = err.suggestion_in("ko").expect("has suggestion");
+        assert!(ko.starts_with("→"));
+        assert!(ko.contains("myenv"));
+        assert_ne!(ko, err.suggestion_in("en").unwrap());
+    }
+
+    #[test]
     fn test_virtualenv_exists_message() {
         let err = ScoopError::VirtualenvExists {
             name: "existing".to_string(),
         };
-        assert_eq!(err.to_string(), "'existing' already exists");
+        assert_eq!(err.message_in("en"), "'existing' already exists");
     }
 
     #[test]
-    #[serial]
     fn test_invalid_env_name_message() {
         let err = ScoopError::InvalidEnvName {
             name: "123bad".to_string(),
             reason: "must start with a letter".to_string(),
         };
-        assert!(err.to_string().contains("123bad"));
-        assert!(err.to_string().contains("must start with a letter"));
+        assert!(err.message_in("en").contains("123bad"));
+        assert!(err.message_in("en").contains("must start with a letter"));
     }
 
     #[test]
-    #[serial]
     fn test_invalid_python_version_message() {
         let err = ScoopError::InvalidPythonVersion {
             version: "abc".to_string(),
         };
-        assert_eq!(err.to_string(), "Invalid Python version: abc");
+        assert_eq!(err.message_in("en"), "Invalid Python version: abc");
     }
 
     #[test]
-    #[serial]
     fn test_uv_not_found_message() {
         let err = ScoopError::UvNotFound;
-        let msg = err.to_string();
+        let msg = err.message_in("en");
         assert!(msg.contains("uv not found"));
         assert!(msg.contains("core engine"));
     }
 
     #[test]
-    #[serial]
     fn test_uv_command_failed_message() {
         let err = ScoopError::UvCommandFailed {
             command: "venv".to_string(),
             message: "Python not found".to_string(),
         };
-        assert!(err.to_string().contains("uv venv failed"));
-        assert!(err.to_string().contains("Python not found"));
+        assert!(err.message_in("en").contains("uv venv failed"));
+        assert!(err.message_in("en").contains("Python not found"));
     }
 
     #[test]
-    #[serial]
     fn test_path_error_message() {
         let err = ScoopError::PathError("invalid UTF-8".to_string());
-        assert_eq!(err.to_string(), "Path error: invalid UTF-8");
+        assert_eq!(err.message_in("en"), "Path error: invalid UTF-8");
     }
 
     #[test]
-    #[serial]
     fn test_home_not_found_message() {
         let err = ScoopError::HomeNotFound;
-        assert!(err.to_string().contains("Can't find home directory"));
+        assert!(err.message_in("en").contains("Can't find home directory"));
     }
 
     #[test]
-    #[serial]
     fn test_io_error_conversion() {
         let io_err = io::Error::new(io::ErrorKind::NotFound, "file missing");
         let err: ScoopError = io_err.into();
         assert!(matches!(err, ScoopError::Io(_)));
-        assert!(err.to_string().contains("file missing"));
+        assert!(err.message_in("en").contains("file missing"));
     }
 
     #[test]
-    #[serial]
     fn test_json_error_conversion() {
         let json_str = "{ invalid json }";
         let json_err: serde_json::Error =
@@ -450,75 +514,71 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_version_file_not_found_message() {
         let err = ScoopError::VersionFileNotFound {
             path: PathBuf::from("/some/path"),
         };
-        assert!(err.to_string().contains("/some/path"));
-        assert!(err.to_string().contains("parent directories"));
+        assert!(err.message_in("en").contains("/some/path"));
+        assert!(err.message_in("en").contains("parent directories"));
     }
 
     #[test]
-    #[serial]
     fn test_unsupported_shell_message() {
         let err = ScoopError::UnsupportedShell {
             shell: "fish".to_string(),
         };
-        assert_eq!(err.to_string(), "Shell 'fish' not supported");
+        assert_eq!(err.message_in("en"), "Shell 'fish' not supported");
     }
 
     #[test]
-    #[serial]
     fn test_python_not_installed_message() {
         let err = ScoopError::PythonNotInstalled {
             version: "3.13".to_string(),
         };
-        let msg = err.to_string();
+        let msg = err.message_in("en");
         assert!(msg.contains("3.13"));
         assert!(msg.contains("not installed"));
     }
 
     #[test]
-    #[serial]
     fn test_python_install_failed_message() {
         let err = ScoopError::PythonInstallFailed {
             version: "3.12".to_string(),
             message: "network error".to_string(),
         };
-        assert!(err.to_string().contains("Couldn't install"));
-        assert!(err.to_string().contains("3.12"));
-        assert!(err.to_string().contains("network error"));
+        assert!(err.message_in("en").contains("Couldn't install"));
+        assert!(err.message_in("en").contains("3.12"));
+        assert!(err.message_in("en").contains("network error"));
     }
 
     #[test]
-    #[serial]
     fn test_python_uninstall_failed_message() {
         let err = ScoopError::PythonUninstallFailed {
             version: "3.11".to_string(),
             message: "in use".to_string(),
         };
-        assert!(err.to_string().contains("Couldn't uninstall"));
-        assert!(err.to_string().contains("3.11"));
-        assert!(err.to_string().contains("in use"));
+        assert!(err.message_in("en").contains("Couldn't uninstall"));
+        assert!(err.message_in("en").contains("3.11"));
+        assert!(err.message_in("en").contains("in use"));
     }
 
     #[test]
-    #[serial]
     fn test_no_python_versions_message() {
         let err = ScoopError::NoPythonVersions {
             pattern: "2.7".to_string(),
         };
-        assert!(err.to_string().contains("2.7"));
+        assert!(err.message_in("en").contains("2.7"));
     }
 
     #[test]
-    #[serial]
     fn test_invalid_argument_message() {
         let err = ScoopError::InvalidArgument {
             message: "Cannot use --stable and --latest together".to_string(),
         };
-        assert_eq!(err.to_string(), "Cannot use --stable and --latest together");
+        assert_eq!(
+            err.message_in("en"),
+            "Cannot use --stable and --latest together"
+        );
     }
 
     // ==========================================================================
@@ -526,25 +586,22 @@ mod tests {
     // ==========================================================================
 
     #[test]
-    #[serial]
     fn test_io_error_not_found() {
         let io_err = io::Error::new(io::ErrorKind::NotFound, "file not found");
         let err: ScoopError = io_err.into();
         assert!(matches!(err, ScoopError::Io(_)));
-        assert!(err.to_string().contains("file not found"));
+        assert!(err.message_in("en").contains("file not found"));
     }
 
     #[test]
-    #[serial]
     fn test_io_error_permission_denied() {
         let io_err = io::Error::new(io::ErrorKind::PermissionDenied, "access denied");
         let err: ScoopError = io_err.into();
         assert!(matches!(err, ScoopError::Io(_)));
-        assert!(err.to_string().contains("access denied"));
+        assert!(err.message_in("en").contains("access denied"));
     }
 
     #[test]
-    #[serial]
     fn test_io_error_already_exists() {
         let io_err = io::Error::new(io::ErrorKind::AlreadyExists, "file exists");
         let err: ScoopError = io_err.into();
@@ -552,7 +609,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_io_error_preserves_kind() {
         let original = io::Error::new(io::ErrorKind::TimedOut, "operation timed out");
         let err: ScoopError = original.into();
@@ -565,7 +621,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_json_error_details() {
         // Invalid JSON syntax
         let json_err: serde_json::Error =
@@ -574,12 +629,11 @@ mod tests {
         assert!(matches!(err, ScoopError::Json(_)));
 
         // The error message should contain useful info
-        let msg = err.to_string();
+        let msg = err.message_in("en");
         assert!(msg.contains("JSON"));
     }
 
     #[test]
-    #[serial]
     fn test_result_type_alias() {
         // Verify that Result<T> is an alias for std::result::Result<T, ScoopError>
         fn returns_result() -> Result<i32> {
@@ -595,7 +649,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_source_chain() {
         use std::error::Error;
 
@@ -620,7 +673,6 @@ mod tests {
     // ==========================================================================
 
     #[test]
-    #[serial]
     fn test_error_messages_are_user_friendly() {
         // All error messages should be complete sentences or clear phrases
         let errors = vec![
@@ -635,7 +687,7 @@ mod tests {
         ];
 
         for err in errors {
-            let msg = err.to_string();
+            let msg = err.message_in("en");
             // Messages should not be empty
             assert!(!msg.is_empty(), "Error message should not be empty");
             // Messages should start with uppercase, quote, or 'u' (for 'uv')
@@ -649,14 +701,13 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_messages_include_context() {
         // Errors with context should include that context in the message
         let err = ScoopError::VirtualenvNotFound {
             name: "myenv".to_string(),
         };
         assert!(
-            err.to_string().contains("myenv"),
+            err.message_in("en").contains("myenv"),
             "Error should include the env name"
         );
 
@@ -664,7 +715,7 @@ mod tests {
             version: "abc".to_string(),
         };
         assert!(
-            err.to_string().contains("abc"),
+            err.message_in("en").contains("abc"),
             "Error should include the invalid version"
         );
 
@@ -672,17 +723,16 @@ mod tests {
             shell: "fish".to_string(),
         };
         assert!(
-            err.to_string().contains("fish"),
+            err.message_in("en").contains("fish"),
             "Error should include the shell name"
         );
     }
 
     #[test]
-    #[serial]
     fn test_error_suggestions_provide_hints() {
         // UvNotFound suggestion should include installation instructions
         let err = ScoopError::UvNotFound;
-        let suggestion = err.suggestion().expect("should have suggestion");
+        let suggestion = err.suggestion_in("en").expect("should have suggestion");
         assert!(
             suggestion.contains("curl") && suggestion.contains("astral.sh"),
             "UvNotFound suggestion should include install command"
@@ -692,7 +742,7 @@ mod tests {
         let err = ScoopError::PythonNotInstalled {
             version: "3.13".to_string(),
         };
-        let suggestion = err.suggestion().expect("should have suggestion");
+        let suggestion = err.suggestion_in("en").expect("should have suggestion");
         assert!(
             suggestion.contains("scoop install") && suggestion.contains("3.13"),
             "PythonNotInstalled suggestion should include scoop install"
@@ -700,11 +750,10 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_messages_no_sensitive_info() {
         // Ensure error messages don't leak sensitive paths or info
         let err = ScoopError::PathError("test path error".to_string());
-        let msg = err.to_string();
+        let msg = err.message_in("en");
         // Should not contain home directory patterns
         assert!(
             !msg.contains("/Users/") && !msg.contains("/home/"),
@@ -713,13 +762,12 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_invalid_env_name_provides_reason() {
         let err = ScoopError::InvalidEnvName {
             name: "123".to_string(),
             reason: "must start with a letter".to_string(),
         };
-        let msg = err.to_string();
+        let msg = err.message_in("en");
         assert!(msg.contains("123"), "Should include the invalid name");
         assert!(
             msg.contains("must start with a letter"),
@@ -728,13 +776,12 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_uv_command_failed_includes_details() {
         let err = ScoopError::UvCommandFailed {
             command: "venv".to_string(),
             message: "Python 3.15 not found".to_string(),
         };
-        let msg = err.to_string();
+        let msg = err.message_in("en");
         assert!(
             msg.contains("uv venv failed"),
             "Should indicate uv command failure"
@@ -746,12 +793,11 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_version_file_not_found_shows_path() {
         let err = ScoopError::VersionFileNotFound {
             path: PathBuf::from("/project/dir"),
         };
-        let msg = err.to_string();
+        let msg = err.message_in("en");
         assert!(msg.contains("/project/dir"), "Should include the path");
         assert!(
             msg.contains("parent directories"),
@@ -764,21 +810,18 @@ mod tests {
     // ==========================================================================
 
     #[test]
-    #[serial]
     fn test_error_code_env_not_found() {
         let err = ScoopError::VirtualenvNotFound { name: "x".into() };
         assert_eq!(err.code(), "ENV_NOT_FOUND");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_env_already_exists() {
         let err = ScoopError::VirtualenvExists { name: "x".into() };
         assert_eq!(err.code(), "ENV_ALREADY_EXISTS");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_env_invalid_name() {
         let err = ScoopError::InvalidEnvName {
             name: "x".into(),
@@ -788,7 +831,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_python_invalid_version() {
         let err = ScoopError::InvalidPythonVersion {
             version: "x".into(),
@@ -797,14 +839,12 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_uv_not_installed() {
         let err = ScoopError::UvNotFound;
         assert_eq!(err.code(), "UV_NOT_INSTALLED");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_uv_command_failed() {
         let err = ScoopError::UvCommandFailed {
             command: "x".into(),
@@ -814,28 +854,24 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_io_path_error() {
         let err = ScoopError::PathError("x".into());
         assert_eq!(err.code(), "IO_PATH_ERROR");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_io_home_not_found() {
         let err = ScoopError::HomeNotFound;
         assert_eq!(err.code(), "IO_HOME_NOT_FOUND");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_io_error() {
         let err = ScoopError::Io(io::Error::other("test"));
         assert_eq!(err.code(), "IO_ERROR");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_internal_json_error() {
         let json_err: serde_json::Error =
             serde_json::from_str::<serde_json::Value>("invalid").expect_err("should fail");
@@ -844,7 +880,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_config_version_file_not_found() {
         let err = ScoopError::VersionFileNotFound {
             path: PathBuf::new(),
@@ -853,14 +888,12 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_shell_not_supported() {
         let err = ScoopError::UnsupportedShell { shell: "x".into() };
         assert_eq!(err.code(), "SHELL_NOT_SUPPORTED");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_python_not_installed() {
         let err = ScoopError::PythonNotInstalled {
             version: "x".into(),
@@ -869,7 +902,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_python_install_failed() {
         let err = ScoopError::PythonInstallFailed {
             version: "x".into(),
@@ -879,7 +911,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_python_uninstall_failed() {
         let err = ScoopError::PythonUninstallFailed {
             version: "x".into(),
@@ -889,7 +920,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_python_no_matching_version() {
         let err = ScoopError::NoPythonVersions {
             pattern: "x".into(),
@@ -898,7 +928,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_arg_invalid() {
         let err = ScoopError::InvalidArgument {
             message: "x".into(),
@@ -907,35 +936,30 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_source_pyenv_not_found() {
         let err = ScoopError::PyenvNotFound;
         assert_eq!(err.code(), "SOURCE_PYENV_NOT_FOUND");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_source_pyenv_env_not_found() {
         let err = ScoopError::PyenvEnvNotFound { name: "x".into() };
         assert_eq!(err.code(), "SOURCE_PYENV_ENV_NOT_FOUND");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_source_venvwrapper_env_not_found() {
         let err = ScoopError::VenvWrapperEnvNotFound { name: "x".into() };
         assert_eq!(err.code(), "SOURCE_VENVWRAPPER_ENV_NOT_FOUND");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_source_conda_env_not_found() {
         let err = ScoopError::CondaEnvNotFound { name: "x".into() };
         assert_eq!(err.code(), "SOURCE_CONDA_ENV_NOT_FOUND");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_migrate_corrupted() {
         let err = ScoopError::CorruptedEnvironment {
             name: "x".into(),
@@ -945,21 +969,18 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_migrate_extraction_failed() {
         let err = ScoopError::PackageExtractionFailed { reason: "x".into() };
         assert_eq!(err.code(), "MIGRATE_EXTRACTION_FAILED");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_migrate_failed() {
         let err = ScoopError::MigrationFailed { reason: "x".into() };
         assert_eq!(err.code(), "MIGRATE_FAILED");
     }
 
     #[test]
-    #[serial]
     fn test_error_code_migrate_name_conflict() {
         let err = ScoopError::MigrationNameConflict {
             name: "x".into(),
@@ -969,7 +990,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_code_invalid_python_path() {
         let err = ScoopError::InvalidPythonPath {
             path: PathBuf::from("/bad/python"),
@@ -979,31 +999,28 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_invalid_python_path_message() {
         let err = ScoopError::InvalidPythonPath {
             path: PathBuf::from("/usr/bin/fake-python"),
             reason: "file not found".into(),
         };
-        let msg = err.to_string();
+        let msg = err.message_in("en");
         assert!(msg.contains("/usr/bin/fake-python"));
         assert!(msg.contains("file not found"));
     }
 
     #[test]
-    #[serial]
     fn test_invalid_python_path_suggestion() {
         let err = ScoopError::InvalidPythonPath {
             path: PathBuf::from("/bad/path"),
             reason: "not executable".into(),
         };
-        let suggestion = err.suggestion().expect("should have suggestion");
+        let suggestion = err.suggestion_in("en").expect("should have suggestion");
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("Python executable"));
     }
 
     #[test]
-    #[serial]
     fn test_all_error_codes_are_unique() {
         use std::collections::HashSet;
 
@@ -1077,7 +1094,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn test_error_codes_follow_naming_convention() {
         // All codes should be SCREAMING_SNAKE_CASE
         let codes = vec![
@@ -1123,170 +1139,182 @@ mod tests {
     // ==========================================================================
 
     #[test]
-    #[serial]
     fn test_suggestion_virtualenv_not_found_includes_name() {
         let err = ScoopError::VirtualenvNotFound {
             name: "myenv".into(),
         };
-        let suggestion = err.suggestion().unwrap();
+        let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("myenv"));
         assert!(suggestion.contains("scoop create"));
     }
 
     #[test]
-    #[serial]
     fn test_suggestion_virtualenv_exists() {
         let err = ScoopError::VirtualenvExists {
             name: "existing".into(),
         };
-        let suggestion = err.suggestion().unwrap();
+        let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("--force"));
     }
 
     #[test]
-    #[serial]
     fn test_suggestion_invalid_env_name() {
         let err = ScoopError::InvalidEnvName {
             name: "123".into(),
             reason: "must start with letter".into(),
         };
-        let suggestion = err.suggestion().unwrap();
+        let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("letter"));
     }
 
     #[test]
-    #[serial]
     fn test_suggestion_uv_not_found() {
         let err = ScoopError::UvNotFound;
-        let suggestion = err.suggestion().unwrap();
+        let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("curl"));
         assert!(suggestion.contains("astral.sh"));
     }
 
     #[test]
-    #[serial]
     fn test_suggestion_python_not_installed_includes_version() {
         let err = ScoopError::PythonNotInstalled {
             version: "3.13".into(),
         };
-        let suggestion = err.suggestion().unwrap();
+        let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("3.13"));
         assert!(suggestion.contains("scoop install"));
     }
 
     #[test]
-    #[serial]
     fn test_suggestion_no_python_versions() {
         let err = ScoopError::NoPythonVersions {
             pattern: "2.7".into(),
         };
-        let suggestion = err.suggestion().unwrap();
+        let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("scoop list --pythons"));
     }
 
     #[test]
-    #[serial]
-    fn test_no_suggestion_for_io_error() {
-        let err = ScoopError::Io(io::Error::other("test"));
-        assert!(err.suggestion().is_none());
+    fn test_suggestion_pyenv_not_found() {
+        let suggestion = ScoopError::PyenvNotFound.suggestion_in("en").unwrap();
+        assert!(suggestion.starts_with("→"));
     }
 
     #[test]
-    #[serial]
+    fn test_suggestion_source_env_not_found() {
+        let err = ScoopError::PyenvEnvNotFound { name: "x".into() };
+        assert!(err.suggestion_in("en").unwrap().starts_with("→"));
+    }
+
+    #[test]
+    fn test_suggestion_migration_name_conflict() {
+        let err = ScoopError::MigrationNameConflict {
+            name: "x".into(),
+            existing: PathBuf::from("/p"),
+        };
+        assert!(err.suggestion_in("en").unwrap().starts_with("→"));
+    }
+
+    #[test]
+    fn test_suggestion_wrapper_delegates_to_current_locale() {
+        // suggestion() delegates to suggestion_in(current locale); for an error
+        // that has a suggestion it must not collapse to None.
+        let err = ScoopError::VirtualenvNotFound {
+            name: "myenv".into(),
+        };
+        assert!(err.suggestion().is_some());
+    }
+
+    #[test]
+    fn test_no_suggestion_for_io_error() {
+        let err = ScoopError::Io(io::Error::other("test"));
+        assert!(err.suggestion_in("en").is_none());
+    }
+
+    #[test]
     fn test_no_suggestion_for_json_error() {
         let json_err: serde_json::Error =
             serde_json::from_str::<serde_json::Value>("invalid").expect_err("should fail");
         let err: ScoopError = json_err.into();
-        assert!(err.suggestion().is_none());
+        assert!(err.suggestion_in("en").is_none());
     }
 
     #[test]
-    #[serial]
     fn test_suggestion_uv_command_failed_points_to_doctor() {
         let err = ScoopError::UvCommandFailed {
             command: "venv".into(),
             message: "failed".into(),
         };
-        let suggestion = err.suggestion().unwrap();
+        let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("scoop doctor"));
     }
 
     #[test]
-    #[serial]
-    fn test_suggestion_python_install_failed_points_to_doctor() {
-        let err = ScoopError::PythonInstallFailed {
-            version: "3.13".into(),
-            message: "failed".into(),
-        };
-        let suggestion = err.suggestion().unwrap();
-        assert!(suggestion.contains("scoop doctor"));
-    }
-
-    #[test]
-    #[serial]
-    fn test_suggestion_python_uninstall_failed_points_to_doctor() {
-        let err = ScoopError::PythonUninstallFailed {
-            version: "3.13".into(),
-            message: "failed".into(),
-        };
-        let suggestion = err.suggestion().unwrap();
-        assert!(suggestion.contains("scoop doctor"));
-    }
-
-    #[test]
-    #[serial]
     fn test_no_suggestion_for_path_error() {
         let err = ScoopError::PathError("invalid path".into());
-        assert!(err.suggestion().is_none());
+        assert!(err.suggestion_in("en").is_none());
     }
 
     #[test]
-    #[serial]
     fn test_no_suggestion_for_home_not_found() {
         let err = ScoopError::HomeNotFound;
-        assert!(err.suggestion().is_none());
+        assert!(err.suggestion_in("en").is_none());
     }
 
     #[test]
-    #[serial]
     fn test_no_suggestion_for_version_file_not_found() {
         let err = ScoopError::VersionFileNotFound {
             path: PathBuf::from("/project"),
         };
-        assert!(err.suggestion().is_none());
+        assert!(err.suggestion_in("en").is_none());
     }
 
     #[test]
-    #[serial]
     fn test_no_suggestion_for_unsupported_shell() {
         let err = ScoopError::UnsupportedShell {
             shell: "fish".into(),
         };
-        assert!(err.suggestion().is_none());
+        assert!(err.suggestion_in("en").is_none());
     }
 
     #[test]
-    #[serial]
+    fn test_suggestion_python_install_failed_points_to_doctor() {
+        let err = ScoopError::PythonInstallFailed {
+            version: "3.12".into(),
+            message: "network error".into(),
+        };
+        assert!(err.suggestion_in("en").unwrap().contains("scoop doctor"));
+    }
+
+    #[test]
+    fn test_suggestion_python_uninstall_failed_points_to_doctor() {
+        let err = ScoopError::PythonUninstallFailed {
+            version: "3.11".into(),
+            message: "in use".into(),
+        };
+        assert!(err.suggestion_in("en").unwrap().contains("scoop doctor"));
+    }
+
+    #[test]
     fn test_no_suggestion_for_invalid_python_version() {
         let err = ScoopError::InvalidPythonVersion {
             version: "abc".into(),
         };
-        assert!(err.suggestion().is_none());
+        assert!(err.suggestion_in("en").is_none());
     }
 
     #[test]
-    #[serial]
     fn test_no_suggestion_for_invalid_argument() {
         let err = ScoopError::InvalidArgument {
             message: "conflicting flags".into(),
         };
-        assert!(err.suggestion().is_none());
+        assert!(err.suggestion_in("en").is_none());
     }
 }
