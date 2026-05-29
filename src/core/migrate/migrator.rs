@@ -164,9 +164,12 @@ impl Migrator {
             });
         }
 
-        // 3. Check if it can be installed (check uv python list output)
+        // 3. Check if it can be installed (uv knows a matching version)
         let available = self.uv.list_pythons()?;
-        let can_install = available.iter().any(|line| line.contains(&major_minor));
+        let prefix = format!("{major_minor}.");
+        let can_install = available
+            .iter()
+            .any(|info| info.version == major_minor || info.version.starts_with(&prefix));
 
         if can_install {
             Ok(PythonAvailability::CanInstall {
