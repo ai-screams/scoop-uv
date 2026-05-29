@@ -1,0 +1,42 @@
+[package]
+name = "scoop-uv-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.scoop-uv]
+path = ".."
+
+# Independent workspace: keeps the nightly-only fuzz crate out of the main
+# (MSRV 1.85) workspace so it never affects the project's build or CI matrix.
+[workspace]
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "fuzz_env_name"
+path = "fuzz_targets/fuzz_env_name.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_uv_version_parse"
+path = "fuzz_targets/fuzz_uv_version_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_python_version"
+path = "fuzz_targets/fuzz_python_version.rs"
+test = false
+doc = false
+bench = false

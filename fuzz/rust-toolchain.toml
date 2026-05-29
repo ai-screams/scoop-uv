@@ -1,0 +1,6 @@
+# cargo-fuzz (libFuzzer) requires a nightly toolchain for -Z sanitizer flags.
+# This directory-scoped override applies to all `cargo fuzz` invocations here
+# and does NOT affect the project root, which stays pinned at MSRV 1.85.
+[toolchain]
+channel = "nightly"
+components = ["rust-src"]

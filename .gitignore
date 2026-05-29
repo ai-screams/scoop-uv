@@ -107,6 +107,15 @@ htmlcov/
 # Benchmarks output
 criterion/
 
+# Mutation testing (cargo-mutants) output
+mutants.out/
+mutants.out.old/
+
+# Fuzzing (cargo-fuzz) build artifacts
+fuzz/target/
+fuzz/corpus/
+fuzz/artifacts/
+
 # ==============================================================================
 # Project Specific
 # ==============================================================================
