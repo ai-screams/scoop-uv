@@ -1201,6 +1201,37 @@ mod tests {
     }
 
     #[test]
+    fn test_suggestion_pyenv_not_found() {
+        let suggestion = ScoopError::PyenvNotFound.suggestion_in("en").unwrap();
+        assert!(suggestion.starts_with("→"));
+    }
+
+    #[test]
+    fn test_suggestion_source_env_not_found() {
+        let err = ScoopError::PyenvEnvNotFound { name: "x".into() };
+        assert!(err.suggestion_in("en").unwrap().starts_with("→"));
+    }
+
+    #[test]
+    fn test_suggestion_migration_name_conflict() {
+        let err = ScoopError::MigrationNameConflict {
+            name: "x".into(),
+            existing: PathBuf::from("/p"),
+        };
+        assert!(err.suggestion_in("en").unwrap().starts_with("→"));
+    }
+
+    #[test]
+    fn test_suggestion_wrapper_delegates_to_current_locale() {
+        // suggestion() delegates to suggestion_in(current locale); for an error
+        // that has a suggestion it must not collapse to None.
+        let err = ScoopError::VirtualenvNotFound {
+            name: "myenv".into(),
+        };
+        assert!(err.suggestion().is_some());
+    }
+
+    #[test]
     fn test_no_suggestion_for_io_error() {
         let err = ScoopError::Io(io::Error::other("test"));
         assert!(err.suggestion_in("en").is_none());
