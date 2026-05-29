@@ -10,6 +10,7 @@ use crate::error::{MigrationExitCode, Result, ScoopError};
 use crate::paths;
 use crate::uv::PythonInfo;
 use crate::uv::UvClient;
+use crate::validate::PythonVersion;
 
 use super::extractor::{ExtractionResult, PackageExtractor};
 use super::source::{EnvironmentStatus, SourceEnvironment};
@@ -164,12 +165,16 @@ impl Migrator {
             });
         }
 
-        // 3. Check if it can be installed (uv knows a matching version)
+        // 3. Check if it can be installed: uv knows a version matching the
+        //    requested major.minor. Reuse PythonVersion::matches (as steps 1-2
+        //    do via find_python) instead of ad-hoc string matching.
         let available = self.uv.list_pythons()?;
-        let prefix = format!("{major_minor}.");
-        let can_install = available
-            .iter()
-            .any(|info| info.version == major_minor || info.version.starts_with(&prefix));
+        let can_install = PythonVersion::parse(&major_minor).is_some_and(|req| {
+            available
+                .iter()
+                .filter_map(|info| PythonVersion::parse(&info.version))
+                .any(|have| req.matches(&have))
+        });
 
         if can_install {
             Ok(PythonAvailability::CanInstall {
