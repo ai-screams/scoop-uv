@@ -350,13 +350,25 @@ impl ScoopError {
     /// Returns error code string (e.g., "ENV_NOT_FOUND", "UV_COMMAND_FAILED")
     pub fn code(&self) -> &'static str
 
-    /// Returns user-friendly suggestion (if available)
+    /// Localized message in an explicit locale (bypasses the process-global
+    /// current locale). `Display` delegates to this with the current locale.
+    pub fn message_in(&self, locale: &str) -> String
+
+    /// Returns user-friendly suggestion in the current locale (if available)
     pub fn suggestion(&self) -> Option<String>
+
+    /// Locale-explicit sibling of `suggestion()` — useful for deterministic,
+    /// parallel tests that must not depend on the global locale.
+    pub fn suggestion_in(&self, locale: &str) -> Option<String>
 
     /// Returns migration-specific exit code
     pub fn migration_exit_code(&self) -> MigrationExitCode
 }
 ```
+
+> The `*_in(locale)` accessors pass `locale =` to rust-i18n's `t!`, which
+> bypasses the process-global current locale — this lets tests assert messages
+> deterministically without `#[serial]`.
 
 **Error Code String Prefixes:**
 - `ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)
