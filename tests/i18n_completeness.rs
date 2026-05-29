@@ -94,6 +94,10 @@ fn strip_line_comments(content: &str) -> String {
 
 /// Extract literal keys from `t!("key" ...)`, tolerating whitespace/newlines
 /// between `t!(` and the opening quote (multi-line invocations).
+///
+/// Only string-literal keys are detected — `t!(SOME_CONST)` or concatenated
+/// keys are not covered. Every `t!` in this codebase uses a literal key, so
+/// this is complete today; revisit if a non-literal key is ever introduced.
 fn extract_t_keys(code: &str) -> BTreeSet<String> {
     let bytes = code.as_bytes();
     let needle = b"t!(";
