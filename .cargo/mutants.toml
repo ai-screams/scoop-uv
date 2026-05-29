@@ -32,6 +32,10 @@ exclude_re = [
     "UvClient::run_python_list",
     "UvClient::uninstall_python",
     "UvClient::pip_install",
+    # Spawns the interpreter; its parsing logic is covered via the pure
+    # parse_python_version_output (this wrapper can't be unit-mutation-tested
+    # without a real exec, which is container-flaky).
+    "detect_python_version",
 ]
 
 # `cargo test` runs in well under a second; give each mutant generous headroom

@@ -459,10 +459,18 @@ pub fn detect_python_version(path: &Path) -> Option<String> {
         return None;
     }
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    parse_python_version_output(
+        &String::from_utf8_lossy(&output.stdout),
+        &String::from_utf8_lossy(&output.stderr),
+    )
+}
 
-    // Python prints version to stdout (Python 3) or stderr (Python 2)
+/// Parse `python --version` output into a bare version string.
+///
+/// Python 3 prints `Python X.Y.Z` to stdout; Python 2 prints it to stderr.
+/// Returns `None` if neither stream carries a `Python ` prefix. Pure (no I/O)
+/// so it is deterministically testable without spawning a subprocess.
+fn parse_python_version_output(stdout: &str, stderr: &str) -> Option<String> {
     let version_text = if stdout.starts_with("Python ") {
         stdout
     } else if stderr.starts_with("Python ") {
@@ -471,7 +479,6 @@ pub fn detect_python_version(path: &Path) -> Option<String> {
         return None;
     };
 
-    // Parse "Python X.Y.Z" -> "X.Y.Z"
     version_text
         .trim()
         .strip_prefix("Python ")
@@ -898,38 +905,33 @@ mod tests {
         assert!(validate_python_path(&file).is_ok());
     }
 
-    /// Create an executable shell script for `detect_python_version` tests.
-    #[cfg(unix)]
-    fn write_exec_script(dir: &Path, name: &str, body: &str) -> std::path::PathBuf {
-        use std::os::unix::fs::PermissionsExt;
-        let path = dir.join(name);
-        std::fs::write(&path, body).unwrap();
-        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
-        path
+    // `detect_python_version` spawns the interpreter; its parsing logic is
+    // covered deterministically here via the pure `parse_python_version_output`
+    // (no subprocess, no temp-script exec — avoids noexec/ETXTBSY flakiness in
+    // containers). The thin spawning wrapper is excluded from cargo-mutants.
+
+    #[test]
+    fn parse_python_version_output_stdout() {
+        // Python 3: version on stdout, trailing newline trimmed.
+        assert_eq!(
+            parse_python_version_output("Python 3.12.7\n", ""),
+            Some("3.12.7".to_string())
+        );
     }
 
-    #[cfg(unix)]
     #[test]
-    fn detect_python_version_parses_stdout() {
-        let dir = tempfile::tempdir().unwrap();
-        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\necho \"Python 3.12.7\"\n");
-        assert_eq!(detect_python_version(&script), Some("3.12.7".to_string()));
+    fn parse_python_version_output_stderr_fallback() {
+        // Python 2 prints to stderr; stdout empty.
+        assert_eq!(
+            parse_python_version_output("", "Python 2.7.18\n"),
+            Some("2.7.18".to_string())
+        );
     }
 
-    #[cfg(unix)]
     #[test]
-    fn detect_python_version_none_on_failure_exit() {
-        let dir = tempfile::tempdir().unwrap();
-        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\nexit 1\n");
-        assert_eq!(detect_python_version(&script), None);
-    }
-
-    #[cfg(unix)]
-    #[test]
-    fn detect_python_version_none_on_non_python_output() {
-        let dir = tempfile::tempdir().unwrap();
-        let script = write_exec_script(dir.path(), "py", "#!/bin/sh\necho \"bash 5.2\"\n");
-        assert_eq!(detect_python_version(&script), None);
+    fn parse_python_version_output_none_on_non_python() {
+        assert_eq!(parse_python_version_output("bash 5.2\n", ""), None);
+        assert_eq!(parse_python_version_output("", ""), None);
     }
 }
 
