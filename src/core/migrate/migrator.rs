@@ -222,6 +222,12 @@ impl Migrator {
 
     /// Creates the target scoop environment.
     fn create_target_env(&self, name: &str, python_version: &str, force: bool) -> Result<PathBuf> {
+        // Validate at the trust boundary: for `--rename` / `--auto-rename` the
+        // target name comes straight from CLI args and would otherwise reach
+        // the filesystem unchecked, allowing path traversal (e.g. `../../x`).
+        // Every other entry point already validates; this covers the migrate path.
+        crate::validate::validate_env_name(name)?;
+
         let target_path = paths::virtualenv_path(name)?;
 
         if target_path.exists() {
@@ -452,6 +458,23 @@ mod tests {
             source_type: SourceType::Pyenv,
             size_bytes: Some(1024),
             status,
+        }
+    }
+
+    #[test]
+    fn create_target_env_rejects_path_traversal_name() {
+        let migrator = Migrator {
+            uv: UvClient::with_path(PathBuf::from("/mock/uv")),
+            extractor: PackageExtractor::new(),
+        };
+        // Names that escape the virtualenvs dir must be rejected before any
+        // filesystem access (validation runs before uv is invoked).
+        for evil in ["../../etc/evil", "..", "foo/bar", "/abs", ".hidden"] {
+            let result = migrator.create_target_env(evil, "3.12", false);
+            assert!(
+                matches!(result, Err(ScoopError::InvalidEnvName { .. })),
+                "name {evil:?} should be rejected as invalid"
+            );
         }
     }
 

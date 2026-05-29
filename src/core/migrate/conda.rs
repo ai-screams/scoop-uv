@@ -92,12 +92,12 @@ impl CondaDiscovery {
         let cfg_path = env_path.join("pyvenv.cfg");
         if cfg_path.exists() {
             if let Ok(content) = fs::read_to_string(&cfg_path) {
-                for line in content.lines() {
-                    let line = line.trim();
-                    if let Some(version) = line.strip_prefix("version") {
-                        let version = version.trim_start_matches([' ', '=']);
-                        return Some(version.trim().to_string());
-                    }
+                // Reads both `version` (stdlib venv) and `version_info` (uv) keys.
+                if let Some(version) = content
+                    .lines()
+                    .find_map(crate::core::pyvenv_version_from_line)
+                {
+                    return Some(version);
                 }
             }
         }

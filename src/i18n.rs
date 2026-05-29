@@ -30,33 +30,24 @@ pub fn init() {
 pub fn detect_locale() -> String {
     // 1. SCOOP_LANG environment variable (override for scripts/CI)
     if let Ok(lang) = std::env::var("SCOOP_LANG") {
-        let normalized = normalize(&lang);
-        if is_supported(&normalized) {
-            return normalized;
-        }
-        // If SCOOP_LANG is set but unsupported, extract language code
-        let lang_code = normalized.split('-').next().unwrap_or("en");
-        if is_supported(lang_code) {
-            return lang_code.to_string();
+        if let Some(code) = resolve_supported(&lang) {
+            return code.to_string();
         }
     }
 
     // 2. Config file (scoop lang command)
     if let Ok(config) = Config::load() {
         if let Some(lang) = config.lang {
-            if is_supported(&lang) {
-                return lang;
+            if let Some(code) = resolve_supported(&lang) {
+                return code.to_string();
             }
         }
     }
 
     // 3. System locale
     if let Some(locale) = sys_locale::get_locale() {
-        let normalized = normalize(&locale);
-        // Extract language code (e.g., "ko-kr" -> "ko")
-        let lang_code = normalized.split('-').next().unwrap_or("en");
-        if is_supported(lang_code) {
-            return lang_code.to_string();
+        if let Some(code) = resolve_supported(&locale) {
+            return code.to_string();
         }
     }
 
@@ -64,14 +55,37 @@ pub fn detect_locale() -> String {
     "en".to_string()
 }
 
+/// Resolve any locale string to a supported canonical code.
+///
+/// Tries a full case-insensitive match first — so `pt-BR`, `pt-br`,
+/// `pt_BR`, and `pt-BR.UTF-8` all map to the canonical `"pt-BR"` — then
+/// falls back to the language-only prefix (e.g. `ko-KR` → `ko`). Returns
+/// `None` for unsupported locales.
+fn resolve_supported(raw: &str) -> Option<&'static str> {
+    let normalized = normalize(raw);
+    canonical_supported(&normalized)
+        .or_else(|| canonical_supported(normalized.split('-').next().unwrap_or("")))
+}
+
+/// Find the canonical supported code matching `candidate` case-insensitively.
+///
+/// Returns the code exactly as declared in [`SUPPORTED_LANGS`] (e.g. `"pt-BR"`),
+/// which is the form `rust_i18n::set_locale` and `locales/app.yml` expect.
+fn canonical_supported(candidate: &str) -> Option<&'static str> {
+    SUPPORTED_LANGS
+        .iter()
+        .map(|(code, _)| *code)
+        .find(|code| code.eq_ignore_ascii_case(candidate))
+}
+
 /// Get current locale.
 pub fn current() -> String {
     rust_i18n::locale().to_string()
 }
 
-/// Check if a language code is supported.
+/// Check if a language code is supported (case-insensitive).
 pub fn is_supported(lang: &str) -> bool {
-    SUPPORTED_LANGS.iter().any(|(code, _)| *code == lang)
+    canonical_supported(lang).is_some()
 }
 
 /// Get language display name for a code.
@@ -173,5 +187,54 @@ mod tests {
                 None => std::env::remove_var("SCOOP_LANG"),
             }
         }
+    }
+
+    #[test]
+    #[serial]
+    fn test_detect_pt_br_from_env_variants() {
+        let original = std::env::var("SCOOP_LANG").ok();
+
+        // SAFETY: serialized via #[serial]; env restored after test.
+        unsafe {
+            // All of these spellings must resolve to the canonical "pt-BR".
+            for input in ["pt-BR", "pt-br", "PT-BR", "pt_BR", "pt-BR.UTF-8"] {
+                std::env::set_var("SCOOP_LANG", input);
+                assert_eq!(
+                    detect_locale(),
+                    "pt-BR",
+                    "SCOOP_LANG={input} should resolve to canonical pt-BR"
+                );
+            }
+
+            match original {
+                Some(val) => std::env::set_var("SCOOP_LANG", val),
+                None => std::env::remove_var("SCOOP_LANG"),
+            }
+        }
+    }
+
+    #[test]
+    fn test_is_supported_is_case_insensitive() {
+        assert!(is_supported("pt-BR"));
+        assert!(is_supported("pt-br"));
+        assert!(is_supported("PT-BR"));
+        assert!(is_supported("EN"));
+        assert!(is_supported("Ja"));
+        assert!(!is_supported("fr"));
+        assert!(!is_supported("zh-CN")); // Not yet supported
+    }
+
+    #[test]
+    fn test_resolve_supported_full_then_prefix() {
+        // Full case-insensitive match (region preserved as canonical).
+        assert_eq!(resolve_supported("pt-BR.UTF-8"), Some("pt-BR"));
+        assert_eq!(resolve_supported("PT_br"), Some("pt-BR"));
+        // Language-only prefix fallback.
+        assert_eq!(resolve_supported("ko_KR"), Some("ko"));
+        assert_eq!(resolve_supported("en_US.UTF-8"), Some("en"));
+        assert_eq!(resolve_supported("ja"), Some("ja"));
+        // Unsupported.
+        assert_eq!(resolve_supported("fr"), None);
+        assert_eq!(resolve_supported("zh-CN"), None);
     }
 }
