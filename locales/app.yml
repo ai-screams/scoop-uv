@@ -735,6 +735,7 @@ error.use_missing_name:
   en: "Environment name required (use --unset to remove setting)"
   ko: "환경 이름 필요 (설정 제거는 --unset 사용)"
   pt-BR: "Nome do ambiente necessário (use --unset para remover configuração)"
+  ja: "環境名が必要です (設定を削除するには --unset を使用)"
 
 error.shell_missing_name:
   en: "Environment name required (use --unset to clear)"
