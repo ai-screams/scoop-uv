@@ -323,6 +323,13 @@ impl ScoopError {
             Self::InvalidPythonPath { .. } => {
                 Some(t!("suggestion.invalid_python_path").to_string())
             }
+            // uv-backed operations failing mid-command often trace back to an
+            // unhealthy uv (missing, too old, broken PATH). Point users at the
+            // one command that diagnoses all of those, since normal commands
+            // don't run the version/health checks that doctor and self update do.
+            Self::UvCommandFailed { .. }
+            | Self::PythonInstallFailed { .. }
+            | Self::PythonUninstallFailed { .. } => Some(t!("suggestion.run_doctor").to_string()),
             _ => None,
         }
     }
@@ -1201,12 +1208,36 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_no_suggestion_for_uv_command_failed() {
+    fn test_suggestion_uv_command_failed_points_to_doctor() {
         let err = ScoopError::UvCommandFailed {
             command: "venv".into(),
             message: "failed".into(),
         };
-        assert!(err.suggestion().is_none());
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.starts_with("→"));
+        assert!(suggestion.contains("scoop doctor"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_suggestion_python_install_failed_points_to_doctor() {
+        let err = ScoopError::PythonInstallFailed {
+            version: "3.13".into(),
+            message: "failed".into(),
+        };
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.contains("scoop doctor"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_suggestion_python_uninstall_failed_points_to_doctor() {
+        let err = ScoopError::PythonUninstallFailed {
+            version: "3.13".into(),
+            message: "failed".into(),
+        };
+        let suggestion = err.suggestion().unwrap();
+        assert!(suggestion.contains("scoop doctor"));
     }
 
     #[test]
@@ -1237,26 +1268,6 @@ mod tests {
     fn test_no_suggestion_for_unsupported_shell() {
         let err = ScoopError::UnsupportedShell {
             shell: "fish".into(),
-        };
-        assert!(err.suggestion().is_none());
-    }
-
-    #[test]
-    #[serial]
-    fn test_no_suggestion_for_python_install_failed() {
-        let err = ScoopError::PythonInstallFailed {
-            version: "3.12".into(),
-            message: "network error".into(),
-        };
-        assert!(err.suggestion().is_none());
-    }
-
-    #[test]
-    #[serial]
-    fn test_no_suggestion_for_python_uninstall_failed() {
-        let err = ScoopError::PythonUninstallFailed {
-            version: "3.11".into(),
-            message: "in use".into(),
         };
         assert!(err.suggestion().is_none());
     }

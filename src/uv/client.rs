@@ -3,6 +3,8 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use serde::Deserialize;
+
 use crate::error::{Result, ScoopError};
 use crate::validate::PythonVersion;
 
@@ -17,6 +19,30 @@ pub struct PythonInfo {
     pub installed: bool,
     /// Implementation (cpython, pypy, etc.)
     pub implementation: String,
+}
+
+/// One entry from `uv python list --output-format=json`.
+///
+/// uv emits more fields (`key`, `version_parts`, `os`, `arch`, ...); we only
+/// deserialize what `PythonInfo` needs and let serde drop the rest. A null
+/// `path` marks a version that is available for download but not installed.
+#[derive(Debug, Deserialize)]
+struct UvPythonEntry {
+    version: String,
+    path: Option<PathBuf>,
+    implementation: String,
+}
+
+impl From<UvPythonEntry> for PythonInfo {
+    fn from(entry: UvPythonEntry) -> Self {
+        let installed = entry.path.is_some();
+        Self {
+            version: entry.version,
+            path: entry.path,
+            installed,
+            implementation: entry.implementation,
+        }
+    }
 }
 
 /// Client for interacting with the uv CLI
@@ -102,53 +128,50 @@ impl UvClient {
         Ok(())
     }
 
-    /// List installed Python versions (raw output)
-    pub fn list_pythons(&self) -> Result<Vec<String>> {
-        let output = Command::new(&self.path)
-            .arg("python")
-            .arg("list")
-            .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
-                command: "uv python list".to_string(),
-                message: e.to_string(),
-            })?;
-
-        if !output.status.success() {
-            return Err(ScoopError::UvCommandFailed {
-                command: "uv python list".to_string(),
-                message: String::from_utf8_lossy(&output.stderr).to_string(),
-            });
-        }
-
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        let versions: Vec<String> = stdout.lines().map(|s| s.trim().to_string()).collect();
-
-        Ok(versions)
+    /// List all Python versions known to uv (installed and downloadable).
+    pub fn list_pythons(&self) -> Result<Vec<PythonInfo>> {
+        self.run_python_list(false)
     }
 
-    /// List installed Python versions with structured info
+    /// List only the Python versions installed on this machine.
     pub fn list_installed_pythons(&self) -> Result<Vec<PythonInfo>> {
-        let output = Command::new(&self.path)
-            .arg("python")
-            .arg("list")
-            .arg("--only-installed")
-            .output()
-            .map_err(|e| ScoopError::UvCommandFailed {
-                command: "uv python list --only-installed".to_string(),
-                message: e.to_string(),
-            })?;
+        self.run_python_list(true)
+    }
+
+    /// Run `uv python list --output-format=json` and parse the result.
+    ///
+    /// uv stabilized the JSON output in 0.5.14 (our [`MIN_VERSION`] floor), so
+    /// we rely on the structured schema instead of scraping the human-readable
+    /// table, which changes format between releases.
+    ///
+    /// [`MIN_VERSION`]: crate::uv::version::MIN_VERSION
+    fn run_python_list(&self, only_installed: bool) -> Result<Vec<PythonInfo>> {
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("python").arg("list").arg("--output-format=json");
+        if only_installed {
+            cmd.arg("--only-installed");
+        }
+
+        let display = if only_installed {
+            "uv python list --only-installed --output-format=json"
+        } else {
+            "uv python list --output-format=json"
+        };
+
+        let output = cmd.output().map_err(|e| ScoopError::UvCommandFailed {
+            command: display.to_string(),
+            message: e.to_string(),
+        })?;
 
         if !output.status.success() {
             return Err(ScoopError::UvCommandFailed {
-                command: "uv python list --only-installed".to_string(),
+                command: display.to_string(),
                 message: String::from_utf8_lossy(&output.stderr).to_string(),
             });
         }
 
         let stdout = String::from_utf8_lossy(&output.stdout);
-        let pythons = parse_python_list(&stdout);
-
-        Ok(pythons)
+        parse_python_list_json(&stdout)
     }
 
     /// Uninstall a Python version
@@ -284,55 +307,14 @@ fn pick_latest_python(pythons: Vec<PythonInfo>) -> Option<PythonInfo> {
         .map(|(_, info)| info)
 }
 
-/// Parse uv python list output into structured info
-fn parse_python_list(output: &str) -> Vec<PythonInfo> {
-    let mut pythons = Vec::new();
-
-    for line in output.lines() {
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-
-        // uv python list output format varies:
-        // "cpython-3.12.0-macos-aarch64-none    /path/to/python"
-        // "cpython-3.12.0    <download available>"
-        let parts: Vec<&str> = line.split_whitespace().collect();
-        if parts.is_empty() {
-            continue;
-        }
-
-        let version_part = parts[0];
-        let path = if parts.len() > 1 && !parts[1].starts_with('<') {
-            Some(PathBuf::from(parts[1]))
-        } else {
-            None
-        };
-
-        // Parse "cpython-3.12.0-macos-aarch64-none" format
-        let segments: Vec<&str> = version_part.split('-').collect();
-        if segments.is_empty() {
-            continue;
-        }
-
-        let implementation = segments[0].to_string();
-        let version = if segments.len() > 1 {
-            segments[1].to_string()
-        } else {
-            version_part.to_string()
-        };
-
-        let installed = path.is_some();
-
-        pythons.push(PythonInfo {
-            version,
-            path,
-            installed,
-            implementation,
-        });
-    }
-
-    pythons
+/// Parse `uv python list --output-format=json` stdout into structured info.
+///
+/// # Errors
+///
+/// Returns [`ScoopError::Json`] if the output is not the expected JSON array.
+fn parse_python_list_json(stdout: &str) -> Result<Vec<PythonInfo>> {
+    let entries: Vec<UvPythonEntry> = serde_json::from_str(stdout)?;
+    Ok(entries.into_iter().map(PythonInfo::from).collect())
 }
 
 impl Default for UvClient {
@@ -356,11 +338,11 @@ mod tests {
 
     #[test]
     fn test_parse_python_list_with_paths() {
-        let output = r#"
-cpython-3.12.0-macos-aarch64-none    /Users/test/.local/share/uv/python/cpython-3.12.0-macos-aarch64-none/bin/python3
-cpython-3.11.8-macos-aarch64-none    /Users/test/.local/share/uv/python/cpython-3.11.8-macos-aarch64-none/bin/python3
-"#;
-        let pythons = parse_python_list(output);
+        let json = r#"[
+            {"key":"cpython-3.12.0-macos-aarch64-none","version":"3.12.0","version_parts":{"major":3,"minor":12,"patch":0},"path":"/Users/test/.local/share/uv/python/cpython-3.12.0/bin/python3","symlink":null,"url":null,"os":"macos","variant":"default","implementation":"cpython","arch":"aarch64","libc":"none"},
+            {"key":"cpython-3.11.8-macos-aarch64-none","version":"3.11.8","version_parts":{"major":3,"minor":11,"patch":8},"path":"/Users/test/.local/share/uv/python/cpython-3.11.8/bin/python3","symlink":null,"url":null,"os":"macos","variant":"default","implementation":"cpython","arch":"aarch64","libc":"none"}
+        ]"#;
+        let pythons = parse_python_list_json(json).expect("valid json");
         assert_eq!(pythons.len(), 2);
 
         assert_eq!(pythons[0].version, "3.12.0");
@@ -374,11 +356,11 @@ cpython-3.11.8-macos-aarch64-none    /Users/test/.local/share/uv/python/cpython-
 
     #[test]
     fn test_parse_python_list_without_paths() {
-        let output = r#"
-cpython-3.13.0    <download available>
-cpython-3.12.0    <download available>
-"#;
-        let pythons = parse_python_list(output);
+        let json = r#"[
+            {"key":"cpython-3.13.0-macos-aarch64-none","version":"3.13.0","path":null,"implementation":"cpython"},
+            {"key":"cpython-3.12.0-macos-aarch64-none","version":"3.12.0","path":null,"implementation":"cpython"}
+        ]"#;
+        let pythons = parse_python_list_json(json).expect("valid json");
         assert_eq!(pythons.len(), 2);
 
         assert_eq!(pythons[0].version, "3.13.0");
@@ -388,12 +370,12 @@ cpython-3.12.0    <download available>
 
     #[test]
     fn test_parse_python_list_mixed() {
-        let output = r#"
-cpython-3.12.0-macos-aarch64-none    /path/to/python3
-cpython-3.11.0    <download available>
-pypy-3.10.0-macos-aarch64-none    /path/to/pypy
-"#;
-        let pythons = parse_python_list(output);
+        let json = r#"[
+            {"version":"3.12.0","path":"/path/to/python3","implementation":"cpython"},
+            {"version":"3.11.0","path":null,"implementation":"cpython"},
+            {"version":"3.10.0","path":"/path/to/pypy","implementation":"pypy"}
+        ]"#;
+        let pythons = parse_python_list_json(json).expect("valid json");
         assert_eq!(pythons.len(), 3);
 
         assert_eq!(pythons[0].implementation, "cpython");
@@ -408,8 +390,7 @@ pypy-3.10.0-macos-aarch64-none    /path/to/pypy
 
     #[test]
     fn test_parse_python_list_empty() {
-        let output = "";
-        let pythons = parse_python_list(output);
+        let pythons = parse_python_list_json("[]").expect("valid json");
         assert!(pythons.is_empty());
     }
 
@@ -439,109 +420,80 @@ pypy-3.10.0-macos-aarch64-none    /path/to/pypy
     }
 
     // =========================================================================
-    // parse_python_list Security & Edge Case Tests
+    // parse_python_list_json Security & Edge Case Tests
     // =========================================================================
 
-    /// Path traversal attempt in python path - should be parsed as-is (no sanitization needed)
-    /// The path is used for display only, not for execution
+    /// Malformed JSON surfaces as an error rather than silently parsing nothing.
+    #[test]
+    fn test_parse_python_list_json_malformed_is_error() {
+        assert!(parse_python_list_json("{ not json }").is_err());
+    }
+
+    /// A JSON object (not the expected array) is rejected.
+    #[test]
+    fn test_parse_python_list_json_non_array_is_error() {
+        assert!(parse_python_list_json(r#"{"version":"3.12.0"}"#).is_err());
+    }
+
+    /// Path is stored as-is - validation happens elsewhere, not in the parser.
     #[test]
     fn test_parse_python_list_path_traversal_attempt() {
-        let output = "cpython-3.12.0-macos-aarch64-none    ../../../etc/passwd\n";
-        let pythons = parse_python_list(output);
+        let json =
+            r#"[{"version":"3.12.0","path":"../../../etc/passwd","implementation":"cpython"}]"#;
+        let pythons = parse_python_list_json(json).expect("valid json");
 
         assert_eq!(pythons.len(), 1);
         assert_eq!(pythons[0].version, "3.12.0");
-        // Path is stored as-is - validation happens elsewhere
         assert_eq!(pythons[0].path, Some(PathBuf::from("../../../etc/passwd")));
     }
 
-    /// Very long input line - DoS resistance
-    #[test]
-    fn test_parse_python_list_very_long_line() {
-        let long_path = "/very/long/".to_string() + &"x".repeat(10_000);
-        let output = format!("cpython-3.12.0-macos-aarch64-none    {}\n", long_path);
-        let pythons = parse_python_list(&output);
-
-        assert_eq!(pythons.len(), 1);
-        assert_eq!(pythons[0].version, "3.12.0");
-        assert!(pythons[0].path.is_some());
-    }
-
-    /// Unicode in paths - should handle properly
+    /// Unicode in paths - should round-trip intact.
     #[test]
     fn test_parse_python_list_unicode_path() {
-        let output = "cpython-3.12.0-macos-aarch64-none    /Users/한글/python\n";
-        let pythons = parse_python_list(output);
+        let json =
+            r#"[{"version":"3.12.0","path":"/Users/한글/python","implementation":"cpython"}]"#;
+        let pythons = parse_python_list_json(json).expect("valid json");
 
         assert_eq!(pythons.len(), 1);
         assert_eq!(pythons[0].path, Some(PathBuf::from("/Users/한글/python")));
     }
 
-    /// Spaces in path (quoted) - note: current parser splits on whitespace
+    /// A missing `path` key deserializes to None (not installed).
     #[test]
-    fn test_parse_python_list_multiple_whitespace() {
-        // Multiple spaces between version and path
-        let output = "cpython-3.12.0-macos-aarch64-none        /path/to/python\n";
-        let pythons = parse_python_list(output);
+    fn test_parse_python_list_missing_path_is_not_installed() {
+        let json = r#"[{"version":"3.12.0","implementation":"cpython"}]"#;
+        let pythons = parse_python_list_json(json).expect("valid json");
 
         assert_eq!(pythons.len(), 1);
-        assert_eq!(pythons[0].path, Some(PathBuf::from("/path/to/python")));
+        assert!(!pythons[0].installed);
+        assert!(pythons[0].path.is_none());
     }
 
-    /// Only whitespace lines
+    /// Pre-release versions (e.g. 3.15.0b1) are preserved exactly as uv reports.
     #[test]
-    fn test_parse_python_list_only_whitespace() {
-        let output = "   \n\t\n  \t  \n";
-        let pythons = parse_python_list(output);
-        assert!(pythons.is_empty());
-    }
-
-    /// Malformed version string without hyphen
-    #[test]
-    fn test_parse_python_list_malformed_version() {
-        let output = "cpython\n";
-        let pythons = parse_python_list(output);
+    fn test_parse_python_list_prerelease_version() {
+        let json = r#"[{"version":"3.15.0b1","path":null,"implementation":"cpython"}]"#;
+        let pythons = parse_python_list_json(json).expect("valid json");
 
         assert_eq!(pythons.len(), 1);
-        // When no hyphen, the entire string becomes implementation
-        assert_eq!(pythons[0].implementation, "cpython");
-        assert_eq!(pythons[0].version, "cpython"); // Fallback to full string
+        assert_eq!(pythons[0].version, "3.15.0b1");
+        assert!(!pythons[0].installed);
     }
 
-    /// Version with many segments (e.g., 3.12.1.post1)
-    #[test]
-    fn test_parse_python_list_version_with_suffix() {
-        let output = "cpython-3.12.1-macos-aarch64-none    /path/to/python\n";
-        let pythons = parse_python_list(output);
-
-        assert_eq!(pythons.len(), 1);
-        assert_eq!(pythons[0].version, "3.12.1");
-        assert_eq!(pythons[0].implementation, "cpython");
-    }
-
-    /// Different Python implementations
+    /// Different Python implementations are preserved.
     #[test]
     fn test_parse_python_list_various_implementations() {
-        let output = r#"
-cpython-3.12.0    /path/cpython
-pypy-3.10.0    /path/pypy
-graalpy-3.11.0    /path/graalpy
-"#;
-        let pythons = parse_python_list(output);
+        let json = r#"[
+            {"version":"3.12.0","path":"/path/cpython","implementation":"cpython"},
+            {"version":"3.10.0","path":"/path/pypy","implementation":"pypy"},
+            {"version":"3.11.0","path":"/path/graalpy","implementation":"graalpy"}
+        ]"#;
+        let pythons = parse_python_list_json(json).expect("valid json");
 
         assert_eq!(pythons.len(), 3);
         assert_eq!(pythons[0].implementation, "cpython");
         assert_eq!(pythons[1].implementation, "pypy");
         assert_eq!(pythons[2].implementation, "graalpy");
-    }
-
-    /// Null bytes and control characters - should not panic
-    #[test]
-    fn test_parse_python_list_control_characters() {
-        // Lines are split by \n, so embedded \0 stays in line
-        let output = "cpython-3.12.0\x00-injected    /path\n";
-        let result = std::panic::catch_unwind(|| parse_python_list(output));
-        assert!(result.is_ok()); // Should not panic
     }
 
     // =========================================================================

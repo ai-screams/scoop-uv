@@ -769,6 +769,12 @@ suggestion.uv_not_found:
   pt-BR: "→ Instalar: curl -LsSf https://astral.sh/uv/install.sh | sh"
   ja: "→ インストール: curl -LsSf https://astral.sh/uv/install.sh | sh"
 
+suggestion.run_doctor:
+  en: "→ Run `scoop doctor` to diagnose (e.g. uv missing or below the minimum version)"
+  ko: "→ `scoop doctor`로 진단해 보세요 (예: uv 미설치 또는 최소 버전 미달)"
+  pt-BR: "→ Execute `scoop doctor` para diagnosticar (ex: uv ausente ou abaixo da versão mínima)"
+  ja: "→ `scoop doctor` を実行して診断してください (例: uv 未インストールまたは最小バージョン未満)"
+
 suggestion.python_not_installed:
   en: "→ Install: scoop install %{version}"
   ko: "→ 설치: scoop install %{version}"
