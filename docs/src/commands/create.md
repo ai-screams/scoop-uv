@@ -21,6 +21,7 @@ scoop create <name> [python-version]
 |--------|-------------|
 | `--force`, `-f` | Overwrite existing virtualenv |
 | `--python-path <PATH>` | Use a specific Python executable instead of version discovery |
+| `--install-python` | Install the requested Python version first if it's not already available (conflicts with `--python-path`) |
 
 ## Examples
 
@@ -28,6 +29,9 @@ scoop create <name> [python-version]
 scoop create myproject 3.12      # Create with Python 3.12
 scoop create webapp              # Create with latest Python
 scoop create myenv 3.11 --force  # Overwrite if exists
+
+# Auto-install Python first if the version is missing
+scoop create myenv 3.13 --install-python
 
 # Use a specific Python executable
 scoop create myenv --python-path /opt/python-debug/bin/python3
