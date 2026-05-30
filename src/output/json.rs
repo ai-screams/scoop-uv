@@ -233,6 +233,10 @@ pub struct StatusData {
     pub python: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
+    /// Best-effort installed-package count via the venv's own `pip list`.
+    /// `None` when the env has no pip (broken / not yet bootstrapped).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub packages: Option<usize>,
 }
 
 /// Detailed environment info for JSON output

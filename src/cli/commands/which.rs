@@ -10,15 +10,17 @@ use crate::{paths, validate};
 
 /// Execute the `which` command.
 pub fn execute(output: &Output, exe: &str, env: Option<&str>) -> Result<()> {
+    // Resolve the target env first so error messages can name *where* we
+    // would have looked even when the exe is rejected as path-like.
+    let env_name = resolve_target_env(env)?;
+
     // Reject path-like executable names to avoid escaping the bin directory.
     if exe.is_empty() || exe.contains('/') || exe.contains('\\') {
         return Err(ScoopError::ExecutableNotFound {
             exe: exe.to_string(),
-            env: env.unwrap_or("").to_string(),
+            env: env_name,
         });
     }
-
-    let env_name = resolve_target_env(env)?;
 
     let service = VirtualenvService::auto()?;
     if !service.exists(&env_name)? {

@@ -1,44 +1,11 @@
 //! Handler for the `scoop info` command
 
-use std::path::Path;
-use std::process::Command;
-
-use crate::core::{VirtualenvService, get_active_env};
+use crate::core::{VirtualenvService, get_active_env, list_installed_packages};
 use crate::error::{Result, ScoopError};
 use crate::output::{EnvInfoData, Output, PackagesInfo, format_size};
 use crate::paths::{abbreviate_home, calculate_dir_size};
 
 const DEFAULT_PACKAGE_LIMIT: usize = 5;
-
-/// Get installed packages using pip list
-fn get_packages(venv_path: &Path) -> Vec<(String, String)> {
-    let pip_path = venv_path.join("bin").join("pip");
-
-    if !pip_path.exists() {
-        return Vec::new();
-    }
-
-    let output = Command::new(&pip_path)
-        .args(["list", "--format=json"])
-        .output();
-
-    match output {
-        Ok(output) if output.status.success() => {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            serde_json::from_str::<Vec<serde_json::Value>>(&stdout)
-                .unwrap_or_default()
-                .into_iter()
-                .filter_map(|p| {
-                    Some((
-                        p.get("name")?.as_str()?.to_string(),
-                        p.get("version")?.as_str()?.to_string(),
-                    ))
-                })
-                .collect()
-        }
-        _ => Vec::new(),
-    }
-}
 
 /// Execute the info command
 pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -> Result<()> {
@@ -65,7 +32,7 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
     };
 
     // Get packages with truncation
-    let packages = get_packages(&path);
+    let packages = list_installed_packages(&path);
     let limit = if all_packages {
         usize::MAX
     } else {
@@ -131,38 +98,6 @@ mod tests {
     use super::*;
     use crate::test_utils::with_temp_scoop_home;
     use serial_test::serial;
-    use tempfile::TempDir;
-
-    // =========================================================================
-    // get_packages Tests
-    // =========================================================================
-
-    #[test]
-    fn get_packages_nonexistent_path_returns_empty() {
-        let path = Path::new("/nonexistent/path/to/venv");
-        let packages = get_packages(path);
-        assert!(packages.is_empty());
-    }
-
-    #[test]
-    fn get_packages_no_pip_returns_empty() {
-        let temp = TempDir::new().unwrap();
-        // Create a directory without pip
-        std::fs::create_dir_all(temp.path().join("bin")).unwrap();
-
-        let packages = get_packages(temp.path());
-        assert!(packages.is_empty());
-    }
-
-    #[test]
-    fn get_packages_empty_bin_returns_empty() {
-        let temp = TempDir::new().unwrap();
-        // bin directory exists but no pip
-        std::fs::create_dir_all(temp.path().join("bin")).unwrap();
-
-        let packages = get_packages(temp.path());
-        assert!(packages.is_empty());
-    }
 
     // =========================================================================
     // execute Error Path Tests

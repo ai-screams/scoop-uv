@@ -8,6 +8,8 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use rust_i18n::t;
+
 use crate::core::VirtualenvService;
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
@@ -26,7 +28,7 @@ pub fn execute(_output: &Output, env_name: &str, command: &[String]) -> Result<(
 
     if command.is_empty() {
         return Err(ScoopError::InvalidArgument {
-            message: "scoop run requires a command to execute".to_string(),
+            message: t!("run.empty_command").to_string(),
         });
     }
 

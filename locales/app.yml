@@ -87,6 +87,15 @@ create.installing_python:
   ja: "Python %{version} は未インストール — 今インストールします..."
 
 # ============================================================================
+# Run command
+# ============================================================================
+run.empty_command:
+  en: "scoop run requires a command to execute"
+  ko: "scoop run은 실행할 명령이 필요해요"
+  pt-BR: "scoop run requer um comando para executar"
+  ja: "scoop run には実行するコマンドが必要です"
+
+# ============================================================================
 # Remove command
 # ============================================================================
 remove.path:

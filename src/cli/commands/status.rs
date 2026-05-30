@@ -6,10 +6,15 @@
 
 use rust_i18n::t;
 
-use crate::core::{VersionService, VirtualenvService, get_active_env};
+use crate::core::{VersionService, VirtualenvService, get_active_env, list_installed_packages};
 use crate::error::Result;
 use crate::output::{Output, StatusData};
 use crate::paths::abbreviate_home;
+
+/// Sentinel state strings — kept as constants so the JSON discriminator and
+/// the source-comparison in `emit_env` can't drift apart.
+const SOURCE_ACTIVE: &str = "scoop_active_env";
+const SOURCE_VERSION_FILE: &str = "version_file";
 
 /// What the active-env resolver returned, split into the cases that matter
 /// for `status` output.
@@ -53,8 +58,8 @@ pub fn execute(output: &Output) -> Result<()> {
     match state {
         State::None => emit_none(output, json),
         State::System => emit_system(output, json),
-        State::Active(name) => emit_env(output, json, &name, "scoop_active_env"),
-        State::Configured(name) => emit_env(output, json, &name, "version_file"),
+        State::Active(name) => emit_env(output, json, &name, SOURCE_ACTIVE),
+        State::Configured(name) => emit_env(output, json, &name, SOURCE_VERSION_FILE),
     }
     Ok(())
 }
@@ -70,6 +75,7 @@ fn emit_none(output: &Output, json: bool) {
                 path: None,
                 python: None,
                 created_at: None,
+                packages: None,
             },
         );
         return;
@@ -89,6 +95,7 @@ fn emit_system(output: &Output, json: bool) {
                 path: None,
                 python: None,
                 created_at: None,
+                packages: None,
             },
         );
         return;
@@ -107,12 +114,15 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
 
     let python = metadata.as_ref().map(|m| m.python_version.clone());
     let created_at = metadata.as_ref().map(|m| m.created_at.to_rfc3339());
+    // Best-effort package count from the venv's own pip. `None` distinguishes
+    // "env has no pip" (broken / not yet bootstrapped) from "0 packages".
+    let packages = path.as_deref().map(|p| list_installed_packages(p).len());
 
     if json {
         output.json_success(
             "status",
             StatusData {
-                state: if source == "scoop_active_env" {
+                state: if source == SOURCE_ACTIVE {
                     "active"
                 } else {
                     "configured"
@@ -122,12 +132,15 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
                 path: path.as_ref().map(|p| p.display().to_string()),
                 python: python.clone(),
                 created_at: created_at.clone(),
+                packages,
             },
         );
         return;
     }
 
     let w = 10;
+    // Direct stdout: `status` *is* its own output — `--quiet` users still want
+    // the resolved state, matching how `resolve`/`info` print their result.
     println!("{:w$}{}", "Name:", name);
     println!("{:w$}{}", "Source:", source);
     println!("{:w$}{}", "Python:", python.as_deref().unwrap_or("-"));
@@ -142,6 +155,12 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
         let date = m.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
         println!("{:w$}{}", "Created:", date);
     }
+    if let Some(n) = packages {
+        println!("{:w$}{}", "Packages:", n);
+    }
+    // Note: backlog item 9 also asks for "Last used: ...". Deferred until the
+    // companion gc/last_used metadata work lands — bin/python mtime tracks
+    // creation, not usage, and would be misleading.
 }
 
 #[cfg(test)]
