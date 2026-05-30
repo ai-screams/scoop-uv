@@ -17,6 +17,7 @@ pub fn execute(
     python: &str,
     python_path: Option<&Path>,
     force: bool,
+    install_python: bool,
 ) -> Result<()> {
     let service = VirtualenvService::auto()?;
 
@@ -73,6 +74,16 @@ pub fn execute(
         output.info(&t!("create.activate_hint", name = name));
     } else {
         // Standard version-based mode
+
+        // Lazy install: opt-in. If the requested version isn't installed yet,
+        // ask uv to fetch it before handing off to venv creation. Without the
+        // flag, an unavailable version still surfaces as the usual uv error,
+        // so default behaviour is unchanged.
+        if install_python && !service.is_python_installed(python)? {
+            output.info(&t!("create.installing_python", version = python));
+            service.install_python(python)?;
+        }
+
         output.info(&t!("create.creating", name = name, python = python));
 
         let path = service.create(name, python)?;

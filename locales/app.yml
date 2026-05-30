@@ -80,6 +80,12 @@ create.creating_with_path:
   pt-BR: "Criando '%{name}' (Python: %{path})..."
   ja: "'%{name}' を作成中 (Python: %{path})..."
 
+create.installing_python:
+  en: "Python %{version} is not installed — installing now..."
+  ko: "Python %{version}이(가) 설치되어 있지 않아 설치합니다..."
+  pt-BR: "Python %{version} não está instalado — instalando agora..."
+  ja: "Python %{version} は未インストール — 今インストールします..."
+
 # ============================================================================
 # Remove command
 # ============================================================================

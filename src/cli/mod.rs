@@ -226,6 +226,10 @@ pub enum Commands {
         #[arg(short, long)]
         force: bool,
 
+        /// Install the requested Python version first if it is not already available
+        #[arg(long, conflicts_with = "python_path")]
+        install_python: bool,
+
         /// Output as JSON
         #[arg(long)]
         json: bool,

@@ -147,6 +147,19 @@ impl VirtualenvService {
         Ok(())
     }
 
+    /// Check whether a Python version matching `version` is already installed
+    /// via uv. Thin pass-through to [`UvClient::find_python`] so command
+    /// handlers don't need direct access to the private `uv` field.
+    pub fn is_python_installed(&self, version: &str) -> Result<bool> {
+        Ok(self.uv.find_python(version)?.is_some())
+    }
+
+    /// Install a Python version through uv. Thin pass-through that lets command
+    /// handlers stay decoupled from the private `uv` field.
+    pub fn install_python(&self, version: &str) -> Result<()> {
+        self.uv.install_python(version)
+    }
+
     /// Check if a virtual environment exists
     pub fn exists(&self, name: &str) -> Result<bool> {
         let path = paths::virtualenv_path(name)?;
