@@ -59,6 +59,7 @@ fn resolve_target_env(explicit: Option<&str>) -> Result<String> {
         return Ok(name.to_string());
     }
     get_active_env()
+        .filter(|n| !n.is_empty())
         .or_else(VersionService::resolve_current)
         .filter(|n| n != "system")
         .ok_or(ScoopError::NoActiveEnvironment)

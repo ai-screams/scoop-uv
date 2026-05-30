@@ -400,6 +400,13 @@ pub enum Commands {
         command: SelfCommand,
     },
 
+    /// Show the current environment status
+    Status {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Print the full path to an executable in an environment
     Which {
         /// Name of the executable to locate (e.g., python, pip)

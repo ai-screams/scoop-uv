@@ -217,6 +217,24 @@ pub struct WhichData {
     pub path: String,
 }
 
+/// `scoop status` response data
+#[derive(Serialize)]
+pub struct StatusData {
+    /// `"active"` (shell-activated), `"configured"` (version-file), `"system"`, or `"none"`.
+    pub state: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// Where the env name came from: `"scoop_active_env"` or `"version_file"`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub python: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+}
+
 /// Detailed environment info for JSON output
 #[derive(Serialize)]
 pub struct EnvInfoData {

@@ -822,6 +822,27 @@ suggestion.invalid_python_path:
   ja: "→ 有効な Python 実行ファイルのパスを指定してください (例: /usr/bin/python3)"
 
 # ============================================================================
+# Status command
+# ============================================================================
+status.no_env:
+  en: "No environment configured"
+  ko: "설정된 환경이 없어요"
+  pt-BR: "Nenhum ambiente configurado"
+  ja: "設定された環境がありません"
+
+status.hint_use:
+  en: "→ Activate one: scoop use <name>"
+  ko: "→ 활성화: scoop use <이름>"
+  pt-BR: "→ Ative um: scoop use <nome>"
+  ja: "→ 有効化: scoop use <名前>"
+
+status.system_python:
+  en: "Using system Python (no virtualenv active)"
+  ko: "시스템 Python 사용 중 (가상환경 비활성)"
+  pt-BR: "Usando Python do sistema (nenhum virtualenv ativo)"
+  ja: "システム Python を使用中 (仮想環境は無効)"
+
+# ============================================================================
 # Which command
 # ============================================================================
 error.no_active_environment:
