@@ -407,6 +407,16 @@ pub enum Commands {
         json: bool,
     },
 
+    /// Run a command inside an environment without activating it
+    Run {
+        /// Name of the virtual environment
+        env: String,
+
+        /// Command and arguments to execute (use -- to separate, e.g. `scoop run myenv -- python x.py`)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 1..)]
+        command: Vec<String>,
+    },
+
     /// Print the full path to an executable in an environment
     Which {
         /// Name of the executable to locate (e.g., python, pip)

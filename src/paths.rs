@@ -132,6 +132,52 @@ pub fn calculate_dir_size(path: &std::path::Path) -> std::io::Result<u64> {
     Ok(total)
 }
 
+/// Locate `exe` inside `dir`, returning the full path if a matching file
+/// exists. On Windows the standard executable extensions are probed in turn.
+///
+/// Shared by `scoop which` (display the resolved path) and `scoop run`
+/// (preflight a program lookup against the env's `bin/` before spawning).
+///
+/// # Examples
+///
+/// ```
+/// # use std::path::PathBuf;
+/// use scoop_uv::paths::find_executable_in;
+///
+/// let dir = tempfile::tempdir().unwrap();
+/// std::fs::write(dir.path().join("python"), b"").unwrap();
+/// assert_eq!(
+///     find_executable_in(dir.path(), "python"),
+///     Some(dir.path().join("python")),
+/// );
+/// assert!(find_executable_in(dir.path(), "missing").is_none());
+/// ```
+pub fn find_executable_in(dir: &std::path::Path, exe: &str) -> Option<PathBuf> {
+    executable_candidates(exe)
+        .into_iter()
+        .map(|name| dir.join(name))
+        .find(|p| p.is_file())
+}
+
+#[cfg(windows)]
+fn executable_candidates(exe: &str) -> Vec<String> {
+    if exe.contains('.') {
+        vec![exe.to_string()]
+    } else {
+        vec![
+            exe.to_string(),
+            format!("{exe}.exe"),
+            format!("{exe}.bat"),
+            format!("{exe}.cmd"),
+        ]
+    }
+}
+
+#[cfg(not(windows))]
+fn executable_candidates(exe: &str) -> Vec<String> {
+    vec![exe.to_string()]
+}
+
 /// Abbreviate home directory to `~` for display.
 ///
 /// # Examples
@@ -484,5 +530,61 @@ mod tests {
         let path = PathBuf::from("/");
         let result = abbreviate_home(&path);
         assert_eq!(result, "/");
+    }
+
+    // ==========================================================================
+    // find_executable_in / executable_candidates Tests
+    // ==========================================================================
+
+    #[test]
+    fn find_executable_in_locates_existing_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let exe = dir.path().join("python");
+        std::fs::write(&exe, b"").unwrap();
+        assert_eq!(find_executable_in(dir.path(), "python"), Some(exe));
+    }
+
+    #[test]
+    fn find_executable_in_returns_none_for_missing() {
+        let dir = tempfile::tempdir().unwrap();
+        assert!(find_executable_in(dir.path(), "python").is_none());
+    }
+
+    #[test]
+    fn find_executable_in_ignores_directories() {
+        // A subdirectory whose name matches the executable must not satisfy
+        // the lookup — we want files only.
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir(dir.path().join("python")).unwrap();
+        assert!(find_executable_in(dir.path(), "python").is_none());
+    }
+
+    #[test]
+    fn find_executable_in_returns_none_when_dir_missing() {
+        let dir = tempfile::tempdir().unwrap();
+        let missing = dir.path().join("does-not-exist");
+        assert!(find_executable_in(&missing, "python").is_none());
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn executable_candidates_unix_is_single_entry() {
+        assert_eq!(executable_candidates("python"), vec!["python".to_string()]);
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn executable_candidates_windows_probes_standard_extensions() {
+        let candidates = executable_candidates("python");
+        assert!(candidates.contains(&"python".to_string()));
+        assert!(candidates.contains(&"python.exe".to_string()));
+        assert!(candidates.contains(&"python.bat".to_string()));
+        assert!(candidates.contains(&"python.cmd".to_string()));
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn executable_candidates_windows_respects_explicit_extension() {
+        assert_eq!(executable_candidates("python.exe"), vec!["python.exe"]);
     }
 }
