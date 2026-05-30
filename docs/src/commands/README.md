@@ -17,6 +17,7 @@ Complete reference for all scoop commands.
 | [`scoop status`](status.md) | - | Summarise the currently active env |
 | [`scoop which`](which.md) | - | Resolve an executable inside an env |
 | [`scoop run`](run.md) | - | Run a command inside an env without activating |
+| [`scoop sync`](sync.md) | - | Apply `.scoop.toml` declaratively |
 | [`scoop migrate`](migrate.md) | - | Migrate from pyenv/conda/venvwrapper |
 | [`scoop lang`](lang.md) | - | Get/set display language |
 | [`scoop shell`](shell.md) | - | Set shell-specific env (temporary) |
