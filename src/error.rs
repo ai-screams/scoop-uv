@@ -110,6 +110,12 @@ pub enum ScoopError {
 
     /// `scoop self update` failed (search, install, or post-install verify).
     SelfUpdateFailed { message: String },
+
+    /// No environment is currently active and none was specified.
+    NoActiveEnvironment,
+
+    /// Executable not found within an environment's bin directory.
+    ExecutableNotFound { exe: String, env: String },
 }
 
 // ============================================================================
@@ -251,6 +257,16 @@ impl ScoopError {
                 message = message
             )
             .to_string(),
+            Self::NoActiveEnvironment => {
+                t!("error.no_active_environment", locale = locale).to_string()
+            }
+            Self::ExecutableNotFound { exe, env } => t!(
+                "error.executable_not_found",
+                locale = locale,
+                exe = exe,
+                env = env
+            )
+            .to_string(),
         }
     }
 }
@@ -298,6 +314,8 @@ impl ScoopError {
             Self::InvalidPythonPath { .. } => "PYTHON_INVALID_PATH",
             Self::CascadeAborted => "UNINSTALL_CASCADE_ABORTED",
             Self::SelfUpdateFailed { .. } => "SELF_UPDATE_FAILED",
+            Self::NoActiveEnvironment => "NO_ACTIVE_ENV",
+            Self::ExecutableNotFound { .. } => "EXE_NOT_FOUND",
         }
     }
 
@@ -356,6 +374,17 @@ impl ScoopError {
             | Self::PythonUninstallFailed { .. } => {
                 Some(t!("suggestion.run_doctor", locale = locale).to_string())
             }
+            Self::NoActiveEnvironment => {
+                Some(t!("suggestion.no_active_environment", locale = locale).to_string())
+            }
+            Self::ExecutableNotFound { env, .. } => Some(
+                t!(
+                    "suggestion.executable_not_found",
+                    locale = locale,
+                    env = env
+                )
+                .to_string(),
+            ),
             _ => None,
         }
     }

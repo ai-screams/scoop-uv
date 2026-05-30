@@ -39,11 +39,14 @@ const RESERVED_NAMES: &[&str] = &[
     "remove",
     "resolve",
     "root",
+    "run",
+    "status",
     "system",
     "uninstall",
     "use",
     "version",
     "versions",
+    "which",
 ];
 
 /// Maximum length for environment names

@@ -209,6 +209,14 @@ impl PackagesInfo {
     }
 }
 
+/// `scoop which` response data
+#[derive(Serialize)]
+pub struct WhichData {
+    pub exe: String,
+    pub env: String,
+    pub path: String,
+}
+
 /// Detailed environment info for JSON output
 #[derive(Serialize)]
 pub struct EnvInfoData {

@@ -822,6 +822,33 @@ suggestion.invalid_python_path:
   ja: "→ 有効な Python 実行ファイルのパスを指定してください (例: /usr/bin/python3)"
 
 # ============================================================================
+# Which command
+# ============================================================================
+error.no_active_environment:
+  en: "No active environment"
+  ko: "활성화된 환경이 없어요"
+  pt-BR: "Nenhum ambiente ativo"
+  ja: "アクティブな環境がありません"
+
+suggestion.no_active_environment:
+  en: "→ Activate one (scoop use <name>) or pass --env <name>"
+  ko: "→ 환경을 활성화하거나(scoop use <이름>) --env <이름>를 지정해 주세요"
+  pt-BR: "→ Ative um (scoop use <nome>) ou use --env <nome>"
+  ja: "→ 環境を有効化する (scoop use <名前>) か --env <名前> を指定してください"
+
+error.executable_not_found:
+  en: "'%{exe}' not found in '%{env}'"
+  ko: "'%{env}'에서 '%{exe}'를 찾을 수 없어요"
+  pt-BR: "'%{exe}' não encontrado em '%{env}'"
+  ja: "'%{env}' に '%{exe}' が見つかりません"
+
+suggestion.executable_not_found:
+  en: "→ List installed packages: scoop info %{env}"
+  ko: "→ 설치된 패키지 확인: scoop info %{env}"
+  pt-BR: "→ Listar pacotes instalados: scoop info %{env}"
+  ja: "→ インストール済みパッケージを確認: scoop info %{env}"
+
+# ============================================================================
 # Self-update command (`scoop self update`)
 # ============================================================================
 selfupdate.checking_latest:

@@ -399,6 +399,20 @@ pub enum Commands {
         #[command(subcommand)]
         command: SelfCommand,
     },
+
+    /// Print the full path to an executable in an environment
+    Which {
+        /// Name of the executable to locate (e.g., python, pip)
+        exe: String,
+
+        /// Look in this environment instead of the active one
+        #[arg(long, value_name = "NAME")]
+        env: Option<String>,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Supported shell types

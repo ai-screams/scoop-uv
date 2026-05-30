@@ -17,6 +17,7 @@ mod self_update;
 mod shell;
 mod uninstall;
 mod use_env;
+mod which;
 
 pub use activate::execute as activate;
 pub use completions::execute as completions;
@@ -35,3 +36,4 @@ pub use self_update::execute as self_update;
 pub use shell::execute as shell;
 pub use uninstall::execute as uninstall;
 pub use use_env::execute as use_env;
+pub use which::execute as which;

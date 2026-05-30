@@ -124,6 +124,10 @@ fn main() -> Result<()> {
                 scoop_uv::cli::commands::self_update(&output, force, version.as_deref(), no_verify)
             }
         },
+        Commands::Which { exe, env, json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::which(&output, &exe, env.as_deref())
+        }
     };
 
     // Handle errors
