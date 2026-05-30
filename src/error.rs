@@ -1346,4 +1346,27 @@ mod tests {
         };
         assert!(err.suggestion_in("en").is_none());
     }
+
+    #[test]
+    fn test_suggestion_no_active_environment_hints_use_or_env_flag() {
+        // The hint must point the user at a concrete next step. Deleting the
+        // match arm would collapse this to `None`, which the assertions catch.
+        let s = ScoopError::NoActiveEnvironment.suggestion_in("en").unwrap();
+        assert!(s.starts_with("→"));
+        assert!(s.contains("scoop use"));
+        assert!(s.contains("--env"));
+    }
+
+    #[test]
+    fn test_suggestion_executable_not_found_includes_env_name() {
+        let err = ScoopError::ExecutableNotFound {
+            exe: "pytest".into(),
+            env: "myenv".into(),
+        };
+        let s = err.suggestion_in("en").unwrap();
+        assert!(s.starts_with("→"));
+        // Must interpolate the env name so the user knows where to look.
+        assert!(s.contains("myenv"));
+        assert!(s.contains("scoop info"));
+    }
 }
