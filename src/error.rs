@@ -116,6 +116,9 @@ pub enum ScoopError {
 
     /// Executable not found within an environment's bin directory.
     ExecutableNotFound { exe: String, env: String },
+
+    /// `.scoop.toml` could not be located walking up from `start_dir`.
+    ManifestNotFound { start_dir: PathBuf },
 }
 
 // ============================================================================
@@ -267,6 +270,12 @@ impl ScoopError {
                 env = env
             )
             .to_string(),
+            Self::ManifestNotFound { start_dir } => t!(
+                "error.manifest_not_found",
+                locale = locale,
+                path = start_dir.display()
+            )
+            .to_string(),
         }
     }
 }
@@ -316,6 +325,7 @@ impl ScoopError {
             Self::SelfUpdateFailed { .. } => "SELF_UPDATE_FAILED",
             Self::NoActiveEnvironment => "NO_ACTIVE_ENV",
             Self::ExecutableNotFound { .. } => "EXE_NOT_FOUND",
+            Self::ManifestNotFound { .. } => "MANIFEST_NOT_FOUND",
         }
     }
 
@@ -385,6 +395,9 @@ impl ScoopError {
                 )
                 .to_string(),
             ),
+            Self::ManifestNotFound { .. } => {
+                Some(t!("suggestion.manifest_not_found", locale = locale).to_string())
+            }
             _ => None,
         }
     }

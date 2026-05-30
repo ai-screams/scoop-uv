@@ -41,6 +41,7 @@ const RESERVED_NAMES: &[&str] = &[
     "root",
     "run",
     "status",
+    "sync",
     "system",
     "uninstall",
     "use",

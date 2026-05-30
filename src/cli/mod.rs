@@ -411,6 +411,21 @@ pub enum Commands {
         json: bool,
     },
 
+    /// Sync an environment from `.scoop.toml`
+    Sync {
+        /// Additional package group(s) to install on top of `default`
+        #[arg(long = "with", value_name = "GROUP", action = clap::ArgAction::Append)]
+        with: Vec<String>,
+
+        /// Preview the plan without creating env or installing packages
+        #[arg(long)]
+        dry_run: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Run a command inside an environment without activating it
     Run {
         /// Name of the virtual environment

@@ -160,6 +160,12 @@ impl VirtualenvService {
         self.uv.install_python(version)
     }
 
+    /// Install Python packages into the env via uv. Thin pass-through so the
+    /// sync handler doesn't need direct access to the private `uv` field.
+    pub fn pip_install(&self, venv_path: &Path, packages: &[String]) -> Result<()> {
+        self.uv.pip_install(venv_path, packages)
+    }
+
     /// Check if a virtual environment exists
     pub fn exists(&self, name: &str) -> Result<bool> {
         let path = paths::virtualenv_path(name)?;

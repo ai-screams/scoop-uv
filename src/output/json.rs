@@ -217,6 +217,25 @@ pub struct WhichData {
     pub path: String,
 }
 
+/// `scoop sync` response data
+#[derive(Serialize)]
+pub struct SyncData {
+    /// Absolute path of the resolved `.scoop.toml`.
+    pub manifest_path: String,
+    /// Environment name the manifest targets.
+    pub environment: String,
+    /// Python version specifier from the manifest.
+    pub python: String,
+    /// All resolved group names (always includes `"default"`).
+    pub groups: Vec<String>,
+    /// Packages that would be / were installed (deduped, ordered).
+    pub packages: Vec<String>,
+    /// `true` if `scoop sync` created the env; `false` if it already existed.
+    pub env_created: bool,
+    /// `true` when `--dry-run` was passed (no side effects performed).
+    pub dry_run: bool,
+}
+
 /// `scoop status` response data
 #[derive(Serialize)]
 pub struct StatusData {
