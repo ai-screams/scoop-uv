@@ -36,11 +36,18 @@ exclude_re = [
     # parse_python_version_output (this wrapper can't be unit-mutation-tested
     # without a real exec, which is container-flaky).
     "detect_python_version",
-    # Thin pass-throughs to UvClient::find_python / install_python. The wrapped
-    # uv calls are already excluded above; mutating these wrappers only flips
-    # behavior in code paths that need a real uv invocation to observe.
+    # Thin pass-throughs to UvClient::find_python / install_python / pip_install.
+    # The wrapped uv calls are already excluded above; mutating these wrappers
+    # only flips behavior in code paths that need a real uv invocation to
+    # observe.
     "VirtualenvService::is_python_installed",
     "VirtualenvService::install_python",
+    "VirtualenvService::pip_install",
+    # Shells out to the venv's own pip; its parsing logic is JSON deser via
+    # serde_json (covered by upstream + integration). The wrapper body itself
+    # only has the "no pip / non-zero exit / unparseable" graceful-degradation
+    # path, which is pinned by the two unit tests in core::tests.
+    "list_installed_packages",
     # `cfg(windows)` branch of the cross-platform extension probe. On non-
     # Windows hosts the variant doesn't compile, so its mutations can't be
     # tested locally; on Windows hosts the existing rstest cases cover it.

@@ -1382,4 +1382,16 @@ mod tests {
         assert!(s.contains("myenv"));
         assert!(s.contains("scoop info"));
     }
+
+    #[test]
+    fn test_suggestion_manifest_not_found_points_at_docs() {
+        // Deleting the match arm would collapse to `None`; asserting on the
+        // hint content kills that mutation and pins the docs pointer.
+        let err = ScoopError::ManifestNotFound {
+            start_dir: PathBuf::from("/some/project"),
+        };
+        let s = err.suggestion_in("en").unwrap();
+        assert!(s.starts_with("→"));
+        assert!(s.contains("project root") || s.contains("scoop-uv"));
+    }
 }
