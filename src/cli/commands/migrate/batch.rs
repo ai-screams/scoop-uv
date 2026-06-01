@@ -2,11 +2,16 @@
 //!
 //! Handles migration of multiple environments with progress tracking.
 
+use std::sync::Mutex;
+
 use dialoguer::Confirm;
 use indicatif::{ProgressBar, ProgressStyle};
+use rayon::prelude::*;
 use rust_i18n::t;
 
-use crate::core::migrate::{EnvironmentStatus, MigrateOptions, MigrationResult, Migrator};
+use crate::core::migrate::{
+    EnvironmentStatus, MigrateOptions, MigrationResult, Migrator, SourceEnvironment,
+};
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
 
@@ -170,8 +175,12 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
         auto_install_python: false,
     };
 
-    let mut migrated: Vec<MigrationResult> = Vec::new();
-    let mut failed: Vec<MigrateFailure> = Vec::new();
+    // Wrapped in Mutex so the parallel branch below can collect results from
+    // multiple worker threads. The sequential branch (dry-run / single env)
+    // also goes through the locks for code-path uniformity — contention is
+    // zero there, so the cost is a few ns per env.
+    let migrated_lock: Mutex<Vec<MigrationResult>> = Mutex::new(Vec::new());
+    let failed_lock: Mutex<Vec<MigrateFailure>> = Mutex::new(Vec::new());
 
     if !opts.json {
         if opts.dry_run {
@@ -197,10 +206,14 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
         None
     };
 
-    for (idx, env) in migratable.iter().enumerate() {
+    // Per-env work. Shared by the sequential and parallel branches; closes
+    // over `migrator`, `options`, `output`, `opts`, `progress`, and the two
+    // result locks. Each branch in `progress` is thread-safe (`indicatif`
+    // serialises println/inc internally) and `output.{success,info,warn,error}`
+    // emit one `eprintln!` per call, which is atomic at the line level.
+    let run_one = |env: &SourceEnvironment| {
         if let Some(ref pb) = progress {
             pb.set_message(t!("migrate.batch_item", name = &env.name).to_string());
-            pb.set_position(idx as u64);
         } else if !opts.json {
             output.info("");
             output.info(&t!("migrate.batch_item", name = &env.name));
@@ -237,21 +250,52 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                         }
                     }
                 }
-                migrated.push(result);
+                migrated_lock
+                    .lock()
+                    .expect("results lock poisoned")
+                    .push(result);
             }
             Err(e) => {
-                failed.push(MigrateFailure {
-                    name: env.name.clone(),
-                    error: e.to_string(),
-                });
+                let msg = e.to_string();
                 if let Some(ref pb) = progress {
-                    pb.println(format!("✗ '{}' failed: {}", env.name, e));
+                    pb.println(format!("✗ '{}' failed: {}", env.name, msg));
                 } else if !opts.json {
-                    output.error(&t!("migrate.batch_item_failed", error = e.to_string()));
+                    output.error(&t!("migrate.batch_item_failed", error = msg.clone()));
                 }
+                failed_lock
+                    .lock()
+                    .expect("failures lock poisoned")
+                    .push(MigrateFailure {
+                        name: env.name.clone(),
+                        error: msg,
+                    });
             }
         }
+
+        if let Some(ref pb) = progress {
+            pb.inc(1);
+        }
+    };
+
+    // Parallelise only when there's a real win: dry-run does no I/O work
+    // (sequential gives cleaner, deterministic preview output) and a single
+    // env has nothing to parallelise.
+    if opts.dry_run || migratable.len() <= 1 {
+        for env in migratable.iter() {
+            run_one(env);
+        }
+    } else {
+        // par_iter().for_each passes `&&T`; wrap so `run_one` keeps its
+        // `&T` signature (which the sequential branch also uses).
+        migratable.par_iter().for_each(|env| run_one(env));
     }
+
+    let mut migrated = migrated_lock.into_inner().expect("results lock poisoned");
+    let mut failed = failed_lock.into_inner().expect("failures lock poisoned");
+    // Restore deterministic input order so the summary / JSON output match
+    // the scan order regardless of which worker thread finished first.
+    migrated.sort_by(|a, b| a.name.cmp(&b.name));
+    failed.sort_by(|a, b| a.name.cmp(&b.name));
 
     // Finish progress bar
     if let Some(pb) = progress {
