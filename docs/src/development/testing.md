@@ -427,3 +427,98 @@ apt install shellcheck
 4. **Test edge cases**: Empty, unicode, special chars, boundaries
 5. **No test interdependencies**: Each test should be isolated
 6. **Fast tests**: Mock external dependencies
+
+## Codespaces / Devcontainer
+
+`.devcontainer/devcontainer.json` boots a Rust 1.85 dev environment on
+`mcr.microsoft.com/devcontainers/rust:1-bookworm` that matches the local
+toolchain pinned by `rust-toolchain.toml`. Open the repo in VS Code
+("Reopen in Container") or create a Codespace — both follow the same
+lifecycle:
+
+| Hook | Runs | Used for |
+|------|------|----------|
+| `onCreateCommand` | once (in Codespace prebuild) | install nextest / llvm-cov / mutants / uv, warm `cargo build` |
+| `updateContentCommand` | on every prebuild refresh | `cargo fetch` to keep registry warm |
+| `postCreateCommand` | when user creates the Codespace | `prek install` |
+
+Cargo registry + git caches persist as named Docker volumes scoped per
+project so two scoop-uv worktrees don't share caches. `target/` is NOT
+volumed — it's architecture-specific and warmed in the prebuild layer.
+
+### Enabling Codespace prebuilds
+
+In repo Settings → Codespaces → "Set up prebuild", configure for the
+`main` branch on the "configuration change" trigger. This keeps Actions
+minutes low (only rebuilds when `.devcontainer/**` or `Dockerfile`
+changes) while still keeping the cargo registry warm via volume
+persistence.
+
+## Multi-source Integration (Docker matrix)
+
+The Dockerfile builds three per-source leaf stages — `pyenv-test`,
+`conda-test`, `venvwrapper-test` — on top of a shared `scoop-test-base`.
+Each carries only the source-tool it migrates from, so CI can
+matrix-build just one variant.
+
+```bash
+# Local (sequential)
+make test-integration-pyenv
+make test-integration-conda
+make test-integration-venvwrapper
+
+# Local (all three sequentially)
+make test-integration-all
+
+# Drop into a single variant for ad-hoc debugging
+make docker-shell-conda
+```
+
+CI runs all three in parallel via
+`.github/workflows/integration-test.yml`'s strategy.matrix with
+per-source BuildKit cache scoping (`cache-from/to=type=gha,scope=<src>`).
+
+## Benchmarks (Criterion)
+
+Three bench binaries live in `benches/`:
+
+| Binary | Targets |
+|--------|---------|
+| `parsing` | clap parse, TOML manifest, JSON `uv python list` |
+| `validation` | `is_valid_env_name` across 6 representative inputs |
+| `path_lookup` | `find_executable_in` hit + miss |
+
+### Local workflow
+
+```bash
+# Run all benches once (no baseline diffing)
+cargo bench
+
+# Save current results as a named baseline (default: "main")
+make bench-save                          # saves as "main"
+make bench-save BENCH_BASELINE=before-X  # saves as "before-X"
+
+# Compare current results against a saved baseline
+make bench-compare                       # vs "main"
+make bench-compare BENCH_BASELINE=before-X
+
+# Run all benches inside Docker (reproducible)
+make bench
+```
+
+Criterion writes HTML reports to `target/criterion/report/index.html`
+for visual diffing.
+
+### CI regression gate
+
+`.github/workflows/bench.yml` runs every PR and push:
+
+- On `main`: results are pushed to the `gh-pages` branch as the new
+  baseline.
+- On PRs: results are compared against that baseline.
+  - **alert at 130%** — leaves a PR comment, doesn't block merge
+  - **fail at 150%** — fails the workflow, blocks merge
+
+Thresholds account for GitHub-hosted runner variance (10-30% per-bench
+noise is normal on shared CPU). Tighten by running on a self-hosted
+runner with pinned hardware if needed.
