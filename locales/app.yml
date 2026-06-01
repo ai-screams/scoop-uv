@@ -1090,3 +1090,72 @@ prune.success:
   ko: "uv 캐시를 정리했어요"
   pt-BR: "Cache do uv limpo"
   ja: "uv キャッシュを整理しました"
+
+# ============================================================================
+# Gc command (orphan virtualenv cleanup)
+# ============================================================================
+gc.nothing_to_remove:
+  en: "Nothing to clean up — all environments look healthy"
+  ko: "정리할 게 없어요 — 모든 환경이 정상이에요"
+  pt-BR: "Nada para limpar — todos os ambientes estão saudáveis"
+  ja: "片付けるものはありません — すべての環境は正常です"
+
+gc.envs_header:
+  en: "Orphan virtualenvs (%{count}):"
+  ko: "고아 가상환경 %{count}개:"
+  pt-BR: "Ambientes virtuais órfãos (%{count}):"
+  ja: "孤立した仮想環境 %{count} 件:"
+
+gc.pythons_header:
+  en: "Unused Python versions (%{count}):"
+  ko: "사용 안 하는 Python 버전 %{count}개:"
+  pt-BR: "Versões Python não usadas (%{count}):"
+  ja: "使用されていない Python バージョン %{count} 件:"
+
+gc.reason_missing_metadata:
+  en: "no .scoop-metadata.json"
+  ko: ".scoop-metadata.json 없음"
+  pt-BR: "sem .scoop-metadata.json"
+  ja: ".scoop-metadata.json なし"
+
+gc.reason_broken_python:
+  en: "Python interpreter missing"
+  ko: "Python 인터프리터 없음"
+  pt-BR: "interpretador Python ausente"
+  ja: "Python インタプリタが見つかりません"
+
+gc.dry_run_hint:
+  en: "(dry run — pass `--yes` to actually remove)"
+  ko: "(미리보기 — 실제로 삭제하려면 `--yes` 를 붙여주세요)"
+  pt-BR: "(simulação — passe `--yes` para remover de verdade)"
+  ja: "(プレビューのみ — 実際に削除するには `--yes` を指定してください)"
+
+gc.removed_env:
+  en: "Removed environment '%{name}'"
+  ko: "환경 '%{name}' 을(를) 삭제했어요"
+  pt-BR: "Ambiente '%{name}' removido"
+  ja: "環境 '%{name}' を削除しました"
+
+gc.remove_env_failed:
+  en: "Failed to remove '%{name}': %{error}"
+  ko: "'%{name}' 삭제 실패: %{error}"
+  pt-BR: "Falha ao remover '%{name}': %{error}"
+  ja: "'%{name}' の削除に失敗: %{error}"
+
+gc.removed_python:
+  en: "Removed Python %{version}"
+  ko: "Python %{version} 을(를) 삭제했어요"
+  pt-BR: "Python %{version} removido"
+  ja: "Python %{version} を削除しました"
+
+gc.remove_python_failed:
+  en: "Failed to remove Python %{version}: %{error}"
+  ko: "Python %{version} 삭제 실패: %{error}"
+  pt-BR: "Falha ao remover Python %{version}: %{error}"
+  ja: "Python %{version} の削除に失敗: %{error}"
+
+gc.done:
+  en: "Cleanup complete"
+  ko: "정리 완료"
+  pt-BR: "Limpeza concluída"
+  ja: "整理が完了しました"

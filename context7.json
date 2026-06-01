@@ -56,6 +56,7 @@
     "Lazy Python install: `scoop create <name> <version> --install-python` installs the requested Python via uv if missing, then creates the env.",
     "`scoop migrate all` runs in parallel via rayon; `--dry-run` and single-env (`migrate @env`) stay sequential.",
     "To free disk space from the uv download/wheel cache, run `scoop prune` (thin wrapper around `uv cache prune`).",
+    "To clean up orphan virtualenvs (missing metadata or broken Python), run `scoop gc` (default is preview/dry-run). Pass `-y`/`--yes` to actually remove. `--aggressive` also flags uv-managed Python versions that no environment references.",
     "For complete LLM reference, see llms-full.txt in the repository root."
   ]
 }

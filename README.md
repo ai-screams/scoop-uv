@@ -332,6 +332,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop clone <src> <dst>` | Duplicate an environment |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
+| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove) |
 | `scoop prune` | Prune the uv cache |
 | `scoop doctor` | Health check your setup |
 | `scoop self update` | Update scoop itself to the latest version |
@@ -387,9 +388,18 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 |-----------------------------|------------------------------------------|
 | `scoop migrate list`        | Show environments to migrate             |
 | `scoop migrate @env <name>` | Migrate a single environment             |
-| `scoop migrate all`         | Migrate all environments                 |
+| `scoop migrate all`         | Migrate all environments (parallel)      |
 
 > **Supported sources:** pyenv-virtualenv, virtualenvwrapper, conda
+
+### Cleanup 🧹
+
+| Command                  | Description                                                    |
+|--------------------------|----------------------------------------------------------------|
+| `scoop gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
+| `scoop gc --yes`         | Actually remove the orphans                                    |
+| `scoop gc --aggressive`  | Also flag unused uv-managed Python versions                    |
+| `scoop prune`            | Prune the uv download/wheel cache (`uv cache prune` wrapper)   |
 
 ### Language 🌏
 

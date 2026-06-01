@@ -505,6 +505,21 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
     },
+
+    /// Garbage-collect orphan virtual environments
+    Gc {
+        /// Actually remove the orphans (default: preview only)
+        #[arg(short, long)]
+        yes: bool,
+
+        /// Also remove uv-managed Python versions that no environment uses
+        #[arg(long)]
+        aggressive: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Supported shell types

@@ -80,6 +80,7 @@ Verify: `scoop --version`
 
 | Command | Description |
 |---------|-------------|
+| `scoop gc` | Garbage-collect orphan virtualenvs (missing metadata or broken Python). Default is dry-run; pass `-y`/`--yes` to actually remove. `--aggressive` also flags uv-managed Pythons that no env references. |
 | `scoop prune` | Prune the uv cache (thin wrapper around `uv cache prune`) — delete unused download/wheel cache entries. |
 
 ### Python Management

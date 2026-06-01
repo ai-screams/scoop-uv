@@ -180,6 +180,14 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::prune(&output)
         }
+        Commands::Gc {
+            yes,
+            aggressive,
+            json,
+        } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::gc(&output, yes, aggressive)
+        }
     };
 
     // Handle errors

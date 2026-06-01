@@ -1,0 +1,397 @@
+//! Handler for the `scoop gc` command.
+//!
+//! Detects orphan virtualenvs (directories under `~/.scoop/virtualenvs/`
+//! that no longer look like usable environments) and, when run with
+//! `--aggressive`, also flags uv-managed Python versions that are not
+//! referenced by any surviving env's metadata.
+//!
+//! Default behaviour is **dry-run** — destructive removal happens only when
+//! the caller passes `--yes`. This mirrors how most package managers' `gc`
+//! commands behave (cargo, nix, dnf): preview by default, opt-in to delete.
+
+use std::path::{Path, PathBuf};
+
+use rust_i18n::t;
+use serde::Serialize;
+
+use crate::core::VirtualenvService;
+use crate::error::Result;
+use crate::output::Output;
+use crate::paths::{self, abbreviate_home};
+use crate::uv::UvClient;
+
+/// Why a virtualenv directory was classified as an orphan.
+///
+/// Strings stay stable — they are part of the JSON contract.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum OrphanReason {
+    /// `.scoop-metadata.json` is missing — the env wasn't created by scoop,
+    /// or its metadata file was deleted.
+    MissingMetadata,
+    /// The Python interpreter the env points at is gone (uninstalled out
+    /// from under us, or the symlink target was deleted).
+    BrokenPython,
+}
+
+#[derive(Debug, Serialize)]
+struct OrphanEnv {
+    name: String,
+    path: String,
+    reason: OrphanReason,
+}
+
+#[derive(Debug, Serialize)]
+struct UnusedPython {
+    version: String,
+    path: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct GcData {
+    /// `true` if nothing was actually removed (preview only).
+    dry_run: bool,
+    /// Orphan virtualenvs that were (or would be) removed.
+    envs: Vec<OrphanEnv>,
+    /// Unused Python versions — populated only when `--aggressive`.
+    pythons: Vec<UnusedPython>,
+}
+
+/// Execute the `gc` command.
+///
+/// * `yes` — actually remove the orphans (otherwise dry-run only).
+/// * `aggressive` — also consider Python versions that no env uses.
+pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
+    let envs = scan_orphan_envs()?;
+    let pythons = if aggressive {
+        scan_unused_pythons(&envs)?
+    } else {
+        Vec::new()
+    };
+
+    if yes {
+        remove_orphans(output, &envs, &pythons)?;
+    }
+
+    let data = GcData {
+        dry_run: !yes,
+        envs,
+        pythons,
+    };
+
+    if output.is_json() {
+        output.json_success("gc", data);
+        return Ok(());
+    }
+
+    render_human(output, &data, aggressive);
+    Ok(())
+}
+
+/// Walk `~/.scoop/virtualenvs/` and flag any directory that fails the
+/// "looks like a working env" sniff test.
+fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
+    let dir = paths::virtualenvs_dir()?;
+    if !dir.exists() {
+        return Ok(Vec::new());
+    }
+
+    let mut orphans = Vec::new();
+    for entry in std::fs::read_dir(&dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+        let name = match path.file_name().and_then(|n| n.to_str()) {
+            Some(n) => n.to_string(),
+            None => continue,
+        };
+        // Skip dotfiles — `gc` should leave alone anything that doesn't look
+        // like an env name (e.g. `.DS_Store`, `.cache/`).
+        if name.starts_with('.') {
+            continue;
+        }
+
+        if let Some(reason) = classify(&path) {
+            orphans.push(OrphanEnv {
+                name,
+                path: path.display().to_string(),
+                reason,
+            });
+        }
+    }
+    orphans.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(orphans)
+}
+
+/// Return `Some(reason)` if `path` looks like a broken env, `None` if it
+/// looks healthy.
+fn classify(path: &Path) -> Option<OrphanReason> {
+    // `.scoop-metadata.json` is the contract: every env scoop creates has
+    // one. Its absence means the directory was made by hand or its metadata
+    // was deleted — either way we can't safely interpret it.
+    if !path.join(".scoop-metadata.json").exists() {
+        return Some(OrphanReason::MissingMetadata);
+    }
+    // Check that the interpreter the env points at still exists. We avoid
+    // re-running uv here — a stat on the bin dir is enough to catch the
+    // common "Python uninstalled out from under the env" case.
+    let bin = if cfg!(windows) {
+        path.join("Scripts").join("python.exe")
+    } else {
+        path.join("bin").join("python")
+    };
+    if !bin.exists() {
+        return Some(OrphanReason::BrokenPython);
+    }
+    None
+}
+
+/// List uv-installed Python versions that aren't referenced by any healthy
+/// env's `.scoop-metadata.json`. Orphans already slated for removal are
+/// *not* counted as references — otherwise gc'ing them wouldn't free their
+/// Pythons either.
+fn scan_unused_pythons(orphans: &[OrphanEnv]) -> Result<Vec<UnusedPython>> {
+    let uv = match UvClient::new() {
+        Ok(u) => u,
+        // No uv on PATH → nothing we can do here. Skip aggressive mode
+        // silently instead of failing the whole command.
+        Err(_) => return Ok(Vec::new()),
+    };
+    let installed = uv.list_installed_pythons().unwrap_or_default();
+    if installed.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let service = VirtualenvService::auto().ok();
+    let used: std::collections::HashSet<String> = match service {
+        Some(svc) => svc
+            .list()
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|info| !orphans.iter().any(|o| o.name == info.name))
+            .filter_map(|info| {
+                // Read metadata for the python_version field — info.python_version
+                // is sniffed from the venv layout and can be missing.
+                let path = paths::virtualenv_path(&info.name).ok()?;
+                let meta = svc.read_metadata(&path)?;
+                Some(meta.python_version)
+            })
+            .collect(),
+        None => std::collections::HashSet::new(),
+    };
+
+    Ok(installed
+        .into_iter()
+        .filter(|p| !used.contains(&p.version))
+        .map(|p| UnusedPython {
+            version: p.version,
+            path: p.path.map(|p| p.display().to_string()),
+        })
+        .collect())
+}
+
+fn remove_orphans(output: &Output, envs: &[OrphanEnv], pythons: &[UnusedPython]) -> Result<()> {
+    for env in envs {
+        let path = PathBuf::from(&env.path);
+        match std::fs::remove_dir_all(&path) {
+            Ok(()) => {
+                if !output.is_json() {
+                    output.info(&t!("gc.removed_env", name = &env.name));
+                }
+            }
+            Err(e) => {
+                output.warn(&t!(
+                    "gc.remove_env_failed",
+                    name = &env.name,
+                    error = e.to_string()
+                ));
+            }
+        }
+    }
+
+    if !pythons.is_empty() {
+        // Best-effort: if uv is missing here we just leave the Pythons alone.
+        // `scan_unused_pythons` already returned `[]` in that case, so this
+        // is defensive against transient PATH issues.
+        if let Ok(uv) = UvClient::new() {
+            for py in pythons {
+                match uv.uninstall_python(&py.version) {
+                    Ok(()) => {
+                        if !output.is_json() {
+                            output.info(&t!("gc.removed_python", version = &py.version));
+                        }
+                    }
+                    Err(e) => {
+                        output.warn(&t!(
+                            "gc.remove_python_failed",
+                            version = &py.version,
+                            error = e.to_string()
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn render_human(output: &Output, data: &GcData, aggressive: bool) {
+    if data.envs.is_empty() && data.pythons.is_empty() {
+        output.success(&t!("gc.nothing_to_remove"));
+        return;
+    }
+
+    if !data.envs.is_empty() {
+        output.info(&t!("gc.envs_header", count = data.envs.len().to_string()));
+        for env in &data.envs {
+            let reason = match env.reason {
+                OrphanReason::MissingMetadata => t!("gc.reason_missing_metadata"),
+                OrphanReason::BrokenPython => t!("gc.reason_broken_python"),
+            };
+            println!(
+                "  - {} ({})  {}",
+                env.name,
+                reason,
+                abbreviate_home(Path::new(&env.path))
+            );
+        }
+    }
+
+    if aggressive && !data.pythons.is_empty() {
+        output.info(&t!(
+            "gc.pythons_header",
+            count = data.pythons.len().to_string()
+        ));
+        for py in &data.pythons {
+            println!("  - Python {}", py.version);
+        }
+    }
+
+    if data.dry_run {
+        output.info(&t!("gc.dry_run_hint"));
+    } else {
+        output.success(&t!("gc.done"));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::with_temp_scoop_home;
+    use serial_test::serial;
+    use std::fs;
+
+    fn make_env(dir: &Path, name: &str, with_metadata: bool, with_python: bool) {
+        let env_dir = dir.join(name);
+        fs::create_dir_all(&env_dir).unwrap();
+        if with_metadata {
+            fs::write(env_dir.join(".scoop-metadata.json"), "{}").unwrap();
+        }
+        if with_python {
+            let bin = if cfg!(windows) {
+                env_dir.join("Scripts")
+            } else {
+                env_dir.join("bin")
+            };
+            fs::create_dir_all(&bin).unwrap();
+            let py = if cfg!(windows) {
+                bin.join("python.exe")
+            } else {
+                bin.join("python")
+            };
+            fs::write(&py, "").unwrap();
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn classifies_missing_metadata_as_orphan() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            make_env(&dir, "no-meta", false, true);
+
+            let orphans = scan_orphan_envs().unwrap();
+            assert_eq!(orphans.len(), 1);
+            assert_eq!(orphans[0].name, "no-meta");
+            assert_eq!(orphans[0].reason, OrphanReason::MissingMetadata);
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn classifies_broken_python_as_orphan() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            make_env(&dir, "no-python", true, false);
+
+            let orphans = scan_orphan_envs().unwrap();
+            assert_eq!(orphans.len(), 1);
+            assert_eq!(orphans[0].name, "no-python");
+            assert_eq!(orphans[0].reason, OrphanReason::BrokenPython);
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn healthy_env_is_not_an_orphan() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            make_env(&dir, "ok", true, true);
+
+            let orphans = scan_orphan_envs().unwrap();
+            assert_eq!(orphans.len(), 0);
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn dotfile_entries_are_skipped() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            fs::create_dir_all(dir.join(".cache")).unwrap();
+
+            let orphans = scan_orphan_envs().unwrap();
+            assert!(orphans.is_empty());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn dry_run_does_not_remove() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            make_env(&dir, "no-meta", false, true);
+
+            let output = Output::new(0, true, true, false);
+            execute(&output, false, false).unwrap();
+
+            assert!(
+                dir.join("no-meta").exists(),
+                "dry-run must not delete orphans"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn yes_actually_removes_orphans() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            make_env(&dir, "no-meta", false, true);
+
+            let output = Output::new(0, true, true, false);
+            execute(&output, true, false).unwrap();
+
+            assert!(!dir.join("no-meta").exists(), "--yes should remove orphans");
+        });
+    }
+}
