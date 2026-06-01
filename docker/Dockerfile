@@ -100,6 +100,10 @@ RUN rustup default stable
 
 COPY Cargo.toml Cargo.lock /build/scoop/
 COPY src /build/scoop/src
+# `[[bench]]` entries in Cargo.toml reference files in benches/. Cargo
+# parses the manifest before compiling anything, so the bench sources
+# must exist on disk even when we only `cargo build` the binary.
+COPY benches /build/scoop/benches
 
 WORKDIR /build/scoop
 
