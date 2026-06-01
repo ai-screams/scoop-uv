@@ -25,6 +25,10 @@ ARG RUST_VERSION=1.85
 ARG PYTHON_311_VERSION=3.11.14
 ARG PYTHON_312_VERSION=3.12.12
 ARG UV_VERSION=0.11.16
+# Miniforge version — pinned for reproducible builds. Bump when a new
+# release adds a feature we need; verify the tag exists at
+# https://github.com/conda-forge/miniforge/releases.
+ARG MINIFORGE_VERSION=26.3.2-2
 
 # ============================================================
 # Stage: base — system dependencies and tools
@@ -187,10 +191,11 @@ RUN pyenv virtualenv ${PYTHON_312_VERSION} test-pyenv-312
 # ============================================================
 FROM scoop-test-base AS conda-test
 
+ARG MINIFORGE_VERSION
 ENV CONDA_DIR="/opt/conda"
 RUN ARCH=$(uname -m) && \
     curl -fsSL -o /tmp/miniforge.sh \
-      "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-${ARCH}.sh" \
+      "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-Linux-${ARCH}.sh" \
     && bash /tmp/miniforge.sh -b -p "$CONDA_DIR" \
     && rm /tmp/miniforge.sh \
     && "$CONDA_DIR/bin/conda" clean -afy
@@ -231,10 +236,11 @@ RUN pyenv virtualenv ${PYTHON_312_VERSION} test-pyenv-312 && \
     pyenv virtualenv ${PYTHON_311_VERSION} test-pyenv-311
 
 # conda (Miniforge — see conda-test stage for rationale)
+ARG MINIFORGE_VERSION
 ENV CONDA_DIR="/opt/conda"
 RUN ARCH=$(uname -m) && \
     curl -fsSL -o /tmp/miniforge.sh \
-      "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-${ARCH}.sh" \
+      "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-Linux-${ARCH}.sh" \
     && bash /tmp/miniforge.sh -b -p "$CONDA_DIR" \
     && rm /tmp/miniforge.sh \
     && "$CONDA_DIR/bin/conda" clean -afy

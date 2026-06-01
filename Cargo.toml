@@ -67,6 +67,15 @@ rayon = "1.12.0"
 clap = { version = "4.6", features = ["derive"] }
 clap_mangen = "0.3"
 
+[features]
+# Default = none — keep `cargo build` and `cargo test` lean by default.
+default = []
+# Opt-in feature gating slow / environment-coupled integration tests so
+# `make test-integration*` and the Docker matrix CI workflow can include
+# them while CI on every commit doesn't. Tests should mark themselves
+# with `#[cfg(feature = "integration-test")]`.
+integration-test = []
+
 [dev-dependencies]
 assert_cmd = "2.2"
 predicates = "3.1"

@@ -107,7 +107,7 @@ test-integration-venvwrapper:
 	$(COMPOSE) run --rm venvwrapper-test cargo test --features integration-test
 
 # Runs all three source-tool integration suites sequentially. Use the
-# CI matrix workflow (.github/workflows/integration-matrix.yml) for the
+# CI matrix workflow (.github/workflows/integration-test.yml) for the
 # parallel version — running all three in a single Docker host serially
 # is fine for local debugging.
 test-integration-all: test-integration-pyenv test-integration-conda test-integration-venvwrapper

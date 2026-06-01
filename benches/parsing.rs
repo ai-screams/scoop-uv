@@ -8,9 +8,21 @@ use std::hint::black_box;
 
 use clap::Parser;
 use criterion::{Criterion, criterion_group, criterion_main};
+use serde::Deserialize;
 
 use scoop_uv::cli::Cli;
 use scoop_uv::core::ScoopManifest;
+
+/// Mirrors `src/uv/client.rs::UvPythonEntry` (private to that module).
+/// Keep field set and types in sync — otherwise this bench measures the
+/// wrong shape. Reviewed during every bump of `uv python list` schema.
+#[derive(Deserialize)]
+#[allow(dead_code)]
+struct UvPythonEntry {
+    version: String,
+    implementation: Option<String>,
+    path: Option<String>,
+}
 
 /// Representative `.scoop.toml` covering the schema fully: name + python +
 /// default group + two named groups. Realistic for a small project.
@@ -66,9 +78,12 @@ fn bench_toml_parse_manifest(c: &mut Criterion) {
 }
 
 fn bench_json_parse_uv_python_list(c: &mut Criterion) {
+    // Typed deserialisation matches what production does (raw bytes ->
+    // Vec<UvPythonEntry>). `serde_json::Value` would underreport cost
+    // because field validation is skipped.
     c.bench_function("json_parse_uv_python_list", |b| {
         b.iter(|| {
-            serde_json::from_str::<Vec<serde_json::Value>>(black_box(UV_PYTHON_LIST_JSON))
+            serde_json::from_str::<Vec<UvPythonEntry>>(black_box(UV_PYTHON_LIST_JSON))
                 .expect("valid")
         })
     });
