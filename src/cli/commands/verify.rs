@@ -127,60 +127,17 @@ struct VerifyData {
 ///
 /// * `target` — `Some(name)` to check just that env; `None` checks every env
 ///   under `~/.scoop/virtualenvs/`.
-/// * `strict` — when true, return early with a non-zero process exit if any
-///   env has at least one Warn or Fail check.
+/// * `strict` — when true, return [`ScoopError::VerifyFailed`] when any env
+///   has at least one Fail check, so main.rs maps it to a non-zero exit.
 pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: bool) -> Result<()> {
     let service = VirtualenvService::auto()?;
-
-    // Pre-load manifest *once* outside the per-env loop. find_manifest_from_cwd
-    // walks the filesystem, which is wasted work to repeat per env.
+    // Pre-load the manifest once — find_manifest_from_cwd walks the FS,
+    // which is wasted work to repeat per env.
     let manifest = load_manifest_for_drift_check();
 
-    let envs: Vec<VirtualenvInfo> = match target {
-        Some(name) => {
-            validate::validate_env_name(name)?;
-            if !service.exists(name)? {
-                return Err(ScoopError::VirtualenvNotFound {
-                    name: name.to_string(),
-                });
-            }
-            let path = service.get_path(name)?;
-            // Re-use the VirtualenvInfo shape so the per-env code path doesn't
-            // diverge between "single" and "all" modes. `python_version` is
-            // populated from metadata downstream.
-            vec![VirtualenvInfo {
-                name: name.to_string(),
-                path,
-                python_version: None,
-            }]
-        }
-        None => {
-            let mut all = service.list()?;
-            // Sort by name for deterministic output — important for JSON
-            // consumers and for `--strict` semantics (same set of envs every
-            // time).
-            all.sort_by(|a, b| a.name.cmp(&b.name));
-            all
-        }
-    };
-
+    let envs = collect_target_envs(&service, target)?;
     if envs.is_empty() {
-        if output.is_json() {
-            output.json_success(
-                "verify",
-                VerifyData {
-                    envs: Vec::new(),
-                    summary: Summary {
-                        total: 0,
-                        healthy: 0,
-                        warnings: 0,
-                        issues: 0,
-                    },
-                },
-            );
-        } else {
-            output.info(&t!("verify.no_envs"));
-        }
+        emit_empty(output);
         return Ok(());
     }
 
@@ -188,31 +145,7 @@ pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: boo
         .iter()
         .map(|env| verify_one(&service, env, manifest.as_ref()))
         .collect();
-
-    // Bucket each env into exactly one of healthy / warnings / issues.
-    // We need the three counts to sum to `total` so JSON consumers can
-    // sanity-check, and so `--strict` only fires on real breakage (Fail),
-    // not on informational drift (Warn).
-    let mut healthy_count = 0usize;
-    let mut warnings_count = 0usize;
-    let mut issues_count = 0usize;
-    for r in &reports {
-        let has_fail = r.checks.iter().any(|c| c.status == CheckStatus::Fail);
-        let has_warn = r.checks.iter().any(|c| c.status == CheckStatus::Warn);
-        if has_fail {
-            issues_count += 1;
-        } else if has_warn {
-            warnings_count += 1;
-        } else {
-            healthy_count += 1;
-        }
-    }
-    let summary = Summary {
-        total: reports.len(),
-        healthy: healthy_count,
-        warnings: warnings_count,
-        issues: issues_count,
-    };
+    let summary = compute_summary(&reports);
 
     if output.is_json() {
         output.json_success(
@@ -226,19 +159,96 @@ pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: boo
         render_human(output, &reports, &summary);
     }
 
-    // `--strict` opts into the "fail loud" mode for CI gates. Drift (Warn)
-    // is informational — only hard breakage (Fail) trips the exit.
-    //
-    // Returning Err here (instead of calling `std::process::exit`) lets
-    // destructors / stdout buffers flush via main.rs's normal error path,
-    // and keeps library code free of process-control side effects.
+    // `--strict` opts into "fail loud" for CI gates. Drift (Warn) is
+    // informational — only hard breakage (Fail) trips the exit. Returning
+    // Err (instead of std::process::exit) lets destructors / stdout
+    // buffers flush via main.rs's normal error path.
     if strict && summary.issues > 0 {
         return Err(ScoopError::VerifyFailed {
             issues: summary.issues,
         });
     }
-
     Ok(())
+}
+
+/// Build the list of envs to verify. Single-target path validates the
+/// name and confirms existence; all-targets path enumerates and sorts so
+/// JSON output and `--strict` semantics are deterministic.
+///
+/// Returns `VirtualenvInfo` with `python_version: None` regardless of
+/// source — the per-env check loop reads metadata directly so the two
+/// paths converge on the same downstream shape.
+fn collect_target_envs(
+    service: &VirtualenvService,
+    target: Option<&str>,
+) -> Result<Vec<VirtualenvInfo>> {
+    match target {
+        Some(name) => {
+            validate::validate_env_name(name)?;
+            if !service.exists(name)? {
+                return Err(ScoopError::VirtualenvNotFound {
+                    name: name.to_string(),
+                });
+            }
+            let path = service.get_path(name)?;
+            Ok(vec![VirtualenvInfo {
+                name: name.to_string(),
+                path,
+                python_version: None,
+            }])
+        }
+        None => {
+            let mut all = service.list()?;
+            all.sort_by(|a, b| a.name.cmp(&b.name));
+            Ok(all)
+        }
+    }
+}
+
+/// Bucket each report into exactly one of healthy / warnings / issues so
+/// the three counts sum to `total`. `--strict` reads `summary.issues`
+/// only — Warn-only envs (e.g. manifest drift) must NOT trip the exit.
+fn compute_summary(reports: &[EnvReport]) -> Summary {
+    let mut healthy = 0usize;
+    let mut warnings = 0usize;
+    let mut issues = 0usize;
+    for r in reports {
+        let has_fail = r.checks.iter().any(|c| c.status == CheckStatus::Fail);
+        let has_warn = r.checks.iter().any(|c| c.status == CheckStatus::Warn);
+        if has_fail {
+            issues += 1;
+        } else if has_warn {
+            warnings += 1;
+        } else {
+            healthy += 1;
+        }
+    }
+    Summary {
+        total: reports.len(),
+        healthy,
+        warnings,
+        issues,
+    }
+}
+
+/// Render the "no envs to check" empty case in both JSON and human modes.
+fn emit_empty(output: &crate::output::Output) {
+    if output.is_json() {
+        output.json_success(
+            "verify",
+            VerifyData {
+                envs: Vec::new(),
+                summary: Summary {
+                    total: 0,
+                    healthy: 0,
+                    warnings: 0,
+                    issues: 0,
+                },
+            },
+        );
+    } else {
+        output.info(&t!("verify.no_envs"));
+    }
 }
 
 /// Walk up from cwd looking for `.scoop.toml`. Returns the parsed manifest if

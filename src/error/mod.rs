@@ -1,28 +1,32 @@
-//! Error types for scoop
+//! Error types for scoop.
+//!
+//! The [`ScoopError`] enum + its `From` derives live here; per-concern
+//! `impl` blocks are split across submodules to keep each file under
+//! ~200 LOC of code:
+//!
+//! | Submodule          | Responsibility                                          |
+//! |--------------------|---------------------------------------------------------|
+//! | [`display`]        | i18n rendering ([`ScoopError::message_in`] + `Display`) |
+//! | [`code`]           | stable JSON error codes ([`ScoopError::code`])          |
+//! | [`suggestion`]     | locale-aware fix hints ([`ScoopError::suggestion_in`])  |
+//! | [`migrate`]        | [`MigrationExitCode`] + per-variant exit mapping        |
+//!
+//! All public API stays at `crate::error::ScoopError::*` regardless of
+//! which submodule defines the impl block.
 
-use std::fmt;
 use std::path::PathBuf;
 
-use rust_i18n::t;
-use serde::Serialize;
 use thiserror::Error;
 
-/// Result type alias using ScoopError
-pub type Result<T> = std::result::Result<T, ScoopError>;
+mod code;
+mod display;
+mod migrate;
+mod suggestion;
 
-/// Exit status for migration operations
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[repr(u8)]
-pub enum MigrationExitCode {
-    /// Complete success - all packages migrated
-    Success = 0,
-    /// Partial success - some packages failed to install
-    PartialSuccess = 1,
-    /// Complete failure - rollback occurred
-    CompleteFailure = 2,
-    /// Source error - source not found or corrupted
-    SourceError = 3,
-}
+pub use migrate::MigrationExitCode;
+
+/// Result type alias using [`ScoopError`].
+pub type Result<T> = std::result::Result<T, ScoopError>;
 
 /// Main error type for scoop
 #[derive(Error, Debug)]
@@ -131,342 +135,6 @@ pub enum ScoopError {
     /// non-zero exit semantic without leaking `std::process::exit` into
     /// library code (which would skip destructors and stdout flush).
     VerifyFailed { issues: usize },
-}
-
-// ============================================================================
-// Display Implementation (i18n-aware)
-// ============================================================================
-
-impl ScoopError {
-    /// Render the localized message in an explicit `locale`, bypassing the
-    /// process-global current locale.
-    ///
-    /// rust-i18n stores the active locale as process-global state, so tests
-    /// that assert on [`Display`] output must serialize against any test that
-    /// flips the locale. Asserting via `message_in("en")` / `message_in("ko")`
-    /// instead is race-free and needs no `#[serial]`.
-    ///
-    /// [`Display`]: std::fmt::Display
-    pub fn message_in(&self, locale: &str) -> String {
-        match self {
-            Self::VirtualenvNotFound { name } => {
-                t!("error.virtualenv_not_found", locale = locale, name = name).to_string()
-            }
-            Self::VirtualenvExists { name } => {
-                t!("error.virtualenv_exists", locale = locale, name = name).to_string()
-            }
-            Self::InvalidEnvName { name, reason } => t!(
-                "error.invalid_env_name",
-                locale = locale,
-                name = name,
-                reason = reason
-            )
-            .to_string(),
-            Self::InvalidPythonVersion { version } => t!(
-                "error.invalid_python_version",
-                locale = locale,
-                version = version
-            )
-            .to_string(),
-            Self::UvNotFound => t!("error.uv_not_found", locale = locale).to_string(),
-            Self::UvCommandFailed { command, message } => t!(
-                "error.uv_command_failed",
-                locale = locale,
-                command = command,
-                message = message
-            )
-            .to_string(),
-            Self::PathError(msg) => {
-                t!("error.path_error", locale = locale, message = msg).to_string()
-            }
-            Self::HomeNotFound => t!("error.home_not_found", locale = locale).to_string(),
-            Self::Io(err) => t!("error.io", locale = locale, message = err.to_string()).to_string(),
-            Self::Json(err) => {
-                t!("error.json", locale = locale, message = err.to_string()).to_string()
-            }
-            Self::VersionFileNotFound { path } => t!(
-                "error.version_file_not_found",
-                locale = locale,
-                path = path.display()
-            )
-            .to_string(),
-            Self::UnsupportedShell { shell } => {
-                t!("error.unsupported_shell", locale = locale, shell = shell).to_string()
-            }
-            Self::PythonNotInstalled { version } => t!(
-                "error.python_not_installed",
-                locale = locale,
-                version = version
-            )
-            .to_string(),
-            Self::PythonInstallFailed { version, message } => t!(
-                "error.python_install_failed",
-                locale = locale,
-                version = version,
-                message = message
-            )
-            .to_string(),
-            Self::PythonUninstallFailed { version, message } => t!(
-                "error.python_uninstall_failed",
-                locale = locale,
-                version = version,
-                message = message
-            )
-            .to_string(),
-            Self::NoPythonVersions { pattern } => t!(
-                "error.no_python_versions",
-                locale = locale,
-                pattern = pattern
-            )
-            .to_string(),
-            Self::InvalidArgument { message } => {
-                t!("error.invalid_argument", locale = locale, message = message).to_string()
-            }
-            Self::PyenvNotFound => t!("error.pyenv_not_found", locale = locale).to_string(),
-            Self::PyenvEnvNotFound { name } => {
-                t!("error.pyenv_env_not_found", locale = locale, name = name).to_string()
-            }
-            Self::VenvWrapperEnvNotFound { name } => t!(
-                "error.venvwrapper_env_not_found",
-                locale = locale,
-                name = name
-            )
-            .to_string(),
-            Self::CondaEnvNotFound { name } => {
-                t!("error.conda_env_not_found", locale = locale, name = name).to_string()
-            }
-            Self::CorruptedEnvironment { name, reason } => t!(
-                "error.corrupted_environment",
-                locale = locale,
-                name = name,
-                reason = reason
-            )
-            .to_string(),
-            Self::PackageExtractionFailed { reason } => t!(
-                "error.package_extraction_failed",
-                locale = locale,
-                reason = reason
-            )
-            .to_string(),
-            Self::MigrationFailed { reason } => {
-                t!("error.migration_failed", locale = locale, reason = reason).to_string()
-            }
-            Self::MigrationNameConflict { name, existing } => t!(
-                "error.migration_name_conflict",
-                locale = locale,
-                name = name,
-                path = existing.display()
-            )
-            .to_string(),
-            Self::InvalidPythonPath { path, reason } => t!(
-                "error.invalid_python_path",
-                locale = locale,
-                path = path.display(),
-                reason = reason
-            )
-            .to_string(),
-            Self::CascadeAborted => t!("error.cascade_aborted", locale = locale).to_string(),
-            Self::SelfUpdateFailed { message } => t!(
-                "error.self_update_failed",
-                locale = locale,
-                message = message
-            )
-            .to_string(),
-            Self::NoActiveEnvironment => {
-                t!("error.no_active_environment", locale = locale).to_string()
-            }
-            Self::ExecutableNotFound { exe, env } => t!(
-                "error.executable_not_found",
-                locale = locale,
-                exe = exe,
-                env = env
-            )
-            .to_string(),
-            Self::ManifestNotFound { start_dir } => t!(
-                "error.manifest_not_found",
-                locale = locale,
-                path = start_dir.display()
-            )
-            .to_string(),
-            Self::InvalidExportFile { path, reason } => t!(
-                "error.invalid_export_file",
-                locale = locale,
-                path = path.display(),
-                reason = reason
-            )
-            .to_string(),
-            Self::UnsupportedExportVersion { version, supported } => t!(
-                "error.unsupported_export_version",
-                locale = locale,
-                version = version,
-                supported = supported
-            )
-            .to_string(),
-            Self::VerifyFailed { issues } => t!(
-                "error.verify_failed",
-                locale = locale,
-                issues = issues.to_string()
-            )
-            .to_string(),
-        }
-    }
-}
-
-impl fmt::Display for ScoopError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let locale = rust_i18n::locale();
-        write!(f, "{}", self.message_in(&locale))
-    }
-}
-
-// ============================================================================
-// JSON Error Support
-// ============================================================================
-
-impl ScoopError {
-    /// Returns the error code for JSON output
-    pub fn code(&self) -> &'static str {
-        match self {
-            Self::VirtualenvNotFound { .. } => "ENV_NOT_FOUND",
-            Self::VirtualenvExists { .. } => "ENV_ALREADY_EXISTS",
-            Self::InvalidEnvName { .. } => "ENV_INVALID_NAME",
-            Self::InvalidPythonVersion { .. } => "PYTHON_INVALID_VERSION",
-            Self::UvNotFound => "UV_NOT_INSTALLED",
-            Self::UvCommandFailed { .. } => "UV_COMMAND_FAILED",
-            Self::PathError(_) => "IO_PATH_ERROR",
-            Self::HomeNotFound => "IO_HOME_NOT_FOUND",
-            Self::Io(_) => "IO_ERROR",
-            Self::Json(_) => "INTERNAL_JSON_ERROR",
-            Self::VersionFileNotFound { .. } => "CONFIG_VERSION_FILE_NOT_FOUND",
-            Self::UnsupportedShell { .. } => "SHELL_NOT_SUPPORTED",
-            Self::PythonNotInstalled { .. } => "PYTHON_NOT_INSTALLED",
-            Self::PythonInstallFailed { .. } => "PYTHON_INSTALL_FAILED",
-            Self::PythonUninstallFailed { .. } => "PYTHON_UNINSTALL_FAILED",
-            Self::NoPythonVersions { .. } => "PYTHON_NO_MATCHING_VERSION",
-            Self::InvalidArgument { .. } => "ARG_INVALID",
-            Self::PyenvNotFound => "SOURCE_PYENV_NOT_FOUND",
-            Self::PyenvEnvNotFound { .. } => "SOURCE_PYENV_ENV_NOT_FOUND",
-            Self::VenvWrapperEnvNotFound { .. } => "SOURCE_VENVWRAPPER_ENV_NOT_FOUND",
-            Self::CondaEnvNotFound { .. } => "SOURCE_CONDA_ENV_NOT_FOUND",
-            Self::CorruptedEnvironment { .. } => "MIGRATE_CORRUPTED",
-            Self::PackageExtractionFailed { .. } => "MIGRATE_EXTRACTION_FAILED",
-            Self::MigrationFailed { .. } => "MIGRATE_FAILED",
-            Self::MigrationNameConflict { .. } => "MIGRATE_NAME_CONFLICT",
-            Self::InvalidPythonPath { .. } => "PYTHON_INVALID_PATH",
-            Self::CascadeAborted => "UNINSTALL_CASCADE_ABORTED",
-            Self::SelfUpdateFailed { .. } => "SELF_UPDATE_FAILED",
-            Self::NoActiveEnvironment => "NO_ACTIVE_ENV",
-            Self::ExecutableNotFound { .. } => "EXE_NOT_FOUND",
-            Self::ManifestNotFound { .. } => "MANIFEST_NOT_FOUND",
-            Self::InvalidExportFile { .. } => "EXPORT_INVALID_FILE",
-            Self::UnsupportedExportVersion { .. } => "EXPORT_UNSUPPORTED_VERSION",
-            Self::VerifyFailed { .. } => "VERIFY_FAILED",
-        }
-    }
-
-    /// Returns a suggested fix for the error in an explicit `locale`.
-    ///
-    /// Locale-explicit sibling of [`suggestion`](Self::suggestion); use it in
-    /// tests to assert hint text without depending on the process-global locale.
-    pub fn suggestion_in(&self, locale: &str) -> Option<String> {
-        match self {
-            Self::VirtualenvNotFound { name } => Some(
-                t!(
-                    "suggestion.virtualenv_not_found",
-                    locale = locale,
-                    name = name
-                )
-                .to_string(),
-            ),
-            Self::VirtualenvExists { .. } => {
-                Some(t!("suggestion.virtualenv_exists", locale = locale).to_string())
-            }
-            Self::InvalidEnvName { .. } => {
-                Some(t!("suggestion.invalid_env_name", locale = locale).to_string())
-            }
-            Self::UvNotFound => Some(t!("suggestion.uv_not_found", locale = locale).to_string()),
-            Self::PythonNotInstalled { version } => Some(
-                t!(
-                    "suggestion.python_not_installed",
-                    locale = locale,
-                    version = version
-                )
-                .to_string(),
-            ),
-            Self::NoPythonVersions { .. } => {
-                Some(t!("suggestion.no_python_versions", locale = locale).to_string())
-            }
-            Self::PyenvNotFound => {
-                Some(t!("suggestion.pyenv_not_found", locale = locale).to_string())
-            }
-            Self::PyenvEnvNotFound { .. }
-            | Self::VenvWrapperEnvNotFound { .. }
-            | Self::CondaEnvNotFound { .. } => {
-                Some(t!("suggestion.source_env_not_found", locale = locale).to_string())
-            }
-            Self::MigrationNameConflict { .. } => {
-                Some(t!("suggestion.migration_name_conflict", locale = locale).to_string())
-            }
-            Self::InvalidPythonPath { .. } => {
-                Some(t!("suggestion.invalid_python_path", locale = locale).to_string())
-            }
-            // uv-backed operations failing mid-command often trace back to an
-            // unhealthy uv (missing, too old, broken PATH). Point users at the
-            // one command that diagnoses all of those, since normal commands
-            // don't run the version/health checks that doctor and self update do.
-            Self::UvCommandFailed { .. }
-            | Self::PythonInstallFailed { .. }
-            | Self::PythonUninstallFailed { .. } => {
-                Some(t!("suggestion.run_doctor", locale = locale).to_string())
-            }
-            Self::NoActiveEnvironment => {
-                Some(t!("suggestion.no_active_environment", locale = locale).to_string())
-            }
-            Self::ExecutableNotFound { env, .. } => Some(
-                t!(
-                    "suggestion.executable_not_found",
-                    locale = locale,
-                    env = env
-                )
-                .to_string(),
-            ),
-            Self::ManifestNotFound { .. } => {
-                Some(t!("suggestion.manifest_not_found", locale = locale).to_string())
-            }
-            Self::UnsupportedExportVersion { supported, .. } => Some(
-                t!(
-                    "suggestion.unsupported_export_version",
-                    locale = locale,
-                    supported = supported
-                )
-                .to_string(),
-            ),
-            _ => None,
-        }
-    }
-
-    /// Returns a suggested fix for the error (if available), in the current locale.
-    pub fn suggestion(&self) -> Option<String> {
-        let locale = rust_i18n::locale();
-        self.suggestion_in(&locale)
-    }
-
-    /// Returns the migration exit code for this error.
-    ///
-    /// Maps error types to appropriate exit codes for migration operations.
-    pub fn migration_exit_code(&self) -> MigrationExitCode {
-        match self {
-            Self::PyenvNotFound
-            | Self::PyenvEnvNotFound { .. }
-            | Self::VenvWrapperEnvNotFound { .. }
-            | Self::CondaEnvNotFound { .. }
-            | Self::CorruptedEnvironment { .. } => MigrationExitCode::SourceError,
-            Self::MigrationFailed { .. } | Self::MigrationNameConflict { .. } => {
-                MigrationExitCode::CompleteFailure
-            }
-            _ => MigrationExitCode::CompleteFailure,
-        }
-    }
 }
 
 #[cfg(test)]
