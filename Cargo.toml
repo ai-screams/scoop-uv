@@ -67,6 +67,15 @@ rayon = "1.12.0"
 clap = { version = "4.6", features = ["derive"] }
 clap_mangen = "0.3"
 
+[features]
+# Default = none — keep `cargo build` and `cargo test` lean by default.
+default = []
+# Opt-in feature gating slow / environment-coupled integration tests so
+# `make test-integration*` and the Docker matrix CI workflow can include
+# them while CI on every commit doesn't. Tests should mark themselves
+# with `#[cfg(feature = "integration-test")]`.
+integration-test = []
+
 [dev-dependencies]
 assert_cmd = "2.2"
 predicates = "3.1"
@@ -76,6 +85,23 @@ proptest = "1.11"
 insta = { version = "1.47", features = ["yaml"] }
 rstest = "0.26"
 serde_yaml = "0.9"
+# Benchmark runner. html_reports gives a `target/criterion/report/index.html`
+# overview that's useful when comparing baselines locally.
+criterion = { version = "0.5", features = ["html_reports"] }
+
+# Benchmarks live in benches/. Each [[bench]] entry compiles to its own
+# binary, so a broken bench only fails one target — useful during regressions.
+[[bench]]
+name = "parsing"
+harness = false
+
+[[bench]]
+name = "validation"
+harness = false
+
+[[bench]]
+name = "path_lookup"
+harness = false
 
 [profile.release]
 lto = true

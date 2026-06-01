@@ -74,6 +74,16 @@ docker-shell-zsh:
 docker-shell-fish:
 	$(COMPOSE) run --rm full fish -l
 
+# Drop into a per-source image for ad-hoc debugging
+docker-shell-pyenv:
+	$(COMPOSE) run --rm pyenv-test bash -l
+
+docker-shell-conda:
+	$(COMPOSE) run --rm conda-test bash -l
+
+docker-shell-venvwrapper:
+	$(COMPOSE) run --rm venvwrapper-test bash -l
+
 # ============================================================
 # Test
 # ============================================================
@@ -86,13 +96,49 @@ test-unit:
 test-integration:
 	$(COMPOSE) run --rm slim cargo test --features integration-test
 
+# Per-source integration tests (matrix-friendly for CI parity)
+test-integration-pyenv:
+	$(COMPOSE) run --rm pyenv-test cargo test --features integration-test
+
+test-integration-conda:
+	$(COMPOSE) run --rm conda-test cargo test --features integration-test
+
+test-integration-venvwrapper:
+	$(COMPOSE) run --rm venvwrapper-test cargo test --features integration-test
+
+# Runs all three source-tool integration suites sequentially. Use the
+# CI matrix workflow (.github/workflows/integration-test.yml) for the
+# parallel version — running all three in a single Docker host serially
+# is fine for local debugging.
+test-integration-all: test-integration-pyenv test-integration-conda test-integration-venvwrapper
+
 test-all: test-unit test-integration
 
 # ============================================================
 # Benchmark
+# ------------------------------------------------------------
+# `bench` runs all suites in Docker (reproducible).
+# `bench-save` / `bench-compare` use the host toolchain because
+# Criterion stores baselines under target/criterion/ and reusing the
+# host's target/ avoids the volume-mount roundtrip on macOS.
 # ============================================================
+BENCH_BASELINE ?= main
+
 bench:
 	$(COMPOSE) --profile bench run --rm bench
+
+# Save the current bench results as a named baseline (default: "main").
+# Run on the main branch after a release; Criterion writes to
+# target/criterion/<bench>/<baseline>/.
+bench-save:
+	cargo bench --bench parsing --bench validation --bench path_lookup \
+		-- --save-baseline $(BENCH_BASELINE)
+
+# Compare current results against a saved baseline. Exits non-zero on
+# the per-bench regression threshold (Criterion default: 5% noise).
+bench-compare:
+	cargo bench --bench parsing --bench validation --bench path_lookup \
+		-- --baseline $(BENCH_BASELINE)
 
 # ============================================================
 # Cleanup

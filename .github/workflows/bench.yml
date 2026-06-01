@@ -1,0 +1,86 @@
+# Criterion benchmark regression gate
+#
+# Runs the three bench binaries on every PR and push to main. On main,
+# results are pushed to the `gh-pages` branch as the new baseline. On
+# PRs, results are compared against that baseline: a comment is left at
+# any regression past `alert-threshold`, and the workflow FAILS past
+# `fail-threshold`.
+
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write       # Push baseline updates to gh-pages
+  deployments: write
+  pull-requests: write  # Comment on PRs about regressions
+
+# A bench run in progress on main should NOT be cancelled by a new push —
+# stale main baselines lead to wrong PR comparisons. PRs are cancellable.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  benchmark:
+    name: Criterion regression gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust (pinned by rust-toolchain.toml)
+        # rust-toolchain.toml drives the version; this just makes sure
+        # rustup is fresh enough to honour the manifest.
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Cache cargo + target/
+        uses: Swatinem/rust-cache@v2
+        with:
+          # Per-workflow cache key so unit-test cache doesn't churn the
+          # bench profile artifacts.
+          shared-key: bench
+
+      # Plain text output is what benchmark-action's tool: cargo parser
+      # expects. Don't pipe through `tee` interactively — the action reads
+      # the file directly.
+      - name: Run benchmarks
+        run: |
+          cargo bench --bench parsing --bench validation --bench path_lookup \
+            -- --output-format bencher \
+            | tee bench_output.txt
+
+      # First run on main requires the gh-pages branch to exist. If it
+      # doesn't, bootstrap it before the action tries to push baselines:
+      #   git checkout --orphan gh-pages && git rm -rf .
+      #   echo "scoop-uv bench history" > README.md
+      #   git add README.md && git commit -m "bootstrap bench gh-pages"
+      #   git push origin gh-pages
+      - name: Store / compare benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: scoop-uv benchmarks
+          tool: cargo
+          output-file-path: bench_output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # On main: write the new baseline to gh-pages.
+          # On PRs: compare only — do NOT push.
+          auto-push: ${{ github.ref == 'refs/heads/main' }}
+          # Single threshold semantics: with `fail-on-alert: true`, the
+          # workflow fails the moment a bench crosses `alert-threshold`.
+          # Set generously (150%) to absorb the 10-30% per-bench noise
+          # normal on GitHub-hosted runners while still catching a real
+          # 1.5x regression.
+          alert-threshold: "150%"
+          fail-on-alert: true
+          comment-on-alert: true
+          # Always leave a PR comment summarising the comparison, even
+          # when nothing regresses — gives reviewers a visible perf
+          # checkpoint without needing to click into the run.
+          summary-always: true

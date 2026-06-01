@@ -1,0 +1,97 @@
+{
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+  "name": "scoop-uv",
+
+  // Bookworm (Debian 12) is supported until June 2028. The 1-bookworm tag
+  // tracks the latest stable Rust shipped by Microsoft; the actual toolchain
+  // used by every contributor is pinned by rust-toolchain.toml at the repo
+  // root (MSRV 1.85), so this image tag is just a fast starting point.
+  "image": "mcr.microsoft.com/devcontainers/rust:1-bookworm",
+
+  "features": {
+    // Bring git up to date — bookworm's git is 2.39, and prek hooks expect
+    // newer behaviour around pre-commit message templating.
+    "ghcr.io/devcontainers/features/git:1": {},
+
+    // gh CLI is required by the project's collaboration rules (CLAUDE.md)
+    // for PR creation, issue inspection, and release management.
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+
+    // zsh as default shell + locale + non-root vscode user. Keep oh-my-zsh
+    // off to keep the image lean; users can layer it in their dotfiles.
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": false,
+      "upgradePackages": true
+    }
+  },
+
+  // Named Docker volumes — Linux filesystem, no VirtioFS overhead on macOS.
+  // ${devcontainerId} scopes per-project so two scoop-uv worktrees don't
+  // share caches. target/ is intentionally NOT a named volume: it's large,
+  // architecture-specific, and best warmed in the prebuild layer instead.
+  "mounts": [
+    {
+      "source": "scoop-cargo-registry-${devcontainerId}",
+      "target": "/usr/local/cargo/registry",
+      "type": "volume"
+    },
+    {
+      "source": "scoop-cargo-git-${devcontainerId}",
+      "target": "/usr/local/cargo/git",
+      "type": "volume"
+    }
+  ],
+
+  // Runs once during Codespace prebuild (or first local create). All
+  // heavy tooling installs go here — the resulting layer gets cached so
+  // contributors land in a ready-to-build environment.
+  "onCreateCommand": "bash .devcontainer/setup.sh",
+
+  // Runs on every prebuild refresh — keep the registry warm with latest
+  // deps from Cargo.lock without re-running the full setup.
+  "updateContentCommand": "cargo fetch",
+
+  // Runs only when a user (not prebuild) creates the Codespace. Hooks
+  // installation needs a real user context, so it stays here.
+  "postCreateCommand": "prek install || true",
+
+  // SYS_PTRACE + relaxed seccomp let vadimcn.vscode-lldb attach to debuggee
+  // processes. Without these, breakpoints silently fail to bind.
+  "capAdd": ["SYS_PTRACE"],
+  "securityOpt": ["seccomp=unconfined"],
+
+  "customizations": {
+    "vscode": {
+      // The rust feature auto-installs rust-analyzer, vscode-lldb, and
+      // even-better-toml. Anything below is incremental.
+      "extensions": [
+        "serayuzgur.crates",
+        "usernamehw.errorlens",
+        "streetsidesoftware.code-spell-checker"
+      ],
+      "settings": {
+        // Run clippy (not just `cargo check`) on save so warnings show up
+        // before they fail CI under `-D warnings`.
+        "rust-analyzer.check.command": "clippy",
+        "rust-analyzer.check.extraArgs": ["--", "-D", "warnings"],
+        "rust-analyzer.cargo.features": "all",
+        "rust-analyzer.inlayHints.parameterHints.enable": false,
+        "rust-analyzer.inlayHints.typeHints.enable": true,
+        "editor.formatOnSave": true,
+        "[rust]": {
+          "editor.defaultFormatter": "rust-lang.rust-analyzer"
+        }
+      }
+    }
+  },
+
+  // Rust compiles are CPU-bound; 4 cores is the floor for acceptable
+  // dev-loop times on this codebase (~750 tests, mdBook, fuzz workspace).
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  }
+}
