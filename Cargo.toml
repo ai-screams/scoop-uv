@@ -45,7 +45,6 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Terminal UI
 owo-colors = "4.0"
-console = "0.16.3"
 indicatif = "0.18"
 dialoguer = "0.12"
 
