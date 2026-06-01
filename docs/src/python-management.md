@@ -168,6 +168,8 @@ The migration process:
 3. Reinstalls packages using uv for improved performance
 4. Preserves originals by default (use `--delete-source` to remove source envs after success)
 
+`scoop migrate all` runs migrations in parallel across CPU cores via [rayon](https://crates.io/crates/rayon) — typically 4-8× faster than sequential. Single-env (`migrate @env`) and `--dry-run` stay sequential for predictable output.
+
 See [migrate command](commands/migrate.md) for details.
 
 ## Troubleshooting

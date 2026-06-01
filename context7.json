@@ -49,6 +49,12 @@
     "Environment names must match ^[a-zA-Z][a-zA-Z0-9_-]*$ (max 64 chars, must start with letter).",
     "Most commands support --json for machine-readable output.",
     "MSRV is 1.85 (Rust Edition 2024). N-1 MSRV policy.",
+    "Project manifest file is .scoop.toml (parent-walk discovery from cwd). Defines [environment].python and [packages].default + named groups; reconcile the active env with the manifest via `scoop sync`.",
+    "To run a one-off command in an env without activating it, use `scoop run <env> -- <cmd>` (e.g. `scoop run myproject -- pytest tests/`). The `--` separator is required before the command.",
+    "To inspect current state use `scoop status` (Active/Configured/System/None) and `scoop which <exe>` (resolves an executable inside the active env).",
+    "For collaboration, snapshot an env with `scoop export <name> > env.json` (schema v1) and restore with `scoop import env.json --name <new>`. To duplicate locally, use `scoop clone <src> <dst>` (add `--no-packages` for a skeleton).",
+    "Lazy Python install: `scoop create <name> <version> --install-python` installs the requested Python via uv if missing, then creates the env.",
+    "`scoop migrate all` runs in parallel via rayon; `--dry-run` and single-env (`migrate @env`) stay sequential.",
     "For complete LLM reference, see llms-full.txt in the repository root."
   ]
 }

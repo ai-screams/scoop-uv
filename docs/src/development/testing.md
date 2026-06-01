@@ -98,7 +98,7 @@ cargo test test_name -- --nocapture --test-threads=1
 
 ### Unit Tests
 
-The bulk of the suite (600+ tests) lives within source files using `#[cfg(test)]`:
+The bulk of the suite (685 tests, ~91% of the total 751) lives within source files using `#[cfg(test)]`:
 
 ```rust
 #[cfg(test)]
@@ -124,7 +124,7 @@ Key test modules:
 | `paths::tests`            | 16    | Path utilities                  |
 | `shell::*::tests`         | 14    | Shell scripts (shellcheck)      |
 
-### Integration Tests (41 tests)
+### Integration Tests (43 tests in `tests/cli.rs` + 2 in `tests/i18n_completeness.rs`)
 
 Located in `tests/cli.rs`:
 
@@ -146,7 +146,7 @@ Some tests are marked `#[ignore]` because they require `uv` installed:
 cargo test -- --ignored
 ```
 
-### Doc Tests (6 tests)
+### Doc Tests (21 tests)
 
 Examples in documentation comments:
 

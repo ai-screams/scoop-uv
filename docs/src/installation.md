@@ -35,7 +35,7 @@ scoop --version
 
 ```bash
 scoop --version
-# scoop 0.10.0
+# scoop 0.11.0
 ```
 
 ## Troubleshooting

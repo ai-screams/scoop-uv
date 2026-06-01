@@ -51,6 +51,7 @@ Verify: `scoop --version`
 |---------|-------------|
 | `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
 | `scoop create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
+| `scoop create <name> <ver> --install-python` | Install Python on demand if missing (v0.11.0) |
 | `scoop use <name>` | Set + activate environment |
 | `scoop use <name> --link` | Also create `.venv` symlink for IDE |
 | `scoop use <name> --global` | Set as global default |
@@ -61,7 +62,19 @@ Verify: `scoop --version`
 | `scoop list --python-version <VER>` | Filter environments by Python version |
 | `scoop list --bare` | List names only (for scripting) |
 | `scoop info <name>` | Show virtualenv details |
+| `scoop status` | Summarise current state — Active/Configured/System/None (v0.11.0) |
+| `scoop which <exe>` | Resolve an executable inside the active env (v0.11.0) |
+| `scoop run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
 | `scoop remove <name>` | Delete virtualenv (aliases: `rm`, `delete`) |
+| `scoop clone <src> <dst>` | Duplicate an env in-place; `--no-packages` for skeleton (v0.11.0) |
+
+### Project Manifest (v0.11.0)
+
+| Command | Description |
+|---------|-------------|
+| `scoop sync` | Reconcile the active env with `.scoop.toml` |
+| `scoop export <name>` | Snapshot env as JSON (schema v1) |
+| `scoop import <file>` | Restore env from JSON snapshot; `--name <new>` to rename |
 
 ### Python Management
 
@@ -85,8 +98,9 @@ Verify: `scoop --version`
 | Command | Description |
 |---------|-------------|
 | `scoop migrate list` | Show environments to migrate |
-| `scoop migrate @env <name>` | Migrate a single environment |
-| `scoop migrate all` | Migrate all environments |
+| `scoop migrate @env <name>` | Migrate a single environment (sequential) |
+| `scoop migrate all` | Migrate all environments (parallel via rayon since v0.11.0; results sorted by name for deterministic output) |
+| `scoop migrate all --dry-run` | Preview without changes (sequential for predictable output) |
 
 Supported sources: pyenv-virtualenv, virtualenvwrapper, conda
 
@@ -142,14 +156,16 @@ src/
 │   ├── mod.rs     # Output struct
 │   ├── json.rs    # JSON response types
 │   └── spinner.rs # Progress indicator
-├── error.rs       # ScoopError enum (27 variants, i18n Display)
+├── core/manifest.rs   # ScoopManifest (.scoop.toml parser, deny_unknown_fields, parent-walk discovery)
+├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
+├── error.rs       # ScoopError enum (33 variants, i18n Display)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
 └── config.rs      # Config management (~/.scoop/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR) — 136 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR) — 168 keys
 ```
 
 ### Design Principles
@@ -285,6 +301,45 @@ The custom interpreter path is persisted in
 4. Default → Bash
 
 Override with `--shell` option on `init` and `completions` commands.
+
+**Project Manifest (`.scoop.toml`, v0.11.0)**:
+
+scoop discovers a `.scoop.toml` by walking up from cwd. Schema:
+
+```toml
+[environment]
+name = "myproject"      # required; matches env-name regex
+python = "3.12"          # required; matches Python version regex
+
+[packages]
+default = ["pytest", "black"]   # always installed
+dev     = ["ipython", "debugpy"] # optional named group
+```
+
+- `deny_unknown_fields` is enforced — typos in keys are surfaced.
+- `[packages]` accepts a `default` list and arbitrary named groups (deserialised into a `BTreeMap` for stable iteration).
+- `scoop sync` reconciles the active env: warns and proceeds if the active env's Python version doesn't match `[environment].python` (will not auto-recreate).
+- `[hooks]` is **not** implemented in v0.11.0 (requires a threat model first).
+
+**One-Shot Execution (`scoop run`, v0.11.0)**:
+
+```bash
+scoop run myproject -- pytest tests/      # No activation; runs in myproject's env
+scoop run myproject -- python -c 'import sys; print(sys.prefix)'
+```
+
+`run` sets `VIRTUAL_ENV` / `SCOOP_ACTIVE`, prepends the env's bin dir to `PATH`, unsets `PYTHONHOME`. Exit code mirrors the child process — including `128 + signum` for Unix signal termination.
+
+**Snapshot / Restore / Clone (v0.11.0)**:
+
+```bash
+scoop export myproject > myproject.scoop.json   # JSON schema v1
+scoop import myproject.scoop.json --name copy   # Restore with rename
+scoop clone myproject myproject-exp             # Duplicate in-place
+scoop clone myproject skeleton --no-packages    # Skeleton without packages
+```
+
+The export schema is `EXPORT_SCHEMA_VERSION = "1"` (`core::export_schema`). `pip_specs()` produces `name==version` strings; `from_json()` validates the schema version and env name on import.
 
 ---
 
@@ -603,6 +658,16 @@ pub enum ScoopError {
 
     // Cascade errors
     CascadeAborted,
+
+    // Self-update
+    SelfUpdateFailed { message: String },
+
+    // v0.11.0: inspect / exec / manifest / collaboration
+    NoActiveEnvironment,                                       // scoop status/which with no env active
+    ExecutableNotFound { exe: String, env: String },           // scoop which: exe not in env
+    ManifestNotFound { start_dir: PathBuf },                   // scoop sync: no .scoop.toml in cwd or ancestors
+    InvalidExportFile { path: PathBuf, reason: String },       // scoop import: malformed JSON
+    UnsupportedExportVersion { version: String, supported: String }, // scoop import: schema version mismatch
 }
 
 impl ScoopError {
@@ -699,7 +764,7 @@ Error response:
 
 ## Testing
 
-- 579 tests (520 unit + 43 integration + 16 doctest), 0 clippy warnings
+- 751 tests (685 unit + 45 integration + 21 doctest), 0 clippy warnings
 - Unit tests: inline `mod tests` blocks in each source file
 - Integration tests: `tests/cli.rs` with `assert_cmd` + `predicates`
 - Test isolation: `tests/common::TestFixture` for `SCOOP_HOME` isolation

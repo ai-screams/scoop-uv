@@ -21,15 +21,23 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 | `scoop list` | List virtualenvs (aliases: `ls`) |
 | `scoop list --pythons` | List installed Python versions |
 | `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scoop create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
 | `scoop use <name>` | Set + activate environment |
 | `scoop use <name> --global` | Set as global default |
 | `scoop use <name> --link` | Also create `.venv` symlink for IDE |
 | `scoop use system` | Deactivate, use system Python |
 | `scoop use --unset` | Remove version file |
 | `scoop remove <name>` | Delete virtualenv (aliases: `rm`, `delete`) |
+| `scoop clone <src> <dst>` | Duplicate an env in-place (`--no-packages` for skeleton) (v0.11.0) |
 | `scoop install [version]` | Install Python version |
 | `scoop uninstall <version>` | Remove Python version |
 | `scoop info <name>` | Show virtualenv details |
+| `scoop status` | Summarise current state (Active/Configured/System/None) (v0.11.0) |
+| `scoop which <exe>` | Resolve an executable inside the active env (v0.11.0) |
+| `scoop run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
+| `scoop sync` | Reconcile the active env with `.scoop.toml` manifest (v0.11.0) |
+| `scoop export <name>` | Snapshot an env as JSON (schema v1) (v0.11.0) |
+| `scoop import <file>` | Restore an env from a JSON snapshot (v0.11.0) |
 | `scoop doctor` | Health check |
 | `scoop doctor --fix` | Auto-fix issues |
 | `scoop shell <name>` | Set shell-specific env (temporary) |
@@ -39,7 +47,7 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 | `scoop lang [code]` | Get/set language (en, ko, ja, pt-BR) |
 | `scoop migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scoop migrate @env <name>` | Migrate single environment |
-| `scoop migrate all` | Migrate all environments |
+| `scoop migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
 
 Most commands support `--json` for machine-readable output.
 

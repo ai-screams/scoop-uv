@@ -50,6 +50,12 @@ scoop create myproject 3.12
 
 This creates a virtual environment at `~/.scoop/virtualenvs/myproject/`.
 
+If Python 3.12 isn't installed yet, add `--install-python` to install it on demand:
+
+```bash
+scoop create myproject 3.12 --install-python
+```
+
 ## 4. Use the Environment
 
 ```bash

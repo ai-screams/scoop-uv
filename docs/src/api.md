@@ -675,5 +675,5 @@ When analyzing or modifying this codebase:
 
 ---
 
-> **Last Updated:** 2026-02-15
-> **scoop Version:** 0.7.0
+> **Last Updated:** 2026-06-01
+> **scoop Version:** 0.11.0
