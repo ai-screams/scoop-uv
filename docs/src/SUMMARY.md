@@ -35,6 +35,7 @@
 - [migrate](commands/migrate.md)
 - [gc](commands/gc.md)
 - [prune](commands/prune.md)
+- [verify](commands/verify.md)
 - [lang](commands/lang.md)
 - [init](commands/init.md)
 - [shell](commands/shell.md)

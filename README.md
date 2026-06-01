@@ -334,6 +334,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop install [version]` | Install Python version |
 | `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove) |
 | `scoop prune` | Prune the uv cache |
+| `scoop verify` | Per-env health check (metadata, python, pyvenv.cfg, ...) |
 | `scoop doctor` | Health check your setup |
 | `scoop self update` | Update scoop itself to the latest version |
 
@@ -396,6 +397,8 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 
 | Command                  | Description                                                    |
 |--------------------------|----------------------------------------------------------------|
+| `scoop verify`           | Per-env health diagnosis — 6 checks per env                    |
+| `scoop verify --strict`  | Same, but exit 1 on any issue (CI gate)                        |
 | `scoop gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
 | `scoop gc --yes`         | Actually remove the orphans                                    |
 | `scoop gc --aggressive`  | Also flag unused uv-managed Python versions                    |

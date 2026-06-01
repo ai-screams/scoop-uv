@@ -83,6 +83,7 @@ scoop remove myproject        # Delete a virtualenv
 | `scoop migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
 | `scoop gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons |
 | `scoop prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
+| `scoop verify [NAME]` | Per-env health diagnosis (6 checks). Default always exits 0; `--strict` exits 1 on any issue |
 | `scoop man [DIR]` | Generate man pages — stdout for top-level, or write `scoop.1` + `scoop-<sub>.1` per subcommand into DIR |
 
 Most commands support `--json` for machine-readable output.

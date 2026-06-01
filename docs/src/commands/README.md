@@ -24,6 +24,7 @@ Complete reference for all scoop commands.
 | [`scoop migrate`](migrate.md) | - | Migrate from pyenv/conda/venvwrapper |
 | [`scoop gc`](gc.md) | - | Garbage-collect orphan virtualenvs |
 | [`scoop prune`](prune.md) | - | Prune the uv cache |
+| [`scoop verify`](verify.md) | - | Per-env health diagnosis (6 checks) |
 | [`scoop lang`](lang.md) | - | Get/set display language |
 | [`scoop shell`](shell.md) | - | Set shell-specific env (temporary) |
 | [`scoop init`](init.md) | - | Shell init script |

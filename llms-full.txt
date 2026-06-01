@@ -82,6 +82,7 @@ Verify: `scoop --version`
 |---------|-------------|
 | `scoop gc` | Garbage-collect orphan virtualenvs (missing metadata or broken Python). Default is dry-run; pass `-y`/`--yes` to actually remove. `--aggressive` also flags uv-managed Pythons that no env references. |
 | `scoop prune` | Prune the uv cache (thin wrapper around `uv cache prune`) — delete unused download/wheel cache entries. |
+| `scoop verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scoop.toml` Python matches (skipped if no manifest). Default always exits 0; `--strict` exits 1 on any issue. Pass `NAME` to check a single env. Complements `doctor` (system-level) and `gc` (orphan removal). |
 | `scoop man [DIR]` | Generate man pages from the live `clap::Command` tree. Without `DIR`: print top-level `scoop.1` to stdout (pipe to `man -l -`). With `DIR`: write `scoop.1` + one `scoop-<sub>.1` per visible subcommand for distro packagers. |
 
 ### Python Management

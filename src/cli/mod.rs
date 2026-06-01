@@ -532,6 +532,21 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
     },
+
+    /// Verify env health (metadata, python binary, pyvenv.cfg, activate, exec, manifest drift)
+    Verify {
+        /// Check only this environment (default: every environment)
+        #[arg(value_name = "NAME")]
+        name: Option<String>,
+
+        /// Exit with status 1 if any check fails (default: always exit 0)
+        #[arg(long)]
+        strict: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Supported shell types

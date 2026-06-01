@@ -98,7 +98,7 @@ cargo test test_name -- --nocapture --test-threads=1
 
 ### Unit Tests
 
-The bulk of the suite (693 tests, ~91% of the total 759) lives within source files using `#[cfg(test)]`:
+The bulk of the suite (703 tests, ~92% of the total 769) lives within source files using `#[cfg(test)]`:
 
 ```rust
 #[cfg(test)]

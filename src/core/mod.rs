@@ -12,7 +12,7 @@ pub use export_schema::{EXPORT_SCHEMA_VERSION, ExportSchema};
 pub use manifest::ScoopManifest;
 pub use metadata::Metadata;
 pub use version::VersionService;
-pub use virtualenv::VirtualenvService;
+pub use virtualenv::{VirtualenvInfo, VirtualenvService};
 
 /// Environment variable for currently active virtualenv
 pub const SCOOP_ACTIVE_ENV: &str = "SCOOP_ACTIVE";

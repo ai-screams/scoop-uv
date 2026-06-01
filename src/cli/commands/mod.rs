@@ -26,6 +26,7 @@ mod status;
 mod sync;
 mod uninstall;
 mod use_env;
+mod verify;
 mod which;
 
 pub use activate::execute as activate;
@@ -54,4 +55,5 @@ pub use status::execute as status;
 pub use sync::execute as sync;
 pub use uninstall::execute as uninstall;
 pub use use_env::execute as use_env;
+pub use verify::execute as verify;
 pub use which::execute as which;

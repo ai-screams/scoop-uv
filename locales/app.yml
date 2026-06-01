@@ -1168,3 +1168,84 @@ man.written:
   ko: "%{dir} 에 매뉴얼 페이지 %{count}개 생성"
   pt-BR: "Escritas %{count} man page(s) em %{dir}"
   ja: "%{dir} に %{count} 件の man ページを書き出しました"
+
+# ============================================================================
+# Verify command (per-env health diagnosis)
+# ============================================================================
+verify.no_envs:
+  en: "No environments to check"
+  ko: "검사할 환경이 없어요"
+  pt-BR: "Nenhum ambiente para verificar"
+  ja: "確認する環境がありません"
+
+verify.summary:
+  en: "%{total} env(s) checked: %{healthy} healthy, %{issues} with issues"
+  ko: "환경 %{total}개 검사: 정상 %{healthy}개, 문제 있음 %{issues}개"
+  pt-BR: "%{total} ambiente(s) verificado(s): %{healthy} saudáveis, %{issues} com problemas"
+  ja: "環境 %{total} 件を確認: 正常 %{healthy} 件、問題あり %{issues} 件"
+
+verify.metadata_missing:
+  en: ".scoop-metadata.json not found"
+  ko: ".scoop-metadata.json 파일이 없어요"
+  pt-BR: ".scoop-metadata.json não encontrado"
+  ja: ".scoop-metadata.json が見つかりません"
+
+verify.metadata_unreadable:
+  en: ".scoop-metadata.json exists but failed to parse"
+  ko: ".scoop-metadata.json 파일이 있지만 읽지 못했어요"
+  pt-BR: ".scoop-metadata.json existe mas não pôde ser lido"
+  ja: ".scoop-metadata.json は存在しますが読み込めませんでした"
+
+verify.file_missing:
+  en: "%{path} not found"
+  ko: "%{path} 가 없어요"
+  pt-BR: "%{path} não encontrado"
+  ja: "%{path} が見つかりません"
+
+verify.manifest_drift:
+  en: "env Python %{env} does not match .scoop.toml (%{manifest})"
+  ko: "환경의 Python %{env} 가 .scoop.toml (%{manifest}) 과 달라요"
+  pt-BR: "Python do ambiente %{env} não corresponde ao .scoop.toml (%{manifest})"
+  ja: "環境の Python %{env} は .scoop.toml (%{manifest}) と一致しません"
+
+verify.python_unknown:
+  en: "Python version unknown"
+  ko: "Python 버전 알 수 없음"
+  pt-BR: "Versão do Python desconhecida"
+  ja: "Python バージョン不明"
+
+verify.check_metadata:
+  en: "metadata"
+  ko: "메타데이터"
+  pt-BR: "metadados"
+  ja: "メタデータ"
+
+verify.check_python_binary:
+  en: "Python binary"
+  ko: "Python 바이너리"
+  pt-BR: "binário Python"
+  ja: "Python バイナリ"
+
+verify.check_pyvenv_cfg:
+  en: "pyvenv.cfg"
+  ko: "pyvenv.cfg"
+  pt-BR: "pyvenv.cfg"
+  ja: "pyvenv.cfg"
+
+verify.check_activate_script:
+  en: "activate script"
+  ko: "activate 스크립트"
+  pt-BR: "script activate"
+  ja: "activate スクリプト"
+
+verify.check_python_executes:
+  en: "Python executes"
+  ko: "Python 실행"
+  pt-BR: "execução do Python"
+  ja: "Python 実行"
+
+verify.check_manifest_match:
+  en: "matches .scoop.toml"
+  ko: ".scoop.toml 일치"
+  pt-BR: "corresponde a .scoop.toml"
+  ja: ".scoop.toml と一致"
