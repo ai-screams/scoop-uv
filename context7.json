@@ -57,6 +57,7 @@
     "`scoop migrate all` runs in parallel via rayon; `--dry-run` and single-env (`migrate @env`) stay sequential.",
     "To free disk space from the uv download/wheel cache, run `scoop prune` (thin wrapper around `uv cache prune`).",
     "To clean up orphan virtualenvs (missing metadata or broken Python), run `scoop gc` (default is preview/dry-run). Pass `-y`/`--yes` to actually remove. `--aggressive` also flags uv-managed Python versions that no environment references.",
+    "To generate man pages, use `scoop man` (stdout, pipe to `man -l -`) or `scoop man <DIR>` (writes `scoop.1` + `scoop-<sub>.1` files for distro packagers).",
     "For complete LLM reference, see llms-full.txt in the repository root."
   ]
 }

@@ -39,6 +39,7 @@
 - [init](commands/init.md)
 - [shell](commands/shell.md)
 - [completions](commands/completions.md)
+- [man](commands/man.md)
 
 ---
 

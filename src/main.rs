@@ -188,6 +188,10 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::gc(&output, yes, aggressive)
         }
+        Commands::Man { output_dir, json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::man(&output, output_dir.as_deref())
+        }
     };
 
     // Handle errors

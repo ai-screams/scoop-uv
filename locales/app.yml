@@ -1159,3 +1159,12 @@ gc.done:
   ko: "정리 완료"
   pt-BR: "Limpeza concluída"
   ja: "整理が完了しました"
+
+# ============================================================================
+# Man command (clap_mangen output)
+# ============================================================================
+man.written:
+  en: "Wrote %{count} man page(s) to %{dir}"
+  ko: "%{dir} 에 매뉴얼 페이지 %{count}개 생성"
+  pt-BR: "Escritas %{count} man page(s) em %{dir}"
+  ja: "%{dir} に %{count} 件の man ページを書き出しました"

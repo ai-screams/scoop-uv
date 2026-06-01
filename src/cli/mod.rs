@@ -520,6 +520,18 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
     },
+
+    /// Generate man pages (top-level + one per subcommand)
+    Man {
+        /// Write `scoop.1` + `scoop-<sub>.1` files into this directory.
+        /// Omit to print the top-level page to stdout.
+        #[arg(value_name = "DIR")]
+        output_dir: Option<PathBuf>,
+
+        /// Output as JSON (only meaningful with DIR)
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Supported shell types

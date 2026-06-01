@@ -28,6 +28,7 @@ Complete reference for all scoop commands.
 | [`scoop shell`](shell.md) | - | Set shell-specific env (temporary) |
 | [`scoop init`](init.md) | - | Shell init script |
 | [`scoop completions`](completions.md) | - | Completion script |
+| [`scoop man`](man.md) | - | Generate man pages (for distro packagers) |
 
 ## Global Options
 

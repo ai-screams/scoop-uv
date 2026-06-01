@@ -11,7 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **cli:** Add `scoop prune` — wraps `uv cache prune` to clean the uv download/wheel cache
 - **cli:** Add `scoop gc` — preview/remove orphan virtualenvs (missing metadata or broken Python); `--aggressive` also reports unused uv-managed Python versions
-- **i18n:** Translation keys for `prune` and `gc` across en/ko/ja/pt-BR
+- **cli:** Add `scoop man [DIR]` — generate man pages from the live `clap::Command` tree (top-level `scoop.1` + one `scoop-<sub>.1` per visible subcommand)
+- **i18n:** Translation keys for `prune`, `gc`, `man` across en/ko/ja/pt-BR
+
+### Changed
+
+- **deps:** Move `clap_mangen` from `[build-dependencies]` (unused — no `build.rs`) to `[dependencies]` so it can power the runtime `scoop man` subcommand
 
 ## [0.11.0] - 2026-06-01
 

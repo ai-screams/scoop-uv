@@ -401,6 +401,13 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop gc --aggressive`  | Also flag unused uv-managed Python versions                    |
 | `scoop prune`            | Prune the uv download/wheel cache (`uv cache prune` wrapper)   |
 
+### Packaging 📦
+
+| Command                | Description                                                         |
+|------------------------|---------------------------------------------------------------------|
+| `scoop man`            | Print top-level `scoop.1` to stdout (pipe to `man -l -`)            |
+| `scoop man <DIR>`      | Write `scoop.1` + one `scoop-<sub>.1` per subcommand into `<DIR>`   |
+
 ### Language 🌏
 
 | Command               | Description                        |
