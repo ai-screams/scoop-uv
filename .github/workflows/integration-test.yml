@@ -30,19 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45  # Docker build + integration tests
     # Don't fail-fast: a flaky pyenv shouldn't mask a real conda regression.
-    # venvwrapper is currently non-blocking — its entrypoint exits 127 on
-    # the runner with no stdout despite the image building cleanly. Tracked
-    # for follow-up; pyenv + conda gate the matrix in the meantime so the
-    # new multi-source infra still catches regressions in the supported
-    # variants.
     strategy:
       fail-fast: false
       matrix:
         source-env: [pyenv, conda, venvwrapper]
-        include:
-          - source-env: venvwrapper
-            allow-failure: true
-    continue-on-error: ${{ matrix.allow-failure == true }}
 
     steps:
       - name: Checkout repository
@@ -67,8 +58,15 @@ jobs:
           cache-to: type=gha,mode=max,scope=integration-${{ matrix.source-env }}
 
       - name: Run integration tests (${{ matrix.source-env }})
+        # `--entrypoint=""` bypasses /entrypoint.sh — the venvwrapper-test
+        # image's entrypoint exits 127 when sourcing virtualenvwrapper.sh
+        # under `set -e`, which masked the actual integration test. Other
+        # variants don't need the entrypoint either: the Dockerfile ENV
+        # instructions already export PATH with cargo + pyenv shims + uv,
+        # which is enough for `cargo build` + `scoop migrate list` to run.
         run: |
           docker run --rm \
+            --entrypoint="" \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             -e CARGO_TERM_COLOR=always \
