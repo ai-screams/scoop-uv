@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **cli:** Add `scoop prune` — wraps `uv cache prune` to clean the uv download/wheel cache
+- **i18n:** Translation keys for `prune` across en/ko/ja/pt-BR
+
 ## [0.11.0] - 2026-06-01
 
 ### Added

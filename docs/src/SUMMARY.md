@@ -33,6 +33,7 @@
 - [import](commands/import.md)
 - [clone](commands/clone.md)
 - [migrate](commands/migrate.md)
+- [prune](commands/prune.md)
 - [lang](commands/lang.md)
 - [init](commands/init.md)
 - [shell](commands/shell.md)

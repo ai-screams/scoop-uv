@@ -498,6 +498,13 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
     },
+
+    /// Prune the uv cache (delete unused download/wheel cache entries)
+    Prune {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Supported shell types

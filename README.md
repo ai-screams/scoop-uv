@@ -332,6 +332,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop clone <src> <dst>` | Duplicate an environment |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
+| `scoop prune` | Prune the uv cache |
 | `scoop doctor` | Health check your setup |
 | `scoop self update` | Update scoop itself to the latest version |
 

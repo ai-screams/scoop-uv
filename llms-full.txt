@@ -76,6 +76,12 @@ Verify: `scoop --version`
 | `scoop export <name>` | Snapshot env as JSON (schema v1) |
 | `scoop import <file>` | Restore env from JSON snapshot; `--name <new>` to rename |
 
+### Cleanup
+
+| Command | Description |
+|---------|-------------|
+| `scoop prune` | Prune the uv cache (thin wrapper around `uv cache prune`) — delete unused download/wheel cache entries. |
+
 ### Python Management
 
 | Command | Description |

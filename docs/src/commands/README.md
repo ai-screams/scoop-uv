@@ -22,6 +22,7 @@ Complete reference for all scoop commands.
 | [`scoop import`](import.md) | - | Recreate an env from an export file (or stdin) |
 | [`scoop clone`](clone.md) | - | Duplicate an env (with or without packages) |
 | [`scoop migrate`](migrate.md) | - | Migrate from pyenv/conda/venvwrapper |
+| [`scoop prune`](prune.md) | - | Prune the uv cache |
 | [`scoop lang`](lang.md) | - | Get/set display language |
 | [`scoop shell`](shell.md) | - | Set shell-specific env (temporary) |
 | [`scoop init`](init.md) | - | Shell init script |

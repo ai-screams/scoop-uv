@@ -176,6 +176,10 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::which(&output, &exe, env.as_deref())
         }
+        Commands::Prune { json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::prune(&output)
+        }
     };
 
     // Handle errors

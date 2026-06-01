@@ -81,6 +81,7 @@ scoop remove myproject        # Delete a virtualenv
 | `scoop migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scoop migrate @env <name>` | Migrate single environment |
 | `scoop migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
+| `scoop prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
 
 Most commands support `--json` for machine-readable output.
 

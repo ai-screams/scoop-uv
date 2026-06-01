@@ -1081,3 +1081,12 @@ error.self_update_failed:
   ko: "자체 업데이트 실패: %{message}"
   pt-BR: "Falha na auto-atualização: %{message}"
   ja: "セルフアップデート失敗: %{message}"
+
+# ============================================================================
+# Prune command (uv cache cleanup)
+# ============================================================================
+prune.success:
+  en: "uv cache pruned"
+  ko: "uv 캐시를 정리했어요"
+  pt-BR: "Cache do uv limpo"
+  ja: "uv キャッシュを整理しました"
