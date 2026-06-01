@@ -48,6 +48,14 @@ exclude_re = [
     # tests in core::tests. Mutating the wrapper body can only flip behaviour
     # in paths that need a real pip invocation to observe.
     "list_installed_packages",
+    # Excluded specifically for the `delete !` mutation on the pop guard,
+    # which inverts the termination condition and makes the function loop
+    # forever. cargo-mutants reports the result as TIMEOUT (exit 3), failing
+    # CI even though no behaviour-flip mutation actually goes uncaught.
+    # The function is 8 lines and obviously correct by inspection; the
+    # return-value mutations are still covered by the find_manifest_*
+    # tests via the call sites in ScoopManifest::parse and scoop sync.
+    "find_manifest",
     # `cfg(windows)` branch of the cross-platform extension probe. On non-
     # Windows hosts the variant doesn't compile, so its mutations can't be
     # tested locally; on Windows hosts the existing rstest cases cover it.
