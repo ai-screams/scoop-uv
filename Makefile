@@ -116,9 +116,29 @@ test-all: test-unit test-integration
 
 # ============================================================
 # Benchmark
+# ------------------------------------------------------------
+# `bench` runs all suites in Docker (reproducible).
+# `bench-save` / `bench-compare` use the host toolchain because
+# Criterion stores baselines under target/criterion/ and reusing the
+# host's target/ avoids the volume-mount roundtrip on macOS.
 # ============================================================
+BENCH_BASELINE ?= main
+
 bench:
 	$(COMPOSE) --profile bench run --rm bench
+
+# Save the current bench results as a named baseline (default: "main").
+# Run on the main branch after a release; Criterion writes to
+# target/criterion/<bench>/<baseline>/.
+bench-save:
+	cargo bench --bench parsing --bench validation --bench path_lookup \
+		-- --save-baseline $(BENCH_BASELINE)
+
+# Compare current results against a saved baseline. Exits non-zero on
+# the per-bench regression threshold (Criterion default: 5% noise).
+bench-compare:
+	cargo bench --bench parsing --bench validation --bench path_lookup \
+		-- --baseline $(BENCH_BASELINE)
 
 # ============================================================
 # Cleanup
