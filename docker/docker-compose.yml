@@ -1,11 +1,47 @@
-# Docker Compose v2 (version field deprecated since v2.0)
+# Docker Compose v2 (compose-spec — version field is obsolete since v2.0)
 # https://docs.docker.com/compose/compose-file/
+
+# ============================================================
+# YAML anchor with shared service config
+# ------------------------------------------------------------
+# All concrete services merge `<<: *common-svc` so a future tweak
+# (extra mount, env var, etc.) lives in one place. The anchor itself
+# isn't a runnable service — it's referenced via merge.
+# ============================================================
+x-common-svc: &common-svc
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile
+    args:
+      BUILDKIT_INLINE_CACHE: "1"
+  volumes:
+    # Source code (live reload on host edit)
+    - ..:/workspace:cached
+    # Cargo registry/git — image now uses /usr/local/cargo by default
+    # (matches the official `rust:` image; persisted across restarts)
+    - cargo-registry:/usr/local/cargo/registry
+    - cargo-git:/usr/local/cargo/git
+    # rustup toolchain — persist so `make docker-shell` doesn't re-DL
+    # the 1.85 toolchain on every container restart
+    - rustup-home:/usr/local/rustup
+    # Target dir cache (incremental builds)
+    - target-cache:/workspace/target
+    # Shell scripts (live reload for development)
+    - ../docker/scripts/entrypoint.sh:/entrypoint.sh:ro
+    - ../docker/scripts/bashrc.sh:/root/.bashrc:ro
+    - ../docker/scripts/zshrc.sh:/root/.zshrc:ro
+    - ../docker/scripts/config.fish:/root/.config/fish/config.fish:ro
+  environment:
+    - RUST_BACKTRACE=1
+    - CARGO_TERM_COLOR=always
+  working_dir: /workspace
 
 services:
   # ============================================================
-  # Full test environment (development)
+  # Full test environment (development) — all 3 source-tool fixtures
   # ============================================================
   full:
+    <<: *common-svc
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -13,27 +49,12 @@ services:
       args:
         BUILDKIT_INLINE_CACHE: "1"
     image: ghcr.io/ai-screams/scoop:latest
-    volumes:
-      # Source code (live reload)
-      - ..:/workspace:cached
-      # Cargo cache (build speed)
-      - cargo-registry:/root/.cargo/registry
-      - cargo-git:/root/.cargo/git
-      # Target cache (incremental builds)
-      - target-cache:/workspace/target
-      # Shell scripts (live reload for development)
-      - ../docker/scripts/entrypoint.sh:/entrypoint.sh:ro
-      - ../docker/scripts/bashrc.sh:/root/.bashrc:ro
-      - ../docker/scripts/zshrc.sh:/root/.zshrc:ro
-      - ../docker/scripts/config.fish:/root/.config/fish/config.fish:ro
     environment:
       - RUST_BACKTRACE=1
       - CARGO_TERM_COLOR=always
       - CARGO_INCREMENTAL=1
-    working_dir: /workspace
     stdin_open: true
     tty: true
-    # Resource limits (optional)
     deploy:
       resources:
         limits:
@@ -42,9 +63,10 @@ services:
           memory: 4G
 
   # ============================================================
-  # Slim test environment (CI)
+  # Slim test environment (CI default) — pyenv only
   # ============================================================
   slim:
+    <<: *common-svc
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -52,30 +74,69 @@ services:
       args:
         BUILDKIT_INLINE_CACHE: "1"
     image: ghcr.io/ai-screams/scoop:slim
-    volumes:
-      - ..:/workspace:cached
-      - cargo-registry:/root/.cargo/registry
-      - cargo-git:/root/.cargo/git
-      - target-cache:/workspace/target
-      # Shell scripts (live reload for development)
-      - ../docker/scripts/entrypoint.sh:/entrypoint.sh:ro
-      - ../docker/scripts/bashrc.sh:/root/.bashrc:ro
-      - ../docker/scripts/zshrc.sh:/root/.zshrc:ro
-      - ../docker/scripts/config.fish:/root/.config/fish/config.fish:ro
-    environment:
-      - RUST_BACKTRACE=1
-      - CARGO_TERM_COLOR=always
-    working_dir: /workspace
 
   # ============================================================
-  # Integration test runner
+  # Per-source test images — one stage per migration source so the
+  # CI matrix can build just the variant it needs.
+  # ============================================================
+  pyenv-test:
+    <<: *common-svc
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: pyenv-test
+      args:
+        BUILDKIT_INLINE_CACHE: "1"
+    image: ghcr.io/ai-screams/scoop:pyenv-test
+
+  conda-test:
+    <<: *common-svc
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: conda-test
+      args:
+        BUILDKIT_INLINE_CACHE: "1"
+    image: ghcr.io/ai-screams/scoop:conda-test
+
+  venvwrapper-test:
+    <<: *common-svc
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: venvwrapper-test
+      args:
+        BUILDKIT_INLINE_CACHE: "1"
+    image: ghcr.io/ai-screams/scoop:venvwrapper-test
+
+  # ============================================================
+  # Profile-gated test runners. Compose `--profile test` brings the
+  # matching group up; bare `compose run --rm <name>` works for ad-hoc
+  # invocations from the Makefile.
   # ============================================================
   test:
     extends:
       service: slim
     command: cargo test --features integration-test
-    profiles:
-      - test
+    profiles: [test]
+
+  test-pyenv:
+    extends:
+      service: pyenv-test
+    command: cargo test --features integration-test
+    profiles: [test]
+
+  test-conda:
+    extends:
+      service: conda-test
+    command: cargo test --features integration-test
+    profiles: [test]
+
+  test-venvwrapper:
+    extends:
+      service: venvwrapper-test
+    command: cargo test --features integration-test
+    profiles: [test]
 
   # ============================================================
   # Benchmark runner
@@ -84,16 +145,19 @@ services:
     extends:
       service: full
     command: cargo bench
-    profiles:
-      - bench
+    profiles: [bench]
 
 # ============================================================
 # Named volumes for caching
+# rustup-home survives container restarts so `make docker-shell` is
+# fast on the second run.
 # ============================================================
 volumes:
   cargo-registry:
     name: scoop-cargo-registry
   cargo-git:
     name: scoop-cargo-git
+  rustup-home:
+    name: scoop-rustup-home
   target-cache:
     name: scoop-target-cache

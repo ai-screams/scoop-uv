@@ -74,6 +74,16 @@ docker-shell-zsh:
 docker-shell-fish:
 	$(COMPOSE) run --rm full fish -l
 
+# Drop into a per-source image for ad-hoc debugging
+docker-shell-pyenv:
+	$(COMPOSE) run --rm pyenv-test bash -l
+
+docker-shell-conda:
+	$(COMPOSE) run --rm conda-test bash -l
+
+docker-shell-venvwrapper:
+	$(COMPOSE) run --rm venvwrapper-test bash -l
+
 # ============================================================
 # Test
 # ============================================================
@@ -85,6 +95,22 @@ test-unit:
 
 test-integration:
 	$(COMPOSE) run --rm slim cargo test --features integration-test
+
+# Per-source integration tests (matrix-friendly for CI parity)
+test-integration-pyenv:
+	$(COMPOSE) run --rm pyenv-test cargo test --features integration-test
+
+test-integration-conda:
+	$(COMPOSE) run --rm conda-test cargo test --features integration-test
+
+test-integration-venvwrapper:
+	$(COMPOSE) run --rm venvwrapper-test cargo test --features integration-test
+
+# Runs all three source-tool integration suites sequentially. Use the
+# CI matrix workflow (.github/workflows/integration-matrix.yml) for the
+# parallel version — running all three in a single Docker host serially
+# is fine for local debugging.
+test-integration-all: test-integration-pyenv test-integration-conda test-integration-venvwrapper
 
 test-all: test-unit test-integration
 
