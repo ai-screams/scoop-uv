@@ -323,6 +323,9 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop create <name> [version]` | Create a new environment |
 | `scoop use <name>` | Activate environment (auto-activates in directory) |
 | `scoop list` | List all environments |
+| `scoop status` | Show the currently active environment |
+| `scoop which <exe>` | Resolve an executable inside the active env |
+| `scoop run <env> -- <cmd>` | Run a command inside an env without activating |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
 | `scoop doctor` | Health check your setup |
@@ -338,6 +341,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | Command                         | Description                            |
 |---------------------------------|----------------------------------------|
 | `scoop create <name> [version]` | Mix a new flavor (default: latest Python) |
+| `scoop create <name> <ver> --install-python` | Mix a flavor, installing Python first if missing |
 | `scoop use <name>`              | Pick your flavor (auto-activates)      |
 | `scoop use <name> --link`       | Also create `.venv` symlink for IDE    |
 | `scoop use <name> --global`     | Set as your usual order                |
@@ -346,6 +350,9 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop list --json`             | Output as JSON                         |
 | `scoop info <name>`             | Show detailed info about a flavor      |
 | `scoop info <name> --json`      | Output info as JSON                    |
+| `scoop status`                  | Which flavor am I scooping right now?  |
+| `scoop which <exe>`             | Where's that scoop in my freezer?      |
+| `scoop run <env> -- <cmd>`      | Scoop on demand — run without unpacking |
 | `scoop remove <name>`           | Melt a flavor away                     |
 
 ### Managing the Freezer

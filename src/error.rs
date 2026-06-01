@@ -110,6 +110,12 @@ pub enum ScoopError {
 
     /// `scoop self update` failed (search, install, or post-install verify).
     SelfUpdateFailed { message: String },
+
+    /// No environment is currently active and none was specified.
+    NoActiveEnvironment,
+
+    /// Executable not found within an environment's bin directory.
+    ExecutableNotFound { exe: String, env: String },
 }
 
 // ============================================================================
@@ -251,6 +257,16 @@ impl ScoopError {
                 message = message
             )
             .to_string(),
+            Self::NoActiveEnvironment => {
+                t!("error.no_active_environment", locale = locale).to_string()
+            }
+            Self::ExecutableNotFound { exe, env } => t!(
+                "error.executable_not_found",
+                locale = locale,
+                exe = exe,
+                env = env
+            )
+            .to_string(),
         }
     }
 }
@@ -298,6 +314,8 @@ impl ScoopError {
             Self::InvalidPythonPath { .. } => "PYTHON_INVALID_PATH",
             Self::CascadeAborted => "UNINSTALL_CASCADE_ABORTED",
             Self::SelfUpdateFailed { .. } => "SELF_UPDATE_FAILED",
+            Self::NoActiveEnvironment => "NO_ACTIVE_ENV",
+            Self::ExecutableNotFound { .. } => "EXE_NOT_FOUND",
         }
     }
 
@@ -356,6 +374,17 @@ impl ScoopError {
             | Self::PythonUninstallFailed { .. } => {
                 Some(t!("suggestion.run_doctor", locale = locale).to_string())
             }
+            Self::NoActiveEnvironment => {
+                Some(t!("suggestion.no_active_environment", locale = locale).to_string())
+            }
+            Self::ExecutableNotFound { env, .. } => Some(
+                t!(
+                    "suggestion.executable_not_found",
+                    locale = locale,
+                    env = env
+                )
+                .to_string(),
+            ),
             _ => None,
         }
     }
@@ -1316,5 +1345,28 @@ mod tests {
             message: "conflicting flags".into(),
         };
         assert!(err.suggestion_in("en").is_none());
+    }
+
+    #[test]
+    fn test_suggestion_no_active_environment_hints_use_or_env_flag() {
+        // The hint must point the user at a concrete next step. Deleting the
+        // match arm would collapse this to `None`, which the assertions catch.
+        let s = ScoopError::NoActiveEnvironment.suggestion_in("en").unwrap();
+        assert!(s.starts_with("→"));
+        assert!(s.contains("scoop use"));
+        assert!(s.contains("--env"));
+    }
+
+    #[test]
+    fn test_suggestion_executable_not_found_includes_env_name() {
+        let err = ScoopError::ExecutableNotFound {
+            exe: "pytest".into(),
+            env: "myenv".into(),
+        };
+        let s = err.suggestion_in("en").unwrap();
+        assert!(s.starts_with("→"));
+        // Must interpolate the env name so the user knows where to look.
+        assert!(s.contains("myenv"));
+        assert!(s.contains("scoop info"));
     }
 }

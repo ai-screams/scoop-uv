@@ -226,6 +226,10 @@ pub enum Commands {
         #[arg(short, long)]
         force: bool,
 
+        /// Install the requested Python version first if it is not already available
+        #[arg(long, conflicts_with = "python_path")]
+        install_python: bool,
+
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -398,6 +402,37 @@ pub enum Commands {
     Self_ {
         #[command(subcommand)]
         command: SelfCommand,
+    },
+
+    /// Show the current environment status
+    Status {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// Run a command inside an environment without activating it
+    Run {
+        /// Name of the virtual environment
+        env: String,
+
+        /// Command and arguments to execute (use -- to separate, e.g. `scoop run myenv -- python x.py`)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 1..)]
+        command: Vec<String>,
+    },
+
+    /// Print the full path to an executable in an environment
+    Which {
+        /// Name of the executable to locate (e.g., python, pip)
+        exe: String,
+
+        /// Look in this environment instead of the active one
+        #[arg(long, value_name = "NAME")]
+        env: Option<String>,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 

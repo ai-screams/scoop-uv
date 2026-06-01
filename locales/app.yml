@@ -80,6 +80,21 @@ create.creating_with_path:
   pt-BR: "Criando '%{name}' (Python: %{path})..."
   ja: "'%{name}' を作成中 (Python: %{path})..."
 
+create.installing_python:
+  en: "Python %{version} is not installed — installing now..."
+  ko: "Python %{version}이(가) 설치되어 있지 않아 설치합니다..."
+  pt-BR: "Python %{version} não está instalado — instalando agora..."
+  ja: "Python %{version} は未インストール — 今インストールします..."
+
+# ============================================================================
+# Run command
+# ============================================================================
+run.empty_command:
+  en: "scoop run requires a command to execute"
+  ko: "scoop run은 실행할 명령이 필요해요"
+  pt-BR: "scoop run requer um comando para executar"
+  ja: "scoop run には実行するコマンドが必要です"
+
 # ============================================================================
 # Remove command
 # ============================================================================
@@ -820,6 +835,54 @@ suggestion.invalid_python_path:
   ko: "→ 유효한 Python 실행 파일 경로 지정 (예: /usr/bin/python3)"
   pt-BR: "→ Forneça um caminho para um executável Python válido (ex: /usr/bin/python3)"
   ja: "→ 有効な Python 実行ファイルのパスを指定してください (例: /usr/bin/python3)"
+
+# ============================================================================
+# Status command
+# ============================================================================
+status.no_env:
+  en: "No environment configured"
+  ko: "설정된 환경이 없어요"
+  pt-BR: "Nenhum ambiente configurado"
+  ja: "設定された環境がありません"
+
+status.hint_use:
+  en: "→ Activate one: scoop use <name>"
+  ko: "→ 활성화: scoop use <이름>"
+  pt-BR: "→ Ative um: scoop use <nome>"
+  ja: "→ 有効化: scoop use <名前>"
+
+status.system_python:
+  en: "Using system Python (no virtualenv active)"
+  ko: "시스템 Python 사용 중 (가상환경 비활성)"
+  pt-BR: "Usando Python do sistema (nenhum virtualenv ativo)"
+  ja: "システム Python を使用中 (仮想環境は無効)"
+
+# ============================================================================
+# Which command
+# ============================================================================
+error.no_active_environment:
+  en: "No active environment"
+  ko: "활성화된 환경이 없어요"
+  pt-BR: "Nenhum ambiente ativo"
+  ja: "アクティブな環境がありません"
+
+suggestion.no_active_environment:
+  en: "→ Activate one (scoop use <name>) or pass --env <name>"
+  ko: "→ 환경을 활성화하거나(scoop use <이름>) --env <이름>를 지정해 주세요"
+  pt-BR: "→ Ative um (scoop use <nome>) ou use --env <nome>"
+  ja: "→ 環境を有効化する (scoop use <名前>) か --env <名前> を指定してください"
+
+error.executable_not_found:
+  en: "'%{exe}' not found in '%{env}'"
+  ko: "'%{env}'에서 '%{exe}'를 찾을 수 없어요"
+  pt-BR: "'%{exe}' não encontrado em '%{env}'"
+  ja: "'%{env}' に '%{exe}' が見つかりません"
+
+suggestion.executable_not_found:
+  en: "→ List installed packages: scoop info %{env}"
+  ko: "→ 설치된 패키지 확인: scoop info %{env}"
+  pt-BR: "→ Listar pacotes instalados: scoop info %{env}"
+  ja: "→ インストール済みパッケージを確認: scoop info %{env}"
 
 # ============================================================================
 # Self-update command (`scoop self update`)

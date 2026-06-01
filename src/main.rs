@@ -40,10 +40,18 @@ fn main() -> Result<()> {
             python,
             python_path,
             force,
+            install_python,
             json,
         } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::create(&output, &name, &python, python_path.as_deref(), force)
+            scoop_uv::cli::commands::create(
+                &output,
+                &name,
+                &python,
+                python_path.as_deref(),
+                force,
+                install_python,
+            )
         }
         Commands::Doctor { verbose, json, fix } => {
             let output = Output::new(verbose, cli.quiet, cli.no_color, json);
@@ -124,6 +132,18 @@ fn main() -> Result<()> {
                 scoop_uv::cli::commands::self_update(&output, force, version.as_deref(), no_verify)
             }
         },
+        Commands::Status { json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::status(&output)
+        }
+        Commands::Run { env, command } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            scoop_uv::cli::commands::run(&output, &env, &command)
+        }
+        Commands::Which { exe, env, json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::which(&output, &exe, env.as_deref())
+        }
     };
 
     // Handle errors

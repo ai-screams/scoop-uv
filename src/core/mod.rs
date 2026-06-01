@@ -67,6 +67,48 @@ fn normalize_pyvenv_version(raw: &str) -> String {
     }
 }
 
+/// List `(name, version)` pairs of packages installed in `venv_path` by asking
+/// the venv's own `pip list --format=json`.
+///
+/// Best-effort: missing pip, non-zero exit, and unparseable JSON all collapse
+/// to an empty vector so callers (`scoop info`, `scoop status`) can degrade
+/// gracefully when the env is broken or pip simply isn't present.
+///
+/// # Examples
+///
+/// ```no_run
+/// use scoop_uv::core::list_installed_packages;
+/// use std::path::Path;
+///
+/// let pkgs = list_installed_packages(Path::new("/path/to/venv"));
+/// println!("{} packages installed", pkgs.len());
+/// ```
+pub fn list_installed_packages(venv_path: &std::path::Path) -> Vec<(String, String)> {
+    let pip_path = venv_path.join("bin").join("pip");
+    if !pip_path.exists() {
+        return Vec::new();
+    }
+    let output = std::process::Command::new(&pip_path)
+        .args(["list", "--format=json"])
+        .output();
+    match output {
+        Ok(out) if out.status.success() => {
+            let stdout = String::from_utf8_lossy(&out.stdout);
+            serde_json::from_str::<Vec<serde_json::Value>>(&stdout)
+                .unwrap_or_default()
+                .into_iter()
+                .filter_map(|p| {
+                    Some((
+                        p.get("name")?.as_str()?.to_string(),
+                        p.get("version")?.as_str()?.to_string(),
+                    ))
+                })
+                .collect()
+        }
+        _ => Vec::new(),
+    }
+}
+
 /// Get the currently active environment name from $SCOOP_ACTIVE
 ///
 /// # Examples
@@ -134,5 +176,23 @@ mod tests {
         // numeric prefix at all, so the original string is returned.
         assert_eq!(normalize_pyvenv_version("3..4"), "3");
         assert_eq!(normalize_pyvenv_version("v3.12"), "v3.12");
+    }
+
+    // ==========================================================================
+    // list_installed_packages — graceful-degradation pins
+    // ==========================================================================
+
+    #[test]
+    fn list_installed_packages_nonexistent_path_returns_empty() {
+        let pkgs = list_installed_packages(std::path::Path::new("/nonexistent/path/to/venv"));
+        assert!(pkgs.is_empty());
+    }
+
+    #[test]
+    fn list_installed_packages_no_pip_returns_empty() {
+        // Bin dir exists but pip is missing — must not panic, must return [].
+        let temp = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(temp.path().join("bin")).unwrap();
+        assert!(list_installed_packages(temp.path()).is_empty());
     }
 }
