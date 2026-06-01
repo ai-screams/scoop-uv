@@ -1424,4 +1424,18 @@ mod tests {
         assert!(s.starts_with("→"));
         assert!(s.contains("project root") || s.contains("scoop-uv"));
     }
+
+    #[test]
+    fn test_suggestion_unsupported_export_version_includes_supported_version() {
+        // Pinning: deleting the match arm collapses to `None`, and the
+        // suggestion must interpolate `supported` so the user knows what
+        // version this binary can read.
+        let err = ScoopError::UnsupportedExportVersion {
+            version: "99".into(),
+            supported: "1".into(),
+        };
+        let s = err.suggestion_in("en").unwrap();
+        assert!(s.starts_with("→"));
+        assert!(s.contains("'1'") || s.contains("version '1'"));
+    }
 }
