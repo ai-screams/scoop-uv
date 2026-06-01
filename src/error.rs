@@ -125,6 +125,12 @@ pub enum ScoopError {
 
     /// Export file's `scoop_export_version` is not one this binary supports.
     UnsupportedExportVersion { version: String, supported: String },
+
+    /// `scoop verify --strict` exit signal: at least one env has a failing
+    /// check. The report itself was already rendered; this just carries the
+    /// non-zero exit semantic without leaking `std::process::exit` into
+    /// library code (which would skip destructors and stdout flush).
+    VerifyFailed { issues: usize },
 }
 
 // ============================================================================
@@ -296,6 +302,12 @@ impl ScoopError {
                 supported = supported
             )
             .to_string(),
+            Self::VerifyFailed { issues } => t!(
+                "error.verify_failed",
+                locale = locale,
+                issues = issues.to_string()
+            )
+            .to_string(),
         }
     }
 }
@@ -348,6 +360,7 @@ impl ScoopError {
             Self::ManifestNotFound { .. } => "MANIFEST_NOT_FOUND",
             Self::InvalidExportFile { .. } => "EXPORT_INVALID_FILE",
             Self::UnsupportedExportVersion { .. } => "EXPORT_UNSUPPORTED_VERSION",
+            Self::VerifyFailed { .. } => "VERIFY_FAILED",
         }
     }
 

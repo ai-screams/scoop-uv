@@ -1163,12 +1163,6 @@ gc.done:
 # ============================================================================
 # Man command (clap_mangen output)
 # ============================================================================
-man.written:
-  en: "Wrote %{count} man page(s) to %{dir}"
-  ko: "%{dir} 에 매뉴얼 페이지 %{count}개 생성"
-  pt-BR: "Escritas %{count} man page(s) em %{dir}"
-  ja: "%{dir} に %{count} 件の man ページを書き出しました"
-
 # ============================================================================
 # Verify command (per-env health diagnosis)
 # ============================================================================
@@ -1249,3 +1243,39 @@ verify.check_manifest_match:
   ko: ".scoop.toml 일치"
   pt-BR: "corresponde a .scoop.toml"
   ja: ".scoop.toml と一致"
+
+verify.summary_with_warnings:
+  en: "%{total} env(s) checked: %{healthy} healthy, %{warnings} with warnings, %{issues} with issues"
+  ko: "환경 %{total}개 검사: 정상 %{healthy}개, 경고 %{warnings}개, 문제 있음 %{issues}개"
+  pt-BR: "%{total} ambiente(s) verificado(s): %{healthy} saudáveis, %{warnings} com avisos, %{issues} com problemas"
+  ja: "環境 %{total} 件を確認: 正常 %{healthy} 件、警告 %{warnings} 件、問題あり %{issues} 件"
+
+error.verify_failed:
+  en: "Verification found %{issues} environment(s) with failing checks"
+  ko: "검증 결과 %{issues}개 환경에서 실패한 검사가 있어요"
+  pt-BR: "Verificação encontrou %{issues} ambiente(s) com checagens falhando"
+  ja: "検証の結果、%{issues} 件の環境で失敗したチェックがあります"
+
+gc.skipped_now_healthy:
+  en: "Skipped '%{name}' — became healthy between scan and remove"
+  ko: "'%{name}' 건너뜀 — 스캔과 삭제 사이에 정상 상태가 됨"
+  pt-BR: "Pulado '%{name}' — tornou-se saudável entre escaneamento e remoção"
+  ja: "'%{name}' をスキップ — スキャンと削除の間に正常状態になりました"
+
+gc.unreadable_metadata_warn:
+  en: "%{count} env(s) have unreadable metadata; skipping Python cleanup to be safe"
+  ko: "환경 %{count}개의 메타데이터를 읽을 수 없어요. 안전을 위해 Python 정리는 건너뛸게요"
+  pt-BR: "%{count} ambiente(s) com metadados ilegíveis; pulando limpeza de Python por segurança"
+  ja: "%{count} 件の環境のメタデータを読み込めません。安全のため Python のクリーンアップをスキップします"
+
+man.refuse_symlink:
+  en: "Refusing to write into symlinked directory: %{path}"
+  ko: "심볼릭 링크 디렉토리에는 쓰지 않을게요: %{path}"
+  pt-BR: "Recusando escrever em diretório com link simbólico: %{path}"
+  ja: "シンボリックリンクのディレクトリには書き込みません: %{path}"
+
+man.written:
+  en: "Wrote %{count} top-level man page(s) to %{dir} (nested subcommands are inlined into their parent page)"
+  ko: "%{dir} 에 최상위 매뉴얼 페이지 %{count}개 생성 (서브-서브커맨드는 부모 페이지에 포함됨)"
+  pt-BR: "Escritas %{count} man page(s) de nível superior em %{dir} (subcomandos aninhados são incluídos na página pai)"
+  ja: "%{dir} に最上位 man ページ %{count} 件を書き出しました (ネストされたサブコマンドは親ページに含まれます)"

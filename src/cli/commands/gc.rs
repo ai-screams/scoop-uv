@@ -63,11 +63,20 @@ struct GcData {
 /// * `aggressive` — also consider Python versions that no env uses.
 pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
     let envs = scan_orphan_envs()?;
-    let pythons = if aggressive {
+    let (pythons, unreadable_envs) = if aggressive {
         scan_unused_pythons(&envs)?
     } else {
-        Vec::new()
+        (Vec::new(), 0)
     };
+
+    // Surface the conservative bail-out before any destructive work so the
+    // user understands why `--aggressive` turned up nothing.
+    if aggressive && unreadable_envs > 0 {
+        output.warn(&t!(
+            "gc.unreadable_metadata_warn",
+            count = unreadable_envs.to_string()
+        ));
+    }
 
     if yes {
         remove_orphans(output, &envs, &pythons)?;
@@ -90,6 +99,17 @@ pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
 
 /// Walk `~/.scoop/virtualenvs/` and flag any directory that fails the
 /// "looks like a working env" sniff test.
+///
+/// Symlinks are intentionally NOT considered. `is_dir()` follows symlinks,
+/// so a hostile (or accidental) symlink under `virtualenvs/` would look
+/// like an orphan directory, and `fs::remove_dir_all` would then follow
+/// the symlink and delete the *target*'s contents under the user's UID.
+/// We use `entry.file_type().is_symlink()` to reject every symlink up
+/// front, regardless of whether it points to a directory.
+///
+/// Per-entry IO errors (transient permission / disappearing file) are
+/// swallowed so one bad entry doesn't abort the entire scan and hide
+/// other orphans from the user.
 fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
     let dir = paths::virtualenvs_dir()?;
     if !dir.exists() {
@@ -98,11 +118,24 @@ fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
 
     let mut orphans = Vec::new();
     for entry in std::fs::read_dir(&dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        if !path.is_dir() {
+        // Per-entry tolerance: don't let a single read_dir item failure
+        // (e.g. permission flake, file removed mid-scan) abort the whole
+        // pass — that would silently hide orphans further in the listing.
+        let entry = match entry {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        // Use file_type() (no traversal) instead of path.is_dir() (which
+        // follows symlinks). Skip symlinks unconditionally — see the
+        // symlink note in this function's doc comment for the rationale.
+        let ft = match entry.file_type() {
+            Ok(t) => t,
+            Err(_) => continue,
+        };
+        if !ft.is_dir() || ft.is_symlink() {
             continue;
         }
+        let path = entry.path();
         let name = match path.file_name().and_then(|n| n.to_str()) {
             Some(n) => n.to_string(),
             None => continue,
@@ -149,52 +182,101 @@ fn classify(path: &Path) -> Option<OrphanReason> {
 }
 
 /// List uv-installed Python versions that aren't referenced by any healthy
-/// env's `.scoop-metadata.json`. Orphans already slated for removal are
-/// *not* counted as references — otherwise gc'ing them wouldn't free their
-/// Pythons either.
-fn scan_unused_pythons(orphans: &[OrphanEnv]) -> Result<Vec<UnusedPython>> {
+/// env's `.scoop-metadata.json`.
+///
+/// Orphans already slated for removal are *not* counted as references —
+/// gc'ing them wouldn't free their Pythons otherwise.
+///
+/// Safety: if any surviving (non-orphan) env has unreadable metadata, we
+/// can't tell what Python it depends on. Silent-dropping it would treat
+/// its Python as unused and `gc --aggressive --yes` would uninstall a
+/// Python that's actually live — leaving the env broken. To prevent this
+/// destructive misclassification, the function bails out conservatively
+/// (returns an empty list) the moment it encounters any unreadable
+/// metadata, and surfaces a warning to the caller via the second tuple
+/// element.
+fn scan_unused_pythons(orphans: &[OrphanEnv]) -> Result<(Vec<UnusedPython>, usize)> {
     let uv = match UvClient::new() {
         Ok(u) => u,
         // No uv on PATH → nothing we can do here. Skip aggressive mode
         // silently instead of failing the whole command.
-        Err(_) => return Ok(Vec::new()),
+        Err(_) => return Ok((Vec::new(), 0)),
     };
     let installed = uv.list_installed_pythons().unwrap_or_default();
     if installed.is_empty() {
-        return Ok(Vec::new());
+        return Ok((Vec::new(), 0));
     }
 
     let service = VirtualenvService::auto().ok();
-    let used: std::collections::HashSet<String> = match service {
-        Some(svc) => svc
-            .list()
-            .unwrap_or_default()
+    let mut used: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut unreadable_envs: usize = 0;
+
+    if let Some(svc) = service {
+        for info in svc.list().unwrap_or_default() {
+            // Skip envs we're about to remove — they shouldn't protect
+            // their Pythons from cleanup.
+            if orphans.iter().any(|o| o.name == info.name) {
+                continue;
+            }
+            let path = match paths::virtualenv_path(&info.name) {
+                Ok(p) => p,
+                Err(_) => {
+                    unreadable_envs += 1;
+                    continue;
+                }
+            };
+            // Read metadata for the python_version field — info.python_version
+            // is sniffed from the venv layout and can be missing.
+            match svc.read_metadata(&path) {
+                Some(meta) => {
+                    used.insert(meta.python_version);
+                }
+                None => {
+                    // Metadata file exists (the env wasn't classified as
+                    // an orphan) but failed to parse. We can't tell which
+                    // Python it depends on — see this function's doc for
+                    // why we then bail conservatively.
+                    unreadable_envs += 1;
+                }
+            }
+        }
+    }
+
+    if unreadable_envs > 0 {
+        // Conservative bail: refuse to claim *any* Python is unused.
+        // Caller surfaces the warning so the user knows why aggressive
+        // cleanup turned up nothing.
+        return Ok((Vec::new(), unreadable_envs));
+    }
+
+    Ok((
+        installed
             .into_iter()
-            .filter(|info| !orphans.iter().any(|o| o.name == info.name))
-            .filter_map(|info| {
-                // Read metadata for the python_version field — info.python_version
-                // is sniffed from the venv layout and can be missing.
-                let path = paths::virtualenv_path(&info.name).ok()?;
-                let meta = svc.read_metadata(&path)?;
-                Some(meta.python_version)
+            .filter(|p| !used.contains(&p.version))
+            .map(|p| UnusedPython {
+                version: p.version,
+                path: p.path.map(|p| p.display().to_string()),
             })
             .collect(),
-        None => std::collections::HashSet::new(),
-    };
-
-    Ok(installed
-        .into_iter()
-        .filter(|p| !used.contains(&p.version))
-        .map(|p| UnusedPython {
-            version: p.version,
-            path: p.path.map(|p| p.display().to_string()),
-        })
-        .collect())
+        0,
+    ))
 }
 
 fn remove_orphans(output: &Output, envs: &[OrphanEnv], pythons: &[UnusedPython]) -> Result<()> {
     for env in envs {
         let path = PathBuf::from(&env.path);
+
+        // TOCTOU guard: re-run classify() right before destruction. The
+        // gap between scan_orphan_envs and here is usually milliseconds,
+        // but a concurrent `scoop create` (or a user manually populating
+        // the directory) can make the env healthy again. We refuse to
+        // delete a healthy env that just happened to be empty at scan
+        // time, and surface the skip so the user knows what changed.
+        if classify(&path).is_none() {
+            output.warn(&t!("gc.skipped_now_healthy", name = &env.name));
+            continue;
+        }
+
         match std::fs::remove_dir_all(&path) {
             Ok(()) => {
                 if !output.is_json() {
@@ -392,6 +474,124 @@ mod tests {
             execute(&output, true, false).unwrap();
 
             assert!(!dir.join("no-meta").exists(), "--yes should remove orphans");
+        });
+    }
+
+    // ==========================================================================
+    // S1 regression — symlinks must never be classified as orphans, even
+    // when their target lacks .scoop-metadata.json. Otherwise gc --yes
+    // would follow the symlink via remove_dir_all and delete the target.
+    // ==========================================================================
+    #[cfg(unix)]
+    #[test]
+    #[serial]
+    fn scan_skips_symlink_entries() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            // Set up a real directory OUTSIDE the venvs dir — the would-be
+            // deletion target. It deliberately lacks .scoop-metadata.json
+            // so if the symlink were followed it would classify as
+            // MissingMetadata.
+            let outside = tempfile::TempDir::new().unwrap();
+            let canary = outside.path().join("important.txt");
+            fs::write(&canary, b"do not delete").unwrap();
+
+            // Symlink "evil" inside virtualenvs/ → outside dir.
+            std::os::unix::fs::symlink(outside.path(), dir.join("evil")).unwrap();
+
+            let orphans = scan_orphan_envs().unwrap();
+            assert!(
+                orphans.iter().all(|o| o.name != "evil"),
+                "symlink must not be classified as an orphan: {:?}",
+                orphans
+            );
+
+            // Defense-in-depth: even the full --yes path must leave the
+            // canary intact.
+            let output = Output::new(0, true, true, false);
+            execute(&output, true, false).unwrap();
+            assert!(
+                canary.exists(),
+                "gc --yes followed the symlink and deleted the target"
+            );
+        });
+    }
+
+    // ==========================================================================
+    // Q2 regression — unreadable metadata on a surviving env must NOT
+    // cause gc --aggressive to claim that env's Python is unused. The
+    // scan must bail conservatively and return zero unused pythons.
+    // ==========================================================================
+    #[test]
+    #[serial]
+    fn aggressive_bails_when_metadata_unreadable() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            // Healthy-shaped env (metadata file + python binary present)
+            // so classify() doesn't flag it as an orphan. But the
+            // metadata content is garbage so read_metadata returns None.
+            let env_path = dir.join("corrupt");
+            fs::create_dir_all(env_path.join("bin")).unwrap();
+            fs::write(env_path.join("bin/python"), "").unwrap();
+            fs::write(env_path.join(".scoop-metadata.json"), "{ not json").unwrap();
+
+            // Sanity: this env is healthy by classify(), so it's not in
+            // orphans — exactly the dangerous case where the old code
+            // silently dropped it from the "used" set.
+            let orphans = scan_orphan_envs().unwrap();
+            assert!(orphans.iter().all(|o| o.name != "corrupt"));
+
+            // The scan must bail with `unreadable_envs > 0` and return
+            // an empty pythons list — refusing to mark any Python as
+            // unused, no matter what `uv python list` reports.
+            let (pythons, unreadable_envs) = scan_unused_pythons(&orphans).unwrap();
+            assert_eq!(unreadable_envs, 1, "should count one unreadable env");
+            assert!(
+                pythons.is_empty(),
+                "must not claim any Python is unused when metadata is unreadable; got {:?}",
+                pythons
+            );
+        });
+    }
+
+    // ==========================================================================
+    // Q3 regression — TOCTOU between scan and remove. We simulate by
+    // building a fake orphan record that points at a path which is
+    // currently healthy. remove_orphans must re-classify and skip.
+    // ==========================================================================
+    #[test]
+    #[serial]
+    fn remove_skips_env_that_became_healthy() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            // Make a fully healthy env at the path the fake orphan record
+            // will reference. This simulates the racing `scoop create`
+            // that ran between scan and remove.
+            let env_path = dir.join("racy");
+            fs::create_dir_all(env_path.join("bin")).unwrap();
+            fs::write(env_path.join("bin/python"), "").unwrap();
+            fs::write(env_path.join(".scoop-metadata.json"), "{}").unwrap();
+
+            // Hand-construct an orphan record as if the original scan had
+            // flagged it (before the user re-populated the dir).
+            let stale_orphan = OrphanEnv {
+                name: "racy".to_string(),
+                path: env_path.display().to_string(),
+                reason: OrphanReason::MissingMetadata,
+            };
+
+            let output = Output::new(0, true, true, false);
+            // No panic, no error — and crucially the env must still exist.
+            remove_orphans(&output, &[stale_orphan], &[]).unwrap();
+            assert!(
+                env_path.exists(),
+                "remove_orphans deleted an env that re-classified as healthy"
+            );
         });
     }
 }

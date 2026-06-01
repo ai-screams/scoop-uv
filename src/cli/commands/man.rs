@@ -41,6 +41,20 @@ fn render_stdout(cmd: &clap::Command) -> Result<()> {
 }
 
 fn render_to_dir(output: &Output, cmd: &clap::Command, dir: &Path) -> Result<()> {
+    // Refuse to write into a directory that's actually a symlink. Packager
+    // scripts that take an attacker-influenced `--output-dir` (e.g. via a
+    // tainted env var while running as root) would otherwise follow the
+    // symlink and silently write into the target. We use
+    // `symlink_metadata` so we inspect the link itself, not its target.
+    if dir.exists() {
+        let meta = std::fs::symlink_metadata(dir)?;
+        if meta.file_type().is_symlink() {
+            return Err(ScoopError::InvalidArgument {
+                message: t!("man.refuse_symlink", path = dir.display()).to_string(),
+            });
+        }
+    }
+
     std::fs::create_dir_all(dir)?;
 
     // Top-level `scoop.1`

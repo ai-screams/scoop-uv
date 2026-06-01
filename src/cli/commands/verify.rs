@@ -105,7 +105,15 @@ struct EnvReport {
 #[derive(Debug, Clone, Copy, Serialize)]
 struct Summary {
     total: usize,
+    /// All checks Pass or Skip (no Warn, no Fail). The "perfect" bucket.
     healthy: usize,
+    /// At least one Warn check but no Fail. Informational drift (e.g.
+    /// `.scoop.toml` python version mismatch) lives here — the env still
+    /// works, the user should just know about it. Does NOT trigger
+    /// `--strict` exit.
+    warnings: usize,
+    /// At least one Fail check. Real breakage. `--strict` exits non-zero
+    /// when this is > 0.
     issues: usize,
 }
 
@@ -165,6 +173,7 @@ pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: boo
                     summary: Summary {
                         total: 0,
                         healthy: 0,
+                        warnings: 0,
                         issues: 0,
                     },
                 },
@@ -180,11 +189,29 @@ pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: boo
         .map(|env| verify_one(&service, env, manifest.as_ref()))
         .collect();
 
-    let healthy_count = reports.iter().filter(|r| r.healthy).count();
+    // Bucket each env into exactly one of healthy / warnings / issues.
+    // We need the three counts to sum to `total` so JSON consumers can
+    // sanity-check, and so `--strict` only fires on real breakage (Fail),
+    // not on informational drift (Warn).
+    let mut healthy_count = 0usize;
+    let mut warnings_count = 0usize;
+    let mut issues_count = 0usize;
+    for r in &reports {
+        let has_fail = r.checks.iter().any(|c| c.status == CheckStatus::Fail);
+        let has_warn = r.checks.iter().any(|c| c.status == CheckStatus::Warn);
+        if has_fail {
+            issues_count += 1;
+        } else if has_warn {
+            warnings_count += 1;
+        } else {
+            healthy_count += 1;
+        }
+    }
     let summary = Summary {
         total: reports.len(),
         healthy: healthy_count,
-        issues: reports.len() - healthy_count,
+        warnings: warnings_count,
+        issues: issues_count,
     };
 
     if output.is_json() {
@@ -199,10 +226,16 @@ pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: boo
         render_human(output, &reports, &summary);
     }
 
-    // `--strict` opts into the "fail loud" mode. We exit *after* writing the
-    // full report so users still get to see what failed even in strict CI.
+    // `--strict` opts into the "fail loud" mode for CI gates. Drift (Warn)
+    // is informational — only hard breakage (Fail) trips the exit.
+    //
+    // Returning Err here (instead of calling `std::process::exit`) lets
+    // destructors / stdout buffers flush via main.rs's normal error path,
+    // and keeps library code free of process-control side effects.
     if strict && summary.issues > 0 {
-        std::process::exit(1);
+        return Err(ScoopError::VerifyFailed {
+            issues: summary.issues,
+        });
     }
 
     Ok(())
@@ -291,7 +324,12 @@ fn verify_one(
         _ => CheckResult::skip("manifest_match"),
     });
 
-    // Healthy = no Warn / Fail. Skip is treated as "doesn't count against".
+    // `healthy` on the report means "no Warn and no Fail" — the perfect
+    // case. Envs with Warn-only checks (e.g. manifest drift) are not
+    // healthy by this definition, but they don't count as `issues`
+    // either; they live in `summary.warnings`. This split keeps `--strict`
+    // sane (only fails on Fail) while still letting the human report
+    // surface drift to the user.
     let healthy = checks
         .iter()
         .all(|c| matches!(c.status, CheckStatus::Pass | CheckStatus::Skip));
@@ -362,7 +400,18 @@ fn check_manifest_drift(manifest_python: &str, env_python: &str) -> CheckResult 
 
 fn render_human(output: &crate::output::Output, reports: &[EnvReport], summary: &Summary) {
     for report in reports {
-        let symbol = if report.healthy { "✓" } else { "✗" };
+        // Per-env symbol mirrors the summary buckets: ✓ healthy,
+        // ⚠ warning-only, ✗ has at least one Fail. Picking by Fail-first
+        // is important so a Warn+Fail env shows ✗, not ⚠.
+        let has_fail = report.checks.iter().any(|c| c.status == CheckStatus::Fail);
+        let has_warn = report.checks.iter().any(|c| c.status == CheckStatus::Warn);
+        let symbol = if has_fail {
+            "✗"
+        } else if has_warn {
+            "⚠"
+        } else {
+            "✓"
+        };
         let py = report
             .python
             .as_deref()
@@ -370,8 +419,8 @@ fn render_human(output: &crate::output::Output, reports: &[EnvReport], summary: 
             .unwrap_or_else(|| t!("verify.python_unknown").to_string());
         println!("{symbol} {} ({})", report.name, py);
 
-        // Only show per-check detail when something failed — keep the happy
-        // path output compact.
+        // Only show per-check detail when there's anything non-Pass —
+        // keep the happy path output compact.
         if !report.healthy {
             for check in &report.checks {
                 let detail = match check.status {
@@ -390,12 +439,24 @@ fn render_human(output: &crate::output::Output, reports: &[EnvReport], summary: 
         }
     }
 
-    output.info(&t!(
-        "verify.summary",
-        total = summary.total.to_string(),
-        healthy = summary.healthy.to_string(),
-        issues = summary.issues.to_string()
-    ));
+    // Use the three-bucket summary when there are any warnings so users
+    // can see "drift but no breakage" without `--strict` mis-triggering.
+    if summary.warnings > 0 {
+        output.info(&t!(
+            "verify.summary_with_warnings",
+            total = summary.total.to_string(),
+            healthy = summary.healthy.to_string(),
+            warnings = summary.warnings.to_string(),
+            issues = summary.issues.to_string()
+        ));
+    } else {
+        output.info(&t!(
+            "verify.summary",
+            total = summary.total.to_string(),
+            healthy = summary.healthy.to_string(),
+            issues = summary.issues.to_string()
+        ));
+    }
 }
 
 fn label_for_check(name: &str) -> String {
@@ -476,10 +537,32 @@ mod tests {
     #[serial]
     fn healthy_env_passes_all_checks() {
         with_temp_scoop_home(|_| {
-            make_env("ok", "3.12.0");
+            let path = make_env("ok", "3.12.0");
             let output = Output::new(0, true, true, false);
-            // No panic, no error — and on Unix, exec check should also pass.
+            // No panic, no error.
             execute(&output, Some("ok"), false).unwrap();
+
+            // Verify the per-env classification directly: every check must
+            // be Pass (Unix runs the shell script we wrote) or Skip
+            // (manifest_match skips with no .scoop.toml). Q10: previous
+            // version of this test only asserted "no error", which would
+            // have passed even if every check silently degraded to Warn.
+            let service = VirtualenvService::auto().unwrap();
+            let info = VirtualenvInfo {
+                name: "ok".to_string(),
+                path,
+                python_version: None,
+            };
+            let report = verify_one(&service, &info, None);
+            assert!(report.healthy, "report should be healthy: {:?}", report);
+            assert!(
+                report
+                    .checks
+                    .iter()
+                    .all(|c| matches!(c.status, CheckStatus::Pass | CheckStatus::Skip)),
+                "every check should be Pass or Skip: {:?}",
+                report.checks
+            );
         });
     }
 
