@@ -87,6 +87,63 @@ create.installing_python:
   ja: "Python %{version} は未インストール — 今インストールします..."
 
 # ============================================================================
+# Sync command (.scoop.toml)
+# ============================================================================
+sync.creating_env:
+  en: "Creating '%{name}' (Python %{python}) per .scoop.toml..."
+  ko: ".scoop.toml에 따라 '%{name}' 생성 중 (Python %{python})..."
+  pt-BR: "Criando '%{name}' (Python %{python}) conforme .scoop.toml..."
+  ja: ".scoop.toml に従って '%{name}' を作成中 (Python %{python})..."
+
+sync.installing:
+  en: "Installing %{count} packages..."
+  ko: "패키지 %{count}개 설치 중..."
+  pt-BR: "Instalando %{count} pacotes..."
+  ja: "パッケージ %{count} 個をインストール中..."
+
+sync.up_to_date:
+  en: "Nothing to install (no packages in the resolved groups)"
+  ko: "설치할 항목 없음 (선택된 그룹에 패키지 없음)"
+  pt-BR: "Nada a instalar (sem pacotes nos grupos selecionados)"
+  ja: "インストールするものはありません (選択されたグループにパッケージなし)"
+
+sync.success:
+  en: "Synced %{count} packages into '%{name}'"
+  ko: "'%{name}'에 패키지 %{count}개 동기화 완료"
+  pt-BR: "%{count} pacotes sincronizados em '%{name}'"
+  ja: "'%{name}' に %{count} 個のパッケージを同期しました"
+
+sync.dry_run_header:
+  en: "Dry-run plan:"
+  ko: "Dry-run 계획:"
+  pt-BR: "Plano dry-run:"
+  ja: "Dry-run 計画:"
+
+sync.python_mismatch_warn:
+  en: "'%{name}' uses Python %{actual} but .scoop.toml asks for %{wanted} — syncing packages anyway"
+  ko: "'%{name}'은 Python %{actual} 사용 중이지만 .scoop.toml은 %{wanted} 요청 — 패키지 동기화는 계속 진행"
+  pt-BR: "'%{name}' usa Python %{actual} mas .scoop.toml pede %{wanted} — sincronizando pacotes mesmo assim"
+  ja: "'%{name}' は Python %{actual} を使用していますが .scoop.toml は %{wanted} を要求 — パッケージ同期は続行"
+
+sync.unknown_group_error:
+  en: "Group '%{group}' is not defined in .scoop.toml (available: %{groups})"
+  ko: "'%{group}' 그룹이 .scoop.toml에 정의되어 있지 않음 (사용 가능: %{groups})"
+  pt-BR: "Grupo '%{group}' não está definido em .scoop.toml (disponíveis: %{groups})"
+  ja: ".scoop.toml にグループ '%{group}' が定義されていません (利用可能: %{groups})"
+
+error.manifest_not_found:
+  en: "No .scoop.toml found in '%{path}' or any parent directory"
+  ko: "'%{path}' 또는 상위 디렉터리 어디에도 .scoop.toml이 없어요"
+  pt-BR: "Nenhum .scoop.toml encontrado em '%{path}' ou nos diretórios pai"
+  ja: "'%{path}' またはその上位ディレクトリに .scoop.toml が見つかりません"
+
+suggestion.manifest_not_found:
+  en: "→ Create one at the project root (see https://ai-screams.github.io/scoop-uv/commands/sync.html)"
+  ko: "→ 프로젝트 루트에 만들어 주세요 (https://ai-screams.github.io/scoop-uv/commands/sync.html 참고)"
+  pt-BR: "→ Crie um na raiz do projeto (veja https://ai-screams.github.io/scoop-uv/commands/sync.html)"
+  ja: "→ プロジェクトルートに作成してください (https://ai-screams.github.io/scoop-uv/commands/sync.html 参照)"
+
+# ============================================================================
 # Run command
 # ============================================================================
 run.empty_command:

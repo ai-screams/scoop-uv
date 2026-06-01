@@ -28,6 +28,7 @@
 - [status](commands/status.md)
 - [which](commands/which.md)
 - [run](commands/run.md)
+- [sync](commands/sync.md)
 - [migrate](commands/migrate.md)
 - [lang](commands/lang.md)
 - [init](commands/init.md)

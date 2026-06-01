@@ -140,6 +140,14 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, false);
             scoop_uv::cli::commands::run(&output, &env, &command)
         }
+        Commands::Sync {
+            with,
+            dry_run,
+            json,
+        } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::sync(&output, &with, dry_run)
+        }
         Commands::Which { exe, env, json } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::which(&output, &exe, env.as_deref())

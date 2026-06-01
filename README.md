@@ -326,6 +326,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop status` | Show the currently active environment |
 | `scoop which <exe>` | Resolve an executable inside the active env |
 | `scoop run <env> -- <cmd>` | Run a command inside an env without activating |
+| `scoop sync` | Apply `.scoop.toml` (create env + install packages) |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
 | `scoop doctor` | Health check your setup |
@@ -353,6 +354,8 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop status`                  | Which flavor am I scooping right now?  |
 | `scoop which <exe>`             | Where's that scoop in my freezer?      |
 | `scoop run <env> -- <cmd>`      | Scoop on demand — run without unpacking |
+| `scoop sync`                    | Read `.scoop.toml` and serve the flavor |
+| `scoop sync --with dev --dry-run` | Preview the plan, no scooping yet     |
 | `scoop remove <name>`           | Melt a flavor away                     |
 
 ### Managing the Freezer

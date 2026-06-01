@@ -1,11 +1,13 @@
 //! Core business logic
 
 pub mod doctor;
+pub mod manifest;
 mod metadata;
 pub mod migrate;
 mod version;
 mod virtualenv;
 
+pub use manifest::ScoopManifest;
 pub use metadata::Metadata;
 pub use version::VersionService;
 pub use virtualenv::VirtualenvService;
