@@ -217,6 +217,15 @@ pub struct WhichData {
     pub path: String,
 }
 
+/// `scoop import` response data
+#[derive(Serialize)]
+pub struct ImportData {
+    pub name: String,
+    pub python: String,
+    pub packages_installed: usize,
+    pub source: String,
+}
+
 /// `scoop sync` response data
 #[derive(Serialize)]
 pub struct SyncData {

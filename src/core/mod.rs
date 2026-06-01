@@ -1,12 +1,14 @@
 //! Core business logic
 
 pub mod doctor;
+pub mod export_schema;
 pub mod manifest;
 mod metadata;
 pub mod migrate;
 mod version;
 mod virtualenv;
 
+pub use export_schema::{EXPORT_SCHEMA_VERSION, ExportSchema};
 pub use manifest::ScoopManifest;
 pub use metadata::Metadata;
 pub use version::VersionService;

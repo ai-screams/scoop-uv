@@ -411,6 +411,34 @@ pub enum Commands {
         json: bool,
     },
 
+    /// Export an environment as a portable JSON file
+    Export {
+        /// Name of the environment to export
+        name: String,
+
+        /// Write to this path instead of stdout
+        #[arg(short = 'o', long = "output", value_name = "PATH")]
+        output: Option<PathBuf>,
+    },
+
+    /// Import an environment from a `scoop export` JSON file (use `-` for stdin)
+    Import {
+        /// Path to the export JSON, or `-` to read from stdin
+        path: String,
+
+        /// Override the environment name from the file
+        #[arg(long, value_name = "NAME")]
+        name: Option<String>,
+
+        /// Overwrite an existing environment with the same name
+        #[arg(short, long)]
+        force: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Sync an environment from `.scoop.toml`
     Sync {
         /// Additional package group(s) to install on top of `default`

@@ -148,6 +148,20 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::sync(&output, &with, dry_run)
         }
+        Commands::Export { name, output } => {
+            // Stdout is the schema itself; status messages go to stderr only.
+            let out = Output::new(0, cli.quiet, cli.no_color, false);
+            scoop_uv::cli::commands::export(&out, &name, output.as_deref())
+        }
+        Commands::Import {
+            path,
+            name,
+            force,
+            json,
+        } => {
+            let out = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::import(&out, &path, name.as_deref(), force)
+        }
         Commands::Which { exe, env, json } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::which(&output, &exe, env.as_deref())
