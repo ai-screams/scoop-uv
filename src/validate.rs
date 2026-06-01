@@ -25,6 +25,7 @@ static VERSION_REGEX: Lazy<Regex> = Lazy::new(|| {
 const RESERVED_NAMES: &[&str] = &[
     "activate",
     "base",
+    "clone",
     "completions",
     "create",
     "deactivate",

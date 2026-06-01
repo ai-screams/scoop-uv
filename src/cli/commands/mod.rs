@@ -1,6 +1,7 @@
 //! CLI command handlers
 
 mod activate;
+mod clone;
 mod completions;
 mod create;
 mod deactivate;
@@ -25,6 +26,7 @@ mod use_env;
 mod which;
 
 pub use activate::execute as activate;
+pub use clone::execute as clone;
 pub use completions::execute as completions;
 pub use create::execute as create;
 pub use deactivate::execute as deactivate;

@@ -87,6 +87,39 @@ create.installing_python:
   ja: "Python %{version} は未インストール — 今インストールします..."
 
 # ============================================================================
+# Clone command
+# ============================================================================
+clone.cloning:
+  en: "Cloning '%{src}' → '%{dst}' (Python %{python})..."
+  ko: "'%{src}' → '%{dst}' 복제 중 (Python %{python})..."
+  pt-BR: "Clonando '%{src}' → '%{dst}' (Python %{python})..."
+  ja: "'%{src}' → '%{dst}' を複製中 (Python %{python})..."
+
+clone.copying_packages:
+  en: "Copying %{count} packages..."
+  ko: "패키지 %{count}개 복사 중..."
+  pt-BR: "Copiando %{count} pacotes..."
+  ja: "パッケージ %{count} 個をコピー中..."
+
+clone.no_packages_skipped:
+  en: "Package copy skipped (--no-packages)"
+  ko: "패키지 복사를 건너뜀 (--no-packages)"
+  pt-BR: "Cópia de pacotes ignorada (--no-packages)"
+  ja: "パッケージのコピーをスキップ (--no-packages)"
+
+clone.success:
+  en: "Cloned '%{src}' → '%{dst}'"
+  ko: "'%{src}' → '%{dst}' 복제 완료"
+  pt-BR: "'%{src}' → '%{dst}' clonado"
+  ja: "'%{src}' → '%{dst}' を複製しました"
+
+clone.self_clone_error:
+  en: "Source and destination must differ"
+  ko: "원본과 대상이 같을 수 없어요"
+  pt-BR: "Origem e destino devem ser diferentes"
+  ja: "コピー元とコピー先が同じです"
+
+# ============================================================================
 # Export / Import commands
 # ============================================================================
 export.written:

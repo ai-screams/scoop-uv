@@ -411,6 +411,27 @@ pub enum Commands {
         json: bool,
     },
 
+    /// Clone an environment (optionally without copying packages)
+    Clone {
+        /// Name of the source environment
+        src: String,
+
+        /// Name of the new (destination) environment
+        dst: String,
+
+        /// Skip copying packages — create an empty env with the same Python
+        #[arg(long)]
+        no_packages: bool,
+
+        /// Overwrite destination if it already exists
+        #[arg(short, long)]
+        force: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
     /// Export an environment as a portable JSON file
     Export {
         /// Name of the environment to export

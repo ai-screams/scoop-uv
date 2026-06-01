@@ -148,6 +148,16 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::sync(&output, &with, dry_run)
         }
+        Commands::Clone {
+            src,
+            dst,
+            no_packages,
+            force,
+            json,
+        } => {
+            let out = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::clone(&out, &src, &dst, no_packages, force)
+        }
         Commands::Export { name, output } => {
             // Stdout is the schema itself; status messages go to stderr only.
             let out = Output::new(0, cli.quiet, cli.no_color, false);
