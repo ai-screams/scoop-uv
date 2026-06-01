@@ -41,6 +41,11 @@ exclude_re = [
     # behavior in code paths that need a real uv invocation to observe.
     "VirtualenvService::is_python_installed",
     "VirtualenvService::install_python",
+    # Shells out to the venv's own pip and graceful-degrades on parse failure;
+    # the meaningful coverage is provided by the two list_installed_packages
+    # tests in core::tests. Mutating the wrapper body can only flip behaviour
+    # in paths that need a real pip invocation to observe.
+    "list_installed_packages",
     # `cfg(windows)` branch of the cross-platform extension probe. On non-
     # Windows hosts the variant doesn't compile, so its mutations can't be
     # tested locally; on Windows hosts the existing rstest cases cover it.
