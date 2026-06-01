@@ -327,6 +327,9 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop which <exe>` | Resolve an executable inside the active env |
 | `scoop run <env> -- <cmd>` | Run a command inside an env without activating |
 | `scoop sync` | Apply `.scoop.toml` (create env + install packages) |
+| `scoop export <name>` | Snapshot an env as portable JSON |
+| `scoop import <file>` | Recreate an env from an export file |
+| `scoop clone <src> <dst>` | Duplicate an environment |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
 | `scoop doctor` | Health check your setup |
@@ -356,6 +359,9 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop run <env> -- <cmd>`      | Scoop on demand — run without unpacking |
 | `scoop sync`                    | Read `.scoop.toml` and serve the flavor |
 | `scoop sync --with dev --dry-run` | Preview the plan, no scooping yet     |
+| `scoop export <name>`           | Bottle a flavor as portable JSON       |
+| `scoop import <file>`           | Unbottle it on another machine         |
+| `scoop clone <src> <dst>`       | Twin scoop — same flavor, new cup      |
 | `scoop remove <name>`           | Melt a flavor away                     |
 
 ### Managing the Freezer

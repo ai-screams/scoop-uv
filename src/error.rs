@@ -119,6 +119,12 @@ pub enum ScoopError {
 
     /// `.scoop.toml` could not be located walking up from `start_dir`.
     ManifestNotFound { start_dir: PathBuf },
+
+    /// Export file failed to parse / load (invalid JSON or schema mismatch).
+    InvalidExportFile { path: PathBuf, reason: String },
+
+    /// Export file's `scoop_export_version` is not one this binary supports.
+    UnsupportedExportVersion { version: String, supported: String },
 }
 
 // ============================================================================
@@ -276,6 +282,20 @@ impl ScoopError {
                 path = start_dir.display()
             )
             .to_string(),
+            Self::InvalidExportFile { path, reason } => t!(
+                "error.invalid_export_file",
+                locale = locale,
+                path = path.display(),
+                reason = reason
+            )
+            .to_string(),
+            Self::UnsupportedExportVersion { version, supported } => t!(
+                "error.unsupported_export_version",
+                locale = locale,
+                version = version,
+                supported = supported
+            )
+            .to_string(),
         }
     }
 }
@@ -326,6 +346,8 @@ impl ScoopError {
             Self::NoActiveEnvironment => "NO_ACTIVE_ENV",
             Self::ExecutableNotFound { .. } => "EXE_NOT_FOUND",
             Self::ManifestNotFound { .. } => "MANIFEST_NOT_FOUND",
+            Self::InvalidExportFile { .. } => "EXPORT_INVALID_FILE",
+            Self::UnsupportedExportVersion { .. } => "EXPORT_UNSUPPORTED_VERSION",
         }
     }
 
@@ -398,6 +420,14 @@ impl ScoopError {
             Self::ManifestNotFound { .. } => {
                 Some(t!("suggestion.manifest_not_found", locale = locale).to_string())
             }
+            Self::UnsupportedExportVersion { supported, .. } => Some(
+                t!(
+                    "suggestion.unsupported_export_version",
+                    locale = locale,
+                    supported = supported
+                )
+                .to_string(),
+            ),
             _ => None,
         }
     }
@@ -1393,5 +1423,19 @@ mod tests {
         let s = err.suggestion_in("en").unwrap();
         assert!(s.starts_with("→"));
         assert!(s.contains("project root") || s.contains("scoop-uv"));
+    }
+
+    #[test]
+    fn test_suggestion_unsupported_export_version_includes_supported_version() {
+        // Pinning: deleting the match arm collapses to `None`, and the
+        // suggestion must interpolate `supported` so the user knows what
+        // version this binary can read.
+        let err = ScoopError::UnsupportedExportVersion {
+            version: "99".into(),
+            supported: "1".into(),
+        };
+        let s = err.suggestion_in("en").unwrap();
+        assert!(s.starts_with("→"));
+        assert!(s.contains("'1'") || s.contains("version '1'"));
     }
 }

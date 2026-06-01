@@ -87,6 +87,84 @@ create.installing_python:
   ja: "Python %{version} は未インストール — 今インストールします..."
 
 # ============================================================================
+# Clone command
+# ============================================================================
+clone.cloning:
+  en: "Cloning '%{src}' → '%{dst}' (Python %{python})..."
+  ko: "'%{src}' → '%{dst}' 복제 중 (Python %{python})..."
+  pt-BR: "Clonando '%{src}' → '%{dst}' (Python %{python})..."
+  ja: "'%{src}' → '%{dst}' を複製中 (Python %{python})..."
+
+clone.copying_packages:
+  en: "Copying %{count} packages..."
+  ko: "패키지 %{count}개 복사 중..."
+  pt-BR: "Copiando %{count} pacotes..."
+  ja: "パッケージ %{count} 個をコピー中..."
+
+clone.no_packages_skipped:
+  en: "Package copy skipped (--no-packages)"
+  ko: "패키지 복사를 건너뜀 (--no-packages)"
+  pt-BR: "Cópia de pacotes ignorada (--no-packages)"
+  ja: "パッケージのコピーをスキップ (--no-packages)"
+
+clone.success:
+  en: "Cloned '%{src}' → '%{dst}'"
+  ko: "'%{src}' → '%{dst}' 복제 완료"
+  pt-BR: "'%{src}' → '%{dst}' clonado"
+  ja: "'%{src}' → '%{dst}' を複製しました"
+
+clone.self_clone_error:
+  en: "Source and destination must differ"
+  ko: "원본과 대상이 같을 수 없어요"
+  pt-BR: "Origem e destino devem ser diferentes"
+  ja: "コピー元とコピー先が同じです"
+
+# ============================================================================
+# Export / Import commands
+# ============================================================================
+export.written:
+  en: "Exported '%{name}' to %{path}"
+  ko: "'%{name}'을(를) %{path}에 내보냄"
+  pt-BR: "'%{name}' exportado para %{path}"
+  ja: "'%{name}' を %{path} にエクスポートしました"
+
+import.creating:
+  en: "Importing into '%{name}' (Python %{python})..."
+  ko: "'%{name}'(으)로 가져오는 중 (Python %{python})..."
+  pt-BR: "Importando para '%{name}' (Python %{python})..."
+  ja: "'%{name}' へインポート中 (Python %{python})..."
+
+import.installing:
+  en: "Installing %{count} packages from export..."
+  ko: "내보낸 파일에서 패키지 %{count}개 설치 중..."
+  pt-BR: "Instalando %{count} pacotes do export..."
+  ja: "エクスポートから %{count} 個のパッケージをインストール中..."
+
+import.success:
+  en: "Imported '%{name}' with %{count} packages"
+  ko: "'%{name}'을(를) 패키지 %{count}개와 함께 가져왔어요"
+  pt-BR: "'%{name}' importado com %{count} pacotes"
+  ja: "'%{name}' を %{count} 個のパッケージとともにインポートしました"
+
+error.invalid_export_file:
+  en: "Invalid export file '%{path}': %{reason}"
+  ko: "잘못된 내보내기 파일 '%{path}': %{reason}"
+  pt-BR: "Arquivo de exportação inválido '%{path}': %{reason}"
+  ja: "無効なエクスポートファイル '%{path}': %{reason}"
+
+error.unsupported_export_version:
+  en: "Export file version '%{version}' is not supported (this binary speaks '%{supported}')"
+  ko: "내보내기 파일 버전 '%{version}'은(는) 지원되지 않아요 (이 바이너리는 '%{supported}' 사용)"
+  pt-BR: "Versão '%{version}' do arquivo de exportação não é suportada (este binário usa '%{supported}')"
+  ja: "エクスポートファイルのバージョン '%{version}' は未対応です (このバイナリは '%{supported}')"
+
+suggestion.unsupported_export_version:
+  en: "→ Upgrade scoop to a build that supports version '%{supported}' or higher, or re-export from a compatible source"
+  ko: "→ '%{supported}' 이상을 지원하는 scoop으로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
+  pt-BR: "→ Atualize o scoop para uma versão que suporte '%{supported}' ou superior, ou re-exporte de uma fonte compatível"
+  ja: "→ '%{supported}' 以降に対応する scoop にアップグレードするか、互換性のある環境から再エクスポートしてください"
+
+# ============================================================================
 # Sync command (.scoop.toml)
 # ============================================================================
 sync.creating_env:

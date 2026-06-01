@@ -1,10 +1,13 @@
 //! CLI command handlers
 
 mod activate;
+mod clone;
 mod completions;
 mod create;
 mod deactivate;
 mod doctor;
+mod export;
+mod import;
 mod info;
 mod init;
 mod install;
@@ -23,10 +26,13 @@ mod use_env;
 mod which;
 
 pub use activate::execute as activate;
+pub use clone::execute as clone;
 pub use completions::execute as completions;
 pub use create::execute as create;
 pub use deactivate::execute as deactivate;
 pub use doctor::execute as doctor;
+pub use export::execute as export;
+pub use import::execute as import;
 pub use info::execute as info;
 pub use init::execute as init;
 pub use install::execute as install;

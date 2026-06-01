@@ -18,6 +18,9 @@ Complete reference for all scoop commands.
 | [`scoop which`](which.md) | - | Resolve an executable inside an env |
 | [`scoop run`](run.md) | - | Run a command inside an env without activating |
 | [`scoop sync`](sync.md) | - | Apply `.scoop.toml` declaratively |
+| [`scoop export`](export.md) | - | Write a portable JSON snapshot of an env |
+| [`scoop import`](import.md) | - | Recreate an env from an export file (or stdin) |
+| [`scoop clone`](clone.md) | - | Duplicate an env (with or without packages) |
 | [`scoop migrate`](migrate.md) | - | Migrate from pyenv/conda/venvwrapper |
 | [`scoop lang`](lang.md) | - | Get/set display language |
 | [`scoop shell`](shell.md) | - | Set shell-specific env (temporary) |

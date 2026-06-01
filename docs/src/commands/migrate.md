@@ -105,3 +105,16 @@ $ scoop migrate list --json
 - Original environments are preserved by default; use `--delete-source` to remove sources after migration
 - Package versions are preserved where possible
 - Migration creates fresh environments using `uv` for improved performance
+
+## Performance
+
+`scoop migrate all` fans out across all CPU cores via [rayon] when migrating
+more than one environment. The dominant cost (uv venv + pip install per env)
+is I/O-bound on subprocesses, so wall-clock time scales close to linearly
+with core count.
+
+`--dry-run` stays sequential — preview output is more useful when ordered.
+Progress lines may interleave when multiple envs finish close together; the
+JSON summary always preserves scan order (results are sorted before output).
+
+[rayon]: https://docs.rs/rayon
