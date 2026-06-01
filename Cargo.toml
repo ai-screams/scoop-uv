@@ -69,7 +69,7 @@ clap_mangen = "0.3"
 assert_cmd = "2.2"
 predicates = "3.1"
 tempfile = "3.27"
-serial_test = "3.2"
+serial_test = "3.5"
 proptest = "1.11"
 insta = { version = "1.47", features = ["yaml"] }
 rstest = "0.26"
