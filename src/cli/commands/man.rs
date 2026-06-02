@@ -93,13 +93,29 @@ fn render_to_dir(output: &Output, cmd: &clap::Command, dir: &Path) -> Result<()>
 }
 
 fn write_page(dir: &Path, filename: &str, cmd: &clap::Command) -> Result<()> {
+    let target = dir.join(filename);
+
+    // Reject symlinks at the file level too. The dir-level check upstream
+    // refuses to descend into a symlinked DIR, but a packager script that
+    // pre-creates `scoop.1` or `scoop-*.1` as a symlink to some other
+    // path would otherwise have `fs::write` follow the link — an arbitrary
+    // truncate/write under whatever UID is running `scoop man`. Use
+    // `symlink_metadata` so we inspect the link itself, not its target.
+    if let Ok(meta) = std::fs::symlink_metadata(&target) {
+        if meta.file_type().is_symlink() {
+            return Err(ScoopError::InvalidArgument {
+                message: t!("man.refuse_symlink", path = target.display()).to_string(),
+            });
+        }
+    }
+
     let man = clap_mangen::Man::new(cmd.clone());
     let mut buf: Vec<u8> = Vec::new();
     man.render(&mut buf)
         .map_err(|e| ScoopError::InvalidArgument {
             message: format!("failed to render {filename}: {e}"),
         })?;
-    std::fs::write(dir.join(filename), buf)?;
+    std::fs::write(&target, buf)?;
     Ok(())
 }
 
@@ -145,5 +161,35 @@ mod tests {
                 "hidden subcommand {hidden} should not get a man page"
             );
         }
+    }
+
+    // ==========================================================================
+    // C1 regression — file-level symlink hardening. A pre-existing
+    // `scoop.1` symlink inside a non-symlinked DIR must NOT be followed
+    // by fs::write; the dir-level check is not enough.
+    // ==========================================================================
+    #[cfg(unix)]
+    #[test]
+    fn render_to_dir_rejects_pre_existing_symlink_file() {
+        let tmp = TempDir::new().unwrap();
+
+        // Canary: target file that we don't want written through.
+        let target_dir = TempDir::new().unwrap();
+        let canary = target_dir.path().join("important.txt");
+        std::fs::write(&canary, b"do not truncate").unwrap();
+
+        // Plant a symlink inside the (non-symlinked) output dir pointing
+        // at the canary. Then ask man to write. The symlink check should
+        // fire and the canary content must stay intact.
+        std::os::unix::fs::symlink(&canary, tmp.path().join("scoop.1")).unwrap();
+
+        let output = Output::new(0, true, true, false);
+        let result = execute(&output, Some(tmp.path()));
+        assert!(result.is_err(), "must refuse to write through symlink");
+        assert_eq!(
+            std::fs::read(&canary).unwrap(),
+            b"do not truncate",
+            "canary content was modified — symlink was followed"
+        );
     }
 }

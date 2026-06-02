@@ -47,18 +47,34 @@ impl VirtualenvService {
         let mut envs = Vec::new();
 
         for entry in fs::read_dir(&venvs_dir)? {
-            let entry = entry?;
+            // Per-entry tolerance — transient IO errors on a single entry
+            // shouldn't hide the rest of the directory from callers.
+            let entry = match entry {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            // Reject symlinks via file_type() (no traversal) instead of
+            // path.is_dir() (which follows symlinks). A symlink under
+            // virtualenvs/ would otherwise be enumerated as a normal env,
+            // and downstream commands like `scoop verify` would exec the
+            // target's bin/python — arbitrary execution under the user's
+            // UID. This is the same hardening gc::scan_orphan_envs does;
+            // doing it here makes every caller of list() consistent.
+            let ft = match entry.file_type() {
+                Ok(t) => t,
+                Err(_) => continue,
+            };
+            if !ft.is_dir() || ft.is_symlink() {
+                continue;
+            }
             let path = entry.path();
-
-            if path.is_dir() {
-                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                    let metadata = self.read_metadata(&path);
-                    envs.push(VirtualenvInfo {
-                        name: name.to_string(),
-                        path: path.clone(),
-                        python_version: metadata.map(|m| m.python_version),
-                    });
-                }
+            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                let metadata = self.read_metadata(&path);
+                envs.push(VirtualenvInfo {
+                    name: name.to_string(),
+                    path: path.clone(),
+                    python_version: metadata.map(|m| m.python_version),
+                });
             }
         }
 
@@ -382,6 +398,34 @@ mod tests {
 
             assert_eq!(envs.len(), 1);
             assert_eq!(envs[0].name, "realenv");
+        });
+    }
+
+    // C2 regression — symlinks under virtualenvs/ must NOT be enumerated.
+    // Otherwise downstream commands (gc, verify, ...) would treat the
+    // symlink target as a real env and end up scanning / exec'ing files
+    // outside the venvs dir.
+    #[cfg(unix)]
+    #[test]
+    #[serial]
+    fn test_list_skips_symlink_entries() {
+        with_temp_scoop_home(|temp_dir| {
+            let venvs_dir = temp_dir.path().join("virtualenvs");
+            fs::create_dir_all(&venvs_dir).unwrap();
+
+            // Real env so the list isn't empty (controls for "filter is
+            // entirely broken" vs "filter caught the symlink").
+            create_mock_venv(temp_dir, "real", None);
+
+            // Plant a symlink → some other (existing) directory. Without
+            // the symlink filter this would be enumerated as an env.
+            let other = tempfile::TempDir::new().unwrap();
+            std::os::unix::fs::symlink(other.path(), venvs_dir.join("symlinked")).unwrap();
+
+            let service = require_uv!();
+            let envs = service.list().unwrap();
+            assert_eq!(envs.len(), 1, "symlink entries must be skipped: {envs:?}");
+            assert_eq!(envs[0].name, "real");
         });
     }
 }

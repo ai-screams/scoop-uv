@@ -298,7 +298,23 @@ fn remove_orphans(output: &Output, envs: &[OrphanEnv], pythons: &[UnusedPython])
         // `scan_unused_pythons` already returned `[]` in that case, so this
         // is defensive against transient PATH issues.
         if let Ok(uv) = UvClient::new() {
+            // TOCTOU guard for Pythons: re-scan unused versions right
+            // before uninstall. The env-level reclassify above only
+            // protects venvs from `scoop create`-racing; without this
+            // Python-level recheck a concurrent `scoop create` could
+            // pull a venv onto a Python we're about to nuke, leaving
+            // that env broken.
+            let still_unused: std::collections::HashSet<String> = scan_unused_pythons(envs)
+                .map_or_else(
+                    |_| pythons.iter().map(|p| p.version.clone()).collect(),
+                    |(current, _)| current.into_iter().map(|p| p.version).collect(),
+                );
+
             for py in pythons {
+                if !still_unused.contains(&py.version) {
+                    output.warn(&t!("gc.skipped_python_now_in_use", version = &py.version));
+                    continue;
+                }
                 match uv.uninstall_python(&py.version) {
                     Ok(()) => {
                         if !output.is_json() {

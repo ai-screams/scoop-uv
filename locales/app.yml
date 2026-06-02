@@ -1262,6 +1262,12 @@ gc.skipped_now_healthy:
   pt-BR: "Pulado '%{name}' — tornou-se saudável entre escaneamento e remoção"
   ja: "'%{name}' をスキップ — スキャンと削除の間に正常状態になりました"
 
+gc.skipped_python_now_in_use:
+  en: "Skipped Python %{version} — became referenced by an env between scan and uninstall"
+  ko: "Python %{version} 건너뜀 — 스캔과 삭제 사이에 환경이 참조하기 시작함"
+  pt-BR: "Python %{version} pulado — tornou-se referenciado por um ambiente entre escaneamento e desinstalação"
+  ja: "Python %{version} をスキップ — スキャンとアンインストールの間に環境から参照されました"
+
 gc.unreadable_metadata_warn:
   en: "%{count} env(s) have unreadable metadata; skipping Python cleanup to be safe"
   ko: "환경 %{count}개의 메타데이터를 읽을 수 없어요. 안전을 위해 Python 정리는 건너뛸게요"
