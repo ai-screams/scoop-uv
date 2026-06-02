@@ -51,6 +51,7 @@ scoop remove myproject        # Delete a virtualenv
 | `scoop list` | List virtualenvs (aliases: `ls`) |
 | `scoop list --pythons` | List installed Python versions |
 | `scoop list --python-version <VER>` | Filter environments by Python version |
+| `scoop list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (Unreleased) |
 | `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
 | `scoop create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
 | `scoop create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
@@ -64,8 +65,8 @@ scoop remove myproject        # Delete a virtualenv
 | `scoop install [version]` | Install Python version |
 | `scoop uninstall <version>` | Remove Python version |
 | `scoop uninstall <version> --cascade` | Remove Python version + all environments using it |
-| `scoop info <name>` | Show virtualenv details |
-| `scoop status` | Summarise current state (Active/Configured/System/None) (v0.11.0) |
+| `scoop info <name>` | Show virtualenv details (includes `Last used:` row since Unreleased) |
+| `scoop status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since Unreleased |
 | `scoop which <exe>` | Resolve an executable path inside the active env (v0.11.0) |
 | `scoop run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
 | `scoop sync` | Reconcile the active env with `.scoop.toml` manifest (v0.11.0) |
@@ -81,7 +82,7 @@ scoop remove myproject        # Delete a virtualenv
 | `scoop migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scoop migrate @env <name>` | Migrate single environment |
 | `scoop migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
-| `scoop gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons |
+| `scoop gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons; `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (Unreleased) |
 | `scoop prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
 | `scoop verify [NAME]` | Per-env health diagnosis (6 checks). Default always exits 0; `--strict` exits 1 on any issue |
 | `scoop man [DIR]` | Generate man pages — stdout for top-level, or write `scoop.1` + `scoop-<sub>.1` per subcommand into DIR |

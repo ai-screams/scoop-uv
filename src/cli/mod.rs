@@ -4,7 +4,7 @@ pub mod commands;
 
 use std::path::PathBuf;
 
-use clap::{ArgAction, Parser, Subcommand};
+use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 
 /// scoop - Python virtual environment manager powered by uv
 #[derive(Parser, Debug)]
@@ -160,6 +160,32 @@ pub enum SelfCommand {
     },
 }
 
+/// Sort modes accepted by `scoop list --sort`.
+///
+/// Default is `name` so `scoop list` output stays alphabetically
+/// stable for muscle-memory users. `created` and `last-used` are
+/// descending (newest first) because that's what "what did I touch
+/// recently?" wants without an extra flag. Envs whose timestamp is
+/// `None` sort to the end with name-order tie-break — surfacing
+/// modern envs first instead of burying them under legacy-metadata
+/// neighbours.
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+#[value(rename_all = "kebab-case")]
+pub enum ListSortMode {
+    /// Alphabetical by env name (default).
+    Name,
+    /// Most recently created first; envs without `created_at` last.
+    Created,
+    /// Most recently used first; envs without `last_used` last.
+    LastUsed,
+}
+
+impl Default for ListSortMode {
+    fn default() -> Self {
+        Self::Name
+    }
+}
+
 /// Available commands
 #[derive(Subcommand, Debug)]
 pub enum Commands {
@@ -177,6 +203,12 @@ pub enum Commands {
         /// Filter environments by Python version (e.g., 3.12)
         #[arg(long, value_name = "VERSION", conflicts_with = "pythons")]
         python_version: Option<String>,
+
+        /// Sort order for the env list (name / created / last-used).
+        /// Created and last-used are descending; envs without the
+        /// timestamp sort last with name tie-break.
+        #[arg(long, value_enum, default_value_t = ListSortMode::Name, conflicts_with = "pythons")]
+        sort: ListSortMode,
 
         /// Output as JSON
         #[arg(long)]
@@ -515,6 +547,14 @@ pub enum Commands {
         /// Also remove uv-managed Python versions that no environment uses
         #[arg(long)]
         aggressive: bool,
+
+        /// Also mark envs whose `last_used` is older than this duration as
+        /// stale. Format: `<n>d` / `<n>w` / `<n>y` (days/weeks/365-day years).
+        /// Envs that have never been activated since the `last_used` field
+        /// landed are never matched — see CHANGELOG for the conservative
+        /// rationale.
+        #[arg(long, value_name = "DURATION")]
+        older_than: Option<String>,
 
         /// Output as JSON
         #[arg(long)]

@@ -26,5 +26,11 @@ pub fn execute(name: &str, shell: Option<ShellType>) -> Result<()> {
     // Output activation script for eval
     print_activate_script(shell_type, &venv_path, &bin_path, name);
 
+    // Record activation timestamp. Universal touch site: `use`, auto-activation
+    // (cd hook), and explicit `scoop activate` all flow through here via the
+    // shell wrapper. `run` and `shell` do NOT — they call touch explicitly.
+    // Best-effort: never blocks activation on a metadata I/O failure.
+    service.touch_metadata_best_effort(name);
+
     Ok(())
 }

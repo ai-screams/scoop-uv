@@ -55,6 +55,9 @@ regex = "1.11"
 once_cell = "1.21"
 chrono = { version = "0.4", features = ["serde", "std", "clock"], default-features = false }
 walkdir = "2.5"
+# Atomic file writes (tempfile + rename) for metadata touch updates so a
+# crash mid-write can't truncate `.scoop-metadata.json` to garbage.
+tempfile = "3.27"
 
 # i18n
 rust-i18n = "4"
@@ -79,7 +82,6 @@ integration-test = []
 [dev-dependencies]
 assert_cmd = "2.2"
 predicates = "3.1"
-tempfile = "3.27"
 serial_test = "3.2"
 proptest = "1.11"
 insta = { version = "1.47", features = ["yaml"] }

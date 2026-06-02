@@ -11,17 +11,23 @@ This document provides a reference for scoop's public API, primarily intended fo
 
 ## Core Types
 
-### VirtualEnv Module (`core/virtualenv.rs`)
+### VirtualEnv Module (`core/virtualenv/`)
 
 #### `VirtualenvInfo`
 
-Represents basic information about a virtual environment.
+Represents basic information about a virtual environment. **Marked
+`#[non_exhaustive]` since Unreleased** — external Rust consumers can
+no longer construct it with struct-literal syntax. Obtain instances
+from `VirtualenvService::list()` (or any future read API) instead.
 
 ```rust
+#[non_exhaustive]
 pub struct VirtualenvInfo {
     pub name: String,
     pub path: PathBuf,
     pub python_version: Option<String>,
+    pub created_at: Option<DateTime<Utc>>,
+    pub last_used: Option<DateTime<Utc>>,
 }
 ```
 
@@ -29,14 +35,17 @@ pub struct VirtualenvInfo {
 - `name` - Environment name (e.g., `"myproject"`)
 - `path` - Absolute path to virtualenv directory
 - `python_version` - Python version string if metadata exists (e.g., `Some("3.12.1")`)
+- `created_at` - Creation timestamp from metadata, if present (Unreleased)
+- `last_used` - Most recent `scoop activate`/`run`/`shell` touch
+  timestamp, if present (Unreleased). `None` for legacy envs that
+  pre-date the field *and* fresh envs that have never been activated.
 
-**Example:**
+**Example (consume-only, struct-literal construction is no longer permitted):**
 ```rust
-let info = VirtualenvInfo {
-    name: "webapp".to_string(),
-    path: PathBuf::from("/Users/x/.scoop/virtualenvs/webapp"),
-    python_version: Some("3.12.1".to_string()),
-};
+let service = VirtualenvService::auto()?;
+for info in service.list()? {
+    println!("{} (last used: {:?})", info.name, info.last_used);
+}
 ```
 
 ---
@@ -75,8 +84,21 @@ impl VirtualenvService {
     /// Gets the path to a virtualenv
     pub fn get_path(&self, name: &str) -> Result<PathBuf>
 
-    /// Reads metadata for a virtualenv (internal use)
+    /// Reads metadata for a virtualenv (best-effort; collapses
+    /// missing and corrupt into `None`).
     pub fn read_metadata(&self, path: &Path) -> Option<Metadata>
+
+    /// Reads metadata distinguishing missing (`Ok(None)`) from
+    /// corrupt (`Err(_)`). Touch / gc use this so they can refuse
+    /// to overwrite garbage. (Unreleased)
+    pub fn read_metadata_result(&self, path: &Path) -> Result<Option<Metadata>>
+
+    /// Writes metadata atomically via tempfile + rename. (Unreleased)
+    pub fn write_metadata_atomic(&self, path: &Path, m: &Metadata) -> Result<()>
+
+    /// Best-effort update to `last_used`. Never returns an error;
+    /// logs `warn!` on failure. (Unreleased)
+    pub fn touch_metadata_best_effort(&self, env_name: &str)
 }
 ```
 
@@ -116,6 +138,7 @@ pub struct Metadata {
     pub created_by: String,          // "scoop X.Y.Z" format
     pub uv_version: Option<String>,  // uv version used
     pub python_path: Option<String>, // Custom Python executable path (if --python-path was used)
+    pub last_used: Option<DateTime<Utc>>, // Last activation timestamp (Unreleased)
 }
 
 impl Metadata {
@@ -675,5 +698,5 @@ When analyzing or modifying this codebase:
 
 ---
 
-> **Last Updated:** 2026-06-01
-> **scoop Version:** 0.11.0
+> **Last Updated:** 2026-06-02
+> **scoop Version:** Unreleased (post-0.12.0)

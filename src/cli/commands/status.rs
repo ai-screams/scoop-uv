@@ -6,9 +6,11 @@
 
 use rust_i18n::t;
 
+use chrono::Utc;
+
 use crate::core::{VersionService, VirtualenvService, get_active_env, list_installed_packages};
 use crate::error::Result;
-use crate::output::{Output, StatusData};
+use crate::output::{Output, StatusData, format_last_used_value};
 use crate::paths::abbreviate_home;
 
 /// Sentinel state strings — kept as constants so the JSON discriminator and
@@ -75,6 +77,7 @@ fn emit_none(output: &Output, json: bool) {
                 path: None,
                 python: None,
                 created_at: None,
+                last_used: None,
                 packages: None,
             },
         );
@@ -95,6 +98,7 @@ fn emit_system(output: &Output, json: bool) {
                 path: None,
                 python: None,
                 created_at: None,
+                last_used: None,
                 packages: None,
             },
         );
@@ -114,6 +118,8 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
 
     let python = metadata.as_ref().map(|m| m.python_version.clone());
     let created_at = metadata.as_ref().map(|m| m.created_at.to_rfc3339());
+    let last_used_ts = metadata.as_ref().and_then(|m| m.last_used);
+    let last_used_rfc = last_used_ts.map(|t| t.to_rfc3339());
     // Best-effort package count from the venv's own pip. `None` distinguishes
     // "env has no pip" (broken / not yet bootstrapped) from "0 packages".
     let packages = path.as_deref().map(|p| list_installed_packages(p).len());
@@ -132,6 +138,7 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
                 path: path.as_ref().map(|p| p.display().to_string()),
                 python: python.clone(),
                 created_at: created_at.clone(),
+                last_used: last_used_rfc.clone(),
                 packages,
             },
         );
@@ -151,16 +158,18 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
             .map(|p| abbreviate_home(p))
             .unwrap_or_else(|| "-".to_string())
     );
-    if let Some(m) = metadata {
+    if let Some(m) = metadata.as_ref() {
         let date = m.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
         println!("{:w$}{}", "Created:", date);
+    }
+    // Shared three-state contract — see [`format_last_used_value`] for
+    // the "hide vs never vs N units ago" rules.
+    if let Some(label) = format_last_used_value(metadata.is_some(), last_used_ts, Utc::now()) {
+        println!("{:w$}{}", "Last used:", label);
     }
     if let Some(n) = packages {
         println!("{:w$}{}", "Packages:", n);
     }
-    // Note: backlog item 9 also asks for "Last used: ...". Deferred until the
-    // companion gc/last_used metadata work lands — bin/python mtime tracks
-    // creation, not usage, and would be misleading.
 }
 
 #[cfg(test)]

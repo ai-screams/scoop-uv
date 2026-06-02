@@ -87,6 +87,14 @@ pub struct VirtualenvInfo {
     pub python: Option<String>,
     pub path: String,
     pub active: bool,
+    /// Creation timestamp (RFC 3339). Omitted when metadata is missing
+    /// or doesn't carry `created_at` yet (legacy envs).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    /// Last-use timestamp (RFC 3339). Omitted for envs that haven't
+    /// been activated since the field landed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_used: Option<String>,
 }
 
 /// List pythons response data
@@ -273,6 +281,13 @@ pub struct StatusData {
     pub python: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
+    /// RFC 3339 timestamp of the last `scoop activate` / `run` / `shell`
+    /// against this env. `None` for legacy envs whose metadata predates
+    /// the field, and for freshly created envs that have never been
+    /// activated. Omitted from JSON when absent so old consumers don't
+    /// have to learn a new key.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_used: Option<String>,
     /// Best-effort installed-package count via the venv's own `pip list`.
     /// `None` when the env has no pip (broken / not yet bootstrapped).
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -289,6 +304,10 @@ pub struct EnvInfoData {
     pub active: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
+    /// RFC 3339 last-use timestamp, omitted when unknown. See
+    /// `StatusData::last_used` for the full contract.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_used: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size_bytes: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -439,12 +458,16 @@ mod tests {
                     python: Some("3.12".into()),
                     path: "/path1".into(),
                     active: true,
+                    created_at: None,
+                    last_used: None,
                 },
                 VirtualenvInfo {
                     name: "env2".into(),
                     python: None,
                     path: "/path2".into(),
                     active: false,
+                    created_at: None,
+                    last_used: None,
                 },
             ],
             total: 2,
@@ -462,9 +485,53 @@ mod tests {
             python: None,
             path: "/path".into(),
             active: false,
+            created_at: None,
+            last_used: None,
         };
         let json = serde_json::to_string(&info).unwrap();
         assert!(!json.contains("python"));
+    }
+
+    #[test]
+    fn test_virtualenv_info_timestamps_present_when_some() {
+        // Pins the additive-schema contract for the new fields: when
+        // a value is present, it must serialize as a JSON string, not
+        // be hidden by some accidental `skip_serializing_if` change.
+        let info = VirtualenvInfo {
+            name: "ent".into(),
+            python: Some("3.12".into()),
+            path: "/p".into(),
+            active: false,
+            created_at: Some("2024-01-15T10:30:00+00:00".to_string()),
+            last_used: Some("2026-06-02T12:00:00+00:00".to_string()),
+        };
+        let json = serde_json::to_string(&info).unwrap();
+        assert!(
+            json.contains("\"created_at\":\"2024-01-15T10:30:00+00:00\""),
+            "created_at must serialize when Some: {json}"
+        );
+        assert!(
+            json.contains("\"last_used\":\"2026-06-02T12:00:00+00:00\""),
+            "last_used must serialize when Some: {json}"
+        );
+    }
+
+    #[test]
+    fn test_virtualenv_info_timestamps_omitted_when_none() {
+        // Companion to the Some test: the additive schema requires
+        // *both* arms — Some serializes, None omits. Old consumers
+        // depend on absent keys, not on `null`.
+        let info = VirtualenvInfo {
+            name: "ent".into(),
+            python: None,
+            path: "/p".into(),
+            active: false,
+            created_at: None,
+            last_used: None,
+        };
+        let json = serde_json::to_string(&info).unwrap();
+        assert!(!json.contains("created_at"), "{json}");
+        assert!(!json.contains("last_used"), "{json}");
     }
 
     #[test]
@@ -474,6 +541,8 @@ mod tests {
             python: Some("3.11".into()),
             path: "/path".into(),
             active: true,
+            created_at: None,
+            last_used: None,
         };
         let json = serde_json::to_string(&info).unwrap();
         assert!(json.contains(r#""python":"3.11""#));
@@ -683,6 +752,8 @@ mod tests {
             python: Some("3.12".into()),
             path: "/경로/테스트".into(),
             active: true,
+            created_at: None,
+            last_used: None,
         };
         let json = serde_json::to_string(&info).unwrap();
         // Should serialize correctly
@@ -764,12 +835,16 @@ mod tests {
                     python: Some("3.12".into()),
                     path: "/path/to/env1".into(),
                     active: true,
+                    created_at: None,
+                    last_used: None,
                 },
                 VirtualenvInfo {
                     name: "env2".into(),
                     python: None,
                     path: "/path/to/env2".into(),
                     active: false,
+                    created_at: None,
+                    last_used: None,
                 },
             ],
             total: 2,

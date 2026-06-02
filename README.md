@@ -322,8 +322,8 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 |---------|-------------|
 | `scoop create <name> [version]` | Create a new environment |
 | `scoop use <name>` | Activate environment (auto-activates in directory) |
-| `scoop list` | List all environments |
-| `scoop status` | Show the currently active environment |
+| `scoop list` | List all environments (`--sort name\|created\|last-used`) |
+| `scoop status` | Show the currently active environment (includes `Last used:`) |
 | `scoop which <exe>` | Resolve an executable inside the active env |
 | `scoop run <env> -- <cmd>` | Run a command inside an env without activating |
 | `scoop sync` | Apply `.scoop.toml` (create env + install packages) |
@@ -332,7 +332,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop clone <src> <dst>` | Duplicate an environment |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
-| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove) |
+| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove, `--older-than <n>d/w/y` for stale envs) |
 | `scoop prune` | Prune the uv cache |
 | `scoop verify` | Per-env health check (metadata, python, pyvenv.cfg, ...) |
 | `scoop doctor` | Health check your setup |
@@ -354,10 +354,11 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop use <name> --global`     | Set as your usual order                |
 | `scoop list`                    | What's in the freezer?                 |
 | `scoop list --pythons`          | What Python versions do we have?       |
+| `scoop list --sort last-used`   | Newest activity first (also `name` / `created`) |
 | `scoop list --json`             | Output as JSON                         |
-| `scoop info <name>`             | Show detailed info about a flavor      |
+| `scoop info <name>`             | Show detailed info (incl. `Last used:`)|
 | `scoop info <name> --json`      | Output info as JSON                    |
-| `scoop status`                  | Which flavor am I scooping right now?  |
+| `scoop status`                  | Which flavor am I scooping right now? (incl. `Last used:`)|
 | `scoop which <exe>`             | Where's that scoop in my freezer?      |
 | `scoop run <env> -- <cmd>`      | Scoop on demand — run without unpacking |
 | `scoop sync`                    | Read `.scoop.toml` and serve the flavor |
@@ -402,6 +403,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
 | `scoop gc --yes`         | Actually remove the orphans                                    |
 | `scoop gc --aggressive`  | Also flag unused uv-managed Python versions                    |
+| `scoop gc --older-than 30d` | Also flag envs idle past the cutoff (no `last_used` never matches) |
 | `scoop prune`            | Prune the uv download/wheel cache (`uv cache prune` wrapper)   |
 
 ### Packaging 📦

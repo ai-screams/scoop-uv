@@ -20,6 +20,7 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 |---------|-------------|
 | `scoop list` | List virtualenvs (aliases: `ls`) |
 | `scoop list --pythons` | List installed Python versions |
+| `scoop list --sort <name\|created\|last-used>` | Sort order; envs missing the timestamp sort last with name tie-break (Unreleased) |
 | `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
 | `scoop create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
 | `scoop use <name>` | Set + activate environment |
@@ -31,8 +32,8 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 | `scoop clone <src> <dst>` | Duplicate an env in-place (`--no-packages` for skeleton) (v0.11.0) |
 | `scoop install [version]` | Install Python version |
 | `scoop uninstall <version>` | Remove Python version |
-| `scoop info <name>` | Show virtualenv details |
-| `scoop status` | Summarise current state (Active/Configured/System/None) (v0.11.0) |
+| `scoop info <name>` | Show virtualenv details (includes `Last used:` row since Unreleased) |
+| `scoop status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since Unreleased |
 | `scoop which <exe>` | Resolve an executable inside the active env (v0.11.0) |
 | `scoop run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
 | `scoop sync` | Reconcile the active env with `.scoop.toml` manifest (v0.11.0) |
@@ -48,7 +49,7 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 | `scoop migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scoop migrate @env <name>` | Migrate single environment |
 | `scoop migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
-| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to actually remove, `--aggressive` also for unused Pythons) |
+| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to actually remove, `--aggressive` also for unused Pythons, `--older-than <n>d/w/y` flags stale envs by `last_used`; envs with no `last_used` are never matched) |
 | `scoop prune` | Prune the uv cache (`uv cache prune` wrapper) |
 | `scoop verify [NAME]` | Per-env health diagnosis — 6 checks (metadata, python binary, pyvenv.cfg, activate, exec, manifest drift); `--strict` exits 1 on issues |
 | `scoop man [DIR]` | Generate man pages (stdout or one file per subcommand in DIR) |

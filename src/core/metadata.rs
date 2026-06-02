@@ -24,6 +24,16 @@ pub struct Metadata {
     /// Custom Python path used to create this environment
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub python_path: Option<String>,
+
+    /// Last time the env was activated (None for envs created before this
+    /// field existed, or never touched yet). Updated by
+    /// [`crate::core::VirtualenvService::touch_metadata_best_effort`].
+    ///
+    /// `create` leaves this `None` so "never used" is distinguishable from
+    /// "used right after creation" — a freshly created env that's never
+    /// activated should report "never", not its creation time.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_used: Option<DateTime<Utc>>,
 }
 
 impl Metadata {
@@ -36,6 +46,7 @@ impl Metadata {
             created_by: format!("scoop {}", env!("CARGO_PKG_VERSION")),
             uv_version,
             python_path: None,
+            last_used: None,
         }
     }
 
@@ -43,6 +54,14 @@ impl Metadata {
     pub fn with_python_path(mut self, python_path: String) -> Self {
         self.python_path = Some(python_path);
         self
+    }
+
+    /// Update `last_used` to the given instant.
+    ///
+    /// Caller passes `now` explicitly so tests can pin the timestamp without
+    /// having to round-trip through wall clock comparison.
+    pub fn touch(&mut self, now: DateTime<Utc>) {
+        self.last_used = Some(now);
     }
 
     /// Metadata file name
@@ -209,6 +228,77 @@ mod tests {
             serde_json::from_str(future_json).expect("should parse with extra fields");
         assert_eq!(meta.name, "futureenv");
         assert_eq!(meta.python_version, "3.15");
+    }
+
+    #[test]
+    fn test_metadata_new_leaves_last_used_none() {
+        // create() must NOT set last_used = created_at. "never used" needs
+        // to be distinguishable from "used right after creation".
+        let meta = Metadata::new("fresh".to_string(), "3.12".to_string(), None);
+        assert!(meta.last_used.is_none());
+    }
+
+    #[test]
+    fn test_metadata_touch_updates_only_last_used() {
+        // touch() must update last_used and nothing else — other fields
+        // are the user's record of how the env was created and must not
+        // be silently rewritten on activation.
+        let mut meta = Metadata::new(
+            "touchme".to_string(),
+            "3.12".to_string(),
+            Some("0.5.0".to_string()),
+        );
+        let orig_name = meta.name.clone();
+        let orig_python = meta.python_version.clone();
+        let orig_created_at = meta.created_at;
+        let orig_created_by = meta.created_by.clone();
+        let orig_uv = meta.uv_version.clone();
+
+        let now = "2026-06-02T12:00:00Z".parse::<DateTime<Utc>>().unwrap();
+        meta.touch(now);
+
+        assert_eq!(meta.last_used, Some(now));
+        assert_eq!(meta.name, orig_name);
+        assert_eq!(meta.python_version, orig_python);
+        assert_eq!(meta.created_at, orig_created_at);
+        assert_eq!(meta.created_by, orig_created_by);
+        assert_eq!(meta.uv_version, orig_uv);
+    }
+
+    #[test]
+    fn test_metadata_legacy_round_trip_no_last_used() {
+        // Legacy on-disk files (pre-last_used) must deserialize cleanly and
+        // serialize back without emitting a `"last_used": null` line, so
+        // older binaries reading the file see exactly what they wrote.
+        let legacy = r#"{
+            "name": "legacy",
+            "python_version": "3.11",
+            "created_at": "2024-01-01T00:00:00Z",
+            "created_by": "scoop 0.1.0",
+            "uv_version": null
+        }"#;
+
+        let meta: Metadata = serde_json::from_str(legacy).expect("parse legacy");
+        assert!(meta.last_used.is_none());
+
+        let serialized = serde_json::to_string(&meta).expect("serialize");
+        assert!(
+            !serialized.contains("last_used"),
+            "skip_serializing_if must omit None: {serialized}"
+        );
+    }
+
+    #[test]
+    fn test_metadata_with_last_used_round_trip() {
+        let mut meta = Metadata::new("ent".to_string(), "3.12".to_string(), None);
+        let now = "2026-06-02T08:30:00Z".parse::<DateTime<Utc>>().unwrap();
+        meta.touch(now);
+
+        let json = serde_json::to_string(&meta).expect("serialize");
+        assert!(json.contains("last_used"));
+
+        let restored: Metadata = serde_json::from_str(&json).expect("deserialize");
+        assert_eq!(restored.last_used, Some(now));
     }
 
     #[test]

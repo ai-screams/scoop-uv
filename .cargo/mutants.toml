@@ -44,6 +44,17 @@ exclude_re = [
     "VirtualenvService::is_python_installed",
     "VirtualenvService::install_python",
     "VirtualenvService::pip_install",
+    # create / create_with_python_path / create_inner all shell out to
+    # `uv venv` via UvClient::create_venv (already excluded above).
+    # Without uv on the runner the success-path `Ok(Default::default())`
+    # mutations can't be killed by unit tests — every test that would
+    # observe a real returned PathBuf needs an actual uv subprocess.
+    # Integration tests under tests/cli.rs cover create end-to-end but
+    # are `#[ignore]`d on CI runners that lack uv. Same exclusion
+    # rationale as UvClient::create_venv.
+    "VirtualenvService::create",
+    "VirtualenvService::create_with_python_path",
+    "VirtualenvService::create_inner",
     # Shells out to the venv's own pip and graceful-degrades on parse failure;
     # the meaningful coverage is provided by the two list_installed_packages
     # tests in core::tests. Mutating the wrapper body can only flip behaviour

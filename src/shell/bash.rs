@@ -85,10 +85,24 @@ _scoop_complete() {
     if [[ "$cur" == -* ]]; then
         case "$cmd" in
             list)
-                local opts="--pythons --json -q --quiet --no-color --help"
+                # Special-case `--sort` value completion: when the user
+                # has typed `--sort=` or `--sort <TAB>`, offer the
+                # enum values directly instead of the option list.
+                local prev_word="${COMP_WORDS[COMP_CWORD-1]:-}"
+                if [[ "$cur" == --sort=* ]]; then
+                    local val="${cur#--sort=}"
+                    COMPREPLY=($(compgen -W "name created last-used" -P "--sort=" -- "$val"))
+                    return 0
+                fi
+                if [[ "$prev_word" == "--sort" ]]; then
+                    COMPREPLY=($(compgen -W "name created last-used" -- "$cur"))
+                    return 0
+                fi
+                local opts="--pythons --sort --json -q --quiet --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         --pythons) opts="${opts//--pythons }" ;;
+                        --sort|--sort=*) opts="${opts//--sort }" ;;
                         --json) opts="${opts//--json }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
                         --no-color) opts="${opts//--no-color }" ;;

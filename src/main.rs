@@ -30,10 +30,11 @@ fn main() -> Result<()> {
             pythons,
             bare,
             python_version,
+            sort,
             json,
         } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::list(&output, pythons, bare, python_version.as_deref())
+            scoop_uv::cli::commands::list(&output, pythons, bare, python_version.as_deref(), sort)
         }
         Commands::Create {
             name,
@@ -183,10 +184,11 @@ fn main() -> Result<()> {
         Commands::Gc {
             yes,
             aggressive,
+            older_than,
             json,
         } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::gc(&output, yes, aggressive)
+            scoop_uv::cli::commands::gc(&output, yes, aggressive, older_than.as_deref())
         }
         Commands::Man { output_dir, json } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);

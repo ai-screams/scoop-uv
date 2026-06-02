@@ -11,6 +11,7 @@
 
 use std::path::{Path, PathBuf};
 
+use chrono::{DateTime, Utc};
 use rust_i18n::t;
 use serde::Serialize;
 
@@ -20,25 +21,50 @@ use crate::output::Output;
 use crate::paths::{self, abbreviate_home};
 use crate::uv::UvClient;
 
-/// Why a virtualenv directory was classified as an orphan.
+use super::duration::parse_duration;
+
+/// Why a virtualenv directory was flagged by `gc`.
 ///
-/// Strings stay stable — they are part of the JSON contract.
+/// **Wire-format kind only.** Used as the `reason` discriminator in the
+/// JSON envelope. The two `Orphan*` variants serialize to their pre-
+/// Stale string values (`"missing_metadata"` / `"broken_python"`) via
+/// `#[serde(rename)]` so adding `Stale` is a pure additive schema
+/// change — old consumers parse `reason: "missing_metadata"` unchanged
+/// instead of suddenly seeing `reason: {kind: "missing_metadata"}` if
+/// we'd used `#[serde(tag = "kind")]`. The Stale-specific `age_days`
+/// rides next to `reason` in the record, not inside it (see [`EnvRecord`]).
+///
+/// Codex review on the v2 plan flagged this separation as STOP-1: a
+/// single flat enum would have let the orphan-side TOCTOU guard
+/// reclassify stale-but-healthy envs as "fine" and skip removing them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
-enum OrphanReason {
+enum EnvGcReason {
     /// `.scoop-metadata.json` is missing — the env wasn't created by scoop,
-    /// or its metadata file was deleted.
-    MissingMetadata,
+    /// or its metadata file was deleted. Pre-Stale JSON value preserved.
+    #[serde(rename = "missing_metadata")]
+    OrphanMissingMetadata,
     /// The Python interpreter the env points at is gone (uninstalled out
-    /// from under us, or the symlink target was deleted).
-    BrokenPython,
+    /// from under us, or the symlink target was deleted). Pre-Stale JSON
+    /// value preserved.
+    #[serde(rename = "broken_python")]
+    OrphanBrokenPython,
+    /// `last_used` is older than the `--older-than <DURATION>` cutoff.
+    /// The actual day count rides separately as `EnvRecord.age_days`
+    /// so the JSON envelope stays flat (no nested tag/object form).
+    Stale,
 }
 
 #[derive(Debug, Serialize)]
 struct OrphanEnv {
     name: String,
     path: String,
-    reason: OrphanReason,
+    reason: EnvGcReason,
+    /// Only populated when `reason == Stale`. Frozen at scan time;
+    /// recheck before removal may see a slightly different value if
+    /// the env was touched concurrently. Hidden from JSON unless set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    age_days: Option<u64>,
 }
 
 #[derive(Debug, Serialize)]
@@ -59,9 +85,19 @@ enum EnvOutcome {
     Pending,
     /// `--yes`: directory successfully removed.
     Removed,
-    /// `--yes`: env re-classified as healthy between scan and remove;
-    /// destructive action skipped on purpose (TOCTOU guard fired).
+    /// `--yes`: orphan re-classified as healthy between scan and
+    /// remove; destructive action skipped on purpose (TOCTOU guard
+    /// fired for an `Orphan*` reason).
     SkippedHealthy,
+    /// `--yes`: stale env was touched between scan and remove (the
+    /// recheck against the original cutoff now passes); destructive
+    /// action skipped on purpose (TOCTOU guard fired for `Stale`).
+    SkippedRecentlyUsed,
+    /// `--yes`: stale env's metadata became unreadable between scan
+    /// and remove. Refusing to delete an env we can no longer reason
+    /// about is the conservative move — surfaces the situation
+    /// instead of guessing.
+    SkippedNoData,
     /// `--yes`: removal returned an IO error. See `error` for details.
     Failed,
 }
@@ -70,7 +106,14 @@ enum EnvOutcome {
 struct EnvRecord {
     name: String,
     path: String,
-    reason: OrphanReason,
+    reason: EnvGcReason,
+    /// Days since last activation at scan time. Populated only for
+    /// `Stale` records; orphan records leave it `None` and serde
+    /// omits the field entirely. Carrying this alongside (not inside)
+    /// `reason` is what keeps the JSON envelope additive: the old
+    /// `reason: "missing_metadata"` shape is untouched for orphans.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    age_days: Option<u64>,
     outcome: EnvOutcome,
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
@@ -115,10 +158,39 @@ struct GcData {
 
 /// Execute the `gc` command.
 ///
-/// * `yes` — actually remove the orphans (otherwise dry-run only).
+/// * `yes` — actually remove the candidates (otherwise dry-run only).
 /// * `aggressive` — also consider Python versions that no env uses.
-pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
-    let envs = scan_orphan_envs()?;
+/// * `older_than` — when `Some`, also flag envs whose `last_used` is
+///   older than the parsed duration. `None` preserves the pre-flag
+///   behaviour (orphans only).
+pub fn execute(
+    output: &Output,
+    yes: bool,
+    aggressive: bool,
+    older_than: Option<&str>,
+) -> Result<()> {
+    // Parse the duration up front so a malformed `--older-than` fails
+    // before we touch the filesystem. Cutoff is sampled once and
+    // shared between scan + recheck — using a fresh `Utc::now()` at
+    // recheck time would make borderline envs jitter in/out of "stale".
+    let stale_cutoff = match older_than {
+        Some(s) => {
+            let d = parse_duration(s)?;
+            Some(Utc::now().checked_sub_signed(d).ok_or_else(|| {
+                crate::error::ScoopError::InvalidArgument {
+                    message: format!("cutoff arithmetic overflowed for --older-than {s}"),
+                }
+            })?)
+        }
+        None => None,
+    };
+
+    let mut envs = scan_orphan_envs()?;
+    if let Some(cutoff) = stale_cutoff {
+        envs.extend(scan_stale_envs(cutoff)?);
+        envs.sort_by(|a, b| a.name.cmp(&b.name));
+    }
+
     let (pythons, unreadable_envs) = if aggressive {
         scan_unused_pythons(&envs)?
     } else {
@@ -145,6 +217,7 @@ pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
             name: o.name.clone(),
             path: o.path.clone(),
             reason: o.reason,
+            age_days: o.age_days,
             outcome: EnvOutcome::Pending,
             error: None,
         })
@@ -166,6 +239,7 @@ pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
             &pythons,
             &mut env_records,
             &mut python_records,
+            stale_cutoff,
         );
     }
 
@@ -187,12 +261,21 @@ pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
 /// Walk `~/.scoop/virtualenvs/` and flag any directory that fails the
 /// "looks like a working env" sniff test.
 ///
-/// Symlinks are intentionally NOT considered. `is_dir()` follows symlinks,
-/// so a hostile (or accidental) symlink under `virtualenvs/` would look
-/// like an orphan directory, and `fs::remove_dir_all` would then follow
-/// the symlink and delete the *target*'s contents under the user's UID.
-/// We use `entry.file_type().is_symlink()` to reject every symlink up
-/// front, regardless of whether it points to a directory.
+/// Symlinks are intentionally NOT considered. `is_dir()` follows
+/// symlinks, so a hostile (or accidental) symlink under `virtualenvs/`
+/// would look like an orphan directory and downstream code (verify
+/// shelling out to `<target>/bin/python`, or future tooling that does
+/// not assume rustc 1.78+'s non-following `remove_dir_all`) would act
+/// on the target. We reject every symlink up front via
+/// `entry.file_type().is_symlink()`, regardless of whether the target
+/// is a directory, so the threat doesn't reach those code paths in the
+/// first place.
+///
+/// Note: as of Rust 1.78 `std::fs::remove_dir_all` does NOT follow
+/// symlinks itself, so a missed symlink wouldn't directly nuke the
+/// target *via gc*. The defense above is still correct policy —
+/// classify/exec paths would still touch the target — but don't
+/// cargo-cult the old "remove_dir_all follows symlinks" rationale.
 ///
 /// Per-entry IO errors (transient permission / disappearing file) are
 /// swallowed so one bad entry doesn't abort the entire scan and hide
@@ -238,6 +321,7 @@ fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
                 name,
                 path: path.display().to_string(),
                 reason,
+                age_days: None,
             });
         }
     }
@@ -245,14 +329,78 @@ fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
     Ok(orphans)
 }
 
-/// Return `Some(reason)` if `path` looks like a broken env, `None` if it
-/// looks healthy.
-fn classify(path: &Path) -> Option<OrphanReason> {
+/// Walk the env list and flag any env whose `last_used` is older than
+/// `cutoff`.
+///
+/// Crucial design decisions baked in:
+///
+/// * **Only healthy envs are considered.** `classify()` returning
+///   `Some(_)` means the env is already an orphan — it'll be removed
+///   via the orphan path. Flagging it twice would double-count and
+///   confuse the JSON envelope.
+/// * **`last_used = None` never matches.** Codex review on the v2 plan
+///   was emphatic: a missing `last_used` could mean "never activated"
+///   (fresh env) *or* "predates the field" (legacy metadata). Either
+///   way we have no positive evidence the env is unused, so we refuse
+///   to flag it. Users who really want to nuke un-activated envs can
+///   `scoop verify` + manual removal.
+/// * **Corrupt metadata never matches.** Same conservative rule via
+///   a different code path: `VirtualenvService::list()` populates
+///   `info.last_used` from the legacy `read_metadata`, which collapses
+///   parse errors to `None`. The same `Some(last_used)` else-guard
+///   that protects "never activated" therefore also skips "unreadable
+///   metadata" — we don't need a separate corrupt branch here.
+fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<OrphanEnv>> {
+    let service = match VirtualenvService::auto() {
+        Ok(s) => s,
+        Err(_) => return Ok(Vec::new()),
+    };
+    let envs = match service.list() {
+        Ok(v) => v,
+        Err(_) => return Ok(Vec::new()),
+    };
+
+    let mut stale = Vec::new();
+    for info in envs {
+        // Skip envs already flagged as orphans (no metadata / broken
+        // python). The orphan path handles them; flagging them as
+        // stale too would double-record.
+        if classify(&info.path).is_some() {
+            continue;
+        }
+
+        // last_used = None → no match, full stop. See function doc.
+        let Some(last_used) = info.last_used else {
+            continue;
+        };
+
+        if last_used >= cutoff {
+            continue;
+        }
+
+        let age_days = (Utc::now() - last_used).num_days().max(0) as u64;
+        stale.push(OrphanEnv {
+            name: info.name.clone(),
+            path: info.path.display().to_string(),
+            reason: EnvGcReason::Stale,
+            age_days: Some(age_days),
+        });
+    }
+    Ok(stale)
+}
+
+/// Return `Some(reason)` if `path` looks like a broken env, `None` if
+/// it looks healthy from an *orphan-classifier* point of view. Stale
+/// detection lives in `scan_stale_envs` — keeping the two separate
+/// (per Codex STOP-1 on the v2 plan) means the orphan-side TOCTOU
+/// guard can't accidentally reclassify a stale-but-healthy env as
+/// "not really stale" and skip removing it.
+fn classify(path: &Path) -> Option<EnvGcReason> {
     // `.scoop-metadata.json` is the contract: every env scoop creates has
     // one. Its absence means the directory was made by hand or its metadata
     // was deleted — either way we can't safely interpret it.
     if !path.join(".scoop-metadata.json").exists() {
-        return Some(OrphanReason::MissingMetadata);
+        return Some(EnvGcReason::OrphanMissingMetadata);
     }
     // Check that the interpreter the env points at still exists. We avoid
     // re-running uv here — a stat on the bin dir is enough to catch the
@@ -263,7 +411,51 @@ fn classify(path: &Path) -> Option<OrphanReason> {
         path.join("bin").join("python")
     };
     if !bin.exists() {
-        return Some(OrphanReason::BrokenPython);
+        return Some(EnvGcReason::OrphanBrokenPython);
+    }
+    None
+}
+
+/// Re-check that an env recorded as `Stale` at scan time *still* qualifies.
+///
+/// Returns the outcome that should be written to the env record:
+/// - `None` — actually remove (still stale after recheck).
+/// - `Some(SkippedRecentlyUsed)` — env was touched between scan and
+///   remove; `last_used` is now >= original cutoff.
+/// - `Some(SkippedNoData)` — metadata became unreadable or its
+///   `last_used` is suddenly None.
+///
+/// Pulled out of `remove_orphans` so the per-reason TOCTOU branches
+/// stay readable.
+fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutcome> {
+    // Validation guard — see VirtualenvService::delete for the path
+    // traversal rationale. recheck_stale's `name` comes from scan
+    // results today (disk-walked basenames, can't traverse), but
+    // guarding here closes the gap if a future caller passes raw
+    // input.
+    if crate::validate::validate_env_name(name).is_err() {
+        return Some(EnvOutcome::SkippedNoData);
+    }
+    let path = match paths::virtualenv_path(name) {
+        Ok(p) => p,
+        Err(_) => return Some(EnvOutcome::SkippedNoData),
+    };
+    let service = match VirtualenvService::auto() {
+        Ok(s) => s,
+        // Without the service we can't recheck. Refuse to delete
+        // rather than guess.
+        Err(_) => return Some(EnvOutcome::SkippedNoData),
+    };
+    let meta = match service.read_metadata_result(&path) {
+        Ok(Some(m)) => m,
+        // Missing or corrupt — see scan_stale_envs's rationale.
+        _ => return Some(EnvOutcome::SkippedNoData),
+    };
+    let Some(last_used) = meta.last_used else {
+        return Some(EnvOutcome::SkippedNoData);
+    };
+    if last_used >= cutoff {
+        return Some(EnvOutcome::SkippedRecentlyUsed);
     }
     None
 }
@@ -363,21 +555,50 @@ fn remove_orphans(
     pythons: &[UnusedPython],
     env_records: &mut [EnvRecord],
     python_records: &mut [PythonRecord],
+    stale_cutoff: Option<DateTime<Utc>>,
 ) {
     for (env, record) in envs.iter().zip(env_records.iter_mut()) {
         let path = PathBuf::from(&env.path);
 
-        // TOCTOU guard: re-run classify() right before destruction. The
-        // gap between scan_orphan_envs and here is usually milliseconds,
-        // but a concurrent `scoop create` (or a user manually populating
-        // the directory) can make the env healthy again. We refuse to
-        // delete a healthy env that just happened to be empty at scan
-        // time, and surface the skip both inline (human) and in the
-        // record (JSON).
-        if classify(&path).is_none() {
-            output.warn(&t!("gc.skipped_now_healthy", name = &env.name));
-            record.outcome = EnvOutcome::SkippedHealthy;
-            continue;
+        // Per-reason TOCTOU guard. Codex STOP-1 on the v2 plan caught
+        // the trap of running one guard for both kinds: orphans need
+        // re-classify (was-orphan → now-healthy means skip), but stale
+        // envs need an age recheck — running classify() on a stale-
+        // but-healthy env would falsely skip removal.
+        match env.reason {
+            EnvGcReason::OrphanMissingMetadata | EnvGcReason::OrphanBrokenPython => {
+                if classify(&path).is_none() {
+                    output.warn(&t!("gc.skipped_now_healthy", name = &env.name));
+                    record.outcome = EnvOutcome::SkippedHealthy;
+                    continue;
+                }
+            }
+            EnvGcReason::Stale => {
+                // Stale recheck needs the original cutoff — re-deriving
+                // "now" here would let a touch on the env between scan
+                // and remove silently win or lose by milliseconds.
+                let cutoff = match stale_cutoff {
+                    Some(c) => c,
+                    None => {
+                        // Defensive: a Stale record without a cutoff is
+                        // an internal bug (scan_stale_envs only runs
+                        // when older_than is Some). Refuse rather than
+                        // delete based on stale-at-scan-time alone.
+                        record.outcome = EnvOutcome::SkippedNoData;
+                        continue;
+                    }
+                };
+                if let Some(skip_outcome) = recheck_stale(&env.name, cutoff) {
+                    let msg_key = match skip_outcome {
+                        EnvOutcome::SkippedRecentlyUsed => "gc.skipped_recently_used",
+                        EnvOutcome::SkippedNoData => "gc.skipped_no_data",
+                        _ => "gc.skipped_now_healthy",
+                    };
+                    output.warn(&t!(msg_key, name = &env.name));
+                    record.outcome = skip_outcome;
+                    continue;
+                }
+            }
         }
 
         match std::fs::remove_dir_all(&path) {
@@ -385,6 +606,15 @@ fn remove_orphans(
                 if !output.is_json() {
                     output.info(&t!("gc.removed_env", name = &env.name));
                 }
+                record.outcome = EnvOutcome::Removed;
+            }
+            // Treat "already gone" as success-equivalent rather than
+            // surfacing it as Failed. Codex MEDIUM-1: two `gc --yes`
+            // racing on the same candidate would otherwise return
+            // success once and a noisy "no such file" Failed for the
+            // second runner, which scripts can't distinguish from a
+            // real IO failure. The on-disk goal (env deleted) is met.
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                 record.outcome = EnvOutcome::Removed;
             }
             Err(e) => {
@@ -464,8 +694,15 @@ fn render_human(output: &Output, data: &GcData, aggressive: bool) {
         output.info(&t!("gc.envs_header", count = data.envs.len().to_string()));
         for env in &data.envs {
             let reason = match env.reason {
-                OrphanReason::MissingMetadata => t!("gc.reason_missing_metadata"),
-                OrphanReason::BrokenPython => t!("gc.reason_broken_python"),
+                EnvGcReason::OrphanMissingMetadata => t!("gc.reason_missing_metadata").to_string(),
+                EnvGcReason::OrphanBrokenPython => t!("gc.reason_broken_python").to_string(),
+                EnvGcReason::Stale => {
+                    // Pull age_days out of the record (None means
+                    // some future caller produced a Stale record
+                    // without one — render "?" rather than panic).
+                    let days = env.age_days.map(|n| n.to_string()).unwrap_or("?".into());
+                    t!("gc.reason_stale", days = days).to_string()
+                }
             };
             println!(
                 "  - {} ({})  {}",
@@ -494,310 +731,4 @@ fn render_human(output: &Output, data: &GcData, aggressive: bool) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::test_utils::with_temp_scoop_home;
-    use serial_test::serial;
-    use std::fs;
-
-    fn make_env(dir: &Path, name: &str, with_metadata: bool, with_python: bool) {
-        let env_dir = dir.join(name);
-        fs::create_dir_all(&env_dir).unwrap();
-        if with_metadata {
-            fs::write(env_dir.join(".scoop-metadata.json"), "{}").unwrap();
-        }
-        if with_python {
-            let bin = if cfg!(windows) {
-                env_dir.join("Scripts")
-            } else {
-                env_dir.join("bin")
-            };
-            fs::create_dir_all(&bin).unwrap();
-            let py = if cfg!(windows) {
-                bin.join("python.exe")
-            } else {
-                bin.join("python")
-            };
-            fs::write(&py, "").unwrap();
-        }
-    }
-
-    #[test]
-    #[serial]
-    fn classifies_missing_metadata_as_orphan() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-            make_env(&dir, "no-meta", false, true);
-
-            let orphans = scan_orphan_envs().unwrap();
-            assert_eq!(orphans.len(), 1);
-            assert_eq!(orphans[0].name, "no-meta");
-            assert_eq!(orphans[0].reason, OrphanReason::MissingMetadata);
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn classifies_broken_python_as_orphan() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-            make_env(&dir, "no-python", true, false);
-
-            let orphans = scan_orphan_envs().unwrap();
-            assert_eq!(orphans.len(), 1);
-            assert_eq!(orphans[0].name, "no-python");
-            assert_eq!(orphans[0].reason, OrphanReason::BrokenPython);
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn healthy_env_is_not_an_orphan() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-            make_env(&dir, "ok", true, true);
-
-            let orphans = scan_orphan_envs().unwrap();
-            assert_eq!(orphans.len(), 0);
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn dotfile_entries_are_skipped() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-            fs::create_dir_all(dir.join(".cache")).unwrap();
-
-            let orphans = scan_orphan_envs().unwrap();
-            assert!(orphans.is_empty());
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn dry_run_does_not_remove() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-            make_env(&dir, "no-meta", false, true);
-
-            let output = Output::new(0, true, true, false);
-            execute(&output, false, false).unwrap();
-
-            assert!(
-                dir.join("no-meta").exists(),
-                "dry-run must not delete orphans"
-            );
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn yes_actually_removes_orphans() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-            make_env(&dir, "no-meta", false, true);
-
-            let output = Output::new(0, true, true, false);
-            execute(&output, true, false).unwrap();
-
-            assert!(!dir.join("no-meta").exists(), "--yes should remove orphans");
-        });
-    }
-
-    // ==========================================================================
-    // S1 regression — symlinks must never be classified as orphans, even
-    // when their target lacks .scoop-metadata.json. Otherwise gc --yes
-    // would follow the symlink via remove_dir_all and delete the target.
-    // ==========================================================================
-    #[cfg(unix)]
-    #[test]
-    #[serial]
-    fn scan_skips_symlink_entries() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-
-            // Set up a real directory OUTSIDE the venvs dir — the would-be
-            // deletion target. It deliberately lacks .scoop-metadata.json
-            // so if the symlink were followed it would classify as
-            // MissingMetadata.
-            let outside = tempfile::TempDir::new().unwrap();
-            let canary = outside.path().join("important.txt");
-            fs::write(&canary, b"do not delete").unwrap();
-
-            // Symlink "evil" inside virtualenvs/ → outside dir.
-            std::os::unix::fs::symlink(outside.path(), dir.join("evil")).unwrap();
-
-            let orphans = scan_orphan_envs().unwrap();
-            assert!(
-                orphans.iter().all(|o| o.name != "evil"),
-                "symlink must not be classified as an orphan: {:?}",
-                orphans
-            );
-
-            // Defense-in-depth: even the full --yes path must leave the
-            // canary intact.
-            let output = Output::new(0, true, true, false);
-            execute(&output, true, false).unwrap();
-            assert!(
-                canary.exists(),
-                "gc --yes followed the symlink and deleted the target"
-            );
-        });
-    }
-
-    // ==========================================================================
-    // Q2 regression — unreadable metadata on a surviving env must NOT
-    // cause gc --aggressive to claim that env's Python is unused. The
-    // scan must bail conservatively and return zero unused pythons.
-    // ==========================================================================
-    #[test]
-    #[serial]
-    fn aggressive_bails_when_metadata_unreadable() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-
-            // Healthy-shaped env (metadata file + python binary present)
-            // so classify() doesn't flag it as an orphan. But the
-            // metadata content is garbage so read_metadata returns None.
-            let env_path = dir.join("corrupt");
-            fs::create_dir_all(env_path.join("bin")).unwrap();
-            fs::write(env_path.join("bin/python"), "").unwrap();
-            fs::write(env_path.join(".scoop-metadata.json"), "{ not json").unwrap();
-
-            // Sanity: this env is healthy by classify(), so it's not in
-            // orphans — exactly the dangerous case where the old code
-            // silently dropped it from the "used" set.
-            let orphans = scan_orphan_envs().unwrap();
-            assert!(orphans.iter().all(|o| o.name != "corrupt"));
-
-            // The scan must bail with `unreadable_envs > 0` and return
-            // an empty pythons list — refusing to mark any Python as
-            // unused, no matter what `uv python list` reports.
-            let (pythons, unreadable_envs) = scan_unused_pythons(&orphans).unwrap();
-            assert_eq!(unreadable_envs, 1, "should count one unreadable env");
-            assert!(
-                pythons.is_empty(),
-                "must not claim any Python is unused when metadata is unreadable; got {:?}",
-                pythons
-            );
-        });
-    }
-
-    // ==========================================================================
-    // Q3 regression — TOCTOU between scan and remove. We simulate by
-    // building a fake orphan record that points at a path which is
-    // currently healthy. remove_orphans must re-classify and skip.
-    // ==========================================================================
-    #[test]
-    #[serial]
-    fn remove_skips_env_that_became_healthy() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-            // Make a fully healthy env at the path the fake orphan record
-            // will reference. This simulates the racing `scoop create`
-            // that ran between scan and remove.
-            let env_path = dir.join("racy");
-            fs::create_dir_all(env_path.join("bin")).unwrap();
-            fs::write(env_path.join("bin/python"), "").unwrap();
-            fs::write(env_path.join(".scoop-metadata.json"), "{}").unwrap();
-
-            // Hand-construct an orphan record as if the original scan had
-            // flagged it (before the user re-populated the dir).
-            let stale_orphan = OrphanEnv {
-                name: "racy".to_string(),
-                path: env_path.display().to_string(),
-                reason: OrphanReason::MissingMetadata,
-            };
-            let mut env_records = vec![EnvRecord {
-                name: stale_orphan.name.clone(),
-                path: stale_orphan.path.clone(),
-                reason: stale_orphan.reason,
-                outcome: EnvOutcome::Pending,
-                error: None,
-            }];
-
-            let output = Output::new(0, true, true, false);
-            remove_orphans(
-                &output,
-                &[stale_orphan],
-                &[],
-                &mut env_records,
-                &mut Vec::<PythonRecord>::new(),
-            );
-
-            // The env was healthy at remove-time so the destructive path
-            // must not have run — both the disk state AND the JSON-bound
-            // outcome record need to agree on that.
-            assert!(
-                env_path.exists(),
-                "remove_orphans deleted an env that re-classified as healthy"
-            );
-            assert_eq!(
-                env_records[0].outcome,
-                EnvOutcome::SkippedHealthy,
-                "outcome must be SkippedHealthy so JSON consumers see the skip"
-            );
-        });
-    }
-
-    // ==========================================================================
-    // C3 regression — JSON envelope must reflect actual outcomes, not the
-    // pre-action scan snapshot. We don't run the full `execute` here (uv
-    // would need to be present for --aggressive paths); we verify the
-    // record-mutation contract directly.
-    // ==========================================================================
-    #[test]
-    #[serial]
-    fn remove_records_actual_outcomes_for_each_env() {
-        with_temp_scoop_home(|_| {
-            let dir = paths::virtualenvs_dir().unwrap();
-            fs::create_dir_all(&dir).unwrap();
-            // Two orphans we expect to be successfully removed.
-            make_env(&dir, "ghost-a", false, true);
-            make_env(&dir, "ghost-b", false, true);
-
-            let orphans = scan_orphan_envs().unwrap();
-            assert_eq!(orphans.len(), 2);
-            let mut env_records: Vec<EnvRecord> = orphans
-                .iter()
-                .map(|o| EnvRecord {
-                    name: o.name.clone(),
-                    path: o.path.clone(),
-                    reason: o.reason,
-                    outcome: EnvOutcome::Pending,
-                    error: None,
-                })
-                .collect();
-
-            let output = Output::new(0, true, true, false);
-            remove_orphans(
-                &output,
-                &orphans,
-                &[],
-                &mut env_records,
-                &mut Vec::<PythonRecord>::new(),
-            );
-
-            for record in &env_records {
-                assert_eq!(
-                    record.outcome,
-                    EnvOutcome::Removed,
-                    "expected Removed outcome for {}, got {:?}",
-                    record.name,
-                    record.outcome
-                );
-                assert!(record.error.is_none());
-            }
-        });
-    }
-}
+mod tests;

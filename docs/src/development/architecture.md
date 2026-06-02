@@ -12,7 +12,7 @@ src/
 ├── core/             # Domain logic
 │   ├── metadata.rs   # Virtualenv metadata (JSON)
 │   ├── version.rs    # Version file resolution
-│   ├── virtualenv.rs # Virtualenv entity
+│   ├── virtualenv/   # Virtualenv entity (mod.rs + tests.rs)
 │   ├── doctor.rs     # Health check system
 │   └── migrate/      # Migration from pyenv/conda/virtualenvwrapper
 │       ├── mod.rs

@@ -245,18 +245,35 @@ _scoop() {
                     fi
                     ;;
                 list)
+                    # `--sort` value completion: when the previous word is
+                    # `--sort`, surface the enum values instead of the
+                    # flag list. The `--sort=` form is handled by zsh's
+                    # built-in option-with-value matcher when the user
+                    # types `=`.
+                    local prev_word="${words[CURRENT-1]:-}"
+                    if [[ "$prev_word" == "--sort" ]]; then
+                        local sort_vals=(
+                            'name:Alphabetical (default)'
+                            'created:Newest created first'
+                            'last-used:Most recently used first'
+                        )
+                        _describe 'sort mode' sort_vals
+                        return 0
+                    fi
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_pythons=false has_json=false has_quiet=false has_nocolor=false
+                        local has_pythons=false has_sort=false has_json=false has_quiet=false has_nocolor=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 --pythons) has_pythons=true ;;
+                                --sort|--sort=*) has_sort=true ;;
                                 --json) has_json=true ;;
                                 -q|--quiet) has_quiet=true ;;
                                 --no-color) has_nocolor=true ;;
                             esac
                         done
                         [[ $has_pythons == false ]] && opts+=('--pythons:Show installed Python versions')
+                        [[ $has_sort == false ]] && opts+=('--sort:Sort order (name|created|last-used)')
                         [[ $has_json == false ]] && opts+=('--json:Output as JSON')
                         [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
                         [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
