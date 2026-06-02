@@ -200,17 +200,25 @@ fn main() -> Result<()> {
         }
     };
 
-    // Handle errors
+    // Handle errors via the policy layer in `src/error/exit.rs`:
+    //   - `render_policy()` decides whether to print the global `error:`
+    //     prefix (Default) or stay quiet because the command already
+    //     rendered its report (Quiet — e.g. `verify --strict`).
+    //   - `exit_code()` decides the process exit code (1 / 2 / 3) so CI
+    //     scripts can distinguish source-discovery failures (migrate, exit 3)
+    //     from generic operational errors (exit 1).
     if let Err(e) = result {
         let output = Output::new(0, cli.quiet, cli.no_color, false);
-        output.error(&e.to_string());
-
-        // Print suggestion hint if available
-        if let Some(suggestion) = e.suggestion() {
-            eprintln!("{suggestion}");
+        if matches!(
+            e.render_policy(),
+            scoop_uv::error::ErrorRenderPolicy::Default
+        ) {
+            output.error(&e.to_string());
+            if let Some(suggestion) = e.suggestion() {
+                eprintln!("{suggestion}");
+            }
         }
-
-        std::process::exit(1);
+        std::process::exit(i32::from(e.exit_code()));
     }
 
     Ok(())

@@ -20,9 +20,11 @@ use thiserror::Error;
 
 mod code;
 mod display;
+mod exit;
 mod migrate;
 mod suggestion;
 
+pub use exit::ErrorRenderPolicy;
 pub use migrate::MigrationExitCode;
 
 /// Result type alias using [`ScoopError`].
