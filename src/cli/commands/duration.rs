@@ -101,7 +101,7 @@ pub(crate) fn parse_duration(s: &str) -> Result<Duration> {
         ));
     }
 
-    let days_per_unit: i64 = match suffix {
+    let days_per_unit: u64 = match suffix {
         "d" => 1,
         "w" => 7,
         // 365 d — calendar years dropped on purpose (see module doc).
@@ -123,20 +123,23 @@ pub(crate) fn parse_duration(s: &str) -> Result<Duration> {
         }
     };
 
-    // checked_mul guards the (value as i64) * days_per_unit step, then
-    // we cap on the final day count rather than on `value` directly so
-    // `200y` / `10400w` / `73000d` all hit the same ceiling — no
-    // surprise where a small `MAX_VALUE` lets a giant day count slip
-    // through because the multiplier was 1.
-    let total_days = (value as i64)
+    // Multiply in u64 to avoid the `(u64 as i64)` silent-truncation
+    // trap Codex flagged on the previous commit: `18446744073709551615d`
+    // would have cast to `-1`, producing a "tomorrow" cutoff that
+    // matched every env. Stay in u64 until we've capped the day count;
+    // only then convert to the i64 chrono needs.
+    let total_days_u64 = value
         .checked_mul(days_per_unit)
         .ok_or_else(|| invalid("duration arithmetic overflowed"))?;
 
-    if total_days > MAX_DAYS {
+    if total_days_u64 > MAX_DAYS as u64 {
         return Err(invalid(&format!(
             "duration too large (max {MAX_DAYS} days ≈ 200 years)"
         )));
     }
+
+    let total_days =
+        i64::try_from(total_days_u64).map_err(|_| invalid("duration arithmetic overflowed"))?;
 
     // `Duration::days` panics on internal overflow; `try_days` returns
     // None instead. Within the MAX_DAYS cap we'll never trip this, but

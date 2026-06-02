@@ -25,14 +25,20 @@ use super::duration::parse_duration;
 
 /// Why a virtualenv directory was flagged by `gc`.
 ///
-/// The two `Orphan*` variants serialize to their pre-Stale JSON values
-/// (`missing_metadata` / `broken_python`) via explicit `#[serde(rename)]`
-/// so adding `Stale` is a pure additive schema change — old consumers
-/// keep parsing existing JSON unchanged. Codex review on the v2 plan
-/// flagged this as STOP-1 (originally a flat enum, the TOCTOU guard
-/// would have re-classified stale envs as "healthy" and skipped them).
+/// **Wire-format kind only.** Used as the `reason` discriminator in the
+/// JSON envelope. The two `Orphan*` variants serialize to their pre-
+/// Stale string values (`"missing_metadata"` / `"broken_python"`) via
+/// `#[serde(rename)]` so adding `Stale` is a pure additive schema
+/// change — old consumers parse `reason: "missing_metadata"` unchanged
+/// instead of suddenly seeing `reason: {kind: "missing_metadata"}` if
+/// we'd used `#[serde(tag = "kind")]`. The Stale-specific `age_days`
+/// rides next to `reason` in the record, not inside it (see [`EnvRecord`]).
+///
+/// Codex review on the v2 plan flagged this separation as STOP-1: a
+/// single flat enum would have let the orphan-side TOCTOU guard
+/// reclassify stale-but-healthy envs as "fine" and skip removing them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 enum EnvGcReason {
     /// `.scoop-metadata.json` is missing — the env wasn't created by scoop,
     /// or its metadata file was deleted. Pre-Stale JSON value preserved.
@@ -44,15 +50,9 @@ enum EnvGcReason {
     #[serde(rename = "broken_python")]
     OrphanBrokenPython,
     /// `last_used` is older than the `--older-than <DURATION>` cutoff.
-    /// Carries the actual age so the human renderer can say "stale (62
-    /// days)" instead of just "stale", and JSON consumers can apply
-    /// their own threshold without re-parsing the date.
-    Stale {
-        /// Days since last activation at scan time. Frozen at scan
-        /// instant — the re-check before removal might see a slightly
-        /// different value if the env was touched concurrently.
-        age_days: u64,
-    },
+    /// The actual day count rides separately as `EnvRecord.age_days`
+    /// so the JSON envelope stays flat (no nested tag/object form).
+    Stale,
 }
 
 #[derive(Debug, Serialize)]
@@ -60,6 +60,11 @@ struct OrphanEnv {
     name: String,
     path: String,
     reason: EnvGcReason,
+    /// Only populated when `reason == Stale`. Frozen at scan time;
+    /// recheck before removal may see a slightly different value if
+    /// the env was touched concurrently. Hidden from JSON unless set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    age_days: Option<u64>,
 }
 
 #[derive(Debug, Serialize)]
@@ -102,6 +107,13 @@ struct EnvRecord {
     name: String,
     path: String,
     reason: EnvGcReason,
+    /// Days since last activation at scan time. Populated only for
+    /// `Stale` records; orphan records leave it `None` and serde
+    /// omits the field entirely. Carrying this alongside (not inside)
+    /// `reason` is what keeps the JSON envelope additive: the old
+    /// `reason: "missing_metadata"` shape is untouched for orphans.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    age_days: Option<u64>,
     outcome: EnvOutcome,
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
@@ -205,6 +217,7 @@ pub fn execute(
             name: o.name.clone(),
             path: o.path.clone(),
             reason: o.reason,
+            age_days: o.age_days,
             outcome: EnvOutcome::Pending,
             error: None,
         })
@@ -299,6 +312,7 @@ fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
                 name,
                 path: path.display().to_string(),
                 reason,
+                age_days: None,
             });
         }
     }
@@ -321,9 +335,12 @@ fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
 ///   way we have no positive evidence the env is unused, so we refuse
 ///   to flag it. Users who really want to nuke un-activated envs can
 ///   `scoop verify` + manual removal.
-/// * **Corrupt metadata never matches.** Same conservative rule: if
-///   we can't read the metadata, we don't pretend to know its age.
-///   `read_metadata_result` returning `Err` skips the env here.
+/// * **Corrupt metadata never matches.** Same conservative rule via
+///   a different code path: `VirtualenvService::list()` populates
+///   `info.last_used` from the legacy `read_metadata`, which collapses
+///   parse errors to `None`. The same `Some(last_used)` else-guard
+///   that protects "never activated" therefore also skips "unreadable
+///   metadata" — we don't need a separate corrupt branch here.
 fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<OrphanEnv>> {
     let service = match VirtualenvService::auto() {
         Ok(s) => s,
@@ -356,7 +373,8 @@ fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<OrphanEnv>> {
         stale.push(OrphanEnv {
             name: info.name.clone(),
             path: info.path.display().to_string(),
-            reason: EnvGcReason::Stale { age_days },
+            reason: EnvGcReason::Stale,
+            age_days: Some(age_days),
         });
     }
     Ok(stale)
@@ -538,7 +556,7 @@ fn remove_orphans(
                     continue;
                 }
             }
-            EnvGcReason::Stale { .. } => {
+            EnvGcReason::Stale => {
                 // Stale recheck needs the original cutoff — re-deriving
                 // "now" here would let a touch on the env between scan
                 // and remove silently win or lose by milliseconds.
@@ -571,6 +589,15 @@ fn remove_orphans(
                 if !output.is_json() {
                     output.info(&t!("gc.removed_env", name = &env.name));
                 }
+                record.outcome = EnvOutcome::Removed;
+            }
+            // Treat "already gone" as success-equivalent rather than
+            // surfacing it as Failed. Codex MEDIUM-1: two `gc --yes`
+            // racing on the same candidate would otherwise return
+            // success once and a noisy "no such file" Failed for the
+            // second runner, which scripts can't distinguish from a
+            // real IO failure. The on-disk goal (env deleted) is met.
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
                 record.outcome = EnvOutcome::Removed;
             }
             Err(e) => {
@@ -652,8 +679,12 @@ fn render_human(output: &Output, data: &GcData, aggressive: bool) {
             let reason = match env.reason {
                 EnvGcReason::OrphanMissingMetadata => t!("gc.reason_missing_metadata").to_string(),
                 EnvGcReason::OrphanBrokenPython => t!("gc.reason_broken_python").to_string(),
-                EnvGcReason::Stale { age_days } => {
-                    t!("gc.reason_stale", days = age_days.to_string()).to_string()
+                EnvGcReason::Stale => {
+                    // Pull age_days out of the record (None means
+                    // some future caller produced a Stale record
+                    // without one — render "?" rather than panic).
+                    let days = env.age_days.map(|n| n.to_string()).unwrap_or("?".into());
+                    t!("gc.reason_stale", days = days).to_string()
                 }
             };
             println!(
@@ -926,11 +957,13 @@ mod tests {
                 name: "racy".to_string(),
                 path: env_path.display().to_string(),
                 reason: EnvGcReason::OrphanMissingMetadata,
+                age_days: None,
             };
             let mut env_records = vec![EnvRecord {
                 name: stale_orphan.name.clone(),
                 path: stale_orphan.path.clone(),
                 reason: stale_orphan.reason,
+                age_days: stale_orphan.age_days,
                 outcome: EnvOutcome::Pending,
                 error: None,
             }];
@@ -982,7 +1015,12 @@ mod tests {
 
             let names: Vec<_> = stale.iter().map(|e| e.name.as_str()).collect();
             assert_eq!(names, vec!["old"], "only past-cutoff env is stale");
-            assert!(matches!(stale[0].reason, EnvGcReason::Stale { age_days } if age_days >= 59));
+            assert!(matches!(stale[0].reason, EnvGcReason::Stale));
+            assert!(
+                stale[0].age_days.unwrap_or(0) >= 59,
+                "age_days should be ~60: {:?}",
+                stale[0].age_days
+            );
         });
     }
 
@@ -1094,17 +1132,154 @@ mod tests {
     #[serial]
     fn execute_rejects_invalid_older_than() {
         // Surface the parse error so a user with a typo gets a clear
-        // message instead of "no envs to remove".
+        // message instead of "no envs to remove". Walk the major
+        // rejection arms so the Codex MEDIUM-2 ("`garbage` only" gap)
+        // is closed at the execute boundary too — including the
+        // u64::MAX value that Codex STOP-2 caught silently truncating
+        // in the previous parse_duration impl.
         with_temp_scoop_home(|_| {
             let dir = paths::virtualenvs_dir().unwrap();
             fs::create_dir_all(&dir).unwrap();
 
             let output = Output::new(0, true, true, false);
-            let err = execute(&output, false, false, Some("garbage")).unwrap_err();
-            assert!(matches!(
-                err,
-                crate::error::ScoopError::InvalidArgument { .. }
-            ));
+            for bad in ["garbage", "0d", "6m", "18446744073709551615d", "200y1d"] {
+                let err = execute(&output, false, false, Some(bad)).unwrap_err();
+                assert!(
+                    matches!(err, crate::error::ScoopError::InvalidArgument { .. }),
+                    "expected InvalidArgument for {bad}, got {err:?}"
+                );
+            }
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn stale_scan_equality_boundary_is_inclusive_of_cutoff() {
+        // The contract is `last_used < cutoff → stale`. An env whose
+        // `last_used` is *exactly* the cutoff must NOT be flagged.
+        // Without this assertion a `<` → `<=` mutation could flip the
+        // boundary undetected and start removing barely-fresh envs.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            let cutoff = Utc::now() - chrono::Duration::days(30);
+            make_env_with_last_used(&dir, "borderline", Some(cutoff));
+
+            let stale = scan_stale_envs(cutoff).unwrap();
+            assert!(
+                stale.is_empty(),
+                "equality-at-cutoff must NOT be stale: {stale:?}"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn recheck_stale_returns_none_when_still_past_cutoff() {
+        // The "still-stale, proceed with delete" path: recheck must
+        // return None so the caller falls through to remove_dir_all.
+        // No previous test pinned this branch — a mutation flipping
+        // `last_used >= cutoff` to `last_used > cutoff` would have
+        // slipped through.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            let now = Utc::now();
+            // last_used 60d ago, cutoff 30d ago → still stale.
+            make_env_with_last_used(&dir, "still_stale", Some(now - chrono::Duration::days(60)));
+            let cutoff = now - chrono::Duration::days(30);
+
+            let outcome = recheck_stale("still_stale", cutoff);
+            assert_eq!(outcome, None, "recheck must say 'proceed with delete'");
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn json_envelope_keeps_flat_reason_for_orphans() {
+        // Codex STOP-1 on this commit's predecessor: switching from
+        // `#[serde(rename)]` to `#[serde(tag = "kind")]` had silently
+        // changed the wire shape from `reason: "missing_metadata"` to
+        // `reason: {"kind": "missing_metadata"}`. Pin both contracts
+        // (orphan = flat string, stale = flat string + sibling
+        // age_days) so any future enum re-tagging immediately fails
+        // here instead of breaking JSON consumers in the field.
+        let orphan = EnvRecord {
+            name: "ghost".into(),
+            path: "/tmp/ghost".into(),
+            reason: EnvGcReason::OrphanMissingMetadata,
+            age_days: None,
+            outcome: EnvOutcome::Pending,
+            error: None,
+        };
+        let json = serde_json::to_value(&orphan).unwrap();
+        assert_eq!(
+            json["reason"],
+            serde_json::Value::String("missing_metadata".into())
+        );
+        assert!(
+            json.get("age_days").is_none(),
+            "no age_days for orphans: {json}"
+        );
+
+        let stale = EnvRecord {
+            name: "old".into(),
+            path: "/tmp/old".into(),
+            reason: EnvGcReason::Stale,
+            age_days: Some(62),
+            outcome: EnvOutcome::Pending,
+            error: None,
+        };
+        let json = serde_json::to_value(&stale).unwrap();
+        assert_eq!(json["reason"], serde_json::Value::String("stale".into()));
+        assert_eq!(json["age_days"], serde_json::Value::from(62u64));
+    }
+
+    #[test]
+    #[serial]
+    fn remove_treats_not_found_as_already_removed() {
+        // Codex MEDIUM-1: parallel `--yes` would otherwise classify
+        // the second runner's `remove_dir_all` as Failed via a noisy
+        // NotFound. Pin the "absent at remove time → success"
+        // contract so the JSON envelope doesn't lie about a phantom
+        // failure.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            let phantom = OrphanEnv {
+                name: "phantom".into(),
+                path: dir.join("phantom-already-gone").display().to_string(),
+                reason: EnvGcReason::OrphanMissingMetadata,
+                age_days: None,
+            };
+            let mut env_records = vec![EnvRecord {
+                name: phantom.name.clone(),
+                path: phantom.path.clone(),
+                reason: phantom.reason,
+                age_days: None,
+                outcome: EnvOutcome::Pending,
+                error: None,
+            }];
+
+            let output = Output::new(0, true, true, false);
+            remove_orphans(
+                &output,
+                &[phantom],
+                &[],
+                &mut env_records,
+                &mut Vec::<PythonRecord>::new(),
+                None,
+            );
+
+            assert_eq!(
+                env_records[0].outcome,
+                EnvOutcome::Removed,
+                "NotFound at remove time must report Removed, not Failed"
+            );
+            assert!(env_records[0].error.is_none());
         });
     }
 
@@ -1132,6 +1307,7 @@ mod tests {
                     name: o.name.clone(),
                     path: o.path.clone(),
                     reason: o.reason,
+                    age_days: o.age_days,
                     outcome: EnvOutcome::Pending,
                     error: None,
                 })
