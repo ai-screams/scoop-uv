@@ -24,7 +24,7 @@ src/
 ├── output/
 │   └── json.rs               # Unit tests for JSON output
 ├── core/
-│   ├── virtualenv.rs         # Unit tests for virtualenv service
+│   ├── virtualenv/           # virtualenv service (mod.rs + tests.rs)
 │   ├── version.rs            # Unit tests for version service
 │   ├── metadata.rs           # Unit tests for metadata
 │   └── doctor.rs             # Unit tests for doctor

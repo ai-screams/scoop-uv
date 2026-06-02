@@ -11,7 +11,7 @@ This document provides a reference for scoop's public API, primarily intended fo
 
 ## Core Types
 
-### VirtualEnv Module (`core/virtualenv.rs`)
+### VirtualEnv Module (`core/virtualenv/`)
 
 #### `VirtualenvInfo`
 

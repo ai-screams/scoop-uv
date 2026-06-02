@@ -45,7 +45,7 @@ src/
 
 ├── core/                # Business logic
 │   ├── mod.rs
-│   ├── virtualenv.rs    # VirtualenvService
+│   ├── virtualenv/      # VirtualenvService (mod.rs + tests.rs)
 │   ├── version.rs       # VersionService
 │   ├── metadata.rs      # Metadata structs
 │   └── doctor.rs        # Health diagnostics
@@ -108,7 +108,7 @@ For detailed guides, see:
 
 ### Key Services
 
-**VirtualenvService** (`src/core/virtualenv.rs`)
+**VirtualenvService** (`src/core/virtualenv/`)
 
 - Manages virtualenvs in `~/.scoop/virtualenvs/`
 - Wraps uv commands for venv creation
