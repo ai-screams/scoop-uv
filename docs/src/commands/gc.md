@@ -36,6 +36,13 @@ Flag environments whose `last_used` timestamp is older than the given duration. 
 
 The maximum allowed value is 200 years (`200y`); larger values are rejected to keep the resulting cutoff inside chrono's representable range.
 
+> **Note on system clock**: the cutoff is `Utc::now() - <duration>`, so the
+> threshold moves with the system clock. A host whose clock is wrong (NTP
+> compromise, manual `date` set, or hibernated VM that woke up with a stale
+> time) can shift which envs `gc --older-than` considers stale. This is a
+> best-effort heuristic, not a security boundary — pair it with `--yes` only
+> when you trust the clock.
+
 ### Conservative rules
 
 Two cases are **never** flagged as stale, by design:

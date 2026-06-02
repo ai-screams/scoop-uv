@@ -177,13 +177,22 @@ impl VirtualenvService {
             metadata = metadata.with_python_path(pp.display().to_string());
         }
 
-        self.write_metadata(&path, &metadata)?;
+        self.write_metadata_atomic(&path, &metadata)?;
 
         Ok(path)
     }
 
-    /// Delete a virtual environment
+    /// Delete a virtual environment.
+    ///
+    /// Validates `name` internally before touching the filesystem.
+    /// `PathBuf::join` does not block `..` and silently replaces the
+    /// base when the right side is absolute, so `delete("/tmp/x")`
+    /// against an unvalidated name would happily walk into and remove
+    /// the target directory under the user's UID. The validation guard
+    /// here is the trust boundary — CLI handlers no longer have to
+    /// remember to call `validate_env_name` themselves for safety.
     pub fn delete(&self, name: &str) -> Result<()> {
+        validate::validate_env_name(name)?;
         let path = paths::virtualenv_path(name)?;
 
         if !path.exists() {
@@ -215,14 +224,23 @@ impl VirtualenvService {
         self.uv.pip_install(venv_path, packages)
     }
 
-    /// Check if a virtual environment exists
+    /// Check if a virtual environment exists.
+    ///
+    /// Validates `name` internally — see [`Self::delete`] for the path
+    /// traversal rationale. A `false` return for an invalid name would
+    /// hide the bug instead of surfacing it, so we error out.
     pub fn exists(&self, name: &str) -> Result<bool> {
+        validate::validate_env_name(name)?;
         let path = paths::virtualenv_path(name)?;
         Ok(path.exists())
     }
 
-    /// Get the path to a virtual environment
+    /// Get the path to a virtual environment.
+    ///
+    /// Validates `name` internally — see [`Self::delete`] for the path
+    /// traversal rationale.
     pub fn get_path(&self, name: &str) -> Result<PathBuf> {
+        validate::validate_env_name(name)?;
         let path = paths::virtualenv_path(name)?;
         if !path.exists() {
             return Err(ScoopError::VirtualenvNotFound {
@@ -262,15 +280,6 @@ impl VirtualenvService {
         };
         let parsed: Metadata = serde_json::from_str(&content)?;
         Ok(Some(parsed))
-    }
-
-    /// Write metadata to a virtual environment (non-atomic). Used at
-    /// creation time where any failure aborts env setup anyway.
-    fn write_metadata(&self, path: &Path, metadata: &Metadata) -> Result<()> {
-        let metadata_path = path.join(Metadata::FILE_NAME);
-        let content = serde_json::to_string_pretty(metadata)?;
-        fs::write(metadata_path, content)?;
-        Ok(())
     }
 
     /// Write metadata using an atomic replace: write to a sibling tempfile
@@ -347,6 +356,15 @@ impl VirtualenvService {
     /// activate/run/shell would re-introduce the caller-stale timestamp
     /// race that the public entry point exists to narrow.
     pub(crate) fn touch_metadata_at(&self, env_name: &str, now: DateTime<Utc>) {
+        // Validation guard — see Self::delete for the path traversal
+        // rationale. Touch is best-effort, so we warn instead of
+        // returning; the public callers (activate/run/shell) already
+        // validate first so this is purely defense-in-depth against
+        // future internal callers.
+        if let Err(e) = validate::validate_env_name(env_name) {
+            warn!("touch_metadata: rejecting invalid env name {env_name:?}: {e}");
+            return;
+        }
         let path = match paths::virtualenv_path(env_name) {
             Ok(p) => p,
             Err(e) => {
@@ -539,6 +557,98 @@ mod tests {
             assert!(result.is_err());
             let err = result.unwrap_err();
             assert!(matches!(err, ScoopError::VirtualenvNotFound { .. }));
+        });
+    }
+
+    // ==========================================================================
+    // Path-traversal regression suite — every public name-taking method
+    // on VirtualenvService must reject hostile names BEFORE the path is
+    // joined. `PathBuf::join("/tmp/x")` returns `/tmp/x` (base discarded
+    // when right side is absolute), and `join("../foo")` doesn't strip
+    // the `..`; without the internal validate guard, a CLI handler that
+    // forgot to validate could hand attacker input straight to
+    // `remove_dir_all`. The guard is the trust boundary.
+    // ==========================================================================
+
+    fn bad_names() -> &'static [&'static str] {
+        &["/tmp/evil", "../escape", "../../tmp/evil", "/", "."]
+    }
+
+    #[test]
+    #[serial]
+    fn test_delete_rejects_path_traversal() {
+        with_temp_scoop_home(|temp_dir| {
+            fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+            let service = require_uv!();
+            for bad in bad_names() {
+                let err = service.delete(bad).unwrap_err();
+                assert!(
+                    matches!(err, ScoopError::InvalidEnvName { .. }),
+                    "delete({bad:?}) should reject as InvalidEnvName, got: {err:?}"
+                );
+            }
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_exists_rejects_path_traversal() {
+        with_temp_scoop_home(|temp_dir| {
+            fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+            let service = require_uv!();
+            for bad in bad_names() {
+                let err = service.exists(bad).unwrap_err();
+                assert!(
+                    matches!(err, ScoopError::InvalidEnvName { .. }),
+                    "exists({bad:?}): {err:?}"
+                );
+            }
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_get_path_rejects_path_traversal() {
+        with_temp_scoop_home(|temp_dir| {
+            fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+            let service = require_uv!();
+            for bad in bad_names() {
+                let err = service.get_path(bad).unwrap_err();
+                assert!(
+                    matches!(err, ScoopError::InvalidEnvName { .. }),
+                    "get_path({bad:?}): {err:?}"
+                );
+            }
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_touch_metadata_at_silently_skips_path_traversal() {
+        // Touch is best-effort — invalid name must not panic, propagate,
+        // or write anything outside the venvs dir. Plant a canary
+        // outside the venvs dir to confirm nothing was written.
+        with_temp_scoop_home(|temp_dir| {
+            fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+            let outside = tempfile::TempDir::new().unwrap();
+            let canary_path = outside.path().join(".scoop-metadata.json");
+            let canary_content = "PRE-EXISTING-DO-NOT-OVERWRITE";
+            fs::write(&canary_path, canary_content).unwrap();
+
+            let service = require_uv!();
+            let now = "2026-06-02T12:00:00Z".parse().unwrap();
+            // Try a relative escape that would *resolve to* the canary
+            // dir if the validation guard were missing.
+            service.touch_metadata_at("../escape", now);
+            // And an absolute one for good measure.
+            service.touch_metadata_at("/tmp/whatever", now);
+
+            // Canary is untouched.
+            assert_eq!(
+                fs::read_to_string(&canary_path).unwrap(),
+                canary_content,
+                "touch_metadata_at must NOT have escaped the venvs dir"
+            );
         });
     }
 

@@ -261,12 +261,21 @@ pub fn execute(
 /// Walk `~/.scoop/virtualenvs/` and flag any directory that fails the
 /// "looks like a working env" sniff test.
 ///
-/// Symlinks are intentionally NOT considered. `is_dir()` follows symlinks,
-/// so a hostile (or accidental) symlink under `virtualenvs/` would look
-/// like an orphan directory, and `fs::remove_dir_all` would then follow
-/// the symlink and delete the *target*'s contents under the user's UID.
-/// We use `entry.file_type().is_symlink()` to reject every symlink up
-/// front, regardless of whether it points to a directory.
+/// Symlinks are intentionally NOT considered. `is_dir()` follows
+/// symlinks, so a hostile (or accidental) symlink under `virtualenvs/`
+/// would look like an orphan directory and downstream code (verify
+/// shelling out to `<target>/bin/python`, or future tooling that does
+/// not assume rustc 1.78+'s non-following `remove_dir_all`) would act
+/// on the target. We reject every symlink up front via
+/// `entry.file_type().is_symlink()`, regardless of whether the target
+/// is a directory, so the threat doesn't reach those code paths in the
+/// first place.
+///
+/// Note: as of Rust 1.78 `std::fs::remove_dir_all` does NOT follow
+/// symlinks itself, so a missed symlink wouldn't directly nuke the
+/// target *via gc*. The defense above is still correct policy —
+/// classify/exec paths would still touch the target — but don't
+/// cargo-cult the old "remove_dir_all follows symlinks" rationale.
 ///
 /// Per-entry IO errors (transient permission / disappearing file) are
 /// swallowed so one bad entry doesn't abort the entire scan and hide
@@ -419,6 +428,14 @@ fn classify(path: &Path) -> Option<EnvGcReason> {
 /// Pulled out of `remove_orphans` so the per-reason TOCTOU branches
 /// stay readable.
 fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutcome> {
+    // Validation guard — see VirtualenvService::delete for the path
+    // traversal rationale. recheck_stale's `name` comes from scan
+    // results today (disk-walked basenames, can't traverse), but
+    // guarding here closes the gap if a future caller passes raw
+    // input.
+    if crate::validate::validate_env_name(name).is_err() {
+        return Some(EnvOutcome::SkippedNoData);
+    }
     let path = match paths::virtualenv_path(name) {
         Ok(p) => p,
         Err(_) => return Some(EnvOutcome::SkippedNoData),
@@ -1171,6 +1188,27 @@ mod tests {
                 stale.is_empty(),
                 "equality-at-cutoff must NOT be stale: {stale:?}"
             );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn recheck_stale_rejects_path_traversal() {
+        // Defense-in-depth: even though current callers only feed
+        // disk-walked basenames to recheck_stale, a path-traversal
+        // name must surface as SkippedNoData (refuse to operate),
+        // never as Removed.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            let cutoff = Utc::now() - chrono::Duration::days(30);
+            for bad in ["/tmp/evil", "../escape", "../../etc/passwd"] {
+                assert_eq!(
+                    recheck_stale(bad, cutoff),
+                    Some(EnvOutcome::SkippedNoData),
+                    "recheck_stale({bad:?}) must report SkippedNoData",
+                );
+            }
         });
     }
 
