@@ -102,6 +102,7 @@ complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "lang" -d "S
 
 # Options for 'list' (with duplicate prevention)
 complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt pythons" -l pythons -d "Show installed Python versions"
+complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt sort" -l sort -d "Sort order" -x -a "name created last-used"
 complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt json" -l json -d "Output as JSON"
 complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
 complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"

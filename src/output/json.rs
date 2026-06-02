@@ -493,6 +493,48 @@ mod tests {
     }
 
     #[test]
+    fn test_virtualenv_info_timestamps_present_when_some() {
+        // Pins the additive-schema contract for the new fields: when
+        // a value is present, it must serialize as a JSON string, not
+        // be hidden by some accidental `skip_serializing_if` change.
+        let info = VirtualenvInfo {
+            name: "ent".into(),
+            python: Some("3.12".into()),
+            path: "/p".into(),
+            active: false,
+            created_at: Some("2024-01-15T10:30:00+00:00".to_string()),
+            last_used: Some("2026-06-02T12:00:00+00:00".to_string()),
+        };
+        let json = serde_json::to_string(&info).unwrap();
+        assert!(
+            json.contains("\"created_at\":\"2024-01-15T10:30:00+00:00\""),
+            "created_at must serialize when Some: {json}"
+        );
+        assert!(
+            json.contains("\"last_used\":\"2026-06-02T12:00:00+00:00\""),
+            "last_used must serialize when Some: {json}"
+        );
+    }
+
+    #[test]
+    fn test_virtualenv_info_timestamps_omitted_when_none() {
+        // Companion to the Some test: the additive schema requires
+        // *both* arms — Some serializes, None omits. Old consumers
+        // depend on absent keys, not on `null`.
+        let info = VirtualenvInfo {
+            name: "ent".into(),
+            python: None,
+            path: "/p".into(),
+            active: false,
+            created_at: None,
+            last_used: None,
+        };
+        let json = serde_json::to_string(&info).unwrap();
+        assert!(!json.contains("created_at"), "{json}");
+        assert!(!json.contains("last_used"), "{json}");
+    }
+
+    #[test]
     fn test_virtualenv_info_with_python() {
         let info = VirtualenvInfo {
             name: "test".into(),
