@@ -2,9 +2,11 @@
 
 mod json;
 mod spinner;
+mod time;
 
 pub use json::*;
 pub use spinner::Spinner;
+pub use time::format_age;
 
 use owo_colors::OwoColorize;
 

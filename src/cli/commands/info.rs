@@ -1,8 +1,10 @@
 //! Handler for the `scoop info` command
 
+use chrono::Utc;
+
 use crate::core::{VirtualenvService, get_active_env, list_installed_packages};
 use crate::error::{Result, ScoopError};
-use crate::output::{EnvInfoData, Output, PackagesInfo, format_size};
+use crate::output::{EnvInfoData, Output, PackagesInfo, format_age, format_size};
 use crate::paths::{abbreviate_home, calculate_dir_size};
 
 const DEFAULT_PACKAGE_LIMIT: usize = 5;
@@ -40,6 +42,8 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
     };
     let packages_info = PackagesInfo::new(&packages, limit);
 
+    let last_used_ts = metadata.as_ref().and_then(|m| m.last_used);
+
     // JSON output
     if output.is_json() {
         let data = EnvInfoData {
@@ -48,6 +52,7 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
             path: path.display().to_string(),
             active: is_active,
             created_at: metadata.as_ref().map(|m| m.created_at.to_rfc3339()),
+            last_used: last_used_ts.map(|t| t.to_rfc3339()),
             size_bytes,
             size_display,
             packages: packages_info,
@@ -72,6 +77,17 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
     println!("{:w$}{}", "Path:", abbreviate_home(&path));
     println!("{:w$}{}", "Active:", if is_active { "yes" } else { "no" });
     println!("{:w$}{}", "Created:", created);
+    // `Last used:` is always rendered for envs that have on-disk metadata.
+    // "never" carries information (fresh env); hiding it would conflate
+    // that with "we don't know". Envs without metadata at all skip the
+    // line entirely.
+    if metadata.is_some() {
+        let label = match last_used_ts {
+            Some(t) => format_age(t, Utc::now()),
+            None => "never".to_string(),
+        };
+        println!("{:w$}{}", "Last used:", label);
+    }
 
     if let Some(size) = size_display {
         println!("{:w$}{}", "Size:", size);

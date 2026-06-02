@@ -273,6 +273,13 @@ pub struct StatusData {
     pub python: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
+    /// RFC 3339 timestamp of the last `scoop activate` / `run` / `shell`
+    /// against this env. `None` for legacy envs whose metadata predates
+    /// the field, and for freshly created envs that have never been
+    /// activated. Omitted from JSON when absent so old consumers don't
+    /// have to learn a new key.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_used: Option<String>,
     /// Best-effort installed-package count via the venv's own `pip list`.
     /// `None` when the env has no pip (broken / not yet bootstrapped).
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -289,6 +296,10 @@ pub struct EnvInfoData {
     pub active: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
+    /// RFC 3339 last-use timestamp, omitted when unknown. See
+    /// `StatusData::last_used` for the full contract.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_used: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size_bytes: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
