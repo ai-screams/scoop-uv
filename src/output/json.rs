@@ -87,6 +87,14 @@ pub struct VirtualenvInfo {
     pub python: Option<String>,
     pub path: String,
     pub active: bool,
+    /// Creation timestamp (RFC 3339). Omitted when metadata is missing
+    /// or doesn't carry `created_at` yet (legacy envs).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    /// Last-use timestamp (RFC 3339). Omitted for envs that haven't
+    /// been activated since the field landed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_used: Option<String>,
 }
 
 /// List pythons response data
@@ -450,12 +458,16 @@ mod tests {
                     python: Some("3.12".into()),
                     path: "/path1".into(),
                     active: true,
+                    created_at: None,
+                    last_used: None,
                 },
                 VirtualenvInfo {
                     name: "env2".into(),
                     python: None,
                     path: "/path2".into(),
                     active: false,
+                    created_at: None,
+                    last_used: None,
                 },
             ],
             total: 2,
@@ -473,6 +485,8 @@ mod tests {
             python: None,
             path: "/path".into(),
             active: false,
+            created_at: None,
+            last_used: None,
         };
         let json = serde_json::to_string(&info).unwrap();
         assert!(!json.contains("python"));
@@ -485,6 +499,8 @@ mod tests {
             python: Some("3.11".into()),
             path: "/path".into(),
             active: true,
+            created_at: None,
+            last_used: None,
         };
         let json = serde_json::to_string(&info).unwrap();
         assert!(json.contains(r#""python":"3.11""#));
@@ -694,6 +710,8 @@ mod tests {
             python: Some("3.12".into()),
             path: "/경로/테스트".into(),
             active: true,
+            created_at: None,
+            last_used: None,
         };
         let json = serde_json::to_string(&info).unwrap();
         // Should serialize correctly
@@ -775,12 +793,16 @@ mod tests {
                     python: Some("3.12".into()),
                     path: "/path/to/env1".into(),
                     active: true,
+                    created_at: None,
+                    last_used: None,
                 },
                 VirtualenvInfo {
                     name: "env2".into(),
                     python: None,
                     path: "/path/to/env2".into(),
                     active: false,
+                    created_at: None,
+                    last_used: None,
                 },
             ],
             total: 2,

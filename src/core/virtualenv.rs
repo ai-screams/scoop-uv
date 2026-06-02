@@ -22,6 +22,13 @@ pub struct VirtualenvInfo {
     pub path: PathBuf,
     /// Python version (if metadata exists)
     pub python_version: Option<String>,
+    /// Creation timestamp from metadata, if present. Populated by
+    /// [`VirtualenvService::list`] so callers (like `list --sort=created`)
+    /// don't need a second `read_metadata` round trip per env.
+    pub created_at: Option<DateTime<Utc>>,
+    /// Last-used timestamp from metadata, if present. Same rationale:
+    /// list-time sort can use it without re-reading the JSON file.
+    pub last_used: Option<DateTime<Utc>>,
 }
 
 /// Service for managing virtual environments
@@ -73,11 +80,24 @@ impl VirtualenvService {
             }
             let path = entry.path();
             if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                // Single metadata read per entry: we extract every field
+                // the new VirtualenvInfo wants (python_version + the two
+                // timestamps) in one shot, so callers that sort by
+                // created_at / last_used don't drive a second pass over
+                // every metadata file. Cheap when corrupt — `None` is a
+                // valid bucket-end value for sort, and the legacy passive
+                // contract (display "-"/"never") is preserved.
                 let metadata = self.read_metadata(&path);
+                let (python_version, created_at, last_used) = match metadata {
+                    Some(m) => (Some(m.python_version), Some(m.created_at), m.last_used),
+                    None => (None, None, None),
+                };
                 envs.push(VirtualenvInfo {
                     name: name.to_string(),
                     path: path.clone(),
-                    python_version: metadata.map(|m| m.python_version),
+                    python_version,
+                    created_at,
+                    last_used,
                 });
             }
         }
@@ -377,6 +397,8 @@ mod tests {
             name: "testenv".to_string(),
             path: PathBuf::from("/path/to/env"),
             python_version: Some("3.12".to_string()),
+            created_at: None,
+            last_used: None,
         };
 
         assert_eq!(info.name, "testenv");

@@ -256,6 +256,8 @@ fn collect_target_envs(
                 name: name.to_string(),
                 path,
                 python_version: None,
+                created_at: None,
+                last_used: None,
             }])
         }
         None => {
@@ -624,6 +626,8 @@ mod tests {
                 name: "ok".to_string(),
                 path,
                 python_version: None,
+                created_at: None,
+                last_used: None,
             };
             let report = verify_one(&service, &info, None);
             assert!(report.healthy, "report should be healthy: {:?}", report);
@@ -650,6 +654,8 @@ mod tests {
                 name: "no-meta".to_string(),
                 path: path.clone(),
                 python_version: None,
+                created_at: None,
+                last_used: None,
             };
             let report = verify_one(&service, &info, None);
             assert!(!report.healthy);
@@ -675,6 +681,8 @@ mod tests {
                 name: "no-py".to_string(),
                 path: path.clone(),
                 python_version: None,
+                created_at: None,
+                last_used: None,
             };
             let report = verify_one(&service, &info, None);
             let py_bin = report
@@ -706,6 +714,8 @@ mod tests {
                 name: "no-cfg".to_string(),
                 path,
                 python_version: None,
+                created_at: None,
+                last_used: None,
             };
             let report = verify_one(&service, &info, None);
             let cfg = report
@@ -729,6 +739,8 @@ mod tests {
                 name: "no-act".to_string(),
                 path,
                 python_version: None,
+                created_at: None,
+                last_used: None,
             };
             let report = verify_one(&service, &info, None);
             let act = report
@@ -781,6 +793,8 @@ mod tests {
                 name: "runs".to_string(),
                 path,
                 python_version: None,
+                created_at: None,
+                last_used: None,
             };
             let report = verify_one(&service, &info, None);
             let exec = report

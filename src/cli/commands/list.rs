@@ -1,11 +1,14 @@
 //! List command
 
+use std::cmp::Ordering;
 use std::collections::BTreeSet;
 
+use chrono::{DateTime, Utc};
 use owo_colors::OwoColorize;
 use rust_i18n::t;
 
-use crate::core::{VirtualenvService, get_active_env};
+use crate::cli::ListSortMode;
+use crate::core::{VirtualenvInfo as CoreVirtualenvInfo, VirtualenvService, get_active_env};
 use crate::error::Result;
 use crate::output::{ListEnvsData, ListPythonsData, Output, PythonInfo, VirtualenvInfo};
 use crate::paths::abbreviate_home;
@@ -18,16 +21,63 @@ pub fn execute(
     pythons: bool,
     bare: bool,
     python_version: Option<&str>,
+    sort: ListSortMode,
 ) -> Result<()> {
     if pythons {
         list_pythons(output, bare)
     } else {
-        list_virtualenvs(output, bare, python_version)
+        list_virtualenvs(output, bare, python_version, sort)
+    }
+}
+
+/// Sort a list of envs in place according to the chosen mode.
+///
+/// Pulled out as a free function so the ordering can be unit-tested
+/// without standing up a `VirtualenvService` or touching the filesystem.
+/// Two contracts pinned by tests in this module:
+///
+/// 1. **None-last for timestamp modes.** Envs missing `created_at` or
+///    `last_used` always sort *after* envs that have the field, so the
+///    interesting ones surface at the top instead of being buried under
+///    legacy-metadata neighbours.
+/// 2. **Name tie-break.** Equal timestamps (and the entire "None"
+///    bucket) fall back to alphabetical-by-name so output is
+///    deterministic across invocations.
+pub(crate) fn sort_envs(envs: &mut [CoreVirtualenvInfo], mode: ListSortMode) {
+    match mode {
+        ListSortMode::Name => envs.sort_by(|a, b| a.name.cmp(&b.name)),
+        ListSortMode::Created => envs
+            .sort_by(|a, b| compare_desc_none_last(a.created_at, b.created_at, &a.name, &b.name)),
+        ListSortMode::LastUsed => {
+            envs.sort_by(|a, b| compare_desc_none_last(a.last_used, b.last_used, &a.name, &b.name))
+        }
+    }
+}
+
+/// Newest-first ordering with `None` pushed to the end, then a name
+/// tie-break. Lifted into its own helper so the same rules apply to
+/// `--sort=created` and `--sort=last-used` without copy-paste.
+fn compare_desc_none_last(
+    a: Option<DateTime<Utc>>,
+    b: Option<DateTime<Utc>>,
+    a_name: &str,
+    b_name: &str,
+) -> Ordering {
+    match (a, b) {
+        (Some(av), Some(bv)) => bv.cmp(&av).then_with(|| a_name.cmp(b_name)),
+        (Some(_), None) => Ordering::Less, // Some sorts before None
+        (None, Some(_)) => Ordering::Greater,
+        (None, None) => a_name.cmp(b_name),
     }
 }
 
 /// List virtual environments
-fn list_virtualenvs(output: &Output, bare: bool, python_version: Option<&str>) -> Result<()> {
+fn list_virtualenvs(
+    output: &Output,
+    bare: bool,
+    python_version: Option<&str>,
+    sort: ListSortMode,
+) -> Result<()> {
     use crate::core::VersionService;
     use crate::validate::validate_python_version;
 
@@ -53,6 +103,10 @@ fn list_virtualenvs(output: &Output, bare: bool, python_version: Option<&str>) -
         });
     }
 
+    // Sort *after* filtering so the user sees the requested ordering
+    // applied to the same set their filter produced.
+    sort_envs(&mut envs, sort);
+
     // Check if "system" is the resolved version
     let resolved = VersionService::resolve_current();
     let system_active = resolved.as_deref() == Some("system");
@@ -72,6 +126,8 @@ fn list_virtualenvs(output: &Output, bare: bool, python_version: Option<&str>) -
                 python: env.python_version.clone(),
                 path: env.path.display().to_string(),
                 active: active_env.as_ref() == Some(&env.name),
+                created_at: env.created_at.map(|t| t.to_rfc3339()),
+                last_used: env.last_used.map(|t| t.to_rfc3339()),
             })
             .collect();
 
@@ -82,6 +138,10 @@ fn list_virtualenvs(output: &Output, bare: bool, python_version: Option<&str>) -
                 python: Some(version.clone()),
                 path: path.clone(),
                 active: system_active,
+                // System Python isn't a scoop-managed env, so there's
+                // no on-disk metadata to source these from.
+                created_at: None,
+                last_used: None,
             });
         }
 
@@ -310,6 +370,98 @@ fn get_system_python_info() -> Option<(String, String)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::TimeZone;
+    use std::path::PathBuf;
+
+    fn ts(year: i32, month: u32, day: u32) -> DateTime<Utc> {
+        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).unwrap()
+    }
+
+    fn env(
+        name: &str,
+        created_at: Option<DateTime<Utc>>,
+        last_used: Option<DateTime<Utc>>,
+    ) -> CoreVirtualenvInfo {
+        CoreVirtualenvInfo {
+            name: name.to_string(),
+            path: PathBuf::from(format!("/tmp/{name}")),
+            python_version: None,
+            created_at,
+            last_used,
+        }
+    }
+
+    #[test]
+    fn sort_by_name_is_alphabetical() {
+        let mut envs = vec![env("zeta", None, None), env("alpha", None, None)];
+        sort_envs(&mut envs, ListSortMode::Name);
+        let names: Vec<_> = envs.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(names, vec!["alpha", "zeta"]);
+    }
+
+    #[test]
+    fn sort_by_created_is_newest_first_none_last() {
+        let mut envs = vec![
+            env("old", Some(ts(2024, 1, 1)), None),
+            env("none", None, None),
+            env("new", Some(ts(2026, 6, 1)), None),
+        ];
+        sort_envs(&mut envs, ListSortMode::Created);
+        let names: Vec<_> = envs.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(
+            names,
+            vec!["new", "old", "none"],
+            "newest first, None at end"
+        );
+    }
+
+    #[test]
+    fn sort_by_last_used_is_recent_first_none_last() {
+        let mut envs = vec![
+            env("stale", None, Some(ts(2024, 1, 1))),
+            env("fresh-no-touch", Some(ts(2026, 6, 1)), None),
+            env("recent", None, Some(ts(2026, 5, 30))),
+        ];
+        sort_envs(&mut envs, ListSortMode::LastUsed);
+        let names: Vec<_> = envs.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(
+            names,
+            vec!["recent", "stale", "fresh-no-touch"],
+            "last_used recency wins; created_at is irrelevant for this sort"
+        );
+    }
+
+    #[test]
+    fn sort_tie_break_by_name() {
+        let same = ts(2026, 6, 1);
+        let mut envs = vec![
+            env("zebra", Some(same), None),
+            env("alpha", Some(same), None),
+            env("mike", Some(same), None),
+        ];
+        sort_envs(&mut envs, ListSortMode::Created);
+        let names: Vec<_> = envs.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(
+            names,
+            vec!["alpha", "mike", "zebra"],
+            "equal timestamps must fall back to alphabetical-by-name"
+        );
+    }
+
+    #[test]
+    fn sort_none_bucket_tie_breaks_by_name() {
+        // The "Some sorts before None" contract still has to leave the
+        // None-bucket internally deterministic, otherwise `--sort` could
+        // shuffle no-metadata envs randomly between invocations.
+        let mut envs = vec![
+            env("zulu", None, None),
+            env("alpha", None, None),
+            env("mike", None, None),
+        ];
+        sort_envs(&mut envs, ListSortMode::LastUsed);
+        let names: Vec<_> = envs.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(names, vec!["alpha", "mike", "zulu"]);
+    }
 
     /// Helper: simulate the filtering logic used in list_virtualenvs
     fn filter_envs_by_version<'a>(
