@@ -45,10 +45,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **core:** `VirtualenvInfo` (the `scoop_uv::core::VirtualenvInfo`
   re-export) is now `#[non_exhaustive]`. Construction sites inside
-  the crate are unaffected; external Rust consumers building it via
-  struct-literal syntax must use `..Default::default()` or a builder
-  going forward. Future timestamp fields will not be a breaking
-  change.
+  the crate are unaffected. External Rust consumers can no longer
+  build `VirtualenvInfo` via struct-literal syntax at all — the
+  intended path is to consume values returned by
+  `VirtualenvService::list()` / `read_metadata`. No public
+  constructor or builder is provided yet; future timestamp fields
+  will therefore not be a breaking change.
 - **output:** `output::VirtualenvInfo` JSON envelope gains
   `created_at` and `last_used` fields (RFC 3339,
   `skip_serializing_if = "Option::is_none"`).

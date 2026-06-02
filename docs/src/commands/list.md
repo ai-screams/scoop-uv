@@ -33,8 +33,11 @@ scoop list [options]
 Envs missing the relevant timestamp (`created_at` / `last_used`) sort
 to the **end** of the list, with name-order tie-break — so legacy or
 never-activated envs don't bury the interesting ones. `last_used`
-populates as soon as the env is activated via `scoop use`, `scoop run`,
-or `scoop shell`.
+populates when an env is actually activated: `scoop activate`,
+shell-hook auto-activation triggered by `scoop use`, `scoop run`, or
+`scoop shell`. `scoop use` on its own only writes the version file
+and does not touch metadata; the touch fires when the shell wrapper
+sources the activate script afterwards.
 
 `--sort` is mutually exclusive with `--pythons` (which lists Python
 installations, not environments).

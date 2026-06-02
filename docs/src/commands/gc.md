@@ -49,7 +49,7 @@ If you want to nuke un-activated envs anyway, run `scoop verify` to find them an
 
 Between the `--older-than` scan and the actual delete, an env may be activated. Each candidate is re-checked just before removal:
 
-- `SkippedRecentlyUsed` — the env was touched after the scan; `last_used` is now past the cutoff again.
+- `SkippedRecentlyUsed` — the env was touched after the scan; `last_used` is now at-or-newer than the original cutoff, so it is no longer stale.
 - `SkippedNoData` — metadata became unreadable or missing between scan and remove. We refuse to delete envs we can no longer reason about.
 
 Both surface in the JSON envelope as `outcome` values so scripts can distinguish them from `Removed` / `Failed`.

@@ -66,9 +66,18 @@ For `none`: a hint pointing to `scoop use <name>`.
 ```
 
 Fields are omitted (`skip_serializing_if`) when not applicable to the
-state. `last_used` is RFC 3339 and absent for envs that have never
-been activated since the field landed; consumers should treat
-"missing" as "never".
+state. `last_used` is RFC 3339 and absent in two distinct cases:
+
+* **No metadata at all** (legacy env / metadata file removed) —
+  the timestamp is *unknown*. Human output omits the `Last used:`
+  row entirely.
+* **Metadata present but never activated** since the field landed —
+  the timestamp is *known to be never*. Human output renders
+  `Last used: never`.
+
+JSON consumers therefore should NOT collapse "missing" to "never";
+combine the absence of `last_used` with the presence of `created_at`
+to tell the two cases apart.
 
 ## Examples
 

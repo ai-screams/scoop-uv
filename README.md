@@ -354,10 +354,11 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop use <name> --global`     | Set as your usual order                |
 | `scoop list`                    | What's in the freezer?                 |
 | `scoop list --pythons`          | What Python versions do we have?       |
+| `scoop list --sort last-used`   | Newest activity first (also `name` / `created`) |
 | `scoop list --json`             | Output as JSON                         |
-| `scoop info <name>`             | Show detailed info about a flavor      |
+| `scoop info <name>`             | Show detailed info (incl. `Last used:`)|
 | `scoop info <name> --json`      | Output info as JSON                    |
-| `scoop status`                  | Which flavor am I scooping right now?  |
+| `scoop status`                  | Which flavor am I scooping right now? (incl. `Last used:`)|
 | `scoop which <exe>`             | Where's that scoop in my freezer?      |
 | `scoop run <env> -- <cmd>`      | Scoop on demand — run without unpacking |
 | `scoop sync`                    | Read `.scoop.toml` and serve the flavor |
@@ -402,6 +403,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
 | `scoop gc --yes`         | Actually remove the orphans                                    |
 | `scoop gc --aggressive`  | Also flag unused uv-managed Python versions                    |
+| `scoop gc --older-than 30d` | Also flag envs idle past the cutoff (no `last_used` never matches) |
 | `scoop prune`            | Prune the uv download/wheel cache (`uv cache prune` wrapper)   |
 
 ### Packaging 📦
