@@ -50,7 +50,18 @@ Two cases are **never** flagged as stale, by design:
 - **`last_used = None`** — fresh envs that have never been activated since the field landed, *and* envs whose metadata predates the field. Either way we have no positive evidence the env is unused.
 - **Corrupt metadata** — if we can't read the metadata, we don't pretend to know its age.
 
-If you want to nuke un-activated envs anyway, run `scoop verify` to find them and remove by name.
+If you want to clean up un-activated envs anyway, surface them with
+`scoop list --sort last-used` — envs missing `last_used` always sort to
+the bottom — and remove individual ones with `scoop remove <name>`.
+For scripted enumeration:
+
+```bash
+scoop list --json | jq -r '.data.virtualenvs[] | select(.last_used == null) | .name'
+```
+
+(Note: `scoop verify` checks per-env health — metadata / interpreter /
+manifest drift — and intentionally does NOT flag a healthy env just
+because it has never been activated.)
 
 ### TOCTOU guard
 

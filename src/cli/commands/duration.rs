@@ -101,6 +101,21 @@ pub(crate) fn parse_duration(s: &str) -> Result<Duration> {
         ));
     }
 
+    // A clean suffix must be alphabetic-only (no digits, no whitespace,
+    // no punctuation). Inputs like `200y2d` (combined durations),
+    // `30 d` (whitespace), or `30d!` (junk) produce confusing "unknown
+    // suffix '<stuff>'" messages when the real problem is structural —
+    // the parser doesn't compose multiple units or tolerate separators.
+    // Surface that explicitly so the hint points at the actual mistake.
+    if !suffix.chars().all(|c| c.is_ascii_alphabetic()) {
+        return Err(invalid(&format!(
+            "duration must be a single integer followed by one unit suffix \
+             (e.g. 30d). '{suffix}' is not a recognized suffix — combined \
+             durations (like '1y6m') and whitespace-separated forms are not \
+             supported; pick one unit"
+        )));
+    }
+
     let days_per_unit: u64 = match suffix {
         "d" => 1,
         "w" => 7,
@@ -277,6 +292,23 @@ mod tests {
     fn rejects_garbage() {
         for s in ["abc", "30dx", "d30", "1.5d", "1 d", "  30d  "] {
             assert!(parse_duration(s).is_err(), "should reject {s:?}");
+        }
+    }
+
+    #[test]
+    fn combined_or_separated_durations_surface_specific_hint() {
+        // Inputs like "200y2d" / "30 d" / "30d!" used to produce a
+        // confusing "unknown duration suffix '<stuff>'" message; the
+        // alphabetic-only guard now calls out the structural mistake
+        // (combined units / whitespace / junk) so the user sees the
+        // real problem.
+        for s in ["200y2d", "1y6m", "30 d", "30d!"] {
+            let err = parse_duration(s).unwrap_err();
+            let msg = err.to_string();
+            assert!(
+                msg.contains("single integer") || msg.contains("combined"),
+                "{s} should surface structural-mistake hint, got: {msg}"
+            );
         }
     }
 
