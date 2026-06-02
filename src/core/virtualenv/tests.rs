@@ -372,6 +372,33 @@ fn test_read_metadata_result_distinguishes_missing_from_corrupt() {
 
 #[test]
 #[serial]
+fn test_read_metadata_result_returns_err_on_non_notfound_io() {
+    // Pins the NotFound match-guard contract: only ErrorKind::NotFound
+    // collapses to Ok(None); every other IO error surfaces as Err so
+    // touch_metadata_at refuses to overwrite. Without this assertion
+    // a mutation `e.kind() == NotFound` → `true` would silently treat
+    // every IO failure (permission denied, "is a directory", etc.) as
+    // "file missing" and let touch happily synthesize a new file.
+    //
+    // Simulate a non-NotFound IO error by planting a directory at the
+    // metadata file path — `fs::read_to_string` then fails with
+    // ErrorKind::IsADirectory (or InvalidInput on some platforms),
+    // neither of which match the NotFound arm.
+    with_temp_scoop_home(|temp_dir| {
+        let service = require_uv!();
+        let env_dir = temp_dir.path().join("virtualenvs").join("dir_as_meta");
+        fs::create_dir_all(env_dir.join(Metadata::FILE_NAME)).unwrap();
+
+        let err = service.read_metadata_result(&env_dir).unwrap_err();
+        assert!(
+            matches!(err, ScoopError::Io(_)),
+            "non-NotFound IO error must surface as Err, not collapse to Ok(None); got {err:?}"
+        );
+    });
+}
+
+#[test]
+#[serial]
 fn test_touch_metadata_best_effort_updates_only_last_used() {
     with_temp_scoop_home(|temp_dir| {
         let service = require_uv!();
