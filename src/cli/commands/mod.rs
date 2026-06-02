@@ -6,6 +6,7 @@ mod completions;
 mod create;
 mod deactivate;
 mod doctor;
+mod duration;
 mod export;
 mod gc;
 mod import;
@@ -28,6 +29,8 @@ mod uninstall;
 mod use_env;
 mod verify;
 mod which;
+
+pub use duration::parse_duration;
 
 pub use activate::execute as activate;
 pub use clone::execute as clone;
