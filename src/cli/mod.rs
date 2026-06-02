@@ -548,6 +548,14 @@ pub enum Commands {
         #[arg(long)]
         aggressive: bool,
 
+        /// Also mark envs whose `last_used` is older than this duration as
+        /// stale. Format: `<n>d` / `<n>w` / `<n>y` (days/weeks/365-day years).
+        /// Envs that have never been activated since the `last_used` field
+        /// landed are never matched — see CHANGELOG for the conservative
+        /// rationale.
+        #[arg(long, value_name = "DURATION")]
+        older_than: Option<String>,
+
         /// Output as JSON
         #[arg(long)]
         json: bool,

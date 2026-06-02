@@ -12,11 +12,6 @@
 //! `pub(crate)` only: `gc::execute` is the lone consumer. If a second
 //! consumer shows up, lift this to its own module.
 
-// dead_code is expected for the gap between this commit (helper +
-// tests) and Step 5 (gc wires it in). Tests exercise every function;
-// once gc imports the helper the allow can come off.
-#![allow(dead_code)]
-
 use chrono::Duration;
 
 use crate::error::{Result, ScoopError};

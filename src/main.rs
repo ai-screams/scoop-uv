@@ -184,10 +184,11 @@ fn main() -> Result<()> {
         Commands::Gc {
             yes,
             aggressive,
+            older_than,
             json,
         } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
-            scoop_uv::cli::commands::gc(&output, yes, aggressive)
+            scoop_uv::cli::commands::gc(&output, yes, aggressive, older_than.as_deref())
         }
         Commands::Man { output_dir, json } => {
             let output = Output::new(0, cli.quiet, cli.no_color, json);

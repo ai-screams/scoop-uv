@@ -1124,6 +1124,12 @@ gc.reason_broken_python:
   pt-BR: "interpretador Python ausente"
   ja: "Python インタプリタが見つかりません"
 
+gc.reason_stale:
+  en: "stale (%{days} days idle)"
+  ko: "오래 사용 안 함 (%{days}일)"
+  pt-BR: "obsoleto (%{days} dias sem uso)"
+  ja: "未使用 (%{days} 日)"
+
 gc.dry_run_hint:
   en: "(dry run — pass `--yes` to actually remove)"
   ko: "(미리보기 — 실제로 삭제하려면 `--yes` 를 붙여주세요)"
@@ -1267,6 +1273,18 @@ gc.skipped_python_now_in_use:
   ko: "Python %{version} 건너뜀 — 스캔과 삭제 사이에 환경이 참조하기 시작함"
   pt-BR: "Python %{version} pulado — tornou-se referenciado por um ambiente entre escaneamento e desinstalação"
   ja: "Python %{version} をスキップ — スキャンとアンインストールの間に環境から参照されました"
+
+gc.skipped_recently_used:
+  en: "Skipped env '%{name}' — touched between scan and remove (no longer past --older-than cutoff)"
+  ko: "환경 '%{name}' 건너뜀 — 스캔과 삭제 사이에 다시 활성화되어 --older-than 기준에 더 이상 해당하지 않아요"
+  pt-BR: "Ambiente '%{name}' pulado — foi usado entre escaneamento e remoção (não atende mais a --older-than)"
+  ja: "環境 '%{name}' をスキップ — スキャンと削除の間に活性化され、--older-than の対象外になりました"
+
+gc.skipped_no_data:
+  en: "Skipped env '%{name}' — metadata became unreadable between scan and remove; refusing to delete blindly"
+  ko: "환경 '%{name}' 건너뜀 — 스캔과 삭제 사이에 메타데이터가 읽을 수 없게 되어 안전을 위해 삭제하지 않을게요"
+  pt-BR: "Ambiente '%{name}' pulado — metadados ficaram ilegíveis entre escaneamento e remoção; não deletando às cegas"
+  ja: "環境 '%{name}' をスキップ — スキャンと削除の間にメタデータが読み込めなくなったため、安全のため削除しません"
 
 gc.unreadable_metadata_warn:
   en: "%{count} env(s) have unreadable metadata; skipping Python cleanup to be safe"

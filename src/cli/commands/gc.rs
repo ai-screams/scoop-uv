@@ -11,6 +11,7 @@
 
 use std::path::{Path, PathBuf};
 
+use chrono::{DateTime, Utc};
 use rust_i18n::t;
 use serde::Serialize;
 
@@ -20,25 +21,45 @@ use crate::output::Output;
 use crate::paths::{self, abbreviate_home};
 use crate::uv::UvClient;
 
-/// Why a virtualenv directory was classified as an orphan.
+use super::duration::parse_duration;
+
+/// Why a virtualenv directory was flagged by `gc`.
 ///
-/// Strings stay stable — they are part of the JSON contract.
+/// The two `Orphan*` variants serialize to their pre-Stale JSON values
+/// (`missing_metadata` / `broken_python`) via explicit `#[serde(rename)]`
+/// so adding `Stale` is a pure additive schema change — old consumers
+/// keep parsing existing JSON unchanged. Codex review on the v2 plan
+/// flagged this as STOP-1 (originally a flat enum, the TOCTOU guard
+/// would have re-classified stale envs as "healthy" and skipped them).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "snake_case")]
-enum OrphanReason {
+#[serde(tag = "kind", rename_all = "snake_case")]
+enum EnvGcReason {
     /// `.scoop-metadata.json` is missing — the env wasn't created by scoop,
-    /// or its metadata file was deleted.
-    MissingMetadata,
+    /// or its metadata file was deleted. Pre-Stale JSON value preserved.
+    #[serde(rename = "missing_metadata")]
+    OrphanMissingMetadata,
     /// The Python interpreter the env points at is gone (uninstalled out
-    /// from under us, or the symlink target was deleted).
-    BrokenPython,
+    /// from under us, or the symlink target was deleted). Pre-Stale JSON
+    /// value preserved.
+    #[serde(rename = "broken_python")]
+    OrphanBrokenPython,
+    /// `last_used` is older than the `--older-than <DURATION>` cutoff.
+    /// Carries the actual age so the human renderer can say "stale (62
+    /// days)" instead of just "stale", and JSON consumers can apply
+    /// their own threshold without re-parsing the date.
+    Stale {
+        /// Days since last activation at scan time. Frozen at scan
+        /// instant — the re-check before removal might see a slightly
+        /// different value if the env was touched concurrently.
+        age_days: u64,
+    },
 }
 
 #[derive(Debug, Serialize)]
 struct OrphanEnv {
     name: String,
     path: String,
-    reason: OrphanReason,
+    reason: EnvGcReason,
 }
 
 #[derive(Debug, Serialize)]
@@ -59,9 +80,19 @@ enum EnvOutcome {
     Pending,
     /// `--yes`: directory successfully removed.
     Removed,
-    /// `--yes`: env re-classified as healthy between scan and remove;
-    /// destructive action skipped on purpose (TOCTOU guard fired).
+    /// `--yes`: orphan re-classified as healthy between scan and
+    /// remove; destructive action skipped on purpose (TOCTOU guard
+    /// fired for an `Orphan*` reason).
     SkippedHealthy,
+    /// `--yes`: stale env was touched between scan and remove (the
+    /// recheck against the original cutoff now passes); destructive
+    /// action skipped on purpose (TOCTOU guard fired for `Stale`).
+    SkippedRecentlyUsed,
+    /// `--yes`: stale env's metadata became unreadable between scan
+    /// and remove. Refusing to delete an env we can no longer reason
+    /// about is the conservative move — surfaces the situation
+    /// instead of guessing.
+    SkippedNoData,
     /// `--yes`: removal returned an IO error. See `error` for details.
     Failed,
 }
@@ -70,7 +101,7 @@ enum EnvOutcome {
 struct EnvRecord {
     name: String,
     path: String,
-    reason: OrphanReason,
+    reason: EnvGcReason,
     outcome: EnvOutcome,
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
@@ -115,10 +146,39 @@ struct GcData {
 
 /// Execute the `gc` command.
 ///
-/// * `yes` — actually remove the orphans (otherwise dry-run only).
+/// * `yes` — actually remove the candidates (otherwise dry-run only).
 /// * `aggressive` — also consider Python versions that no env uses.
-pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
-    let envs = scan_orphan_envs()?;
+/// * `older_than` — when `Some`, also flag envs whose `last_used` is
+///   older than the parsed duration. `None` preserves the pre-flag
+///   behaviour (orphans only).
+pub fn execute(
+    output: &Output,
+    yes: bool,
+    aggressive: bool,
+    older_than: Option<&str>,
+) -> Result<()> {
+    // Parse the duration up front so a malformed `--older-than` fails
+    // before we touch the filesystem. Cutoff is sampled once and
+    // shared between scan + recheck — using a fresh `Utc::now()` at
+    // recheck time would make borderline envs jitter in/out of "stale".
+    let stale_cutoff = match older_than {
+        Some(s) => {
+            let d = parse_duration(s)?;
+            Some(Utc::now().checked_sub_signed(d).ok_or_else(|| {
+                crate::error::ScoopError::InvalidArgument {
+                    message: format!("cutoff arithmetic overflowed for --older-than {s}"),
+                }
+            })?)
+        }
+        None => None,
+    };
+
+    let mut envs = scan_orphan_envs()?;
+    if let Some(cutoff) = stale_cutoff {
+        envs.extend(scan_stale_envs(cutoff)?);
+        envs.sort_by(|a, b| a.name.cmp(&b.name));
+    }
+
     let (pythons, unreadable_envs) = if aggressive {
         scan_unused_pythons(&envs)?
     } else {
@@ -166,6 +226,7 @@ pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
             &pythons,
             &mut env_records,
             &mut python_records,
+            stale_cutoff,
         );
     }
 
@@ -245,14 +306,74 @@ fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
     Ok(orphans)
 }
 
-/// Return `Some(reason)` if `path` looks like a broken env, `None` if it
-/// looks healthy.
-fn classify(path: &Path) -> Option<OrphanReason> {
+/// Walk the env list and flag any env whose `last_used` is older than
+/// `cutoff`.
+///
+/// Crucial design decisions baked in:
+///
+/// * **Only healthy envs are considered.** `classify()` returning
+///   `Some(_)` means the env is already an orphan — it'll be removed
+///   via the orphan path. Flagging it twice would double-count and
+///   confuse the JSON envelope.
+/// * **`last_used = None` never matches.** Codex review on the v2 plan
+///   was emphatic: a missing `last_used` could mean "never activated"
+///   (fresh env) *or* "predates the field" (legacy metadata). Either
+///   way we have no positive evidence the env is unused, so we refuse
+///   to flag it. Users who really want to nuke un-activated envs can
+///   `scoop verify` + manual removal.
+/// * **Corrupt metadata never matches.** Same conservative rule: if
+///   we can't read the metadata, we don't pretend to know its age.
+///   `read_metadata_result` returning `Err` skips the env here.
+fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<OrphanEnv>> {
+    let service = match VirtualenvService::auto() {
+        Ok(s) => s,
+        Err(_) => return Ok(Vec::new()),
+    };
+    let envs = match service.list() {
+        Ok(v) => v,
+        Err(_) => return Ok(Vec::new()),
+    };
+
+    let mut stale = Vec::new();
+    for info in envs {
+        // Skip envs already flagged as orphans (no metadata / broken
+        // python). The orphan path handles them; flagging them as
+        // stale too would double-record.
+        if classify(&info.path).is_some() {
+            continue;
+        }
+
+        // last_used = None → no match, full stop. See function doc.
+        let Some(last_used) = info.last_used else {
+            continue;
+        };
+
+        if last_used >= cutoff {
+            continue;
+        }
+
+        let age_days = (Utc::now() - last_used).num_days().max(0) as u64;
+        stale.push(OrphanEnv {
+            name: info.name.clone(),
+            path: info.path.display().to_string(),
+            reason: EnvGcReason::Stale { age_days },
+        });
+    }
+    Ok(stale)
+}
+
+/// Return `Some(reason)` if `path` looks like a broken env, `None` if
+/// it looks healthy from an *orphan-classifier* point of view. Stale
+/// detection lives in `scan_stale_envs` — keeping the two separate
+/// (per Codex STOP-1 on the v2 plan) means the orphan-side TOCTOU
+/// guard can't accidentally reclassify a stale-but-healthy env as
+/// "not really stale" and skip removing it.
+fn classify(path: &Path) -> Option<EnvGcReason> {
     // `.scoop-metadata.json` is the contract: every env scoop creates has
     // one. Its absence means the directory was made by hand or its metadata
     // was deleted — either way we can't safely interpret it.
     if !path.join(".scoop-metadata.json").exists() {
-        return Some(OrphanReason::MissingMetadata);
+        return Some(EnvGcReason::OrphanMissingMetadata);
     }
     // Check that the interpreter the env points at still exists. We avoid
     // re-running uv here — a stat on the bin dir is enough to catch the
@@ -263,7 +384,43 @@ fn classify(path: &Path) -> Option<OrphanReason> {
         path.join("bin").join("python")
     };
     if !bin.exists() {
-        return Some(OrphanReason::BrokenPython);
+        return Some(EnvGcReason::OrphanBrokenPython);
+    }
+    None
+}
+
+/// Re-check that an env recorded as `Stale` at scan time *still* qualifies.
+///
+/// Returns the outcome that should be written to the env record:
+/// - `None` — actually remove (still stale after recheck).
+/// - `Some(SkippedRecentlyUsed)` — env was touched between scan and
+///   remove; `last_used` is now >= original cutoff.
+/// - `Some(SkippedNoData)` — metadata became unreadable or its
+///   `last_used` is suddenly None.
+///
+/// Pulled out of `remove_orphans` so the per-reason TOCTOU branches
+/// stay readable.
+fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutcome> {
+    let path = match paths::virtualenv_path(name) {
+        Ok(p) => p,
+        Err(_) => return Some(EnvOutcome::SkippedNoData),
+    };
+    let service = match VirtualenvService::auto() {
+        Ok(s) => s,
+        // Without the service we can't recheck. Refuse to delete
+        // rather than guess.
+        Err(_) => return Some(EnvOutcome::SkippedNoData),
+    };
+    let meta = match service.read_metadata_result(&path) {
+        Ok(Some(m)) => m,
+        // Missing or corrupt — see scan_stale_envs's rationale.
+        _ => return Some(EnvOutcome::SkippedNoData),
+    };
+    let Some(last_used) = meta.last_used else {
+        return Some(EnvOutcome::SkippedNoData);
+    };
+    if last_used >= cutoff {
+        return Some(EnvOutcome::SkippedRecentlyUsed);
     }
     None
 }
@@ -363,21 +520,50 @@ fn remove_orphans(
     pythons: &[UnusedPython],
     env_records: &mut [EnvRecord],
     python_records: &mut [PythonRecord],
+    stale_cutoff: Option<DateTime<Utc>>,
 ) {
     for (env, record) in envs.iter().zip(env_records.iter_mut()) {
         let path = PathBuf::from(&env.path);
 
-        // TOCTOU guard: re-run classify() right before destruction. The
-        // gap between scan_orphan_envs and here is usually milliseconds,
-        // but a concurrent `scoop create` (or a user manually populating
-        // the directory) can make the env healthy again. We refuse to
-        // delete a healthy env that just happened to be empty at scan
-        // time, and surface the skip both inline (human) and in the
-        // record (JSON).
-        if classify(&path).is_none() {
-            output.warn(&t!("gc.skipped_now_healthy", name = &env.name));
-            record.outcome = EnvOutcome::SkippedHealthy;
-            continue;
+        // Per-reason TOCTOU guard. Codex STOP-1 on the v2 plan caught
+        // the trap of running one guard for both kinds: orphans need
+        // re-classify (was-orphan → now-healthy means skip), but stale
+        // envs need an age recheck — running classify() on a stale-
+        // but-healthy env would falsely skip removal.
+        match env.reason {
+            EnvGcReason::OrphanMissingMetadata | EnvGcReason::OrphanBrokenPython => {
+                if classify(&path).is_none() {
+                    output.warn(&t!("gc.skipped_now_healthy", name = &env.name));
+                    record.outcome = EnvOutcome::SkippedHealthy;
+                    continue;
+                }
+            }
+            EnvGcReason::Stale { .. } => {
+                // Stale recheck needs the original cutoff — re-deriving
+                // "now" here would let a touch on the env between scan
+                // and remove silently win or lose by milliseconds.
+                let cutoff = match stale_cutoff {
+                    Some(c) => c,
+                    None => {
+                        // Defensive: a Stale record without a cutoff is
+                        // an internal bug (scan_stale_envs only runs
+                        // when older_than is Some). Refuse rather than
+                        // delete based on stale-at-scan-time alone.
+                        record.outcome = EnvOutcome::SkippedNoData;
+                        continue;
+                    }
+                };
+                if let Some(skip_outcome) = recheck_stale(&env.name, cutoff) {
+                    let msg_key = match skip_outcome {
+                        EnvOutcome::SkippedRecentlyUsed => "gc.skipped_recently_used",
+                        EnvOutcome::SkippedNoData => "gc.skipped_no_data",
+                        _ => "gc.skipped_now_healthy",
+                    };
+                    output.warn(&t!(msg_key, name = &env.name));
+                    record.outcome = skip_outcome;
+                    continue;
+                }
+            }
         }
 
         match std::fs::remove_dir_all(&path) {
@@ -464,8 +650,11 @@ fn render_human(output: &Output, data: &GcData, aggressive: bool) {
         output.info(&t!("gc.envs_header", count = data.envs.len().to_string()));
         for env in &data.envs {
             let reason = match env.reason {
-                OrphanReason::MissingMetadata => t!("gc.reason_missing_metadata"),
-                OrphanReason::BrokenPython => t!("gc.reason_broken_python"),
+                EnvGcReason::OrphanMissingMetadata => t!("gc.reason_missing_metadata").to_string(),
+                EnvGcReason::OrphanBrokenPython => t!("gc.reason_broken_python").to_string(),
+                EnvGcReason::Stale { age_days } => {
+                    t!("gc.reason_stale", days = age_days.to_string()).to_string()
+                }
             };
             println!(
                 "  - {} ({})  {}",
@@ -522,6 +711,26 @@ mod tests {
         }
     }
 
+    /// Build a fully-healthy env (so it doesn't get classified as an
+    /// orphan) with a `last_used` set to `last_used`. None means
+    /// "never used"; Some(t) lets the caller pin the age relative to
+    /// the cutoff under test.
+    fn make_env_with_last_used(dir: &Path, name: &str, last_used: Option<DateTime<Utc>>) {
+        make_env(dir, name, true, true);
+        let meta_path = dir.join(name).join(".scoop-metadata.json");
+        let last_used_field = match last_used {
+            Some(t) => format!("\"last_used\":\"{}\",", t.to_rfc3339()),
+            None => String::new(),
+        };
+        let payload = format!(
+            "{{\"name\":\"{name}\",\"python_version\":\"3.12\",\
+             \"created_at\":\"2024-01-01T00:00:00Z\",\
+             \"created_by\":\"scoop test\",\"uv_version\":null,\
+             {last_used_field}\"python_path\":null}}"
+        );
+        fs::write(meta_path, payload).unwrap();
+    }
+
     #[test]
     #[serial]
     fn classifies_missing_metadata_as_orphan() {
@@ -533,7 +742,7 @@ mod tests {
             let orphans = scan_orphan_envs().unwrap();
             assert_eq!(orphans.len(), 1);
             assert_eq!(orphans[0].name, "no-meta");
-            assert_eq!(orphans[0].reason, OrphanReason::MissingMetadata);
+            assert_eq!(orphans[0].reason, EnvGcReason::OrphanMissingMetadata);
         });
     }
 
@@ -548,7 +757,7 @@ mod tests {
             let orphans = scan_orphan_envs().unwrap();
             assert_eq!(orphans.len(), 1);
             assert_eq!(orphans[0].name, "no-python");
-            assert_eq!(orphans[0].reason, OrphanReason::BrokenPython);
+            assert_eq!(orphans[0].reason, EnvGcReason::OrphanBrokenPython);
         });
     }
 
@@ -587,7 +796,7 @@ mod tests {
             make_env(&dir, "no-meta", false, true);
 
             let output = Output::new(0, true, true, false);
-            execute(&output, false, false).unwrap();
+            execute(&output, false, false, None).unwrap();
 
             assert!(
                 dir.join("no-meta").exists(),
@@ -605,7 +814,7 @@ mod tests {
             make_env(&dir, "no-meta", false, true);
 
             let output = Output::new(0, true, true, false);
-            execute(&output, true, false).unwrap();
+            execute(&output, true, false, None).unwrap();
 
             assert!(!dir.join("no-meta").exists(), "--yes should remove orphans");
         });
@@ -645,7 +854,7 @@ mod tests {
             // Defense-in-depth: even the full --yes path must leave the
             // canary intact.
             let output = Output::new(0, true, true, false);
-            execute(&output, true, false).unwrap();
+            execute(&output, true, false, None).unwrap();
             assert!(
                 canary.exists(),
                 "gc --yes followed the symlink and deleted the target"
@@ -716,7 +925,7 @@ mod tests {
             let stale_orphan = OrphanEnv {
                 name: "racy".to_string(),
                 path: env_path.display().to_string(),
-                reason: OrphanReason::MissingMetadata,
+                reason: EnvGcReason::OrphanMissingMetadata,
             };
             let mut env_records = vec![EnvRecord {
                 name: stale_orphan.name.clone(),
@@ -733,6 +942,7 @@ mod tests {
                 &[],
                 &mut env_records,
                 &mut Vec::<PythonRecord>::new(),
+                None,
             );
 
             // The env was healthy at remove-time so the destructive path
@@ -747,6 +957,154 @@ mod tests {
                 EnvOutcome::SkippedHealthy,
                 "outcome must be SkippedHealthy so JSON consumers see the skip"
             );
+        });
+    }
+
+    // ==========================================================================
+    // Step 5 — `gc --older-than` / EnvGcReason::Stale contract
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn stale_scan_matches_env_past_cutoff() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            let now = Utc::now();
+            // 60 days idle vs a 30-day cutoff → must be flagged.
+            make_env_with_last_used(&dir, "old", Some(now - chrono::Duration::days(60)));
+            // 5 days idle vs a 30-day cutoff → must NOT be flagged.
+            make_env_with_last_used(&dir, "fresh", Some(now - chrono::Duration::days(5)));
+
+            let cutoff = now - chrono::Duration::days(30);
+            let stale = scan_stale_envs(cutoff).unwrap();
+
+            let names: Vec<_> = stale.iter().map(|e| e.name.as_str()).collect();
+            assert_eq!(names, vec!["old"], "only past-cutoff env is stale");
+            assert!(matches!(stale[0].reason, EnvGcReason::Stale { age_days } if age_days >= 59));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn stale_scan_never_matches_last_used_none() {
+        // Conservative rule from the v2 plan: `last_used = None` could
+        // mean "never used" (fresh env) or "predates the field" (legacy
+        // metadata). Either way no positive evidence the env is unused —
+        // refuse to flag it.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            make_env_with_last_used(&dir, "untouched", None);
+
+            // Any cutoff: a None last_used must never be flagged stale.
+            let cutoff = Utc::now() - chrono::Duration::days(1);
+            let stale = scan_stale_envs(cutoff).unwrap();
+            assert!(
+                stale.is_empty(),
+                "last_used=None must never match stale: {stale:?}"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn stale_scan_ignores_orphans() {
+        // Orphan-classified envs are removed via the orphan path; the
+        // stale scan must skip them so we don't double-count.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            make_env(&dir, "no-meta", false, true);
+
+            let cutoff = Utc::now() - chrono::Duration::days(1);
+            let stale = scan_stale_envs(cutoff).unwrap();
+            assert!(
+                stale.is_empty(),
+                "orphans must not double-appear in stale scan"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn stale_scan_skips_corrupt_metadata() {
+        // Same conservative rule as None: corrupt metadata means we
+        // can't tell when the env was last used.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            let env_path = dir.join("corrupt");
+            fs::create_dir_all(env_path.join("bin")).unwrap();
+            fs::write(env_path.join("bin/python"), "").unwrap();
+            fs::write(env_path.join(".scoop-metadata.json"), "{ not json").unwrap();
+
+            let cutoff = Utc::now() - chrono::Duration::days(1);
+            let stale = scan_stale_envs(cutoff).unwrap();
+            assert!(
+                stale.is_empty(),
+                "corrupt metadata must not match stale: {stale:?}"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn recheck_stale_skips_recently_touched_env() {
+        // TOCTOU: between scan and remove the env was touched
+        // (last_used moved past the original cutoff). recheck_stale
+        // must report SkippedRecentlyUsed.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            let now = Utc::now();
+            let cutoff = now - chrono::Duration::days(30);
+            make_env_with_last_used(&dir, "racy", Some(now - chrono::Duration::days(5)));
+
+            let outcome = recheck_stale("racy", cutoff);
+            assert_eq!(outcome, Some(EnvOutcome::SkippedRecentlyUsed));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn recheck_stale_reports_no_data_when_metadata_lost() {
+        // Metadata disappearing between scan and remove must NOT let
+        // us blindly delete the env — caller marks the record
+        // SkippedNoData.
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            let env_path = dir.join("gone");
+            fs::create_dir_all(env_path.join("bin")).unwrap();
+            fs::write(env_path.join("bin/python"), "").unwrap();
+
+            let cutoff = Utc::now() - chrono::Duration::days(30);
+            let outcome = recheck_stale("gone", cutoff);
+            assert_eq!(outcome, Some(EnvOutcome::SkippedNoData));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn execute_rejects_invalid_older_than() {
+        // Surface the parse error so a user with a typo gets a clear
+        // message instead of "no envs to remove".
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+
+            let output = Output::new(0, true, true, false);
+            let err = execute(&output, false, false, Some("garbage")).unwrap_err();
+            assert!(matches!(
+                err,
+                crate::error::ScoopError::InvalidArgument { .. }
+            ));
         });
     }
 
@@ -786,6 +1144,7 @@ mod tests {
                 &[],
                 &mut env_records,
                 &mut Vec::<PythonRecord>::new(),
+                None,
             );
 
             for record in &env_records {
