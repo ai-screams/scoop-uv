@@ -84,6 +84,7 @@ mod tests {
                 created_by: "test".to_string(),
                 uv_version: None,
                 python_path: None,
+                last_used: None,
             };
             let meta_json = serde_json::to_string(&meta).unwrap();
             std::fs::write(env_dir.join(".scoop-metadata.json"), meta_json).unwrap();

@@ -571,6 +571,7 @@ mod tests {
             created_by: "scoop test".to_string(),
             uv_version: None,
             python_path: None,
+            last_used: None,
         };
         fs::write(
             env_path.join(".scoop-metadata.json"),

@@ -152,6 +152,7 @@ mod tests {
                 created_by: "test".to_string(),
                 uv_version: None,
                 python_path: None,
+                last_used: None,
             };
             std::fs::write(
                 src.join(".scoop-metadata.json"),

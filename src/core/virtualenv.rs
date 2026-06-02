@@ -1,7 +1,11 @@
 //! Virtual environment service
 
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
+
+use chrono::{DateTime, Utc};
+use tracing::warn;
 
 use crate::core::Metadata;
 use crate::error::{Result, ScoopError};
@@ -199,19 +203,111 @@ impl VirtualenvService {
         Ok(path)
     }
 
-    /// Read metadata from a virtual environment
+    /// Read metadata from a virtual environment.
+    ///
+    /// Returns `None` for both "file missing" and "file corrupt" — callers
+    /// that only need a best-effort view (e.g. `list`, `info`, `status`)
+    /// can keep using this. Anything that needs to *act* on the distinction
+    /// (gc classification, touch on activation) must use
+    /// [`Self::read_metadata_result`] instead.
     pub fn read_metadata(&self, path: &Path) -> Option<Metadata> {
-        let metadata_path = path.join(Metadata::FILE_NAME);
-        let content = fs::read_to_string(metadata_path).ok()?;
-        serde_json::from_str(&content).ok()
+        self.read_metadata_result(path).ok().flatten()
     }
 
-    /// Write metadata to a virtual environment
+    /// Read metadata distinguishing missing from corrupt.
+    ///
+    /// - `Ok(Some(m))` — file present, parsed cleanly
+    /// - `Ok(None)`    — file does not exist (legitimate "no metadata")
+    /// - `Err(e)`      — file present but unreadable / unparseable
+    ///
+    /// This split exists so [`Self::touch_metadata_best_effort`] can refuse
+    /// to overwrite a corrupt file (which would silently destroy the user's
+    /// only forensic trace of the corruption), while still updating files
+    /// that are merely absent.
+    pub fn read_metadata_result(&self, path: &Path) -> Result<Option<Metadata>> {
+        let metadata_path = path.join(Metadata::FILE_NAME);
+        let content = match fs::read_to_string(&metadata_path) {
+            Ok(c) => c,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(e) => return Err(ScoopError::Io(e)),
+        };
+        let parsed: Metadata = serde_json::from_str(&content)?;
+        Ok(Some(parsed))
+    }
+
+    /// Write metadata to a virtual environment (non-atomic). Used at
+    /// creation time where any failure aborts env setup anyway.
     fn write_metadata(&self, path: &Path, metadata: &Metadata) -> Result<()> {
         let metadata_path = path.join(Metadata::FILE_NAME);
         let content = serde_json::to_string_pretty(metadata)?;
         fs::write(metadata_path, content)?;
         Ok(())
+    }
+
+    /// Atomically write metadata: write to a sibling tempfile in the same
+    /// directory, fsync, then rename over the target.
+    ///
+    /// Same-directory tempfile is required so the rename stays on one
+    /// filesystem (cross-fs rename would degrade to copy+delete and lose
+    /// atomicity). A crash mid-write leaves either the old file intact or
+    /// the new file fully written — never a truncated half-write that
+    /// future reads would reject as corrupt.
+    pub fn write_metadata_atomic(&self, path: &Path, metadata: &Metadata) -> Result<()> {
+        let metadata_path = path.join(Metadata::FILE_NAME);
+        let dir = metadata_path.parent().ok_or_else(|| {
+            ScoopError::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "metadata path has no parent",
+            ))
+        })?;
+
+        let content = serde_json::to_string_pretty(metadata)?;
+        let mut tmp = tempfile::NamedTempFile::new_in(dir)?;
+        tmp.write_all(content.as_bytes())?;
+        tmp.as_file_mut().sync_all()?;
+        // persist() does the atomic rename. On Unix this is rename(2); on
+        // Windows tempfile uses MoveFileEx with MOVEFILE_REPLACE_EXISTING.
+        tmp.persist(&metadata_path)
+            .map_err(|e| ScoopError::Io(e.error))?;
+        Ok(())
+    }
+
+    /// Touch an env's `last_used` to `now`, best-effort.
+    ///
+    /// Never returns an error: activation must not be blocked by metadata
+    /// I/O failure. Three documented behaviors:
+    ///
+    /// 1. **Missing metadata** — skipped silently (legacy env that was
+    ///    never `scoop create`d via this binary). No file is created.
+    /// 2. **Corrupt metadata** — logged via `warn!` and left untouched.
+    ///    Overwriting would destroy the only on-disk evidence of the
+    ///    corruption. The user can re-run with logging to see what's wrong.
+    /// 3. **Healthy metadata** — `last_used` updated atomically.
+    pub fn touch_metadata_best_effort(&self, env_name: &str, now: DateTime<Utc>) {
+        let path = match paths::virtualenv_path(env_name) {
+            Ok(p) => p,
+            Err(e) => {
+                warn!("touch_metadata: cannot resolve path for {env_name}: {e}");
+                return;
+            }
+        };
+
+        match self.read_metadata_result(&path) {
+            Ok(Some(mut meta)) => {
+                meta.touch(now);
+                if let Err(e) = self.write_metadata_atomic(&path, &meta) {
+                    warn!("touch_metadata: atomic write failed for {env_name}: {e}");
+                }
+            }
+            Ok(None) => {
+                // Legacy env with no metadata file. Nothing to touch and
+                // we deliberately do NOT synthesize one — that would lie
+                // about created_at/created_by.
+            }
+            Err(e) => {
+                warn!("touch_metadata: refusing to overwrite corrupt metadata for {env_name}: {e}");
+            }
+        }
     }
 }
 
@@ -398,6 +494,167 @@ mod tests {
 
             assert_eq!(envs.len(), 1);
             assert_eq!(envs[0].name, "realenv");
+        });
+    }
+
+    // ==========================================================================
+    // last_used / atomic write / touch_metadata_best_effort
+    // ==========================================================================
+
+    fn seed_metadata_file(env_path: &Path, json: &str) {
+        fs::create_dir_all(env_path).unwrap();
+        fs::write(env_path.join(Metadata::FILE_NAME), json).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn test_read_metadata_result_distinguishes_missing_from_corrupt() {
+        with_temp_scoop_home(|temp_dir| {
+            let service = require_uv!();
+            let env_dir = temp_dir.path().join("virtualenvs").join("subject");
+            fs::create_dir_all(&env_dir).unwrap();
+
+            // No file → Ok(None). Distinct from "corrupt" because we
+            // shouldn't warn or refuse anything for a missing file.
+            assert!(service.read_metadata_result(&env_dir).unwrap().is_none());
+
+            // Corrupt JSON → Err(Json(..)). Caller needs this signal to
+            // decide whether to overwrite (no) or warn (yes).
+            fs::write(env_dir.join(Metadata::FILE_NAME), "{ not json").unwrap();
+            let err = service.read_metadata_result(&env_dir).unwrap_err();
+            assert!(
+                matches!(err, ScoopError::Json(_)),
+                "corrupt JSON must yield ScoopError::Json, got: {err:?}"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_touch_metadata_best_effort_updates_only_last_used() {
+        with_temp_scoop_home(|temp_dir| {
+            let service = require_uv!();
+            let env_path = temp_dir.path().join("virtualenvs").join("touched");
+            let seed = r#"{
+                "name": "touched",
+                "python_version": "3.12.1",
+                "created_at": "2024-01-15T10:30:00Z",
+                "created_by": "scoop 0.5.0",
+                "uv_version": "0.4.0"
+            }"#;
+            seed_metadata_file(&env_path, seed);
+
+            let now = "2026-06-02T12:00:00Z".parse::<DateTime<Utc>>().unwrap();
+            service.touch_metadata_best_effort("touched", now);
+
+            let after = service
+                .read_metadata_result(&env_path)
+                .unwrap()
+                .expect("file present after touch");
+            assert_eq!(after.last_used, Some(now));
+            // Provenance fields must survive a touch — they describe how
+            // the env was created and a touch is not a re-creation.
+            assert_eq!(after.name, "touched");
+            assert_eq!(after.python_version, "3.12.1");
+            assert_eq!(after.created_by, "scoop 0.5.0");
+            assert_eq!(after.uv_version, Some("0.4.0".to_string()));
+            let expected_created_at = "2024-01-15T10:30:00Z".parse::<DateTime<Utc>>().unwrap();
+            assert_eq!(after.created_at, expected_created_at);
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_touch_metadata_best_effort_preserves_corrupt_file() {
+        with_temp_scoop_home(|temp_dir| {
+            let service = require_uv!();
+            let env_path = temp_dir.path().join("virtualenvs").join("broken");
+            let garbage = "{ this is not valid json";
+            seed_metadata_file(&env_path, garbage);
+
+            // Must not panic / propagate the error. Must not overwrite.
+            service.touch_metadata_best_effort("broken", "2026-06-02T12:00:00Z".parse().unwrap());
+
+            let on_disk = fs::read_to_string(env_path.join(Metadata::FILE_NAME)).unwrap();
+            assert_eq!(
+                on_disk, garbage,
+                "corrupt metadata must be preserved verbatim — overwriting it \
+                 would destroy the user's only forensic trace of the corruption"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_touch_metadata_best_effort_noop_on_missing_metadata() {
+        with_temp_scoop_home(|temp_dir| {
+            let service = require_uv!();
+            let env_path = temp_dir.path().join("virtualenvs").join("nofile");
+            fs::create_dir_all(&env_path).unwrap();
+
+            // Legacy env with no metadata file. Must NOT synthesize one
+            // (that would lie about created_at) and must NOT error.
+            service.touch_metadata_best_effort("nofile", "2026-06-02T12:00:00Z".parse().unwrap());
+            assert!(!env_path.join(Metadata::FILE_NAME).exists());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_write_metadata_atomic_round_trips() {
+        with_temp_scoop_home(|temp_dir| {
+            let service = require_uv!();
+            let env_path = temp_dir.path().join("virtualenvs").join("atomic");
+            fs::create_dir_all(&env_path).unwrap();
+
+            let mut meta = Metadata::new("atomic".to_string(), "3.12".to_string(), None);
+            let now = "2026-06-02T12:00:00Z".parse::<DateTime<Utc>>().unwrap();
+            meta.touch(now);
+
+            service.write_metadata_atomic(&env_path, &meta).unwrap();
+
+            let restored = service
+                .read_metadata_result(&env_path)
+                .unwrap()
+                .expect("file exists after atomic write");
+            assert_eq!(restored.last_used, Some(now));
+
+            // No tempfile left behind. tempfile::NamedTempFile::persist
+            // promises this but we assert it explicitly so any future
+            // change to the impl that breaks cleanup gets caught.
+            let leftover: Vec<_> = fs::read_dir(&env_path)
+                .unwrap()
+                .filter_map(|e| e.ok())
+                .filter(|e| {
+                    let n = e.file_name();
+                    let s = n.to_string_lossy();
+                    s.starts_with(".tmp") || s.contains("scoop-metadata.json.tmp")
+                })
+                .collect();
+            assert!(leftover.is_empty(), "tempfile residue: {leftover:?}");
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_write_metadata_atomic_overwrites_existing() {
+        with_temp_scoop_home(|temp_dir| {
+            let service = require_uv!();
+            let env_path = temp_dir.path().join("virtualenvs").join("overwrite");
+            fs::create_dir_all(&env_path).unwrap();
+
+            // First write
+            let m1 = Metadata::new("overwrite".to_string(), "3.11".to_string(), None);
+            service.write_metadata_atomic(&env_path, &m1).unwrap();
+
+            // Second write replaces it atomically.
+            let mut m2 = Metadata::new("overwrite".to_string(), "3.12".to_string(), None);
+            m2.touch("2026-06-02T12:00:00Z".parse().unwrap());
+            service.write_metadata_atomic(&env_path, &m2).unwrap();
+
+            let on_disk = service.read_metadata_result(&env_path).unwrap().unwrap();
+            assert_eq!(on_disk.python_version, "3.12");
+            assert!(on_disk.last_used.is_some());
         });
     }
 
