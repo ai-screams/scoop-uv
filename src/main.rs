@@ -176,6 +176,26 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::which(&output, &exe, env.as_deref())
         }
+        Commands::Prune { json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::prune(&output)
+        }
+        Commands::Gc {
+            yes,
+            aggressive,
+            json,
+        } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::gc(&output, yes, aggressive)
+        }
+        Commands::Man { output_dir, json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::man(&output, output_dir.as_deref())
+        }
+        Commands::Verify { name, strict, json } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            scoop_uv::cli::commands::verify(&output, name.as_deref(), strict)
+        }
     };
 
     // Handle errors

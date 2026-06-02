@@ -55,6 +55,10 @@
     "For collaboration, snapshot an env with `scoop export <name> > env.json` (schema v1) and restore with `scoop import env.json --name <new>`. To duplicate locally, use `scoop clone <src> <dst>` (add `--no-packages` for a skeleton).",
     "Lazy Python install: `scoop create <name> <version> --install-python` installs the requested Python via uv if missing, then creates the env.",
     "`scoop migrate all` runs in parallel via rayon; `--dry-run` and single-env (`migrate @env`) stay sequential.",
+    "To free disk space from the uv download/wheel cache, run `scoop prune` (thin wrapper around `uv cache prune`).",
+    "To clean up orphan virtualenvs (missing metadata or broken Python), run `scoop gc` (default is preview/dry-run). Pass `-y`/`--yes` to actually remove. `--aggressive` also flags uv-managed Python versions that no environment references.",
+    "To diagnose env health, run `scoop verify [NAME]`. Runs 6 checks per env (metadata, python binary, pyvenv.cfg, activate script, python executes, .scoop.toml drift). Default always exits 0; pass `--strict` to exit 1 on any issue for CI gates. Use `verify` for per-env diagnosis, `doctor` for system-level, `gc` to remove orphans.",
+    "To generate man pages, use `scoop man` (stdout, pipe to `man -l -`) or `scoop man <DIR>` (writes `scoop.1` + `scoop-<sub>.1` files for distro packagers).",
     "For complete LLM reference, see llms-full.txt in the repository root."
   ]
 }

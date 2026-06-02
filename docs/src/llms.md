@@ -48,6 +48,10 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 | `scoop migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scoop migrate @env <name>` | Migrate single environment |
 | `scoop migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
+| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to actually remove, `--aggressive` also for unused Pythons) |
+| `scoop prune` | Prune the uv cache (`uv cache prune` wrapper) |
+| `scoop verify [NAME]` | Per-env health diagnosis — 6 checks (metadata, python binary, pyvenv.cfg, activate, exec, manifest drift); `--strict` exits 1 on issues |
+| `scoop man [DIR]` | Generate man pages (stdout or one file per subcommand in DIR) |
 
 Most commands support `--json` for machine-readable output.
 

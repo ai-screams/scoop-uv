@@ -138,6 +138,25 @@ impl UvClient {
         parse_python_list_json(&String::from_utf8_lossy(&stdout))
     }
 
+    /// Prune the uv cache.
+    ///
+    /// Removes unused download archives, wheels, and source artifacts from
+    /// `~/.cache/uv/` (or wherever uv stores its cache on this platform).
+    /// Returns uv's stdout for surfacing to the user.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ScoopError::UvCommandFailed`] if `uv cache prune` exits non-zero.
+    pub fn cache_prune(&self) -> Result<String> {
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("cache").arg("prune");
+        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: "uv cache prune".to_string(),
+            message,
+        })?;
+        Ok(String::from_utf8_lossy(&stdout).into_owned())
+    }
+
     /// Uninstall a Python version
     pub fn uninstall_python(&self, version: &str) -> Result<()> {
         let mut cmd = Command::new(&self.path);

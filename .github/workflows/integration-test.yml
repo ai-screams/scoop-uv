@@ -58,15 +58,13 @@ jobs:
           cache-to: type=gha,mode=max,scope=integration-${{ matrix.source-env }}
 
       - name: Run integration tests (${{ matrix.source-env }})
-        # `--entrypoint=""` bypasses /entrypoint.sh — the venvwrapper-test
-        # image's entrypoint exits 127 when sourcing virtualenvwrapper.sh
-        # under `set -e`, which masked the actual integration test. Other
-        # variants don't need the entrypoint either: the Dockerfile ENV
-        # instructions already export PATH with cargo + pyenv shims + uv,
-        # which is enough for `cargo build` + `scoop migrate list` to run.
+        # Use the image's normal entrypoint — it sets up pyenv / conda /
+        # virtualenvwrapper init for us. The previous `--entrypoint=""`
+        # bypass is no longer needed: entrypoint.sh now wraps each
+        # third-party init block with `set +e`, so benign initialization
+        # failures in fresh containers don't abort the entrypoint.
         run: |
           docker run --rm \
-            --entrypoint="" \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             -e CARGO_TERM_COLOR=always \

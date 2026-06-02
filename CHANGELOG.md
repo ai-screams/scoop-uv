@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **cli:** Add `scoop prune` — wraps `uv cache prune` to clean the uv download/wheel cache
+- **cli:** Add `scoop gc` — preview/remove orphan virtualenvs (missing metadata or broken Python); `--aggressive` also reports unused uv-managed Python versions
+- **cli:** Add `scoop man [DIR]` — generate man pages from the live `clap::Command` tree (top-level `scoop.1` + one `scoop-<sub>.1` per visible subcommand)
+- **cli:** Add `scoop verify [NAME]` — per-env health diagnosis with 6 checks (metadata, python binary, pyvenv.cfg, activate script, python executes, manifest drift). Defaults to exit 0; pass `--strict` for CI gates
+- **core:** Re-export `VirtualenvInfo` from `crate::core` so the new `verify` command (and future callers) can name the type returned by `VirtualenvService::list()` without poking into a private module
+- **i18n:** Translation keys for `prune`, `gc`, `man`, `verify` across en/ko/ja/pt-BR
+
+### Changed
+
+- **deps:** Move `clap_mangen` from `[build-dependencies]` (unused — no `build.rs`) to `[dependencies]` so it can power the runtime `scoop man` subcommand
+
 ## [0.11.0] - 2026-06-01
 
 ### Added

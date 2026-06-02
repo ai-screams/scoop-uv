@@ -22,10 +22,14 @@ Complete reference for all scoop commands.
 | [`scoop import`](import.md) | - | Recreate an env from an export file (or stdin) |
 | [`scoop clone`](clone.md) | - | Duplicate an env (with or without packages) |
 | [`scoop migrate`](migrate.md) | - | Migrate from pyenv/conda/venvwrapper |
+| [`scoop gc`](gc.md) | - | Garbage-collect orphan virtualenvs |
+| [`scoop prune`](prune.md) | - | Prune the uv cache |
+| [`scoop verify`](verify.md) | - | Per-env health diagnosis (6 checks) |
 | [`scoop lang`](lang.md) | - | Get/set display language |
 | [`scoop shell`](shell.md) | - | Set shell-specific env (temporary) |
 | [`scoop init`](init.md) | - | Shell init script |
 | [`scoop completions`](completions.md) | - | Completion script |
+| [`scoop man`](man.md) | - | Generate man pages (for distro packagers) |
 
 ## Global Options
 

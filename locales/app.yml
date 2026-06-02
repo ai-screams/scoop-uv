@@ -1081,3 +1081,207 @@ error.self_update_failed:
   ko: "자체 업데이트 실패: %{message}"
   pt-BR: "Falha na auto-atualização: %{message}"
   ja: "セルフアップデート失敗: %{message}"
+
+# ============================================================================
+# Prune command (uv cache cleanup)
+# ============================================================================
+prune.success:
+  en: "uv cache pruned"
+  ko: "uv 캐시를 정리했어요"
+  pt-BR: "Cache do uv limpo"
+  ja: "uv キャッシュを整理しました"
+
+# ============================================================================
+# Gc command (orphan virtualenv cleanup)
+# ============================================================================
+gc.nothing_to_remove:
+  en: "Nothing to clean up — all environments look healthy"
+  ko: "정리할 게 없어요 — 모든 환경이 정상이에요"
+  pt-BR: "Nada para limpar — todos os ambientes estão saudáveis"
+  ja: "片付けるものはありません — すべての環境は正常です"
+
+gc.envs_header:
+  en: "Orphan virtualenvs (%{count}):"
+  ko: "고아 가상환경 %{count}개:"
+  pt-BR: "Ambientes virtuais órfãos (%{count}):"
+  ja: "孤立した仮想環境 %{count} 件:"
+
+gc.pythons_header:
+  en: "Unused Python versions (%{count}):"
+  ko: "사용 안 하는 Python 버전 %{count}개:"
+  pt-BR: "Versões Python não usadas (%{count}):"
+  ja: "使用されていない Python バージョン %{count} 件:"
+
+gc.reason_missing_metadata:
+  en: "no .scoop-metadata.json"
+  ko: ".scoop-metadata.json 없음"
+  pt-BR: "sem .scoop-metadata.json"
+  ja: ".scoop-metadata.json なし"
+
+gc.reason_broken_python:
+  en: "Python interpreter missing"
+  ko: "Python 인터프리터 없음"
+  pt-BR: "interpretador Python ausente"
+  ja: "Python インタプリタが見つかりません"
+
+gc.dry_run_hint:
+  en: "(dry run — pass `--yes` to actually remove)"
+  ko: "(미리보기 — 실제로 삭제하려면 `--yes` 를 붙여주세요)"
+  pt-BR: "(simulação — passe `--yes` para remover de verdade)"
+  ja: "(プレビューのみ — 実際に削除するには `--yes` を指定してください)"
+
+gc.removed_env:
+  en: "Removed environment '%{name}'"
+  ko: "환경 '%{name}' 을(를) 삭제했어요"
+  pt-BR: "Ambiente '%{name}' removido"
+  ja: "環境 '%{name}' を削除しました"
+
+gc.remove_env_failed:
+  en: "Failed to remove '%{name}': %{error}"
+  ko: "'%{name}' 삭제 실패: %{error}"
+  pt-BR: "Falha ao remover '%{name}': %{error}"
+  ja: "'%{name}' の削除に失敗: %{error}"
+
+gc.removed_python:
+  en: "Removed Python %{version}"
+  ko: "Python %{version} 을(를) 삭제했어요"
+  pt-BR: "Python %{version} removido"
+  ja: "Python %{version} を削除しました"
+
+gc.remove_python_failed:
+  en: "Failed to remove Python %{version}: %{error}"
+  ko: "Python %{version} 삭제 실패: %{error}"
+  pt-BR: "Falha ao remover Python %{version}: %{error}"
+  ja: "Python %{version} の削除に失敗: %{error}"
+
+gc.done:
+  en: "Cleanup complete"
+  ko: "정리 완료"
+  pt-BR: "Limpeza concluída"
+  ja: "整理が完了しました"
+
+# ============================================================================
+# Man command (clap_mangen output)
+# ============================================================================
+# ============================================================================
+# Verify command (per-env health diagnosis)
+# ============================================================================
+verify.no_envs:
+  en: "No environments to check"
+  ko: "검사할 환경이 없어요"
+  pt-BR: "Nenhum ambiente para verificar"
+  ja: "確認する環境がありません"
+
+verify.summary:
+  en: "%{total} env(s) checked: %{healthy} healthy, %{issues} with issues"
+  ko: "환경 %{total}개 검사: 정상 %{healthy}개, 문제 있음 %{issues}개"
+  pt-BR: "%{total} ambiente(s) verificado(s): %{healthy} saudáveis, %{issues} com problemas"
+  ja: "環境 %{total} 件を確認: 正常 %{healthy} 件、問題あり %{issues} 件"
+
+verify.metadata_missing:
+  en: ".scoop-metadata.json not found"
+  ko: ".scoop-metadata.json 파일이 없어요"
+  pt-BR: ".scoop-metadata.json não encontrado"
+  ja: ".scoop-metadata.json が見つかりません"
+
+verify.metadata_unreadable:
+  en: ".scoop-metadata.json exists but failed to parse"
+  ko: ".scoop-metadata.json 파일이 있지만 읽지 못했어요"
+  pt-BR: ".scoop-metadata.json existe mas não pôde ser lido"
+  ja: ".scoop-metadata.json は存在しますが読み込めませんでした"
+
+verify.file_missing:
+  en: "%{path} not found"
+  ko: "%{path} 가 없어요"
+  pt-BR: "%{path} não encontrado"
+  ja: "%{path} が見つかりません"
+
+verify.manifest_drift:
+  en: "env Python %{env} does not match .scoop.toml (%{manifest})"
+  ko: "환경의 Python %{env} 가 .scoop.toml (%{manifest}) 과 달라요"
+  pt-BR: "Python do ambiente %{env} não corresponde ao .scoop.toml (%{manifest})"
+  ja: "環境の Python %{env} は .scoop.toml (%{manifest}) と一致しません"
+
+verify.python_unknown:
+  en: "Python version unknown"
+  ko: "Python 버전 알 수 없음"
+  pt-BR: "Versão do Python desconhecida"
+  ja: "Python バージョン不明"
+
+verify.check_metadata:
+  en: "metadata"
+  ko: "메타데이터"
+  pt-BR: "metadados"
+  ja: "メタデータ"
+
+verify.check_python_binary:
+  en: "Python binary"
+  ko: "Python 바이너리"
+  pt-BR: "binário Python"
+  ja: "Python バイナリ"
+
+verify.check_pyvenv_cfg:
+  en: "pyvenv.cfg"
+  ko: "pyvenv.cfg"
+  pt-BR: "pyvenv.cfg"
+  ja: "pyvenv.cfg"
+
+verify.check_activate_script:
+  en: "activate script"
+  ko: "activate 스크립트"
+  pt-BR: "script activate"
+  ja: "activate スクリプト"
+
+verify.check_python_executes:
+  en: "Python executes"
+  ko: "Python 실행"
+  pt-BR: "execução do Python"
+  ja: "Python 実行"
+
+verify.check_manifest_match:
+  en: "matches .scoop.toml"
+  ko: ".scoop.toml 일치"
+  pt-BR: "corresponde a .scoop.toml"
+  ja: ".scoop.toml と一致"
+
+verify.summary_with_warnings:
+  en: "%{total} env(s) checked: %{healthy} healthy, %{warnings} with warnings, %{issues} with issues"
+  ko: "환경 %{total}개 검사: 정상 %{healthy}개, 경고 %{warnings}개, 문제 있음 %{issues}개"
+  pt-BR: "%{total} ambiente(s) verificado(s): %{healthy} saudáveis, %{warnings} com avisos, %{issues} com problemas"
+  ja: "環境 %{total} 件を確認: 正常 %{healthy} 件、警告 %{warnings} 件、問題あり %{issues} 件"
+
+error.verify_failed:
+  en: "Verification found %{issues} environment(s) with failing checks"
+  ko: "검증 결과 %{issues}개 환경에서 실패한 검사가 있어요"
+  pt-BR: "Verificação encontrou %{issues} ambiente(s) com checagens falhando"
+  ja: "検証の結果、%{issues} 件の環境で失敗したチェックがあります"
+
+gc.skipped_now_healthy:
+  en: "Skipped '%{name}' — became healthy between scan and remove"
+  ko: "'%{name}' 건너뜀 — 스캔과 삭제 사이에 정상 상태가 됨"
+  pt-BR: "Pulado '%{name}' — tornou-se saudável entre escaneamento e remoção"
+  ja: "'%{name}' をスキップ — スキャンと削除の間に正常状態になりました"
+
+gc.skipped_python_now_in_use:
+  en: "Skipped Python %{version} — became referenced by an env between scan and uninstall"
+  ko: "Python %{version} 건너뜀 — 스캔과 삭제 사이에 환경이 참조하기 시작함"
+  pt-BR: "Python %{version} pulado — tornou-se referenciado por um ambiente entre escaneamento e desinstalação"
+  ja: "Python %{version} をスキップ — スキャンとアンインストールの間に環境から参照されました"
+
+gc.unreadable_metadata_warn:
+  en: "%{count} env(s) have unreadable metadata; skipping Python cleanup to be safe"
+  ko: "환경 %{count}개의 메타데이터를 읽을 수 없어요. 안전을 위해 Python 정리는 건너뛸게요"
+  pt-BR: "%{count} ambiente(s) com metadados ilegíveis; pulando limpeza de Python por segurança"
+  ja: "%{count} 件の環境のメタデータを読み込めません。安全のため Python のクリーンアップをスキップします"
+
+man.refuse_symlink:
+  en: "Refusing to write into symlinked directory: %{path}"
+  ko: "심볼릭 링크 디렉토리에는 쓰지 않을게요: %{path}"
+  pt-BR: "Recusando escrever em diretório com link simbólico: %{path}"
+  ja: "シンボリックリンクのディレクトリには書き込みません: %{path}"
+
+man.written:
+  en: "Wrote %{count} top-level man page(s) to %{dir} (nested subcommands are inlined into their parent page)"
+  ko: "%{dir} 에 최상위 매뉴얼 페이지 %{count}개 생성 (서브-서브커맨드는 부모 페이지에 포함됨)"
+  pt-BR: "Escritas %{count} man page(s) de nível superior em %{dir} (subcomandos aninhados são incluídos na página pai)"
+  ja: "%{dir} に最上位 man ページ %{count} 件を書き出しました (ネストされたサブコマンドは親ページに含まれます)"

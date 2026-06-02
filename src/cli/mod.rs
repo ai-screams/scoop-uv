@@ -498,6 +498,57 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
     },
+
+    /// Prune the uv cache (delete unused download/wheel cache entries)
+    Prune {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// Garbage-collect orphan virtual environments
+    Gc {
+        /// Actually remove the orphans (default: preview only)
+        #[arg(short, long)]
+        yes: bool,
+
+        /// Also remove uv-managed Python versions that no environment uses
+        #[arg(long)]
+        aggressive: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+
+    /// Generate man pages (top-level + one per subcommand)
+    Man {
+        /// Write `scoop.1` + `scoop-<sub>.1` files into this directory.
+        /// Omit to print the top-level page to stdout.
+        #[arg(value_name = "DIR")]
+        output_dir: Option<PathBuf>,
+
+        /// Output as JSON. Requires `DIR` — JSON has nothing meaningful
+        /// to say about a single groff page on stdout, and accepting it
+        /// silently would lie to scripts that pipe through `jq`.
+        #[arg(long, requires = "output_dir")]
+        json: bool,
+    },
+
+    /// Verify env health (metadata, python binary, pyvenv.cfg, activate, exec, manifest drift)
+    Verify {
+        /// Check only this environment (default: every environment)
+        #[arg(value_name = "NAME")]
+        name: Option<String>,
+
+        /// Exit with status 1 if any check fails (default: always exit 0)
+        #[arg(long)]
+        strict: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Supported shell types

@@ -332,6 +332,9 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop clone <src> <dst>` | Duplicate an environment |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
+| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove) |
+| `scoop prune` | Prune the uv cache |
+| `scoop verify` | Per-env health check (metadata, python, pyvenv.cfg, ...) |
 | `scoop doctor` | Health check your setup |
 | `scoop self update` | Update scoop itself to the latest version |
 
@@ -386,9 +389,27 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 |-----------------------------|------------------------------------------|
 | `scoop migrate list`        | Show environments to migrate             |
 | `scoop migrate @env <name>` | Migrate a single environment             |
-| `scoop migrate all`         | Migrate all environments                 |
+| `scoop migrate all`         | Migrate all environments (parallel)      |
 
 > **Supported sources:** pyenv-virtualenv, virtualenvwrapper, conda
+
+### Cleanup 🧹
+
+| Command                  | Description                                                    |
+|--------------------------|----------------------------------------------------------------|
+| `scoop verify`           | Per-env health diagnosis — 6 checks per env                    |
+| `scoop verify --strict`  | Same, but exit 1 on any issue (CI gate)                        |
+| `scoop gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
+| `scoop gc --yes`         | Actually remove the orphans                                    |
+| `scoop gc --aggressive`  | Also flag unused uv-managed Python versions                    |
+| `scoop prune`            | Prune the uv download/wheel cache (`uv cache prune` wrapper)   |
+
+### Packaging 📦
+
+| Command                | Description                                                         |
+|------------------------|---------------------------------------------------------------------|
+| `scoop man`            | Print top-level `scoop.1` to stdout (pipe to `man -l -`)            |
+| `scoop man <DIR>`      | Write `scoop.1` + one `scoop-<sub>.1` per subcommand into `<DIR>`   |
 
 ### Language 🌏
 

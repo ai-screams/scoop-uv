@@ -45,7 +45,6 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Terminal UI
 owo-colors = "4.0"
-console = "0.16.3"
 indicatif = "0.18"
 dialoguer = "0.12"
 
@@ -63,8 +62,9 @@ sys-locale = "0.3"
 toml = { version = "1.1.2", features = ["parse"] }
 rayon = "1.12.0"
 
-[build-dependencies]
-clap = { version = "4.6", features = ["derive"] }
+# Man pages — generated at runtime by `scoop man [DIR]`. clap_mangen consumes
+# the same `clap::Command` tree used by the CLI, so the man pages stay in sync
+# with `--help` automatically.
 clap_mangen = "0.3"
 
 [features]
