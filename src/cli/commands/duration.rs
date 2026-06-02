@@ -5,23 +5,33 @@
 //! hand-rolled instead of pulling in the `humantime` crate: we need
 //! literally one form, predictable rejection of month-style inputs
 //! (`m` is ambiguous between minute and month), and zero new
-//! dependencies. The output is a `chrono::Duration` so callers can
-//! subtract directly from `Utc::now()`.
+//! dependencies. The output is a [`chrono::Duration`] so callers can
+//! subtract from `Utc::now()` via [`chrono::DateTime::checked_sub_signed`]
+//! to produce a cutoff instant (bare `-` would panic on overflow).
 //!
-//! Not exported from the crate — `gc::execute` is the only consumer.
-//! If a second consumer shows up, lift this to its own module.
+//! `pub(crate)` only: `gc::execute` is the lone consumer. If a second
+//! consumer shows up, lift this to its own module.
+
+// dead_code is expected for the gap between this commit (helper +
+// tests) and Step 5 (gc wires it in). Tests exercise every function;
+// once gc imports the helper the allow can come off.
+#![allow(dead_code)]
 
 use chrono::Duration;
-use rust_i18n::t;
 
 use crate::error::{Result, ScoopError};
 
-/// Maximum value we'll accept for the numeric prefix. Picked so that
-/// `<n> * 86_400 * 365` fits in `i64` with room for arithmetic later.
-/// In practice "older-than 200 years" is nonsense for an env, so the
-/// limit isn't even close to the meaningful range; this is just
-/// belt-and-suspenders against `i64` overflow during multiplication.
-const MAX_VALUE: u64 = 1_000_000;
+/// Hard cap on the final day count.
+///
+/// 200 calendar years (`365 * 200`) is well outside any realistic
+/// `--older-than` window and well inside chrono's representable range
+/// (~262k years). Picking the cap on *days* (not the unit-prefixed
+/// value) means `200y`, `~10400w`, and `73000d` all hit the same
+/// ceiling — no funny "1000000d slipped through because the multiplier
+/// was 1" surprises. Codex review on the previous commit caught a
+/// pre-cap `MAX_VALUE = 1_000_000` that would have let `1000000y`
+/// panic on the eventual `Utc::now() - duration` in Step 5.
+const MAX_DAYS: i64 = 365 * 200;
 
 /// Parse an age string like `"30d"` / `"2w"` / `"1y"` into a
 /// [`chrono::Duration`].
@@ -55,39 +65,31 @@ const MAX_VALUE: u64 = 1_000_000;
 ///
 /// # Examples
 ///
-/// ```
-/// # use chrono::Duration;
-/// # use scoop_uv::cli::commands::parse_duration;
-/// assert_eq!(parse_duration("30d").unwrap(), Duration::days(30));
-/// assert_eq!(parse_duration("2w").unwrap(), Duration::days(14));
-/// assert_eq!(parse_duration("1y").unwrap(), Duration::days(365));
-/// assert!(parse_duration("6m").is_err()); // month: not accepted
-/// assert!(parse_duration("0d").is_err()); // zero: not accepted
-/// ```
-pub fn parse_duration(s: &str) -> Result<Duration> {
+/// See unit tests below for the full matrix; the parser is `pub(crate)`
+/// because Step 5 (`gc --older-than`) is the only consumer.
+pub(crate) fn parse_duration(s: &str) -> Result<Duration> {
     if s.is_empty() {
         return Err(invalid("duration cannot be empty"));
     }
 
-    // Split into numeric prefix + 1-char suffix. ASCII-only by design:
-    // the suffix table is `d`/`w`/`y`, no need to walk Unicode boundaries.
-    let bytes = s.as_bytes();
-    let last = *bytes.last().unwrap(); // safe: empty case checked above
+    // Locate the suffix as the first non-digit run, so multi-char
+    // suffixes (`mo`, `min`, ...) are detected as a unit instead of
+    // collapsing into the numeric prefix. Without this, `1mo` would
+    // parse as num="1m" + suffix="o" and surface a confusing
+    // "could not parse '1m' as a positive integer" error.
+    let suffix_start = s
+        .find(|c: char| !c.is_ascii_digit())
+        .ok_or_else(|| invalid("duration must end with a unit suffix (d/w/y), e.g. 30d"))?;
 
-    if !last.is_ascii_alphabetic() {
-        return Err(invalid(
-            "duration must end with a unit suffix (d/w/y), e.g. 30d",
-        ));
-    }
+    let (num_part, suffix) = s.split_at(suffix_start);
 
-    let (num_part, suffix) = s.split_at(s.len() - 1);
     if num_part.is_empty() {
         return Err(invalid("duration must start with a number, e.g. 30d"));
     }
 
-    // Explicitly reject signed prefixes — `parse::<u64>` already does
-    // this for `-30d`, but `+30d` would parse, which we don't want
-    // (suggests a "since now" form we don't support).
+    // `parse::<u64>` already rejects `-30d`; `+30d` would slip through
+    // because `+` is not a digit (so split_at sees the `+` in the
+    // suffix). Belt-and-suspenders: refuse both signs explicitly.
     if num_part.starts_with('+') || num_part.starts_with('-') {
         return Err(invalid("duration must be a positive number, e.g. 30d"));
     }
@@ -104,24 +106,19 @@ pub fn parse_duration(s: &str) -> Result<Duration> {
         ));
     }
 
-    if value > MAX_VALUE {
-        return Err(invalid(&format!(
-            "duration too large (max {MAX_VALUE}{suffix})"
-        )));
-    }
-
     let days_per_unit: i64 = match suffix {
         "d" => 1,
         "w" => 7,
         // 365 d — calendar years dropped on purpose (see module doc).
         "y" => 365,
-        // Explicit "no months" error rather than the generic "unknown
-        // suffix" message: it's the most likely user mistake (Codex M5
-        // call-out) and deserves a specific hint.
-        "m" => {
+        // Month variants get the most-likely-mistake error so users
+        // don't get bounced by a generic "unknown suffix" hint. `m` is
+        // also ambiguous with "minute"; the message calls out both
+        // readings instead of guessing.
+        "m" | "mo" | "mon" | "month" | "months" => {
             return Err(invalid(
-                "month suffix 'm' is ambiguous between minutes and months; \
-                 use 'd' (days), 'w' (weeks), or 'y' (years=365d)",
+                "month suffixes (m/mo/month) are ambiguous between minutes \
+                 and months; use 'd' (days), 'w' (weeks), or 'y' (years=365d)",
             ));
         }
         _ => {
@@ -131,25 +128,36 @@ pub fn parse_duration(s: &str) -> Result<Duration> {
         }
     };
 
-    // Safe by construction: value <= MAX_VALUE (1_000_000), days_per_unit <= 365.
-    // i64::MAX / 365 ≈ 2.5e16, so the cast and multiply fit comfortably.
-    // Still go through checked_mul to pin the contract — if MAX_VALUE
-    // is ever raised, this catches the overflow rather than wrapping.
+    // checked_mul guards the (value as i64) * days_per_unit step, then
+    // we cap on the final day count rather than on `value` directly so
+    // `200y` / `10400w` / `73000d` all hit the same ceiling — no
+    // surprise where a small `MAX_VALUE` lets a giant day count slip
+    // through because the multiplier was 1.
     let total_days = (value as i64)
         .checked_mul(days_per_unit)
         .ok_or_else(|| invalid("duration arithmetic overflowed"))?;
 
-    Ok(Duration::days(total_days))
+    if total_days > MAX_DAYS {
+        return Err(invalid(&format!(
+            "duration too large (max {MAX_DAYS} days ≈ 200 years)"
+        )));
+    }
+
+    // `Duration::days` panics on internal overflow; `try_days` returns
+    // None instead. Within the MAX_DAYS cap we'll never trip this, but
+    // keeping the checked path means a future cap bump can't silently
+    // re-introduce a panic.
+    Duration::try_days(total_days).ok_or_else(|| invalid("duration arithmetic overflowed"))
 }
 
-/// Build an `InvalidArgument` error so the caller's `--older-than`
-/// invocation surfaces the parse reason instead of a generic "bad
-/// flag". Reuses the existing `error.invalid_argument` i18n key —
-/// the parse reasons themselves are English-only engineering hints
-/// (matching how other parse errors thread through in this crate).
+/// Build an `InvalidArgument` error. The error's `Display` impl
+/// already routes through the `error.invalid_argument` i18n key, so
+/// we just pass the raw reason string — wrapping it in another
+/// `t!("error.invalid_argument", ...)` call (as an earlier draft did)
+/// would double-apply the template.
 fn invalid(reason: &str) -> ScoopError {
     ScoopError::InvalidArgument {
-        message: t!("error.invalid_argument", message = reason).to_string(),
+        message: reason.to_owned(),
     }
 }
 
@@ -239,10 +247,32 @@ mod tests {
     }
 
     #[test]
-    fn rejects_overflow_value() {
-        // MAX_VALUE + 1 must reject before the multiply step.
-        let too_big = format!("{}d", MAX_VALUE + 1);
-        assert!(parse_duration(&too_big).is_err());
+    fn rejects_value_past_max_days_in_each_unit() {
+        // Cap is on the *day count*, so passing the limit in any unit
+        // must reject. Pinning all three keeps a future "raise the cap
+        // for years only" tweak from re-introducing the panic surface
+        // Codex flagged on the previous commit.
+        let past_in_days = format!("{}d", MAX_DAYS + 1);
+        let past_in_weeks = format!("{}w", (MAX_DAYS / 7) + 1);
+        let past_in_years = format!("{}y", (MAX_DAYS / 365) + 1);
+        for s in [&past_in_days, &past_in_weeks, &past_in_years] {
+            assert!(parse_duration(s).is_err(), "should reject {s}");
+        }
+    }
+
+    #[test]
+    fn max_days_in_years_does_not_panic_on_cutoff() {
+        // The whole reason for MAX_DAYS = 365*200 is that 200y leaves
+        // plenty of headroom inside chrono's representable range, so
+        // a caller doing `Utc::now().checked_sub_signed(d)` returns
+        // `Some(_)`. If a future refactor raises the cap and breaks
+        // this, callers start panicking on a CLI argument.
+        let d = parse_duration("200y").expect("200y must parse");
+        let now = chrono::Utc::now();
+        assert!(
+            now.checked_sub_signed(d).is_some(),
+            "cutoff math must not overflow for MAX_DAYS",
+        );
     }
 
     #[test]
@@ -253,11 +283,30 @@ mod tests {
     }
 
     #[test]
-    fn max_value_boundary_accepted() {
-        // MAX_VALUE exactly must still parse, so the bound is
-        // inclusive — pinning it prevents a `> MAX_VALUE` → `>= MAX_VALUE`
-        // mutant from sneaking through.
-        let exact = format!("{MAX_VALUE}d");
-        assert!(parse_duration(&exact).is_ok());
+    fn max_days_boundary_accepted() {
+        // MAX_DAYS exactly must parse — the bound is inclusive. Pins
+        // the contract so a `> MAX_DAYS` → `>= MAX_DAYS` mutation gets
+        // caught.
+        let exact_days = format!("{MAX_DAYS}d");
+        assert!(parse_duration(&exact_days).is_ok());
+        // Same value, expressed in years — equivalent to MAX_DAYS, so
+        // it must also be accepted.
+        assert!(parse_duration("200y").is_ok());
+    }
+
+    #[test]
+    fn rejects_month_variants_with_specific_hint() {
+        // Codex MEDIUM-2 on this commit's predecessor: `1mo` used to
+        // parse as num="1m" + suffix="o" and surface "could not parse"
+        // instead of the month-ambiguity hint. Walk every variant to
+        // make sure all month-shaped inputs hit the dedicated arm.
+        for s in ["6m", "6mo", "6mon", "6month", "6months"] {
+            let err = parse_duration(s).unwrap_err();
+            let msg = err.to_string();
+            assert!(
+                msg.contains("month") || msg.contains("ambiguous"),
+                "{s} must surface month-ambiguity hint, got: {msg}"
+            );
+        }
     }
 }
