@@ -322,8 +322,8 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 |---------|-------------|
 | `scoop create <name> [version]` | Create a new environment |
 | `scoop use <name>` | Activate environment (auto-activates in directory) |
-| `scoop list` | List all environments |
-| `scoop status` | Show the currently active environment |
+| `scoop list` | List all environments (`--sort name\|created\|last-used`) |
+| `scoop status` | Show the currently active environment (includes `Last used:`) |
 | `scoop which <exe>` | Resolve an executable inside the active env |
 | `scoop run <env> -- <cmd>` | Run a command inside an env without activating |
 | `scoop sync` | Apply `.scoop.toml` (create env + install packages) |
@@ -332,7 +332,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop clone <src> <dst>` | Duplicate an environment |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
-| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove) |
+| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove, `--older-than <n>d/w/y` for stale envs) |
 | `scoop prune` | Prune the uv cache |
 | `scoop verify` | Per-env health check (metadata, python, pyvenv.cfg, ...) |
 | `scoop doctor` | Health check your setup |

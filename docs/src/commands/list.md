@@ -16,8 +16,28 @@ scoop list [options]
 |--------|-------------|
 | `--pythons` | Show Python versions instead of virtualenvs |
 | `--python-version <VERSION>` | Filter environments by Python version (e.g., `3.12`) |
+| `--sort <MODE>` | Sort order: `name` (default), `created`, `last-used` |
 | `--bare` | Output names only (for scripting) |
 | `--json` | Output as JSON |
+
+## Sort
+
+`--sort` reorders the output without changing what's shown:
+
+| Mode        | Order                              | Tie-break          |
+|-------------|------------------------------------|--------------------|
+| `name`      | Alphabetical (default, back-compat)| —                  |
+| `created`   | Newest `created_at` first          | Name (asc)         |
+| `last-used` | Most recently activated first      | Name (asc)         |
+
+Envs missing the relevant timestamp (`created_at` / `last_used`) sort
+to the **end** of the list, with name-order tie-break — so legacy or
+never-activated envs don't bury the interesting ones. `last_used`
+populates as soon as the env is activated via `scoop use`, `scoop run`,
+or `scoop shell`.
+
+`--sort` is mutually exclusive with `--pythons` (which lists Python
+installations, not environments).
 
 ## Examples
 
@@ -31,6 +51,10 @@ scoop list --json                    # JSON output
 scoop list --python-version 3.12     # Show only 3.12.x environments
 scoop list --python-version 3        # Show all Python 3.x environments
 scoop list --python-version 3.12.1   # Exact version match
+
+# Sort
+scoop list --sort created            # Newest envs first
+scoop list --sort last-used          # Recently active envs first
 ```
 
 ## List Python Versions with Associated Environments

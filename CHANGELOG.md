@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **core:** `Metadata.last_used: Option<DateTime<Utc>>` — additive serde
+  field tracking per-env activation timestamps. Legacy
+  `.scoop-metadata.json` files round-trip unchanged (`skip_serializing_if`).
+- **core:** `VirtualenvService::write_metadata_atomic` — tempfile +
+  rename in the same directory so a crash mid-write leaves either the
+  old or new file intact; `read_metadata_result` distinguishes missing
+  from corrupt so the touch path can refuse to overwrite garbage.
+- **cli:** `scoop activate` / `scoop run` / `scoop shell` touch
+  `last_used` best-effort. Last-writer-wins under contention;
+  acceptable for display + day/week-granularity gc heuristics.
+- **cli:** `scoop status` and `scoop info` gain a `Last used:` row
+  ("3 hours ago" / "never"). JSON envelope gains
+  `last_used: <RFC 3339>` (omitted when absent).
+- **cli:** `scoop list --sort=<name|created|last-used>`. Default is
+  `name` for back-compat. `created` / `last-used` sort newest first
+  with envs missing the timestamp pushed to the end and a name
+  tie-break. Conflicts with `--pythons`. Shell completions
+  (bash/zsh/fish) updated.
+- **cli:** `scoop gc --older-than <DURATION>` — flag envs whose
+  `last_used` is past the cutoff. Duration parser accepts `<n>d` /
+  `<n>w` / `<n>y` (months deliberately rejected as ambiguous
+  between minute/month). Hard cap at 200 years to keep the resulting
+  cutoff inside chrono's representable range.
+- **gc:** `EnvGcReason::Stale` variant joins the existing orphan
+  reasons. Per-reason TOCTOU recheck (orphans re-`classify()`, stale
+  re-reads metadata against the original scan cutoff). Two new
+  `EnvOutcome` variants — `SkippedRecentlyUsed` (env touched between
+  scan and remove) and `SkippedNoData` (metadata became unreadable
+  between scan and remove) — surface the conservative skips in JSON.
+- **i18n:** New keys across en/ko/ja/pt-BR: `gc.reason_stale`,
+  `gc.skipped_recently_used`, `gc.skipped_no_data`.
+
+### Changed
+
+- **core:** `VirtualenvInfo` (the `scoop_uv::core::VirtualenvInfo`
+  re-export) is now `#[non_exhaustive]`. Construction sites inside
+  the crate are unaffected; external Rust consumers building it via
+  struct-literal syntax must use `..Default::default()` or a builder
+  going forward. Future timestamp fields will not be a breaking
+  change.
+- **output:** `output::VirtualenvInfo` JSON envelope gains
+  `created_at` and `last_used` fields (RFC 3339,
+  `skip_serializing_if = "Option::is_none"`).
+- **gc:** `OrphanReason` renamed to `EnvGcReason` internally; JSON
+  discriminator values (`missing_metadata`, `broken_python`) preserved
+  via `#[serde(rename)]` so existing consumers are unaffected.
+- **gc:** `remove_dir_all` returning NotFound during `--yes` is now
+  treated as success-equivalent (the on-disk goal is met); previously
+  it was misclassified as `Failed` under concurrent gc invocations.
+
+### Documentation
+
+- Document `last_used` across `status` / `info` / `list` / `gc` command
+  pages and the LLM exports.
+
+
+
 ## [0.12.0] - 2026-06-02
 
 ### Added
