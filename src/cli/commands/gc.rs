@@ -47,14 +47,70 @@ struct UnusedPython {
     path: Option<String>,
 }
 
+/// What actually happened to an orphan env at `--yes` time.
+///
+/// JSON consumers parse `outcome` to detect partial failure: a green
+/// envelope ("status": "success") with `outcome: "failed"` envs is
+/// still a partial failure the caller needs to handle.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum EnvOutcome {
+    /// Dry-run: would remove if `--yes` were given.
+    Pending,
+    /// `--yes`: directory successfully removed.
+    Removed,
+    /// `--yes`: env re-classified as healthy between scan and remove;
+    /// destructive action skipped on purpose (TOCTOU guard fired).
+    SkippedHealthy,
+    /// `--yes`: removal returned an IO error. See `error` for details.
+    Failed,
+}
+
+#[derive(Debug, Serialize)]
+struct EnvRecord {
+    name: String,
+    path: String,
+    reason: OrphanReason,
+    outcome: EnvOutcome,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
+}
+
+/// What actually happened to a `--aggressive` candidate Python.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum PythonOutcome {
+    /// Dry-run: would uninstall.
+    Pending,
+    /// `--yes`: `uv python uninstall` succeeded.
+    Removed,
+    /// `--yes`: re-scan showed an env now references this version; skipped.
+    SkippedInUse,
+    /// `--yes`: uv binary disappeared between scan and uninstall; skipped.
+    SkippedNoUv,
+    /// `--yes`: uninstall returned an error. See `error` for details.
+    Failed,
+}
+
+#[derive(Debug, Serialize)]
+struct PythonRecord {
+    version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    path: Option<String>,
+    outcome: PythonOutcome,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
+}
+
 #[derive(Debug, Serialize)]
 struct GcData {
     /// `true` if nothing was actually removed (preview only).
     dry_run: bool,
-    /// Orphan virtualenvs that were (or would be) removed.
-    envs: Vec<OrphanEnv>,
-    /// Unused Python versions — populated only when `--aggressive`.
-    pythons: Vec<UnusedPython>,
+    /// Orphan virtualenvs and their actual outcome.
+    envs: Vec<EnvRecord>,
+    /// Unused Python versions (populated only when `--aggressive`) and
+    /// their actual outcome.
+    pythons: Vec<PythonRecord>,
 }
 
 /// Execute the `gc` command.
@@ -78,14 +134,45 @@ pub fn execute(output: &Output, yes: bool, aggressive: bool) -> Result<()> {
         ));
     }
 
+    // Build records up-front. Dry-run leaves everything Pending; `--yes`
+    // mutates outcomes in remove_orphans so the JSON envelope reflects
+    // what actually happened, not just the original scan snapshot. (The
+    // old JSON shape always claimed success — partial failures were only
+    // visible in human warn output, which scripts can't see.)
+    let mut env_records: Vec<EnvRecord> = envs
+        .iter()
+        .map(|o| EnvRecord {
+            name: o.name.clone(),
+            path: o.path.clone(),
+            reason: o.reason,
+            outcome: EnvOutcome::Pending,
+            error: None,
+        })
+        .collect();
+    let mut python_records: Vec<PythonRecord> = pythons
+        .iter()
+        .map(|p| PythonRecord {
+            version: p.version.clone(),
+            path: p.path.clone(),
+            outcome: PythonOutcome::Pending,
+            error: None,
+        })
+        .collect();
+
     if yes {
-        remove_orphans(output, &envs, &pythons)?;
+        remove_orphans(
+            output,
+            &envs,
+            &pythons,
+            &mut env_records,
+            &mut python_records,
+        );
     }
 
     let data = GcData {
         dry_run: !yes,
-        envs,
-        pythons,
+        envs: env_records,
+        pythons: python_records,
     };
 
     if output.is_json() {
@@ -262,8 +349,22 @@ fn scan_unused_pythons(orphans: &[OrphanEnv]) -> Result<(Vec<UnusedPython>, usiz
     ))
 }
 
-fn remove_orphans(output: &Output, envs: &[OrphanEnv], pythons: &[UnusedPython]) -> Result<()> {
-    for env in envs {
+/// Apply the deletions, mutating `env_records` / `python_records` in
+/// place so each entry's `outcome` reflects what actually happened.
+///
+/// Both record vecs are assumed to be initialised as Pending in 1:1
+/// order with `envs` and `pythons`. We continue past per-item errors so
+/// a single failure doesn't hide the rest of the cleanup; the per-record
+/// `error` field carries the detail for JSON consumers, and human-mode
+/// users still get inline warn lines as before.
+fn remove_orphans(
+    output: &Output,
+    envs: &[OrphanEnv],
+    pythons: &[UnusedPython],
+    env_records: &mut [EnvRecord],
+    python_records: &mut [PythonRecord],
+) {
+    for (env, record) in envs.iter().zip(env_records.iter_mut()) {
         let path = PathBuf::from(&env.path);
 
         // TOCTOU guard: re-run classify() right before destruction. The
@@ -271,9 +372,11 @@ fn remove_orphans(output: &Output, envs: &[OrphanEnv], pythons: &[UnusedPython])
         // but a concurrent `scoop create` (or a user manually populating
         // the directory) can make the env healthy again. We refuse to
         // delete a healthy env that just happened to be empty at scan
-        // time, and surface the skip so the user knows what changed.
+        // time, and surface the skip both inline (human) and in the
+        // record (JSON).
         if classify(&path).is_none() {
             output.warn(&t!("gc.skipped_now_healthy", name = &env.name));
+            record.outcome = EnvOutcome::SkippedHealthy;
             continue;
         }
 
@@ -282,58 +385,73 @@ fn remove_orphans(output: &Output, envs: &[OrphanEnv], pythons: &[UnusedPython])
                 if !output.is_json() {
                     output.info(&t!("gc.removed_env", name = &env.name));
                 }
+                record.outcome = EnvOutcome::Removed;
             }
             Err(e) => {
+                let detail = e.to_string();
                 output.warn(&t!(
                     "gc.remove_env_failed",
                     name = &env.name,
-                    error = e.to_string()
+                    error = detail.clone()
                 ));
+                record.outcome = EnvOutcome::Failed;
+                record.error = Some(detail);
             }
         }
     }
 
     if !pythons.is_empty() {
-        // Best-effort: if uv is missing here we just leave the Pythons alone.
-        // `scan_unused_pythons` already returned `[]` in that case, so this
-        // is defensive against transient PATH issues.
-        if let Ok(uv) = UvClient::new() {
-            // TOCTOU guard for Pythons: re-scan unused versions right
-            // before uninstall. The env-level reclassify above only
-            // protects venvs from `scoop create`-racing; without this
-            // Python-level recheck a concurrent `scoop create` could
-            // pull a venv onto a Python we're about to nuke, leaving
-            // that env broken.
-            let still_unused: std::collections::HashSet<String> = scan_unused_pythons(envs)
-                .map_or_else(
-                    |_| pythons.iter().map(|p| p.version.clone()).collect(),
-                    |(current, _)| current.into_iter().map(|p| p.version).collect(),
-                );
-
-            for py in pythons {
-                if !still_unused.contains(&py.version) {
-                    output.warn(&t!("gc.skipped_python_now_in_use", version = &py.version));
-                    continue;
+        // Best-effort: if uv is missing here we just leave the Pythons
+        // alone (scan_unused_pythons already returned `[]` in that
+        // case; this branch is defensive against transient PATH issues).
+        let uv = match UvClient::new() {
+            Ok(u) => u,
+            Err(_) => {
+                for rec in python_records.iter_mut() {
+                    rec.outcome = PythonOutcome::SkippedNoUv;
                 }
-                match uv.uninstall_python(&py.version) {
-                    Ok(()) => {
-                        if !output.is_json() {
-                            output.info(&t!("gc.removed_python", version = &py.version));
-                        }
+                return;
+            }
+        };
+
+        // TOCTOU guard for Pythons: re-scan unused versions right
+        // before uninstall. The env-level reclassify above only
+        // protects venvs from `scoop create`-racing; without this
+        // Python-level recheck a concurrent `scoop create` could
+        // pull a venv onto a Python we're about to nuke, leaving
+        // that env broken.
+        let still_unused: std::collections::HashSet<String> = scan_unused_pythons(envs)
+            .map_or_else(
+                |_| pythons.iter().map(|p| p.version.clone()).collect(),
+                |(current, _)| current.into_iter().map(|p| p.version).collect(),
+            );
+
+        for (py, record) in pythons.iter().zip(python_records.iter_mut()) {
+            if !still_unused.contains(&py.version) {
+                output.warn(&t!("gc.skipped_python_now_in_use", version = &py.version));
+                record.outcome = PythonOutcome::SkippedInUse;
+                continue;
+            }
+            match uv.uninstall_python(&py.version) {
+                Ok(()) => {
+                    if !output.is_json() {
+                        output.info(&t!("gc.removed_python", version = &py.version));
                     }
-                    Err(e) => {
-                        output.warn(&t!(
-                            "gc.remove_python_failed",
-                            version = &py.version,
-                            error = e.to_string()
-                        ));
-                    }
+                    record.outcome = PythonOutcome::Removed;
+                }
+                Err(e) => {
+                    let detail = e.to_string();
+                    output.warn(&t!(
+                        "gc.remove_python_failed",
+                        version = &py.version,
+                        error = detail.clone()
+                    ));
+                    record.outcome = PythonOutcome::Failed;
+                    record.error = Some(detail);
                 }
             }
         }
     }
-
-    Ok(())
 }
 
 fn render_human(output: &Output, data: &GcData, aggressive: bool) {
@@ -600,14 +718,86 @@ mod tests {
                 path: env_path.display().to_string(),
                 reason: OrphanReason::MissingMetadata,
             };
+            let mut env_records = vec![EnvRecord {
+                name: stale_orphan.name.clone(),
+                path: stale_orphan.path.clone(),
+                reason: stale_orphan.reason,
+                outcome: EnvOutcome::Pending,
+                error: None,
+            }];
 
             let output = Output::new(0, true, true, false);
-            // No panic, no error — and crucially the env must still exist.
-            remove_orphans(&output, &[stale_orphan], &[]).unwrap();
+            remove_orphans(
+                &output,
+                &[stale_orphan],
+                &[],
+                &mut env_records,
+                &mut Vec::<PythonRecord>::new(),
+            );
+
+            // The env was healthy at remove-time so the destructive path
+            // must not have run — both the disk state AND the JSON-bound
+            // outcome record need to agree on that.
             assert!(
                 env_path.exists(),
                 "remove_orphans deleted an env that re-classified as healthy"
             );
+            assert_eq!(
+                env_records[0].outcome,
+                EnvOutcome::SkippedHealthy,
+                "outcome must be SkippedHealthy so JSON consumers see the skip"
+            );
+        });
+    }
+
+    // ==========================================================================
+    // C3 regression — JSON envelope must reflect actual outcomes, not the
+    // pre-action scan snapshot. We don't run the full `execute` here (uv
+    // would need to be present for --aggressive paths); we verify the
+    // record-mutation contract directly.
+    // ==========================================================================
+    #[test]
+    #[serial]
+    fn remove_records_actual_outcomes_for_each_env() {
+        with_temp_scoop_home(|_| {
+            let dir = paths::virtualenvs_dir().unwrap();
+            fs::create_dir_all(&dir).unwrap();
+            // Two orphans we expect to be successfully removed.
+            make_env(&dir, "ghost-a", false, true);
+            make_env(&dir, "ghost-b", false, true);
+
+            let orphans = scan_orphan_envs().unwrap();
+            assert_eq!(orphans.len(), 2);
+            let mut env_records: Vec<EnvRecord> = orphans
+                .iter()
+                .map(|o| EnvRecord {
+                    name: o.name.clone(),
+                    path: o.path.clone(),
+                    reason: o.reason,
+                    outcome: EnvOutcome::Pending,
+                    error: None,
+                })
+                .collect();
+
+            let output = Output::new(0, true, true, false);
+            remove_orphans(
+                &output,
+                &orphans,
+                &[],
+                &mut env_records,
+                &mut Vec::<PythonRecord>::new(),
+            );
+
+            for record in &env_records {
+                assert_eq!(
+                    record.outcome,
+                    EnvOutcome::Removed,
+                    "expected Removed outcome for {}, got {:?}",
+                    record.name,
+                    record.outcome
+                );
+                assert!(record.error.is_none());
+            }
         });
     }
 }

@@ -528,8 +528,10 @@ pub enum Commands {
         #[arg(value_name = "DIR")]
         output_dir: Option<PathBuf>,
 
-        /// Output as JSON (only meaningful with DIR)
-        #[arg(long)]
+        /// Output as JSON. Requires `DIR` — JSON has nothing meaningful
+        /// to say about a single groff page on stdout, and accepting it
+        /// silently would lie to scripts that pipe through `jq`.
+        #[arg(long, requires = "output_dir")]
         json: bool,
     },
 

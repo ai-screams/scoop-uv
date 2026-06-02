@@ -146,15 +146,27 @@ pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: boo
         .map(|env| verify_one(&service, env, manifest.as_ref()))
         .collect();
     let summary = compute_summary(&reports);
+    let strict_failure = strict && summary.issues > 0;
 
     if output.is_json() {
-        output.json_success(
-            "verify",
-            VerifyData {
-                envs: reports,
-                summary,
-            },
-        );
+        if strict_failure {
+            // C4: under `--strict --json` with failures, the prior
+            // shape emitted `status: "success"` and then returned Err,
+            // leaving the JSON envelope and the exit code disagreeing.
+            // Emit a single error envelope that ALSO carries the full
+            // report so consumers don't lose the per-env breakdown.
+            // main.rs may also write a text line to stderr, but stdout
+            // (which scripts actually parse) is internally consistent.
+            emit_strict_json_failure(&reports, &summary);
+        } else {
+            output.json_success(
+                "verify",
+                VerifyData {
+                    envs: reports,
+                    summary,
+                },
+            );
+        }
     } else {
         render_human(output, &reports, &summary);
     }
@@ -163,12 +175,61 @@ pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: boo
     // informational — only hard breakage (Fail) trips the exit. Returning
     // Err (instead of std::process::exit) lets destructors / stdout
     // buffers flush via main.rs's normal error path.
-    if strict && summary.issues > 0 {
+    if strict_failure {
         return Err(ScoopError::VerifyFailed {
             issues: summary.issues,
         });
     }
     Ok(())
+}
+
+/// Render the failed-strict JSON envelope in one consistent shape:
+/// `{ status: "error", command: "verify", error: { ... }, data: { ... } }`.
+///
+/// Built manually because the shared [`crate::output::Output`] error
+/// envelope doesn't carry domain data — and dropping the report would
+/// strip the per-env breakdown that scripts came to `--json` for in the
+/// first place. The error block mirrors [`ScoopError::VerifyFailed`]'s
+/// code/message so consumers that only read `.error.code` still see
+/// "VERIFY_FAILED".
+fn emit_strict_json_failure(reports: &[EnvReport], summary: &Summary) {
+    #[derive(Serialize)]
+    struct Envelope<'a> {
+        status: &'a str,
+        command: &'a str,
+        error: ErrorBody,
+        data: DataView<'a>,
+    }
+    #[derive(Serialize)]
+    struct ErrorBody {
+        code: &'static str,
+        message: String,
+        issues: usize,
+    }
+    #[derive(Serialize)]
+    struct DataView<'a> {
+        envs: &'a [EnvReport],
+        summary: &'a Summary,
+    }
+
+    let envelope = Envelope {
+        status: "error",
+        command: "verify",
+        error: ErrorBody {
+            code: "VERIFY_FAILED",
+            message: t!("error.verify_failed", issues = summary.issues.to_string()).to_string(),
+            issues: summary.issues,
+        },
+        data: DataView {
+            envs: reports,
+            summary,
+        },
+    };
+    // serde_json::to_string never fails on these owned types — the only
+    // failure mode is custom Serialize impls returning Err, which we don't
+    // use. unwrap() here keeps the error path linear; a panic would be a
+    // serde regression, not a verify bug.
+    println!("{}", serde_json::to_string(&envelope).unwrap());
 }
 
 /// Build the list of envs to verify. Single-target path validates the
