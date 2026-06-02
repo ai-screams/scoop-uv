@@ -624,30 +624,92 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_touch_metadata_at_silently_skips_path_traversal() {
-        // Touch is best-effort — invalid name must not panic, propagate,
-        // or write anything outside the venvs dir. Plant a canary
-        // outside the venvs dir to confirm nothing was written.
+    fn test_touch_metadata_at_blocks_relative_path_escape() {
+        // Real teeth on the validation guard: plant a metadata file at
+        // the *exact* location `"../escape"` would resolve to without
+        // the guard (`<SCOOP_HOME>/virtualenvs/../escape` =
+        // `<SCOOP_HOME>/escape`). Without the guard, touch would read
+        // this file, mutate last_used, and persist it back — so the
+        // captured serialized bytes would change. With the guard, the
+        // file is never opened and the bytes stay identical.
+        //
+        // We use raw bytes (not the live Metadata struct) for the
+        // canary so the assertion is byte-for-byte; a fresh re-serialize
+        // would re-order fields or rewrite whitespace identically and
+        // mask the read-modify-write that this test exists to catch.
+        with_temp_scoop_home(|temp_dir| {
+            fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
+            let escape_dir = temp_dir.path().join("escape");
+            fs::create_dir_all(&escape_dir).unwrap();
+            // Hand-rolled JSON that's parseable as Metadata (so the
+            // hypothetical unguarded read would succeed) but written
+            // with a recognizable last_used the test can distinguish
+            // from the new write.
+            let canary_path = escape_dir.join(".scoop-metadata.json");
+            let canary_bytes = b"{\
+                \"name\":\"escape\",\
+                \"python_version\":\"3.12\",\
+                \"created_at\":\"2024-01-01T00:00:00Z\",\
+                \"created_by\":\"scoop canary\",\
+                \"uv_version\":null,\
+                \"last_used\":\"1999-12-31T23:59:59Z\"\
+            }";
+            fs::write(&canary_path, canary_bytes).unwrap();
+
+            let service = require_uv!();
+            let new_now = "2026-06-02T12:00:00Z".parse().unwrap();
+            service.touch_metadata_at("../escape", new_now);
+
+            // Byte-for-byte unchanged ⇒ the validation guard short-
+            // circuited before read_metadata_result was called.
+            // Without the guard, last_used would have flipped from
+            // 1999-... to 2026-06-02 (and serde_json::to_string_pretty
+            // would have reformatted whitespace too).
+            let actual = fs::read(&canary_path).unwrap();
+            assert_eq!(
+                actual, canary_bytes,
+                "validation guard must short-circuit before the escape \
+                 location's metadata is read or overwritten",
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_touch_metadata_at_blocks_absolute_path_escape() {
+        // Companion to the relative-escape test: absolute paths bypass
+        // the base entirely via `PathBuf::join`. Plant a canary in a
+        // separate tempdir, hand `touch_metadata_at` that absolute
+        // path, and confirm the canary's bytes are unchanged.
         with_temp_scoop_home(|temp_dir| {
             fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
             let outside = tempfile::TempDir::new().unwrap();
             let canary_path = outside.path().join(".scoop-metadata.json");
-            let canary_content = "PRE-EXISTING-DO-NOT-OVERWRITE";
-            fs::write(&canary_path, canary_content).unwrap();
+            let canary_bytes = b"{\
+                \"name\":\"outside\",\
+                \"python_version\":\"3.12\",\
+                \"created_at\":\"2024-01-01T00:00:00Z\",\
+                \"created_by\":\"scoop canary\",\
+                \"uv_version\":null,\
+                \"last_used\":\"1999-12-31T23:59:59Z\"\
+            }";
+            fs::write(&canary_path, canary_bytes).unwrap();
 
             let service = require_uv!();
-            let now = "2026-06-02T12:00:00Z".parse().unwrap();
-            // Try a relative escape that would *resolve to* the canary
-            // dir if the validation guard were missing.
-            service.touch_metadata_at("../escape", now);
-            // And an absolute one for good measure.
-            service.touch_metadata_at("/tmp/whatever", now);
+            let new_now = "2026-06-02T12:00:00Z".parse().unwrap();
+            // Pass the absolute path to outside/ as the "env name".
+            // Without the validation guard, paths::virtualenv_path
+            // would join this onto virtualenvs_dir and discard the
+            // base (Rust's PathBuf::join semantics), landing exactly
+            // on the canary.
+            let bad_name = outside.path().to_str().unwrap();
+            service.touch_metadata_at(bad_name, new_now);
 
-            // Canary is untouched.
+            let actual = fs::read(&canary_path).unwrap();
             assert_eq!(
-                fs::read_to_string(&canary_path).unwrap(),
-                canary_content,
-                "touch_metadata_at must NOT have escaped the venvs dir"
+                actual, canary_bytes,
+                "validation guard must reject absolute path before the \
+                 canary is read or overwritten",
             );
         });
     }
