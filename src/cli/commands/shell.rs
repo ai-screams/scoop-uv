@@ -1,6 +1,5 @@
 //! Shell command - set shell-specific environment
 
-use chrono::Utc;
 use rust_i18n::t;
 
 use crate::cli::ShellType;
@@ -64,7 +63,7 @@ pub fn execute(
     // `scoop shell` activates without flowing through `scoop activate`, so
     // touch explicitly. Best-effort — never blocks the shell switch on
     // metadata I/O.
-    service.touch_metadata_best_effort(name, Utc::now());
+    service.touch_metadata_best_effort(name);
 
     if !output.is_json() && !output.is_quiet() {
         eprintln!("{}", t!("shell.set", name = name));

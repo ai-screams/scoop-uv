@@ -8,7 +8,6 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use chrono::Utc;
 use rust_i18n::t;
 
 use crate::core::VirtualenvService;
@@ -39,7 +38,7 @@ pub fn execute(_output: &Output, env_name: &str, command: &[String]) -> Result<(
     // Touch BEFORE spawn: long-running commands shouldn't leave the env
     // looking idle, and a child crash shouldn't lose the "we used it"
     // signal. Best-effort — never blocks the run on metadata I/O.
-    service.touch_metadata_best_effort(env_name, Utc::now());
+    service.touch_metadata_best_effort(env_name);
 
     let mut cmd = build_command(&venv_path, &bin_dir, env_name, command);
     let status = match cmd.status() {

@@ -1,7 +1,5 @@
 //! Activate command
 
-use chrono::Utc;
-
 use crate::cli::ShellType;
 use crate::core::VirtualenvService;
 use crate::error::Result;
@@ -32,7 +30,7 @@ pub fn execute(name: &str, shell: Option<ShellType>) -> Result<()> {
     // (cd hook), and explicit `scoop activate` all flow through here via the
     // shell wrapper. `run` and `shell` do NOT — they call touch explicitly.
     // Best-effort: never blocks activation on a metadata I/O failure.
-    service.touch_metadata_best_effort(name, Utc::now());
+    service.touch_metadata_best_effort(name);
 
     Ok(())
 }

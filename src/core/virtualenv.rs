@@ -244,14 +244,26 @@ impl VirtualenvService {
         Ok(())
     }
 
-    /// Atomically write metadata: write to a sibling tempfile in the same
-    /// directory, fsync, then rename over the target.
+    /// Write metadata using an atomic replace: write to a sibling tempfile
+    /// in the same directory, then rename over the target.
     ///
     /// Same-directory tempfile is required so the rename stays on one
-    /// filesystem (cross-fs rename would degrade to copy+delete and lose
-    /// atomicity). A crash mid-write leaves either the old file intact or
-    /// the new file fully written — never a truncated half-write that
-    /// future reads would reject as corrupt.
+    /// filesystem — cross-device rename via `fs::rename` / tempfile fails
+    /// with `EXDEV` rather than degrading to copy+delete, so a sibling
+    /// tempfile is what makes the rename viable at all.
+    ///
+    /// The rename itself is atomic in the visible-state sense: on Unix
+    /// it's `rename(2)`; on Windows tempfile uses `MoveFileExW` with
+    /// `MOVEFILE_REPLACE_EXISTING`. A *normal process crash* mid-write
+    /// therefore leaves either the old file intact or the new file
+    /// in place — readers never observe a half-written file.
+    ///
+    /// This is NOT a full power-loss durability promise. We don't `fsync`
+    /// the file or the parent directory: this is best-effort metadata
+    /// (timestamps for display + gc heuristics), and `sync_all` on every
+    /// auto-activation would put a disk flush on the `cd` hot path. If a
+    /// power loss hits between the rename and the cache flush, the
+    /// metadata may roll back to its previous state. We accept that.
     pub fn write_metadata_atomic(&self, path: &Path, metadata: &Metadata) -> Result<()> {
         let metadata_path = path.join(Metadata::FILE_NAME);
         let dir = metadata_path.parent().ok_or_else(|| {
@@ -264,26 +276,48 @@ impl VirtualenvService {
         let content = serde_json::to_string_pretty(metadata)?;
         let mut tmp = tempfile::NamedTempFile::new_in(dir)?;
         tmp.write_all(content.as_bytes())?;
-        tmp.as_file_mut().sync_all()?;
-        // persist() does the atomic rename. On Unix this is rename(2); on
-        // Windows tempfile uses MoveFileEx with MOVEFILE_REPLACE_EXISTING.
         tmp.persist(&metadata_path)
             .map_err(|e| ScoopError::Io(e.error))?;
         Ok(())
     }
 
-    /// Touch an env's `last_used` to `now`, best-effort.
+    /// Touch an env's `last_used` to *now* (wall clock at write time),
+    /// best-effort.
+    ///
+    /// Production entry point. The timestamp is sampled inside this
+    /// function so two racing callers (e.g. `scoop activate myenv` from
+    /// two shells) write *current* values instead of stale "now at
+    /// caller-time" values. This narrows — but does not eliminate — the
+    /// regression window between racing touches.
+    ///
+    /// Concurrency contract: **last-writer-wins**. The read→mutate→write
+    /// sequence is not locked, so under contention the file's final
+    /// timestamp reflects whichever process committed the rename last,
+    /// not necessarily the most recent wall-clock instant. Acceptable for
+    /// display ("Last used: 2 hours ago") and gc heuristics at the
+    /// day/week granularity Step 5 will offer; not acceptable for
+    /// anything that needs strict ordering.
     ///
     /// Never returns an error: activation must not be blocked by metadata
     /// I/O failure. Three documented behaviors:
     ///
     /// 1. **Missing metadata** — skipped silently (legacy env that was
     ///    never `scoop create`d via this binary). No file is created.
-    /// 2. **Corrupt metadata** — logged via `warn!` and left untouched.
-    ///    Overwriting would destroy the only on-disk evidence of the
-    ///    corruption. The user can re-run with logging to see what's wrong.
-    /// 3. **Healthy metadata** — `last_used` updated atomically.
-    pub fn touch_metadata_best_effort(&self, env_name: &str, now: DateTime<Utc>) {
+    /// 2. **Corrupt metadata** — `warn!` logged and the file left
+    ///    untouched. Overwriting would destroy the user's only on-disk
+    ///    evidence of the corruption. (Warning is observability sugar,
+    ///    not a tested contract.)
+    /// 3. **Healthy metadata** — `last_used` updated via atomic replace.
+    pub fn touch_metadata_best_effort(&self, env_name: &str) {
+        self.touch_metadata_at(env_name, Utc::now());
+    }
+
+    /// Test seam: same behavior as [`Self::touch_metadata_best_effort`]
+    /// but with an explicit timestamp so tests can pin a deterministic
+    /// `last_used` value. Not for production callers — using it from
+    /// activate/run/shell would re-introduce the caller-stale timestamp
+    /// race that the public entry point exists to narrow.
+    pub(crate) fn touch_metadata_at(&self, env_name: &str, now: DateTime<Utc>) {
         let path = match paths::virtualenv_path(env_name) {
             Ok(p) => p,
             Err(e) => {
@@ -545,7 +579,7 @@ mod tests {
             seed_metadata_file(&env_path, seed);
 
             let now = "2026-06-02T12:00:00Z".parse::<DateTime<Utc>>().unwrap();
-            service.touch_metadata_best_effort("touched", now);
+            service.touch_metadata_at("touched", now);
 
             let after = service
                 .read_metadata_result(&env_path)
@@ -573,7 +607,7 @@ mod tests {
             seed_metadata_file(&env_path, garbage);
 
             // Must not panic / propagate the error. Must not overwrite.
-            service.touch_metadata_best_effort("broken", "2026-06-02T12:00:00Z".parse().unwrap());
+            service.touch_metadata_at("broken", "2026-06-02T12:00:00Z".parse().unwrap());
 
             let on_disk = fs::read_to_string(env_path.join(Metadata::FILE_NAME)).unwrap();
             assert_eq!(
@@ -594,8 +628,73 @@ mod tests {
 
             // Legacy env with no metadata file. Must NOT synthesize one
             // (that would lie about created_at) and must NOT error.
-            service.touch_metadata_best_effort("nofile", "2026-06-02T12:00:00Z".parse().unwrap());
+            service.touch_metadata_at("nofile", "2026-06-02T12:00:00Z".parse().unwrap());
             assert!(!env_path.join(Metadata::FILE_NAME).exists());
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_touch_metadata_best_effort_wall_clock_writes_recent() {
+        // Smoke test for the public no-arg entry point: it must actually
+        // call Utc::now() at write time, not silently no-op. We can't pin
+        // the exact value, so we assert it's bracketed by a before/after
+        // wall-clock window.
+        with_temp_scoop_home(|temp_dir| {
+            let service = require_uv!();
+            let env_path = temp_dir.path().join("virtualenvs").join("wallclock");
+            let seed = r#"{
+                "name": "wallclock",
+                "python_version": "3.12",
+                "created_at": "2024-01-01T00:00:00Z",
+                "created_by": "scoop test",
+                "uv_version": null
+            }"#;
+            seed_metadata_file(&env_path, seed);
+
+            let before = Utc::now();
+            service.touch_metadata_best_effort("wallclock");
+            let after = Utc::now();
+
+            let m = service.read_metadata_result(&env_path).unwrap().unwrap();
+            let touched = m.last_used.expect("last_used set");
+            assert!(
+                touched >= before && touched <= after,
+                "{touched} not in [{before},{after}]"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_read_metadata_legacy_api_swallows_corrupt() {
+        // The old `read_metadata` API returns `Option<Metadata>` and
+        // collapses both "missing" and "corrupt" into `None`. Pin that
+        // behavior explicitly so a mutant that returns `Some(default)`
+        // (won't compile — Metadata has no Default), or that flips the
+        // collapse, gets caught.
+        with_temp_scoop_home(|temp_dir| {
+            let service = require_uv!();
+            let env_dir = temp_dir.path().join("virtualenvs").join("legacyapi");
+            fs::create_dir_all(&env_dir).unwrap();
+
+            // No file → None
+            assert!(service.read_metadata(&env_dir).is_none());
+
+            // Healthy file → Some
+            let seed = r#"{
+                "name": "legacyapi",
+                "python_version": "3.12",
+                "created_at": "2024-01-01T00:00:00Z",
+                "created_by": "scoop test",
+                "uv_version": null
+            }"#;
+            fs::write(env_dir.join(Metadata::FILE_NAME), seed).unwrap();
+            assert!(service.read_metadata(&env_dir).is_some());
+
+            // Corrupt file → None (collapses with missing, by design)
+            fs::write(env_dir.join(Metadata::FILE_NAME), "{ nope").unwrap();
+            assert!(service.read_metadata(&env_dir).is_none());
         });
     }
 
