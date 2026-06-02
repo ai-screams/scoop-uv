@@ -10,7 +10,7 @@ use chrono::Utc;
 
 use crate::core::{VersionService, VirtualenvService, get_active_env, list_installed_packages};
 use crate::error::Result;
-use crate::output::{Output, StatusData, format_age};
+use crate::output::{Output, StatusData, format_last_used_value};
 use crate::paths::abbreviate_home;
 
 /// Sentinel state strings — kept as constants so the JSON discriminator and
@@ -162,15 +162,9 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
         let date = m.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
         println!("{:w$}{}", "Created:", date);
     }
-    // `Last used:` always rendered when metadata exists — "never" is itself
-    // useful info (fresh env, never activated). Hidden only when there's no
-    // metadata at all, since "never" would conflate "we don't know" with
-    // "definitely never used".
-    if metadata.is_some() {
-        let label = match last_used_ts {
-            Some(t) => format_age(t, Utc::now()),
-            None => "never".to_string(),
-        };
+    // Shared three-state contract — see [`format_last_used_value`] for
+    // the "hide vs never vs N units ago" rules.
+    if let Some(label) = format_last_used_value(metadata.is_some(), last_used_ts, Utc::now()) {
         println!("{:w$}{}", "Last used:", label);
     }
     if let Some(n) = packages {

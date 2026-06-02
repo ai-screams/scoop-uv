@@ -4,7 +4,7 @@ use chrono::Utc;
 
 use crate::core::{VirtualenvService, get_active_env, list_installed_packages};
 use crate::error::{Result, ScoopError};
-use crate::output::{EnvInfoData, Output, PackagesInfo, format_age, format_size};
+use crate::output::{EnvInfoData, Output, PackagesInfo, format_last_used_value, format_size};
 use crate::paths::{abbreviate_home, calculate_dir_size};
 
 const DEFAULT_PACKAGE_LIMIT: usize = 5;
@@ -77,15 +77,9 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
     println!("{:w$}{}", "Path:", abbreviate_home(&path));
     println!("{:w$}{}", "Active:", if is_active { "yes" } else { "no" });
     println!("{:w$}{}", "Created:", created);
-    // `Last used:` is always rendered for envs that have on-disk metadata.
-    // "never" carries information (fresh env); hiding it would conflate
-    // that with "we don't know". Envs without metadata at all skip the
-    // line entirely.
-    if metadata.is_some() {
-        let label = match last_used_ts {
-            Some(t) => format_age(t, Utc::now()),
-            None => "never".to_string(),
-        };
+    // Shared three-state contract — see [`format_last_used_value`] for
+    // the "hide vs never vs N units ago" rules.
+    if let Some(label) = format_last_used_value(metadata.is_some(), last_used_ts, Utc::now()) {
         println!("{:w$}{}", "Last used:", label);
     }
 

@@ -10,10 +10,10 @@
 //! JSON output sticks with RFC 3339 — machine consumers parse the real
 //! timestamp themselves. This module is for human eyes only.
 //!
-//! Bucket selection is deliberately coarse: we want "2 weeks ago" not
-//! "13 days, 4 hours ago". Sub-second precision and DST/timezone
-//! arithmetic are intentionally ignored — the input is UTC, the output
-//! is fuzzy.
+//! Bucket selection is deliberately coarse and floor-rounded: 13 days
+//! reads "1 week ago", not "2 weeks ago". Sub-second precision and
+//! DST/timezone arithmetic are intentionally ignored — the input is
+//! UTC, the output is fuzzy.
 
 use chrono::{DateTime, Utc};
 
@@ -84,6 +84,32 @@ fn pluralize(n: i64, unit: &str) -> String {
     }
 }
 
+/// Decide what to render for the `Last used:` display row.
+///
+/// Three-state pure function so callers (`status`, `info`, and any
+/// future surface) share one contract instead of each open-coding the
+/// missing-vs-never distinction:
+///
+/// - `(has_metadata = false, _)` → `None` — hide the row entirely. The
+///   env has no on-disk metadata, so "never" would conflate "we don't
+///   know" with "definitely never used".
+/// - `(true, None)` → `Some("never")` — fresh env, metadata present
+///   but `last_used` not set yet.
+/// - `(true, Some(t))` → `Some("N units ago")` via [`format_age`].
+pub fn format_last_used_value(
+    has_metadata: bool,
+    last_used: Option<DateTime<Utc>>,
+    now: DateTime<Utc>,
+) -> Option<String> {
+    if !has_metadata {
+        return None;
+    }
+    Some(match last_used {
+        Some(t) => format_age(t, now),
+        None => "never".to_string(),
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -134,6 +160,10 @@ mod tests {
     fn weeks_bucket_with_boundary() {
         let now = anchor();
         assert_eq!(format_age(now - Duration::days(7), now), "1 week ago");
+        // Mid-bucket value pins the divisor: a mutation `days / 7` →
+        // `days / 6` would still produce "1 week ago" at 7d and
+        // "4 weeks ago" at 29d, but flips this assertion (20/6 == 3).
+        assert_eq!(format_age(now - Duration::days(20), now), "2 weeks ago");
         assert_eq!(format_age(now - Duration::days(29), now), "4 weeks ago");
     }
 
@@ -158,6 +188,49 @@ mod tests {
         let now = anchor();
         assert_eq!(format_age(now + Duration::minutes(5), now), "just now");
         assert_eq!(format_age(now + Duration::days(1), now), "just now");
+    }
+
+    // ==========================================================================
+    // format_last_used_value contract
+    // ==========================================================================
+
+    #[test]
+    fn last_used_value_none_when_no_metadata() {
+        // The guard that hides the row. Deleting the `has_metadata`
+        // branch in the implementation would surface this assertion.
+        let now = anchor();
+        assert_eq!(
+            format_last_used_value(false, None, now),
+            None,
+            "no metadata → row must be hidden"
+        );
+        assert_eq!(
+            format_last_used_value(false, Some(now - Duration::hours(1)), now),
+            None,
+            "no metadata wins even if a stray last_used is passed",
+        );
+    }
+
+    #[test]
+    fn last_used_value_never_when_metadata_but_no_last_used() {
+        // Fresh env: metadata exists, but the env has not been
+        // activated since the field landed. "never" is the contract —
+        // not the env's created_at, not "unknown".
+        let now = anchor();
+        assert_eq!(
+            format_last_used_value(true, None, now),
+            Some("never".to_string())
+        );
+    }
+
+    #[test]
+    fn last_used_value_formats_age_when_present() {
+        let now = anchor();
+        let then = now - Duration::hours(3);
+        assert_eq!(
+            format_last_used_value(true, Some(then), now),
+            Some("3 hours ago".to_string())
+        );
     }
 
     #[test]

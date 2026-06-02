@@ -6,7 +6,7 @@ mod time;
 
 pub use json::*;
 pub use spinner::Spinner;
-pub use time::format_age;
+pub use time::{format_age, format_last_used_value};
 
 use owo_colors::OwoColorize;
 
