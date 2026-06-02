@@ -42,22 +42,27 @@ if [ -d "/opt/conda" ]; then
 fi
 
 # ============================================================
-# virtualenvwrapper initialization (full image only).
+# virtualenvwrapper setup — env vars only, do NOT source the script.
 #
-# virtualenvwrapper.sh sources Python helpers that can exit non-zero in
-# headless containers (no $WORKON_HOME, missing optional virtualenv
-# clones, etc.). Without `set +e` the entrypoint aborted with exit 127
-# under the `set -e` umbrella, even though the init failure was benign —
-# this was the original root cause of the venvwrapper CI shard hanging.
+# Earlier attempts wrapped `source virtualenvwrapper.sh` with `set +e`
+# / `set -e` and even `(...) || true` to contain its initialisation
+# failures. None of those work: virtualenvwrapper.sh has internal
+# `exit N` paths (not `return`) that fire when its Python helpers
+# can't be imported in this minimal container, and `set +e` does NOT
+# protect a parent shell against an explicit `exit` in a sourced
+# script. That manifested as the venvwrapper integration CI shard
+# dying with exit 127 in 0.4s, before our entrypoint produced any
+# output.
+#
+# Sourcing isn't actually needed here: `scoop migrate list`
+# discovers virtualenvwrapper envs by enumerating $WORKON_HOME,
+# which doesn't require the `mkvirtualenv`/`workon` shell functions
+# to be loaded. Interactive shells (`docker run -it ... bash`) load
+# /root/.bashrc which DOES source virtualenvwrapper, so the
+# developer-shell UX is unchanged.
 # ============================================================
 export WORKON_HOME="/root/.virtualenvs"
 mkdir -p "$WORKON_HOME"
-if command -v virtualenvwrapper.sh &>/dev/null; then
-  set +e
-  # shellcheck disable=SC1090
-  source "$(which virtualenvwrapper.sh)" 2>/dev/null
-  set -e
-fi
 
 # ============================================================
 # scoop build (workspace version takes precedence)
