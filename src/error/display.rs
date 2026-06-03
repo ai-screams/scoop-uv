@@ -182,6 +182,12 @@ impl ScoopError {
                 issues = issues.to_string()
             )
             .to_string(),
+            Self::SitePackagesNotFound { venv } => t!(
+                "error.site_packages_not_found",
+                locale = locale,
+                venv = venv
+            )
+            .to_string(),
         }
     }
 }

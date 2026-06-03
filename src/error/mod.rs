@@ -137,6 +137,12 @@ pub enum ScoopError {
     /// non-zero exit semantic without leaking `std::process::exit` into
     /// library code (which would skip destructors and stdout flush).
     VerifyFailed { issues: usize },
+
+    /// `paths::virtualenv_site_packages` could not locate the
+    /// `site-packages` directory inside a virtualenv root. The fallback
+    /// chain (pyvenv.cfg → glob → sysconfig subprocess) exhausted with
+    /// no usable result, so the env is likely malformed.
+    SitePackagesNotFound { venv: String },
 }
 
 #[cfg(test)]
