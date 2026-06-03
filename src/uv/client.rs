@@ -204,7 +204,7 @@ impl UvClient {
         cmd.arg("pip")
             .arg("install")
             .arg("--python")
-            .arg(venv_path.join("bin").join("python"));
+            .arg(crate::paths::virtualenv_python_exe(venv_path));
 
         for package in packages {
             cmd.arg(package);
@@ -232,7 +232,7 @@ impl UvClient {
         cmd.arg("pip")
             .arg("install")
             .arg("--python")
-            .arg(venv_path.join("bin").join("python"))
+            .arg(crate::paths::virtualenv_python_exe(venv_path))
             .arg("-r")
             .arg(requirements_path);
         let display = format!("uv pip install -r {}", requirements_path.display());

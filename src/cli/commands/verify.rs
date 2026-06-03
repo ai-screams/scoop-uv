@@ -345,7 +345,7 @@ fn verify_one(
     });
 
     // Check 2: interpreter binary on disk.
-    let python_bin = python_binary_path(path);
+    let python_bin = crate::paths::virtualenv_python_exe(path);
     let python_present = python_bin.exists();
     checks.push(if python_present {
         CheckResult::pass("python_binary")
@@ -369,7 +369,7 @@ fn verify_one(
     });
 
     // Check 4: activate script.
-    let activate = activate_script_path(path);
+    let activate = crate::paths::virtualenv_activate_script(path);
     checks.push(if activate.exists() {
         CheckResult::pass("activate_script")
     } else {
@@ -412,22 +412,6 @@ fn verify_one(
         healthy,
         python: recorded_python,
         checks,
-    }
-}
-
-fn python_binary_path(env_root: &Path) -> std::path::PathBuf {
-    if cfg!(windows) {
-        env_root.join("Scripts").join("python.exe")
-    } else {
-        env_root.join("bin").join("python")
-    }
-}
-
-fn activate_script_path(env_root: &Path) -> std::path::PathBuf {
-    if cfg!(windows) {
-        env_root.join("Scripts").join("Activate.ps1")
-    } else {
-        env_root.join("bin").join("activate")
     }
 }
 

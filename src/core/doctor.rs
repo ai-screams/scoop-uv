@@ -359,7 +359,7 @@ impl Doctor {
         };
 
         // Recreate symlink
-        let symlink_path = venv_path.join("bin").join("python");
+        let symlink_path = crate::paths::virtualenv_python_exe(&venv_path);
 
         // Remove old symlink if exists
         if symlink_path.exists() || symlink_path.is_symlink() {
@@ -582,7 +582,7 @@ impl Check for VirtualenvCheck {
                         .unwrap_or("unknown")
                         .to_string();
 
-                    let python_path = path.join("bin").join("python");
+                    let python_path = crate::paths::virtualenv_python_exe(&path);
                     let pyvenv_cfg = path.join("pyvenv.cfg");
 
                     if python_path.exists() && pyvenv_cfg.exists() {
@@ -653,7 +653,7 @@ impl Check for SymlinkCheck {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.is_dir() {
-                    let python_path = path.join("bin").join("python");
+                    let python_path = crate::paths::virtualenv_python_exe(&path);
 
                     if python_path.is_symlink() {
                         match std::fs::read_link(&python_path) {
