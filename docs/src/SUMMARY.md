@@ -36,6 +36,7 @@
 - [gc](commands/gc.md)
 - [prune](commands/prune.md)
 - [verify](commands/verify.md)
+- [diff](commands/diff.md)
 - [lang](commands/lang.md)
 - [init](commands/init.md)
 - [shell](commands/shell.md)

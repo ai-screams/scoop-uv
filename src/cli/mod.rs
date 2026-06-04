@@ -589,6 +589,31 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
     },
+
+    /// Compare two virtualenvs across Python version, packages, and metadata
+    Diff {
+        /// First environment (the "a" side)
+        env_a: String,
+
+        /// Second environment (the "b" side)
+        env_b: String,
+
+        /// Only show package differences (skip metadata section)
+        #[arg(long, conflicts_with = "metadata_only")]
+        packages_only: bool,
+
+        /// Only show metadata differences (skip package enumeration)
+        #[arg(long, conflicts_with = "packages_only")]
+        metadata_only: bool,
+
+        /// Exit 1 if any differences are found (default: always exit 0)
+        #[arg(long)]
+        strict: bool,
+
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Supported shell types

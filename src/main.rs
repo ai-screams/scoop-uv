@@ -210,6 +210,31 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::verify(&output, name.as_deref(), strict)
         }
+        Commands::Diff {
+            env_a,
+            env_b,
+            packages_only,
+            metadata_only,
+            strict,
+            json,
+        } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let mode = match (packages_only, metadata_only) {
+                (true, false) => scoop_uv::cli::commands::DiffMode::PackagesOnly,
+                (false, true) => scoop_uv::cli::commands::DiffMode::MetadataOnly,
+                // (false, false) is the default; (true, true) is blocked by clap.
+                _ => scoop_uv::cli::commands::DiffMode::All,
+            };
+            scoop_uv::cli::commands::diff(
+                &output,
+                &scoop_uv::cli::commands::DiffOpts {
+                    env_a,
+                    env_b,
+                    mode,
+                    strict,
+                },
+            )
+        }
     };
 
     // Handle errors via the policy layer in `src/error/exit.rs`:

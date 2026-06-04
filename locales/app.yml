@@ -1292,6 +1292,36 @@ error.diff_mismatch:
   pt-BR: "'%{a}' e '%{b}' diferem (%{n} diferença(s))"
   ja: "'%{a}' と '%{b}' は異なります (%{n} 件)"
 
+diff.identical_summary:
+  en: "Environments are identical"
+  ko: "두 환경이 동일해요"
+  pt-BR: "Os ambientes são idênticos"
+  ja: "両環境は同じです"
+
+diff.section_python:
+  en: "Python"
+  ko: "Python"
+  pt-BR: "Python"
+  ja: "Python"
+
+diff.section_packages:
+  en: "Packages (%{n} differences)"
+  ko: "패키지 (차이 %{n}건)"
+  pt-BR: "Pacotes (%{n} diferenças)"
+  ja: "パッケージ (差分 %{n} 件)"
+
+diff.section_metadata:
+  en: "Metadata"
+  ko: "메타데이터"
+  pt-BR: "Metadados"
+  ja: "メタデータ"
+
+diff.hint_strict:
+  en: "→ exit 1: differences detected under --strict"
+  ko: "→ exit 1: --strict 옵션에서 차이가 감지되었어요"
+  pt-BR: "→ exit 1: diferenças detectadas com --strict"
+  ja: "→ exit 1: --strict で差分が検出されました"
+
 suggestion.migration_sources_not_found:
   en: "→ Install at least one of: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, or conda"
   ko: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda 중 하나 이상 설치하세요"
