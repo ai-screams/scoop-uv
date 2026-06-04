@@ -46,6 +46,8 @@ impl ScoopError {
             Self::UnsupportedExportVersion { .. } => "EXPORT_UNSUPPORTED_VERSION",
             Self::VerifyFailed { .. } => "VERIFY_FAILED",
             Self::SitePackagesNotFound { .. } => "IO_SITE_PACKAGES_NOT_FOUND",
+            Self::MigrationSourcesNotFound { .. } => "MIGRATE_SOURCES_NOT_FOUND",
+            Self::MigrationBatchFailed { .. } => "MIGRATE_BATCH_FAILED",
         }
     }
 }

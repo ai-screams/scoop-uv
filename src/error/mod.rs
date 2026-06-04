@@ -143,6 +143,28 @@ pub enum ScoopError {
     /// chain (pyvenv.cfg → glob → sysconfig subprocess) exhausted with
     /// no usable result, so the env is likely malformed.
     SitePackagesNotFound { venv: String },
+
+    /// `scoop migrate all`/`migrate @env` ran but no supported source
+    /// tool (pyenv, virtualenvwrapper, conda) was detected on the
+    /// system. Carries the requested filter (or `None` for "any") so
+    /// the rendered message can be specific.
+    ///
+    /// Distinct from "tools present but produced no envs" — that path
+    /// stays `Ok(())`. Exits 3 (`SourceError`) so CI can detect missing
+    /// source-tool setup without conflating with operational failures.
+    MigrationSourcesNotFound { requested: Option<String> },
+
+    /// `scoop migrate all` finished with at least one per-env failure
+    /// or one preflight name conflict (without `--force`). The batch
+    /// code has already rendered the full summary (human or JSON)
+    /// before returning this Err, so render policy is `Quiet`.
+    ///
+    /// Carries counts only — the structured per-env detail lives in
+    /// the already-emitted summary, not in the error variant.
+    MigrationBatchFailed {
+        failed_count: usize,
+        conflict_count: usize,
+    },
 }
 
 #[cfg(test)]

@@ -1268,6 +1268,30 @@ error.site_packages_not_found:
   pt-BR: "Não foi possível encontrar site-packages no ambiente virtual: %{venv}"
   ja: "仮想環境で site-packages が見つかりません: %{venv}"
 
+error.migration_sources_not_found:
+  en: "No migration source tools (pyenv, virtualenvwrapper, conda) detected on this system"
+  ko: "이 시스템에서 마이그레이션 소스 도구(pyenv, virtualenvwrapper, conda)를 찾지 못했어요"
+  pt-BR: "Nenhuma ferramenta de origem de migração (pyenv, virtualenvwrapper, conda) detectada neste sistema"
+  ja: "このシステムで移行元ツール (pyenv, virtualenvwrapper, conda) が見つかりませんでした"
+
+error.migration_sources_not_found_filtered:
+  en: "No %{source} installation detected for migration"
+  ko: "마이그레이션할 %{source} 설치를 찾지 못했어요"
+  pt-BR: "Nenhuma instalação do %{source} detectada para migração"
+  ja: "移行対象の %{source} インストールが見つかりませんでした"
+
+error.migration_batch_failed:
+  en: "Migration finished with %{failed} failure(s) and %{conflicts} name conflict(s)"
+  ko: "마이그레이션 완료 — 실패 %{failed}건, 이름 충돌 %{conflicts}건"
+  pt-BR: "Migração concluída com %{failed} falha(s) e %{conflicts} conflito(s) de nome"
+  ja: "移行完了 — %{failed} 件の失敗、%{conflicts} 件の名前衝突あり"
+
+suggestion.migration_sources_not_found:
+  en: "→ Install at least one of: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, or conda"
+  ko: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda 중 하나 이상 설치하세요"
+  pt-BR: "→ Instale pelo menos um de: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper ou conda"
+  ja: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda のいずれかをインストールしてください"
+
 gc.skipped_now_healthy:
   en: "Skipped '%{name}' — became healthy between scan and remove"
   ko: "'%{name}' 건너뜀 — 스캔과 삭제 사이에 정상 상태가 됨"

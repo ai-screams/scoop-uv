@@ -69,14 +69,23 @@ impl ScoopError {
             Self::VerifyFailed { .. } => 1,
 
             // Migration source-discovery (existing MigrationExitCode == 3).
+            // MigrationSourcesNotFound joined this arm in Inc 4 so that
+            // `scoop migrate all` on a system with no source tools
+            // installed surfaces exit 3, distinct from generic exit 1.
             Self::PyenvNotFound
             | Self::PyenvEnvNotFound { .. }
             | Self::VenvWrapperEnvNotFound { .. }
             | Self::CondaEnvNotFound { .. }
-            | Self::CorruptedEnvironment { .. } => 3,
+            | Self::CorruptedEnvironment { .. }
+            | Self::MigrationSourcesNotFound { .. } => 3,
 
             // Migration-internal failures (existing MigrationExitCode == 2).
-            Self::MigrationFailed { .. } | Self::MigrationNameConflict { .. } => 2,
+            // MigrationBatchFailed is the new aggregate variant returned
+            // by `migrate all` when per-env failures or unresolved name
+            // conflicts (without --force) occurred.
+            Self::MigrationFailed { .. }
+            | Self::MigrationNameConflict { .. }
+            | Self::MigrationBatchFailed { .. } => 2,
 
             // Narrow policy: every other operational variant exits 1 to
             // preserve the historical contract every CI script already
@@ -107,7 +116,12 @@ impl ScoopError {
     /// ```
     pub fn render_policy(&self) -> ErrorRenderPolicy {
         match self {
-            Self::VerifyFailed { .. } => ErrorRenderPolicy::Quiet,
+            // `batch.rs` writes the full human summary / JSON envelope
+            // before returning MigrationBatchFailed, so `main.rs` must
+            // not append the generic `error:` prefix again.
+            Self::VerifyFailed { .. } | Self::MigrationBatchFailed { .. } => {
+                ErrorRenderPolicy::Quiet
+            }
             _ => ErrorRenderPolicy::Default,
         }
     }
@@ -159,9 +173,40 @@ mod tests {
                 name: "x".to_string(),
                 existing: PathBuf::from("/y"),
             },
+            ScoopError::MigrationBatchFailed {
+                failed_count: 2,
+                conflict_count: 1,
+            },
         ];
         for err in cases {
             assert_eq!(err.exit_code(), 2, "{err:?} should exit 2");
+        }
+    }
+
+    #[test]
+    fn migration_batch_failed_renders_quiet() {
+        let err = ScoopError::MigrationBatchFailed {
+            failed_count: 1,
+            conflict_count: 0,
+        };
+        // Quiet because batch.rs prints the full per-env summary itself
+        // before returning Err; the global `error:` prefix would be noise.
+        assert_eq!(err.render_policy(), ErrorRenderPolicy::Quiet);
+    }
+
+    #[test]
+    fn migration_sources_not_found_exits_three() {
+        let cases = [
+            ScoopError::MigrationSourcesNotFound { requested: None },
+            ScoopError::MigrationSourcesNotFound {
+                requested: Some("pyenv".to_string()),
+            },
+        ];
+        for err in cases {
+            assert_eq!(err.exit_code(), 3, "{err:?} should exit 3");
+            // Default render — main.rs prints the localized "no source
+            // tools" message and the install-a-source-tool suggestion.
+            assert_eq!(err.render_policy(), ErrorRenderPolicy::Default);
         }
     }
 

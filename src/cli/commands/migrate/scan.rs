@@ -75,6 +75,30 @@ pub fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<Source
     all_envs
 }
 
+/// Returns `true` if at least one source tool matching `filter` is
+/// installed on this system (i.e. its `default_root()` /
+/// `default_roots()` returned `Some`).
+///
+/// Used by `batch.rs` to distinguish two empty-list cases:
+///
+/// - **No tools installed** — `scan_all_environments` returned an empty
+///   vec because no source tool exists. Surfaces as
+///   [`ScoopError::MigrationSourcesNotFound`] (exit 3) so CI scripts
+///   can detect a misconfigured environment.
+/// - **Tools present but no envs** — current `Ok(())` behaviour stays.
+///
+/// `filter == None` checks all three sources; a specific `MigrateSource`
+/// only checks that one.
+pub fn any_source_tool_available(filter: Option<MigrateSource>) -> bool {
+    let want_pyenv = filter.is_none() || filter == Some(MigrateSource::Pyenv);
+    let want_venv = filter.is_none() || filter == Some(MigrateSource::Virtualenvwrapper);
+    let want_conda = filter.is_none() || filter == Some(MigrateSource::Conda);
+
+    (want_pyenv && PyenvDiscovery::default_root().is_some())
+        || (want_venv && VenvWrapperDiscovery::default_root().is_some())
+        || (want_conda && CondaDiscovery::default_roots().is_some())
+}
+
 /// Find an environment by name, searching across sources.
 ///
 /// Searches in order: pyenv, virtualenvwrapper, conda.
@@ -154,6 +178,7 @@ pub fn find_environment_by_name(
 mod tests {
     use super::*;
     use crate::test_utils::with_isolated_migrate_env;
+    use serial_test::serial;
 
     /// Tests that source_filter=None returns PyenvEnvNotFound for nonexistent env.
     #[test]
@@ -247,6 +272,40 @@ mod tests {
         with_isolated_migrate_env(|| {
             let envs = scan_all_environments(Some(MigrateSource::Conda));
             assert!(envs.is_empty());
+        });
+    }
+
+    // =========================================================================
+    // any_source_tool_available Tests (Inc 4)
+    // =========================================================================
+
+    /// With no source tools installed (isolated tempdir as $HOME), the
+    /// availability probe returns false. This is the signal `batch.rs`
+    /// uses to surface MigrationSourcesNotFound (exit 3) instead of
+    /// silently succeeding when there are simply no envs.
+    #[test]
+    #[serial]
+    fn any_source_tool_available_returns_false_when_isolated() {
+        with_isolated_migrate_env(|| {
+            assert!(!any_source_tool_available(None));
+            assert!(!any_source_tool_available(Some(MigrateSource::Pyenv)));
+            assert!(!any_source_tool_available(Some(
+                MigrateSource::Virtualenvwrapper
+            )));
+            assert!(!any_source_tool_available(Some(MigrateSource::Conda)));
+        });
+    }
+
+    /// When `with_full_migrate_env` materialises a pyenv tree, the Pyenv
+    /// branch of the OR-chain matches and the probe returns true. The
+    /// other filters still come back false because only pyenv is set up.
+    #[test]
+    #[serial]
+    fn any_source_tool_available_returns_true_when_pyenv_present() {
+        use crate::test_utils::with_full_migrate_env;
+        with_full_migrate_env(|_scoop, _pyenv| {
+            assert!(any_source_tool_available(None));
+            assert!(any_source_tool_available(Some(MigrateSource::Pyenv)));
         });
     }
 }

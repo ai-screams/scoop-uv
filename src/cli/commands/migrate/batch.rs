@@ -8,6 +8,7 @@ use dialoguer::Confirm;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use rust_i18n::t;
+use serde::Serialize;
 
 use crate::core::migrate::{
     EnvironmentStatus, MigrateOptions, MigrationResult, Migrator, SourceEnvironment,
@@ -15,15 +16,26 @@ use crate::core::migrate::{
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
 
-use super::scan::scan_all_environments;
+use super::scan::{any_source_tool_available, scan_all_environments};
 use super::types::{
     MigrateAllData, MigrateAllSummary, MigrateExecuteOptions, MigrateFailure, MigrateSkipped,
+    MigrationConflictDetail,
 };
 
 /// Migrate all environments at once.
 ///
 /// Scans all sources, filters migratable environments, and performs batch migration
 /// with progress tracking.
+///
+/// # Errors
+///
+/// - [`ScoopError::MigrationSourcesNotFound`] (exit 3) — no source tool
+///   (pyenv / virtualenvwrapper / conda) installed.
+/// - [`ScoopError::MigrationBatchFailed`] (exit 2, Quiet render) — at
+///   least one per-env failure or unresolved name conflict
+///   (without `--force`). The full summary is already rendered to
+///   stderr / stdout-as-JSON before this Err returns; `main.rs` MUST
+///   NOT print the global `error:` prefix again.
 pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -> Result<()> {
     if !opts.json {
         let source_name = opts
@@ -35,66 +47,61 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
 
     let environments = scan_all_environments(opts.source_filter);
 
+    // Empty scan branches:
+    //   - No tool installed     → exit 3 via MigrationSourcesNotFound.
+    //   - Tool present, no envs → existing Ok(()) info / JSON branch.
     if environments.is_empty() {
-        if opts.json {
-            output.json_success(
-                "migrate all",
-                MigrateAllData {
-                    migrated: Vec::new(),
-                    failed: Vec::new(),
-                    skipped: Vec::new(),
-                    summary: MigrateAllSummary {
-                        total: 0,
-                        success: 0,
-                        failed: 0,
-                        skipped: 0,
-                    },
-                },
-            );
-        } else {
-            let source_name = opts
-                .source_filter
-                .map(|s| format!("{}", s))
-                .unwrap_or_default();
-            output.info(&t!("migrate.no_envs", source = source_name));
+        if !any_source_tool_available(opts.source_filter) {
+            return Err(ScoopError::MigrationSourcesNotFound {
+                requested: opts.source_filter.map(|s| s.to_string()),
+            });
         }
+        emit_empty_envs(output, opts);
         return Ok(());
     }
 
-    // Filter to migratable environments
-    let migratable: Vec<_> = environments
-        .iter()
-        .filter(|e| {
-            matches!(e.status, EnvironmentStatus::Ready)
-                || (opts.force
-                    && matches!(
-                        e.status,
-                        EnvironmentStatus::PythonEol { .. }
-                            | EnvironmentStatus::NameConflict { .. }
-                    ))
-        })
-        .collect();
-
-    // Collect skipped environments
-    let skipped: Vec<MigrateSkipped> = environments
-        .iter()
-        .filter(|e| !migratable.iter().any(|m| m.name == e.name))
-        .map(|e| MigrateSkipped {
-            name: e.name.clone(),
-            reason: match &e.status {
-                EnvironmentStatus::Corrupted { reason } => format!("corrupted: {}", reason),
-                EnvironmentStatus::PythonEol { version } => {
-                    format!("Python {} is EOL (use --force)", version)
-                }
-                EnvironmentStatus::NameConflict { .. } => "name conflict (use --force)".to_string(),
-                EnvironmentStatus::Ready => "unknown".to_string(),
-            },
-        })
-        .collect();
+    // Partition into migratable / conflicts (preflight) / skipped buckets.
+    // Conflicts are tracked both as structured `MigrationConflictDetail`
+    // entries (new in 0.14, see types.rs) AND, for backward compat, as
+    // `MigrateSkipped` entries with the historical "name conflict
+    // (use --force)" reason. Existing scripts that read `skipped[]`
+    // continue to work.
+    let partition = partition_envs(&environments, opts.force);
+    let PartitionedEnvs {
+        migratable,
+        conflicts,
+        skipped,
+    } = partition;
 
     let skipped_count = skipped.len();
+    let conflict_count = conflicts.len();
 
+    // No migratable envs:
+    //   - If preflight conflicts exist (without --force) → render +
+    //     return MigrationBatchFailed (exit 2). Previously this path
+    //     silently returned Ok(()), masking the conflict in CI.
+    //   - Otherwise (only EOL / corrupted skipped) → info + Ok(()).
     if migratable.is_empty() {
+        if conflict_count > 0 {
+            // Render summary first (Quiet contract: no global error:
+            // prefix; main.rs trusts batch.rs already wrote everything).
+            if opts.json {
+                emit_migrate_all_json_outcome(
+                    &[],
+                    &[],
+                    &conflicts,
+                    &skipped,
+                    environments.len(),
+                    /* is_failure = */ true,
+                );
+            } else {
+                render_no_migratable_with_conflicts(output, &conflicts, &skipped);
+            }
+            return Err(ScoopError::MigrationBatchFailed {
+                failed_count: 0,
+                conflict_count,
+            });
+        }
         if opts.json {
             output.json_success(
                 "migrate all",
@@ -102,6 +109,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                     migrated: Vec::new(),
                     failed: Vec::new(),
                     skipped,
+                    conflicts,
                     summary: MigrateAllSummary {
                         total: environments.len(),
                         success: 0,
@@ -142,7 +150,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
 
         if skipped_count > 0 {
             output.warn(&format!(
-                "{} environment(s) will be skipped (corrupted)",
+                "{} environment(s) will be skipped (see summary)",
                 skipped_count
             ));
         }
@@ -256,6 +264,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                     .push(result);
             }
             Err(e) => {
+                let code = e.code();
                 let msg = e.to_string();
                 if let Some(ref pb) = progress {
                     pb.println(format!("✗ '{}' failed: {}", env.name, msg));
@@ -267,6 +276,8 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
                     .expect("failures lock poisoned")
                     .push(MigrateFailure {
                         name: env.name.clone(),
+                        source_type: env.source_type,
+                        error_code: code,
                         error: msg,
                     });
             }
@@ -302,26 +313,162 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
         pb.finish_with_message("Done");
     }
 
-    // JSON output
+    let failed_count = failed.len();
+    let is_failure = failed_count + conflict_count > 0;
+
+    // Render BEFORE returning Err so the Quiet render policy on
+    // MigrationBatchFailed is satisfied (main.rs writes nothing extra).
+    if opts.json {
+        emit_migrate_all_json_outcome(
+            &migrated,
+            &failed,
+            &conflicts,
+            &skipped,
+            environments.len(),
+            is_failure,
+        );
+    } else {
+        render_human_summary(output, opts, &migrated, &failed, migratable.len());
+    }
+
+    if is_failure {
+        return Err(ScoopError::MigrationBatchFailed {
+            failed_count,
+            conflict_count,
+        });
+    }
+
+    Ok(())
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+struct PartitionedEnvs<'a> {
+    migratable: Vec<&'a SourceEnvironment>,
+    conflicts: Vec<MigrationConflictDetail>,
+    skipped: Vec<MigrateSkipped>,
+}
+
+/// Split scanned envs into migratable / conflict / skipped buckets.
+///
+/// `conflicts` carries the structured detail (added in 0.14). `skipped`
+/// still includes name-conflicts under the historical
+/// "name conflict (use --force)" reason so consumers reading
+/// `data.skipped[]` continue to work — this is intentional, see the
+/// `MigrateAllData` doc comment.
+fn partition_envs(environments: &[SourceEnvironment], force: bool) -> PartitionedEnvs<'_> {
+    let mut migratable: Vec<&SourceEnvironment> = Vec::new();
+    let mut conflicts: Vec<MigrationConflictDetail> = Vec::new();
+    let mut skipped: Vec<MigrateSkipped> = Vec::new();
+
+    for env in environments {
+        let is_ready = matches!(env.status, EnvironmentStatus::Ready);
+        let force_eligible = force
+            && matches!(
+                env.status,
+                EnvironmentStatus::PythonEol { .. } | EnvironmentStatus::NameConflict { .. }
+            );
+
+        if is_ready || force_eligible {
+            migratable.push(env);
+            continue;
+        }
+
+        match &env.status {
+            EnvironmentStatus::Corrupted { reason } => skipped.push(MigrateSkipped {
+                name: env.name.clone(),
+                reason: format!("corrupted: {}", reason),
+            }),
+            EnvironmentStatus::PythonEol { version } => skipped.push(MigrateSkipped {
+                name: env.name.clone(),
+                reason: format!("Python {} is EOL (use --force)", version),
+            }),
+            EnvironmentStatus::NameConflict { existing } => {
+                conflicts.push(MigrationConflictDetail {
+                    name: env.name.clone(),
+                    source_type: env.source_type,
+                    existing: existing.clone(),
+                });
+                skipped.push(MigrateSkipped {
+                    name: env.name.clone(),
+                    reason: "name conflict (use --force)".to_string(),
+                });
+            }
+            EnvironmentStatus::Ready => {} // unreachable given the matched arms above
+        }
+    }
+
+    PartitionedEnvs {
+        migratable,
+        conflicts,
+        skipped,
+    }
+}
+
+fn emit_empty_envs(output: &Output, opts: &MigrateExecuteOptions) {
     if opts.json {
         output.json_success(
             "migrate all",
             MigrateAllData {
+                migrated: Vec::new(),
+                failed: Vec::new(),
+                skipped: Vec::new(),
+                conflicts: Vec::new(),
                 summary: MigrateAllSummary {
-                    total: environments.len(),
-                    success: migrated.len(),
-                    failed: failed.len(),
-                    skipped: skipped_count,
+                    total: 0,
+                    success: 0,
+                    failed: 0,
+                    skipped: 0,
                 },
-                migrated,
-                failed,
-                skipped,
             },
         );
-        return Ok(());
+    } else {
+        let source_name = opts
+            .source_filter
+            .map(|s| format!("{}", s))
+            .unwrap_or_default();
+        output.info(&t!("migrate.no_envs", source = source_name));
     }
+}
 
-    // Summary (non-JSON)
+fn render_no_migratable_with_conflicts(
+    output: &Output,
+    conflicts: &[MigrationConflictDetail],
+    skipped: &[MigrateSkipped],
+) {
+    output.info("");
+    output.info("─".repeat(40).as_str());
+    output.warn(&format!(
+        "No environments migrated — {} name conflict(s) without --force:",
+        conflicts.len()
+    ));
+    for c in conflicts {
+        output.warn(&format!(
+            "  - {} ({}) conflicts with {}",
+            c.name,
+            c.source_type,
+            c.existing.display()
+        ));
+    }
+    if skipped.len() > conflicts.len() {
+        let other = skipped.len() - conflicts.len();
+        output.info(&format!(
+            "{} other environment(s) skipped (corrupted / EOL)",
+            other
+        ));
+    }
+    output.info("→ Pass --force to overwrite existing scoop envs");
+}
+
+fn render_human_summary(
+    output: &Output,
+    opts: &MigrateExecuteOptions,
+    migrated: &[MigrationResult],
+    failed: &[MigrateFailure],
+    migratable_count: usize,
+) {
     output.info("");
     output.info("─".repeat(40).as_str());
     if opts.dry_run {
@@ -331,7 +478,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
         output.success(&t!(
             "migrate.batch_summary",
             success = migrated.len(),
-            total = migratable.len()
+            total = migratable_count
         ));
     }
 
@@ -342,8 +489,99 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
             names = failed_names.join(", ")
         ));
     }
+}
 
-    Ok(())
+/// JSON envelope helper for `migrate all`.
+///
+/// Modelled on [`crate::cli::commands::verify::emit_strict_json_failure`]
+/// — one helper that emits either a `success` or `error` envelope based
+/// on `is_failure`. Both carry the full `MigrateAllData` so consumers
+/// don't lose detail on either path; the failure side adds an
+/// `error: { code, message, failed_count, conflict_count }` block.
+///
+/// Keeping the success shape unchanged from previous releases preserves
+/// JSON backward compatibility. `conflicts` is the only additive top-
+/// level data key.
+fn emit_migrate_all_json_outcome(
+    migrated: &[MigrationResult],
+    failed: &[MigrateFailure],
+    conflicts: &[MigrationConflictDetail],
+    skipped: &[MigrateSkipped],
+    total: usize,
+    is_failure: bool,
+) {
+    #[derive(Serialize)]
+    struct SuccessEnvelope<'a> {
+        status: &'a str,
+        command: &'a str,
+        data: DataView<'a>,
+    }
+    #[derive(Serialize)]
+    struct FailureEnvelope<'a> {
+        status: &'a str,
+        command: &'a str,
+        error: ErrorBody,
+        data: DataView<'a>,
+    }
+    #[derive(Serialize)]
+    struct ErrorBody {
+        code: &'static str,
+        message: String,
+        failed_count: usize,
+        conflict_count: usize,
+    }
+    #[derive(Serialize)]
+    struct DataView<'a> {
+        migrated: &'a [MigrationResult],
+        failed: &'a [MigrateFailure],
+        skipped: &'a [MigrateSkipped],
+        conflicts: &'a [MigrationConflictDetail],
+        summary: MigrateAllSummary,
+    }
+
+    let summary = MigrateAllSummary {
+        total,
+        success: migrated.len(),
+        failed: failed.len(),
+        skipped: skipped.len(),
+    };
+
+    let data = DataView {
+        migrated,
+        failed,
+        skipped,
+        conflicts,
+        summary,
+    };
+
+    if is_failure {
+        let envelope = FailureEnvelope {
+            status: "error",
+            command: "migrate all",
+            error: ErrorBody {
+                code: "MIGRATE_BATCH_FAILED",
+                message: t!(
+                    "error.migration_batch_failed",
+                    failed = failed.len().to_string(),
+                    conflicts = conflicts.len().to_string()
+                )
+                .to_string(),
+                failed_count: failed.len(),
+                conflict_count: conflicts.len(),
+            },
+            data,
+        };
+        // serde_json::to_string never fails on these owned types — see the
+        // same justification in verify.rs::emit_strict_json_failure.
+        println!("{}", serde_json::to_string(&envelope).unwrap());
+    } else {
+        let envelope = SuccessEnvelope {
+            status: "success",
+            command: "migrate all",
+            data,
+        };
+        println!("{}", serde_json::to_string(&envelope).unwrap());
+    }
 }
 
 // ============================================================================
@@ -363,54 +601,7 @@ mod tests {
     use std::path::PathBuf;
 
     // =========================================================================
-    // Test Helpers (filter_migratable & collect_skipped)
-    // =========================================================================
-
-    /// Filter environments that are eligible for migration.
-    fn filter_migratable(
-        environments: &[SourceEnvironment],
-        force: bool,
-    ) -> Vec<&SourceEnvironment> {
-        environments
-            .iter()
-            .filter(|e| {
-                matches!(e.status, EnvironmentStatus::Ready)
-                    || (force
-                        && matches!(
-                            e.status,
-                            EnvironmentStatus::PythonEol { .. }
-                                | EnvironmentStatus::NameConflict { .. }
-                        ))
-            })
-            .collect()
-    }
-
-    /// Collect skipped environments with reasons.
-    fn collect_skipped(
-        environments: &[SourceEnvironment],
-        migratable: &[&SourceEnvironment],
-    ) -> Vec<MigrateSkipped> {
-        environments
-            .iter()
-            .filter(|e| !migratable.iter().any(|m| m.name == e.name))
-            .map(|e| MigrateSkipped {
-                name: e.name.clone(),
-                reason: match &e.status {
-                    EnvironmentStatus::Corrupted { reason } => format!("corrupted: {}", reason),
-                    EnvironmentStatus::PythonEol { version } => {
-                        format!("Python {} is EOL (use --force)", version)
-                    }
-                    EnvironmentStatus::NameConflict { .. } => {
-                        "name conflict (use --force)".to_string()
-                    }
-                    EnvironmentStatus::Ready => "unknown".to_string(),
-                },
-            })
-            .collect()
-    }
-
-    // =========================================================================
-    // filter_migratable Tests
+    // Test Helpers
     // =========================================================================
 
     fn create_test_env(name: &str, status: EnvironmentStatus) -> SourceEnvironment {
@@ -424,19 +615,25 @@ mod tests {
         }
     }
 
+    // =========================================================================
+    // partition_envs Tests (replaces filter_migratable + collect_skipped)
+    // =========================================================================
+
     #[test]
-    fn filter_migratable_ready_always_included() {
+    fn partition_ready_always_migratable() {
         let envs = vec![
             create_test_env("ready1", EnvironmentStatus::Ready),
             create_test_env("ready2", EnvironmentStatus::Ready),
         ];
 
-        let migratable = filter_migratable(&envs, false);
-        assert_eq!(migratable.len(), 2);
+        let p = partition_envs(&envs, false);
+        assert_eq!(p.migratable.len(), 2);
+        assert!(p.conflicts.is_empty());
+        assert!(p.skipped.is_empty());
     }
 
     #[test]
-    fn filter_migratable_corrupted_never_included() {
+    fn partition_corrupted_never_migratable() {
         let envs = vec![create_test_env(
             "corrupted",
             EnvironmentStatus::Corrupted {
@@ -444,16 +641,17 @@ mod tests {
             },
         )];
 
-        let migratable = filter_migratable(&envs, false);
-        assert!(migratable.is_empty());
+        let p = partition_envs(&envs, false);
+        assert!(p.migratable.is_empty());
+        assert_eq!(p.skipped.len(), 1);
+        assert!(p.skipped[0].reason.contains("corrupted"));
 
-        // Even with force
-        let migratable_force = filter_migratable(&envs, true);
-        assert!(migratable_force.is_empty());
+        let p_force = partition_envs(&envs, true);
+        assert!(p_force.migratable.is_empty());
     }
 
     #[test]
-    fn filter_migratable_eol_excluded_without_force() {
+    fn partition_eol_excluded_without_force() {
         let envs = vec![create_test_env(
             "eol",
             EnvironmentStatus::PythonEol {
@@ -461,12 +659,15 @@ mod tests {
             },
         )];
 
-        let migratable = filter_migratable(&envs, false);
-        assert!(migratable.is_empty());
+        let p = partition_envs(&envs, false);
+        assert!(p.migratable.is_empty());
+        assert_eq!(p.skipped.len(), 1);
+        assert!(p.skipped[0].reason.contains("2.7.18"));
+        assert!(p.skipped[0].reason.contains("EOL"));
     }
 
     #[test]
-    fn filter_migratable_eol_included_with_force() {
+    fn partition_eol_included_with_force() {
         let envs = vec![create_test_env(
             "eol",
             EnvironmentStatus::PythonEol {
@@ -474,39 +675,49 @@ mod tests {
             },
         )];
 
-        let migratable = filter_migratable(&envs, true);
-        assert_eq!(migratable.len(), 1);
-        assert_eq!(migratable[0].name, "eol");
+        let p = partition_envs(&envs, true);
+        assert_eq!(p.migratable.len(), 1);
+        assert!(p.skipped.is_empty());
     }
 
     #[test]
-    fn filter_migratable_conflict_excluded_without_force() {
+    fn partition_conflict_excluded_without_force_appears_in_both_buckets() {
+        // Codex MUST FIX #2 contract: name-conflict appears in BOTH
+        // `conflicts` (new structured surface) AND `skipped` (legacy
+        // shape for backward compatibility with existing JSON consumers).
         let envs = vec![create_test_env(
-            "conflict",
+            "dup",
             EnvironmentStatus::NameConflict {
                 existing: PathBuf::from("/existing"),
             },
         )];
 
-        let migratable = filter_migratable(&envs, false);
-        assert!(migratable.is_empty());
+        let p = partition_envs(&envs, false);
+        assert!(p.migratable.is_empty());
+        assert_eq!(p.conflicts.len(), 1);
+        assert_eq!(p.conflicts[0].name, "dup");
+        assert_eq!(p.conflicts[0].existing, PathBuf::from("/existing"));
+        assert_eq!(p.skipped.len(), 1);
+        assert!(p.skipped[0].reason.contains("conflict"));
     }
 
     #[test]
-    fn filter_migratable_conflict_included_with_force() {
+    fn partition_conflict_included_with_force() {
         let envs = vec![create_test_env(
-            "conflict",
+            "dup",
             EnvironmentStatus::NameConflict {
                 existing: PathBuf::from("/existing"),
             },
         )];
 
-        let migratable = filter_migratable(&envs, true);
-        assert_eq!(migratable.len(), 1);
+        let p = partition_envs(&envs, true);
+        assert_eq!(p.migratable.len(), 1);
+        assert!(p.conflicts.is_empty());
+        assert!(p.skipped.is_empty());
     }
 
     #[test]
-    fn filter_migratable_mixed_statuses() {
+    fn partition_mixed_statuses() {
         let envs = vec![
             create_test_env("ready", EnvironmentStatus::Ready),
             create_test_env(
@@ -529,100 +740,23 @@ mod tests {
             ),
         ];
 
-        // Without force: only ready
-        let migratable = filter_migratable(&envs, false);
-        assert_eq!(migratable.len(), 1);
-        assert_eq!(migratable[0].name, "ready");
+        let p = partition_envs(&envs, false);
+        assert_eq!(p.migratable.len(), 1);
+        assert_eq!(p.migratable[0].name, "ready");
+        assert_eq!(p.conflicts.len(), 1);
+        // skipped has: eol + corrupted + conflict
+        assert_eq!(p.skipped.len(), 3);
 
-        // With force: ready + eol + conflict (not corrupted)
-        let migratable_force = filter_migratable(&envs, true);
-        assert_eq!(migratable_force.len(), 3);
+        let p_force = partition_envs(&envs, true);
+        // ready + eol + conflict (not corrupted)
+        assert_eq!(p_force.migratable.len(), 3);
+        assert!(p_force.conflicts.is_empty());
+        assert_eq!(p_force.skipped.len(), 1); // only corrupted
     }
 
     // =========================================================================
-    // collect_skipped Tests
+    // MigrateAllSummary / MigrateSkipped / MigrateFailure shape
     // =========================================================================
-
-    #[test]
-    fn collect_skipped_empty_when_all_migratable() {
-        let envs = vec![
-            create_test_env("ready1", EnvironmentStatus::Ready),
-            create_test_env("ready2", EnvironmentStatus::Ready),
-        ];
-        let migratable: Vec<&SourceEnvironment> = envs.iter().collect();
-
-        let skipped = collect_skipped(&envs, &migratable);
-        assert!(skipped.is_empty());
-    }
-
-    #[test]
-    fn collect_skipped_corrupted_with_reason() {
-        let envs = vec![create_test_env(
-            "broken",
-            EnvironmentStatus::Corrupted {
-                reason: "Python binary not found".to_string(),
-            },
-        )];
-        let migratable: Vec<&SourceEnvironment> = vec![];
-
-        let skipped = collect_skipped(&envs, &migratable);
-        assert_eq!(skipped.len(), 1);
-        assert_eq!(skipped[0].name, "broken");
-        assert!(skipped[0].reason.contains("corrupted"));
-        assert!(skipped[0].reason.contains("Python binary not found"));
-    }
-
-    #[test]
-    fn collect_skipped_eol_with_version() {
-        let envs = vec![create_test_env(
-            "oldpy",
-            EnvironmentStatus::PythonEol {
-                version: "2.7.18".to_string(),
-            },
-        )];
-        let migratable: Vec<&SourceEnvironment> = vec![];
-
-        let skipped = collect_skipped(&envs, &migratable);
-        assert_eq!(skipped.len(), 1);
-        assert!(skipped[0].reason.contains("2.7.18"));
-        assert!(skipped[0].reason.contains("EOL"));
-        assert!(skipped[0].reason.contains("--force"));
-    }
-
-    #[test]
-    fn collect_skipped_conflict_suggests_force() {
-        let envs = vec![create_test_env(
-            "dup",
-            EnvironmentStatus::NameConflict {
-                existing: PathBuf::from("/home/user/.scoop/virtualenvs/dup"),
-            },
-        )];
-        let migratable: Vec<&SourceEnvironment> = vec![];
-
-        let skipped = collect_skipped(&envs, &migratable);
-        assert_eq!(skipped.len(), 1);
-        assert!(skipped[0].reason.contains("conflict"));
-        assert!(skipped[0].reason.contains("--force"));
-    }
-
-    // =========================================================================
-    // MigrateAllSummary Tests
-    // =========================================================================
-
-    #[test]
-    fn migrate_all_summary_default_values() {
-        let summary = MigrateAllSummary {
-            total: 0,
-            success: 0,
-            failed: 0,
-            skipped: 0,
-        };
-
-        assert_eq!(summary.total, 0);
-        assert_eq!(summary.success, 0);
-        assert_eq!(summary.failed, 0);
-        assert_eq!(summary.skipped, 0);
-    }
 
     #[test]
     fn migrate_all_summary_counts_match() {
@@ -632,13 +766,8 @@ mod tests {
             failed: 2,
             skipped: 3,
         };
-
         assert_eq!(summary.success + summary.failed + summary.skipped, 10);
     }
-
-    // =========================================================================
-    // MigrateSkipped Tests
-    // =========================================================================
 
     #[test]
     fn migrate_skipped_serializable() {
@@ -647,26 +776,26 @@ mod tests {
             reason: "Test reason".to_string(),
         };
 
-        // Should be serializable
         let json = serde_json::to_string(&skipped).unwrap();
         assert!(json.contains("testenv"));
         assert!(json.contains("Test reason"));
     }
 
-    // =========================================================================
-    // MigrateFailure Tests
-    // =========================================================================
-
     #[test]
-    fn migrate_failure_serializable() {
+    fn migrate_failure_serializable_with_new_fields() {
+        // Inc 4: source_type + error_code are additive (Codex MUST FIX #4).
         let failure = MigrateFailure {
             name: "failedenv".to_string(),
+            source_type: SourceType::Pyenv,
+            error_code: "MIGRATE_FAILED",
             error: "Something went wrong".to_string(),
         };
 
         let json = serde_json::to_string(&failure).unwrap();
         assert!(json.contains("failedenv"));
         assert!(json.contains("Something went wrong"));
+        assert!(json.contains("\"source_type\":\"pyenv\""));
+        assert!(json.contains("\"error_code\":\"MIGRATE_FAILED\""));
     }
 
     // =========================================================================
@@ -679,18 +808,23 @@ mod tests {
         with_isolated_migrate_env(|| {
             let output = Output::new(0, false, true, false);
             let opts = MigrateExecuteOptions {
-                yes: true, // Skip confirmation
+                yes: true,
                 ..Default::default()
             };
 
+            // No source tools detected → MigrationSourcesNotFound (exit 3).
+            // Previously this returned Ok(()) silently.
             let result = migrate_all_environments(&output, &opts);
-            assert!(result.is_ok());
+            assert!(matches!(
+                result,
+                Err(ScoopError::MigrationSourcesNotFound { .. })
+            ));
         });
     }
 
     #[test]
     #[serial]
-    fn migrate_all_environments_json_empty() {
+    fn migrate_all_environments_json_empty_no_sources() {
         with_isolated_migrate_env(|| {
             let output = Output::new(0, true, true, true);
             let opts = MigrateExecuteOptions {
@@ -698,8 +832,29 @@ mod tests {
                 ..Default::default()
             };
 
+            // Same exit-3 contract under --json (no tool present).
             let result = migrate_all_environments(&output, &opts);
-            assert!(result.is_ok());
+            assert!(matches!(
+                result,
+                Err(ScoopError::MigrationSourcesNotFound { .. })
+            ));
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn migrate_all_environments_empty_with_tools_present() {
+        // pyenv root exists but has zero envs → Ok(()) (no exit 3).
+        with_full_migrate_env(|_scoop, _pyenv| {
+            let output = Output::new(0, false, true, false);
+            let opts = MigrateExecuteOptions {
+                source_filter: Some(MigrateSource::Pyenv),
+                yes: true,
+                ..Default::default()
+            };
+
+            let result = migrate_all_environments(&output, &opts);
+            assert!(result.is_ok(), "tool present + no envs must be Ok(())");
         });
     }
 
@@ -714,8 +869,12 @@ mod tests {
                 ..Default::default()
             };
 
+            // Filtering to a source tool that's also absent → exit 3 path.
             let result = migrate_all_environments(&output, &opts);
-            assert!(result.is_ok());
+            assert!(matches!(
+                result,
+                Err(ScoopError::MigrationSourcesNotFound { requested: Some(_) })
+            ));
         });
     }
 
@@ -723,7 +882,6 @@ mod tests {
     #[serial]
     fn migrate_all_environments_with_corrupted_envs() {
         with_full_migrate_env(|_scoop, pyenv| {
-            // Create a corrupted environment
             create_corrupted_pyenv_env(pyenv.path(), "corrupted_batch", "3.12.0");
 
             let output = Output::new(0, false, true, false);
@@ -733,7 +891,7 @@ mod tests {
                 ..Default::default()
             };
 
-            // Should succeed (skip corrupted, report in summary)
+            // Corrupted is skipped, no migratable, no conflicts → Ok(()).
             let result = migrate_all_environments(&output, &opts);
             assert!(result.is_ok());
         });
@@ -741,7 +899,12 @@ mod tests {
 
     #[test]
     #[serial]
-    fn migrate_all_environments_dry_run() {
+    fn migrate_all_environments_dry_run_propagates_pip_failure() {
+        // create_mock_pyenv_env builds a directory skeleton WITHOUT a real
+        // pip binary, so the migrator's package-extraction step fails.
+        // Pre-Inc4 this was silently swallowed (Ok regardless). Now it
+        // correctly surfaces as MigrationBatchFailed so users (and CI)
+        // learn the dry-run would fail in production.
         with_full_migrate_env(|_scoop, pyenv| {
             create_mock_pyenv_env(pyenv.path(), "dryrun_env", "3.12.0");
 
@@ -754,13 +917,23 @@ mod tests {
             };
 
             let result = migrate_all_environments(&output, &opts);
-            assert!(result.is_ok());
+            assert!(matches!(
+                result,
+                Err(ScoopError::MigrationBatchFailed {
+                    failed_count: 1,
+                    conflict_count: 0,
+                })
+            ));
         });
     }
 
     #[test]
     #[serial]
-    fn migrate_all_environments_json_with_envs() {
+    fn migrate_all_environments_json_emits_failure_envelope() {
+        // Mock env has no pip → migrator returns extraction error → JSON
+        // failure envelope is emitted on stdout BEFORE the Err returns.
+        // The Quiet render policy on MigrationBatchFailed then prevents
+        // main.rs from appending the generic `error:` prefix.
         with_full_migrate_env(|_scoop, pyenv| {
             create_mock_pyenv_env(pyenv.path(), "json_batch", "3.12.0");
             create_corrupted_pyenv_env(pyenv.path(), "json_corrupted", "3.11.0");
@@ -774,7 +947,10 @@ mod tests {
             };
 
             let result = migrate_all_environments(&output, &opts);
-            assert!(result.is_ok());
+            assert!(matches!(
+                result,
+                Err(ScoopError::MigrationBatchFailed { .. })
+            ));
         });
     }
 }

@@ -3,7 +3,7 @@
 use clap::Parser;
 use color_eyre::eyre::Result;
 
-use scoop_uv::cli::{Cli, Commands, SelfCommand};
+use scoop_uv::cli::{Cli, Commands, MigrateCommand, SelfCommand};
 use scoop_uv::output::Output;
 
 fn main() -> Result<()> {
@@ -110,7 +110,19 @@ fn main() -> Result<()> {
             scoop_uv::cli::commands::shell(&output, name.as_deref(), unset, shell)
         }
         Commands::Migrate { command } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            // Subcommand carries its own --json flag (list / all / @env).
+            // Without threading it into Output here, output.json_success()
+            // would no-op in production (only tests built Output directly
+            // with json=true), so the new emit_migrate_all_json_outcome
+            // helper would never fire from the CLI. Bug fix is bundled
+            // with Inc 4 because the rest of the JSON path depends on it.
+            let json = match &command {
+                Some(MigrateCommand::List { json, .. })
+                | Some(MigrateCommand::All { json, .. })
+                | Some(MigrateCommand::Env { json, .. }) => *json,
+                None => false,
+            };
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::migrate(&output, command)
         }
         Commands::Lang {
