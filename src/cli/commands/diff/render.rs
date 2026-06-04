@@ -22,12 +22,9 @@ pub fn render_human(output: &Output, data: &DiffData, mode: DiffMode) {
         return;
     }
 
-    if matches!(
-        mode,
-        DiffMode::All | DiffMode::PackagesOnly | DiffMode::MetadataOnly
-    ) {
-        output.info(&format!("{} vs {}", data.env_a, data.env_b));
-    }
+    // Header runs for every mode; the previous `matches!` enumerated
+    // all three variants and was always-true. Plain unconditional emit.
+    output.info(&format!("{} vs {}", data.env_a, data.env_b));
 
     if mode != DiffMode::MetadataOnly {
         render_python_section(output, data);

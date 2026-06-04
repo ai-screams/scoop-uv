@@ -183,10 +183,17 @@ fn build_summary(
     let packages_added = packages.map(|p| p.added.len()).unwrap_or(0);
     let packages_removed = packages.map(|p| p.removed.len()).unwrap_or(0);
     let packages_changed = packages.map(|p| p.changed.len()).unwrap_or(0);
+
+    // metadata_fields_changed deliberately EXCLUDES python_version even
+    // though MetadataDiff carries it. The top-level `python` ScalarDiff
+    // is the single source of truth for Python-version drift; including
+    // metadata.python_version here would double-count it whenever a
+    // single Python mismatch raised both `python_changed` and the
+    // metadata bucket. MetadataDiff.python_version stays in the JSON
+    // output for shape completeness (it equals data.python anyway).
     let metadata_fields_changed = metadata
         .map(|m| {
             [
-                m.python_version.changed,
                 m.created_at.changed,
                 m.last_used.changed,
                 m.uv_version.changed,
@@ -197,12 +204,6 @@ fn build_summary(
         })
         .unwrap_or(0);
 
-    // python.changed counts only when the python section is in-scope.
-    // packages mode excludes metadata (which carries python_version
-    // duplicated); to avoid double counting in MetadataOnly mode, the
-    // python ScalarDiff is the source of truth for python_changed,
-    // and metadata's python_version contributes only via the metadata
-    // section's own field counter.
     let python_changed = python.changed;
 
     let differences = (python_changed as usize)

@@ -51,8 +51,23 @@ pub(super) fn canonical_name(raw: &str) -> String {
 /// [`PackageEntry::display_name`] differs (e.g. `requests` vs
 /// `Requests`).
 pub fn compute_package_diff(a: &[PackageEntry], b: &[PackageEntry]) -> PackageDiff {
-    let map_a: BTreeMap<&str, &PackageEntry> = a.iter().map(|p| (p.name.as_str(), p)).collect();
-    let map_b: BTreeMap<&str, &PackageEntry> = b.iter().map(|p| (p.name.as_str(), p)).collect();
+    // First-wins on canonical-name collision (e.g. `Foo` and `foo` in
+    // the same input). `uv pip list` doesn't emit duplicates in
+    // practice, but `.collect::<BTreeMap>()` would be silently
+    // last-wins — explicit `or_insert_with` keeps the behaviour
+    // deterministic regardless of input order so tests and JSON
+    // output stay stable. If duplicates ever do appear we'd want to
+    // know about them as a separate diff signal; for now, "ignore
+    // the second occurrence" is the conservative default.
+    fn index(entries: &[PackageEntry]) -> BTreeMap<&str, &PackageEntry> {
+        let mut map = BTreeMap::new();
+        for entry in entries {
+            map.entry(entry.name.as_str()).or_insert(entry);
+        }
+        map
+    }
+    let map_a = index(a);
+    let map_b = index(b);
 
     let mut added = Vec::new();
     let mut removed = Vec::new();
@@ -185,6 +200,22 @@ mod tests {
         let b = vec![pkg("requests", "2.31.0")];
         let d = compute_package_diff(&a, &b);
         assert!(d.added.is_empty() && d.removed.is_empty() && d.changed.is_empty());
+    }
+
+    #[test]
+    fn diff_duplicate_canonical_names_first_wins() {
+        // Two entries with the same canonical name on side A: the second
+        // is dropped deterministically (first-wins), not silently
+        // overwritten by BTreeMap last-wins. Without this, a diff
+        // against a clean side could either see "no change" or
+        // "version: 1.0 → 2.0" depending on input order.
+        let a = vec![pkg("Foo", "1.0"), pkg("foo", "2.0")]; // both canonicalise to "foo"
+        let b = vec![pkg("foo", "1.0")];
+        let d = compute_package_diff(&a, &b);
+        // First-wins: "1.0" is the surviving A version → matches B → no change.
+        assert!(d.added.is_empty(), "no additions expected");
+        assert!(d.removed.is_empty(), "no removals expected");
+        assert!(d.changed.is_empty(), "first-wins kept 1.0, identical to B");
     }
 
     #[test]

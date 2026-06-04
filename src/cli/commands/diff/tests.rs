@@ -238,18 +238,17 @@ fn execute_packages_only_skips_metadata_section() {
             ],
         );
         let out = Output::new(0, true, true, false);
-        // Under --strict, packages match but python differs → should
-        // NOT trigger DiffMismatch because metadata section is skipped.
-        // Python ScalarDiff is built unconditionally though, so it
-        // still counts. The intent here is: PackagesOnly skips
-        // *metadata*, not *python version comparison*.
+        // PackagesOnly suppresses the *metadata* section only; the
+        // top-level `python` ScalarDiff is always computed (and is the
+        // single source of truth for python_changed). Packages match
+        // here, but python differs → DiffMismatch under --strict, as
+        // expected. This test pins that contract.
         let result = execute_with(
             &out,
             &opts_for("a", "b", true, DiffMode::PackagesOnly),
             &enumerator,
             &svc,
         );
-        // python_version differs → DiffMismatch.
         assert!(matches!(result, Err(ScoopError::DiffMismatch { .. })));
     });
 }
