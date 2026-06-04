@@ -8,7 +8,7 @@ Verify the health of one or all virtual environments. Where [`doctor`](doctor.md
 scoop verify                # Check every environment
 scoop verify <NAME>         # Check just one environment
 scoop verify --json         # Machine-readable output
-scoop verify --strict       # Exit 1 if any check fails (default: always 0)
+scoop verify --strict       # Exit 1 if any check has Fail status (default: always 0)
 ```
 
 ## What gets checked
@@ -35,7 +35,7 @@ An env is considered **healthy** when every check is Pass or Skip.
 
 ## Exit codes
 
-By default, `verify` always exits 0 — even when checks fail. This matches `doctor`'s philosophy: surfacing information shouldn't break CI just because someone wanted to look at the report. Pass `--strict` to opt into `exit 1` when any env has at least one Warn or Fail.
+By default, `verify` always exits 0 — even when checks fail. This matches `doctor`'s philosophy: surfacing information shouldn't break CI just because someone wanted to look at the report. Pass `--strict` to opt into `exit 1` when any env has at least one **Fail** check (Warn alone does not trigger the non-zero exit).
 
 ## verify vs doctor vs gc
 

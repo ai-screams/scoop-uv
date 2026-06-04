@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **error:** Introduce `ScoopError::exit_code()` and `render_policy()`
+  centralising process-exit decisions in `src/error/exit.rs`. Carries
+  semantic findings (e.g. `VerifyFailed`) as `ErrorRenderPolicy::Quiet`
+  so the global `error:` prefix is suppressed when the command already
+  rendered its own report.
+- **error:** Add `ScoopError::SitePackagesNotFound { venv }` with
+  localized messages (en/ko/ja/pt-BR) for the case where every
+  site-packages resolution strategy fails.
+- **paths:** Cross-platform virtualenv path helpers in `src/paths.rs`:
+  `virtualenv_bin_dir`, `virtualenv_python_exe`, `virtualenv_pip_exe`,
+  `virtualenv_activate_script`, `virtualenv_site_packages`. The
+  existing `virtualenv_bin` / `virtualenv_python` name-based helpers
+  become source-compatible wrappers.
+
+### Changed
+
+- **paths:** Consolidate Unix-only `join("bin").join("python")` and
+  `join("bin").join("pip")` hardcoding across `src/uv/client.rs`,
+  `src/core/mod.rs`, `src/core/doctor.rs`, `src/cli/commands/verify.rs`,
+  and `src/cli/commands/gc/mod.rs` into the new cross-platform helpers.
+  These code paths now resolve correctly on Windows where Python lives
+  in `Scripts/python.exe` instead of `bin/python`.
+
+### Documentation
+
+- **api.md:** Replace the single-line "0=success, 1=failure" exit code
+  guidance with a structured per-command table covering `verify`,
+  `migrate`, `doctor`, and others. Documents the layered `0/1/2/3`
+  contract centralised by `ScoopError::exit_code()`.
+- **verify.md:** Correct `--strict` semantics — exit 1 fires on **Fail**
+  checks only, not on Warn (matches `src/cli/commands/verify.rs:149`'s
+  `summary.issues > 0` gate).
+
 ## [0.13.0] - 2026-06-02
 
 ### Added
