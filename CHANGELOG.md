@@ -17,11 +17,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **error:** Add `ScoopError::SitePackagesNotFound { venv }` with
   localized messages (en/ko/ja/pt-BR) for the case where every
   site-packages resolution strategy fails.
+- **error:** Add `ScoopError::MigrationSourcesNotFound { requested }`
+  (exit 3) for the case where no source tool (pyenv, virtualenvwrapper,
+  conda) is detected on the system. Distinct from "tools present but
+  no envs", which stays `Ok(())`.
+- **error:** Add `ScoopError::MigrationBatchFailed { failed_count,
+  conflict_count }` (exit 2, Quiet render). `scoop migrate all` now
+  returns this when at least one per-env failure or unresolved name
+  conflict (without `--force`) occurred; pre-0.14 the batch path
+  always returned success regardless of per-env outcome.
 - **paths:** Cross-platform virtualenv path helpers in `src/paths.rs`:
   `virtualenv_bin_dir`, `virtualenv_python_exe`, `virtualenv_pip_exe`,
   `virtualenv_activate_script`, `virtualenv_site_packages`. The
   existing `virtualenv_bin` / `virtualenv_python` name-based helpers
   become source-compatible wrappers.
+- **migrate:** `MigrationConflictDetail` and a new `conflicts: []`
+  field on `MigrateAllData` (JSON output of `scoop migrate all`).
+  Name-conflicting envs continue to appear in `skipped[]` for
+  backward compatibility, additively surfaced in `conflicts[]` for
+  programmatic branching.
+- **migrate:** Additive `source_type` and `error_code` fields on
+  `MigrateFailure` (JSON output) so scripts can branch on the failure
+  class without parsing localized error messages.
+- **scan:** `any_source_tool_available(filter)` probe distinguishing
+  "no tool installed" from "tool installed, no envs".
 
 ### Changed
 
@@ -31,6 +50,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `src/cli/commands/gc/mod.rs` into the new cross-platform helpers.
   These code paths now resolve correctly on Windows where Python lives
   in `Scripts/python.exe` instead of `bin/python`.
+- **migrate:** `scoop migrate all` now propagates failures to the
+  process exit code — exit 2 on per-env failure or preflight name
+  conflict (without `--force`), exit 3 when no source tool is detected.
+  Pre-0.14 the command always exited 0 regardless of per-env outcome,
+  silently hiding broken migrations from CI gates.
+- **migrate:** Non-JSON summary on `scoop migrate all` now includes
+  preflight conflict detail and the `--force` hint on every failure
+  branch. Previously the mixed-success-with-conflict path printed
+  only migrated/failed names, leaving a non-zero exit unexplained.
+- **migrate (JSON):** `scoop migrate all --json` now emits a structured
+  failure envelope mirroring `verify`'s pattern when per-env failure or
+  preflight conflict occurred (`{status: "error", error: { code:
+  "MIGRATE_BATCH_FAILED", ... }, data: { ... }}`). The success-path
+  envelope shape is unchanged.
+
+### Fixed
+
+- **migrate:** `scoop migrate {list,all,@env} --json` produced no JSON
+  output in production because `main.rs` constructed `Output` with
+  `json=false` regardless of the subcommand's `--json` flag. Only unit
+  tests (constructing `Output` directly) exercised the JSON path. The
+  flag is now threaded through.
+- **migrate (JSON):** the per-batch envelope is now panic-safe.
+  Previously `serde_json::to_string(&envelope).unwrap()` could panic
+  on non-UTF-8 paths via embedded `PathBuf`s; on serde failure the
+  helper now emits an `INTERNAL_JSON_ERROR` fallback envelope so
+  script consumers never see empty stdout.
 
 ### Documentation
 
@@ -165,8 +211,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **ci:** Venvwrapper entrypoint exit-127 + mutants migration_exit_code ([#123](https://github.com/ai-screams/scoop-uv/pull/123))
-- Complete JSON contract honesty from Codex review (C3/C4/C6) ([#123](https://github.com/ai-screams/scoop-uv/pull/123))
-- Complete security consistency from Codex review (C1/C2/C5) ([#123](https://github.com/ai-screams/scoop-uv/pull/123))
+- Complete JSON contract honesty (C3/C4/C6) ([#123](https://github.com/ai-screams/scoop-uv/pull/123))
+- Complete security consistency (C1/C2/C5) ([#123](https://github.com/ai-screams/scoop-uv/pull/123))
 - **gc/verify/man:** Address review findings (security + quality) ([#123](https://github.com/ai-screams/scoop-uv/pull/123))
 [0.12.0]: https://github.com/ai-screams/scoop-uv/compare/0.11.0...0.12.0
 
