@@ -207,6 +207,18 @@ impl ScoopError {
                 conflicts = conflict_count.to_string()
             )
             .to_string(),
+            Self::DiffMismatch {
+                env_a,
+                env_b,
+                differences,
+            } => t!(
+                "error.diff_mismatch",
+                locale = locale,
+                a = env_a,
+                b = env_b,
+                n = differences.to_string()
+            )
+            .to_string(),
         }
     }
 }

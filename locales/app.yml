@@ -1286,6 +1286,12 @@ error.migration_batch_failed:
   pt-BR: "Migração concluída com %{failed} falha(s) e %{conflicts} conflito(s) de nome"
   ja: "移行完了 — %{failed} 件の失敗、%{conflicts} 件の名前衝突あり"
 
+error.diff_mismatch:
+  en: "'%{a}' and '%{b}' differ (%{n} difference(s))"
+  ko: "'%{a}' 와(과) '%{b}' 가 달라요 (%{n}건 차이)"
+  pt-BR: "'%{a}' e '%{b}' diferem (%{n} diferença(s))"
+  ja: "'%{a}' と '%{b}' は異なります (%{n} 件)"
+
 suggestion.migration_sources_not_found:
   en: "→ Install at least one of: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, or conda"
   ko: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda 중 하나 이상 설치하세요"

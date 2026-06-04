@@ -165,6 +165,20 @@ pub enum ScoopError {
         failed_count: usize,
         conflict_count: usize,
     },
+
+    /// `scoop diff --strict` exit signal: the two envs differ in at
+    /// least one observable way (Python version, packages, or
+    /// metadata). The diff command has already rendered its report
+    /// (human table or JSON envelope) before returning this Err, so
+    /// render policy is `Quiet`.
+    ///
+    /// Carries both env names so the error message is self-rendering
+    /// without needing an external context.
+    DiffMismatch {
+        env_a: String,
+        env_b: String,
+        differences: usize,
+    },
 }
 
 #[cfg(test)]

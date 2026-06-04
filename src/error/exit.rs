@@ -66,7 +66,9 @@ impl ScoopError {
     pub fn exit_code(&self) -> u8 {
         match self {
             // Semantic findings — the command has already rendered output.
-            Self::VerifyFailed { .. } => 1,
+            // Both VerifyFailed and DiffMismatch follow the same precedent:
+            // exit 1 (signal "I found something") and Quiet render policy.
+            Self::VerifyFailed { .. } | Self::DiffMismatch { .. } => 1,
 
             // Migration source-discovery (existing MigrationExitCode == 3).
             // MigrationSourcesNotFound joined this arm in Inc 4 so that
@@ -116,12 +118,12 @@ impl ScoopError {
     /// ```
     pub fn render_policy(&self) -> ErrorRenderPolicy {
         match self {
-            // `batch.rs` writes the full human summary / JSON envelope
-            // before returning MigrationBatchFailed, so `main.rs` must
-            // not append the generic `error:` prefix again.
-            Self::VerifyFailed { .. } | Self::MigrationBatchFailed { .. } => {
-                ErrorRenderPolicy::Quiet
-            }
+            // The command has already rendered its full report (human
+            // table or JSON envelope) before returning these variants,
+            // so `main.rs` must not append the generic `error:` prefix.
+            Self::VerifyFailed { .. }
+            | Self::MigrationBatchFailed { .. }
+            | Self::DiffMismatch { .. } => ErrorRenderPolicy::Quiet,
             _ => ErrorRenderPolicy::Default,
         }
     }
@@ -191,6 +193,20 @@ mod tests {
         };
         // Quiet because batch.rs prints the full per-env summary itself
         // before returning Err; the global `error:` prefix would be noise.
+        assert_eq!(err.render_policy(), ErrorRenderPolicy::Quiet);
+    }
+
+    #[test]
+    fn diff_mismatch_exits_one_and_renders_quiet() {
+        // Same precedent as VerifyFailed: --strict opt-in to non-zero
+        // exit on semantic finding; render policy Quiet because the
+        // command already wrote its own report.
+        let err = ScoopError::DiffMismatch {
+            env_a: "a".to_string(),
+            env_b: "b".to_string(),
+            differences: 3,
+        };
+        assert_eq!(err.exit_code(), 1);
         assert_eq!(err.render_policy(), ErrorRenderPolicy::Quiet);
     }
 
