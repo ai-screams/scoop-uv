@@ -1292,6 +1292,36 @@ suggestion.migration_sources_not_found:
   pt-BR: "→ Instale pelo menos um de: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper ou conda"
   ja: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda のいずれかをインストールしてください"
 
+migrate.batch_no_migratable_conflicts:
+  en: "No environments migrated — %{count} name conflict(s) without --force:"
+  ko: "마이그레이션된 환경 없음 — --force 없는 이름 충돌 %{count}건:"
+  pt-BR: "Nenhum ambiente migrado — %{count} conflito(s) de nome sem --force:"
+  ja: "移行された環境はありません — --force なしの名前衝突 %{count} 件:"
+
+migrate.batch_conflict_line:
+  en: "  - %{name} (%{source}) conflicts with %{existing}"
+  ko: "  - %{name} (%{source}) → %{existing} 와(과) 충돌"
+  pt-BR: "  - %{name} (%{source}) entra em conflito com %{existing}"
+  ja: "  - %{name} (%{source}) は %{existing} と衝突"
+
+migrate.batch_other_skipped:
+  en: "%{count} other environment(s) skipped (corrupted / EOL)"
+  ko: "다른 환경 %{count}건 건너뜀 (손상 / EOL)"
+  pt-BR: "%{count} outro(s) ambiente(s) pulado(s) (corrompido / EOL)"
+  ja: "他 %{count} 件の環境をスキップ (破損 / EOL)"
+
+migrate.batch_force_hint:
+  en: "→ Pass --force to overwrite existing scoop environments"
+  ko: "→ --force 로 기존 scoop 환경 덮어쓰기"
+  pt-BR: "→ Use --force para sobrescrever ambientes scoop existentes"
+  ja: "→ --force で既存の scoop 環境を上書きできます"
+
+migrate.batch_conflicts_header:
+  en: "%{count} name conflict(s) skipped (use --force):"
+  ko: "이름 충돌 %{count}건 건너뜀 (--force 사용):"
+  pt-BR: "%{count} conflito(s) de nome pulado(s) (use --force):"
+  ja: "名前衝突 %{count} 件をスキップ (--force を使用):"
+
 gc.skipped_now_healthy:
   en: "Skipped '%{name}' — became healthy between scan and remove"
   ko: "'%{name}' 건너뜀 — 스캔과 삭제 사이에 정상 상태가 됨"

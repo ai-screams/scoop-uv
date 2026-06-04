@@ -303,8 +303,12 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
 
     let mut migrated = migrated_lock.into_inner().expect("results lock poisoned");
     let mut failed = failed_lock.into_inner().expect("failures lock poisoned");
-    // Restore deterministic input order so the summary / JSON output match
-    // the scan order regardless of which worker thread finished first.
+    // Sort by env name so the summary and JSON output are deterministic
+    // regardless of which worker thread finished first. This is NOT the
+    // original scan order (scan sorts by source type then name) — across
+    // source types or with duplicate names the two orders diverge, and
+    // alphabetic-by-name is the cheaper, more useful default for a
+    // user-facing summary.
     migrated.sort_by(|a, b| a.name.cmp(&b.name));
     failed.sort_by(|a, b| a.name.cmp(&b.name));
 
@@ -328,7 +332,14 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
             is_failure,
         );
     } else {
-        render_human_summary(output, opts, &migrated, &failed, migratable.len());
+        render_human_summary(
+            output,
+            opts,
+            &migrated,
+            &failed,
+            &conflicts,
+            migratable.len(),
+        );
     }
 
     if is_failure {
@@ -440,26 +451,23 @@ fn render_no_migratable_with_conflicts(
 ) {
     output.info("");
     output.info("─".repeat(40).as_str());
-    output.warn(&format!(
-        "No environments migrated — {} name conflict(s) without --force:",
-        conflicts.len()
+    output.warn(&t!(
+        "migrate.batch_no_migratable_conflicts",
+        count = conflicts.len()
     ));
     for c in conflicts {
-        output.warn(&format!(
-            "  - {} ({}) conflicts with {}",
-            c.name,
-            c.source_type,
-            c.existing.display()
+        output.warn(&t!(
+            "migrate.batch_conflict_line",
+            name = c.name,
+            source = c.source_type.to_string(),
+            existing = c.existing.display().to_string()
         ));
     }
     if skipped.len() > conflicts.len() {
         let other = skipped.len() - conflicts.len();
-        output.info(&format!(
-            "{} other environment(s) skipped (corrupted / EOL)",
-            other
-        ));
+        output.info(&t!("migrate.batch_other_skipped", count = other));
     }
-    output.info("→ Pass --force to overwrite existing scoop envs");
+    output.info(&t!("migrate.batch_force_hint"));
 }
 
 fn render_human_summary(
@@ -467,6 +475,7 @@ fn render_human_summary(
     opts: &MigrateExecuteOptions,
     migrated: &[MigrationResult],
     failed: &[MigrateFailure],
+    conflicts: &[MigrationConflictDetail],
     migratable_count: usize,
 ) {
     output.info("");
@@ -488,6 +497,27 @@ fn render_human_summary(
             "migrate.batch_failed_list",
             names = failed_names.join(", ")
         ));
+    }
+
+    // Mixed success + conflict: previous version omitted conflict
+    // details from the summary, so the user got a Quiet exit 2 with
+    // no explanation about the conflict (Codex post-impl SHOULD #1).
+    // Show the same conflict block here that the all-conflict branch
+    // shows, so every non-JSON failure path explains itself.
+    if !conflicts.is_empty() {
+        output.warn(&t!(
+            "migrate.batch_conflicts_header",
+            count = conflicts.len()
+        ));
+        for c in conflicts {
+            output.warn(&t!(
+                "migrate.batch_conflict_line",
+                name = c.name,
+                source = c.source_type.to_string(),
+                existing = c.existing.display().to_string()
+            ));
+        }
+        output.info(&t!("migrate.batch_force_hint"));
     }
 }
 
@@ -571,16 +601,42 @@ fn emit_migrate_all_json_outcome(
             },
             data,
         };
-        // serde_json::to_string never fails on these owned types — see the
-        // same justification in verify.rs::emit_strict_json_failure.
-        println!("{}", serde_json::to_string(&envelope).unwrap());
+        emit_envelope_or_fallback(&envelope);
     } else {
         let envelope = SuccessEnvelope {
             status: "success",
             command: "migrate all",
             data,
         };
-        println!("{}", serde_json::to_string(&envelope).unwrap());
+        emit_envelope_or_fallback(&envelope);
+    }
+}
+
+/// Serialise `envelope` to stdout, falling back to a minimal hand-rolled
+/// JSON error envelope on serde failure.
+///
+/// The migrate envelopes embed `PathBuf` (via `MigrationResult.path` and
+/// `MigrationConflictDetail.existing`). serde's default `PathBuf` adapter
+/// fails on non-UTF-8 paths, so the canonical `unwrap()` pattern from
+/// `verify.rs::emit_strict_json_failure` (whose data is all UTF-8 owned
+/// strings) is unsafe here.
+///
+/// On serde failure the fallback always says `status: "error"` even
+/// when the caller was on the success path — because if PathBuf
+/// serialisation failed we can no longer trust the data, and silently
+/// emitting nothing would leave scripts parsing an empty stdout. The
+/// process exit code is unchanged: the caller of this function decides
+/// the return value independently.
+fn emit_envelope_or_fallback<T: Serialize>(envelope: &T) {
+    match serde_json::to_string(envelope) {
+        Ok(json) => println!("{json}"),
+        Err(err) => {
+            // Hand-rolled JSON to avoid recursive serialisation failure.
+            println!(
+                "{{\"status\":\"error\",\"command\":\"migrate all\",\"error\":{{\"code\":\"INTERNAL_JSON_ERROR\",\"message\":\"failed to serialise migrate envelope: {}\"}}}}",
+                err.to_string().replace('"', "\\\"")
+            );
+        }
     }
 }
 
