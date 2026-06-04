@@ -8,6 +8,20 @@ use serde::Deserialize;
 use crate::error::{Result, ScoopError};
 use crate::validate::PythonVersion;
 
+/// One entry from `uv pip list --format=json`.
+///
+/// uv emits more fields per release (`location`, `requires`,
+/// `requires_python`, ...); we deserialize only what callers consume
+/// and let serde drop the rest, matching the [`UvPythonEntry`]
+/// pattern. A `Some` `editable_project_location` marks a package
+/// installed via `pip install -e <path>`.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct UvPipListEntry {
+    pub name: String,
+    pub version: String,
+    pub editable_project_location: Option<PathBuf>,
+}
+
 /// Information about an installed Python version
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PythonInfo {
@@ -247,6 +261,38 @@ impl UvClient {
     pub fn latest_installed_python(&self) -> Result<Option<PythonInfo>> {
         Ok(pick_latest_python(self.list_installed_pythons()?))
     }
+
+    /// List packages installed in `venv_path` via `uv pip list --format=json`.
+    ///
+    /// Used by `scoop diff` to enumerate packages on each side. Calls uv
+    /// directly (rather than the venv's own pip) so the command works on
+    /// envs whose pip is absent or broken — uv only needs the interpreter
+    /// path to inspect a venv's `site-packages`.
+    ///
+    /// The parsing step lives in [`parse_pip_list_json`] so it is unit-
+    /// testable with fixtures (no process spawn). This matches the split
+    /// already used for [`parse_python_list_json`].
+    ///
+    /// # Errors
+    ///
+    /// - [`ScoopError::UvCommandFailed`] if `uv` exits non-zero (env
+    ///   missing, interpreter broken, etc).
+    /// - [`ScoopError::Json`] if uv's JSON output cannot be parsed.
+    pub fn pip_list(&self, venv_path: &Path) -> Result<Vec<UvPipListEntry>> {
+        let python = crate::paths::virtualenv_python_exe(venv_path);
+        let mut cmd = Command::new(&self.path);
+        cmd.arg("pip")
+            .arg("list")
+            .arg("--format=json")
+            .arg("--python")
+            .arg(&python);
+        let display = format!("uv pip list --format=json --python {}", python.display());
+        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: display.clone(),
+            message,
+        })?;
+        parse_pip_list_json(&stdout)
+    }
 }
 
 /// Run a built uv `Command`, returning captured stdout on success.
@@ -288,6 +334,21 @@ fn pick_latest_python(pythons: Vec<PythonInfo>) -> Option<PythonInfo> {
 fn parse_python_list_json(stdout: &str) -> Result<Vec<PythonInfo>> {
     let entries: Vec<UvPythonEntry> = serde_json::from_str(stdout)?;
     Ok(entries.into_iter().map(PythonInfo::from).collect())
+}
+
+/// Parse `uv pip list --format=json` stdout into structured entries.
+///
+/// Extracted from [`UvClient::pip_list`] for testability — the parsing
+/// logic is the part that benefits from fixture coverage, while the
+/// process spawn is exercised by integration tests. uv emits additional
+/// fields (`location`, `requires`, `requires_python`, ...) that serde
+/// drops silently.
+///
+/// # Errors
+///
+/// Returns [`ScoopError::Json`] if the output is not the expected JSON array.
+fn parse_pip_list_json(stdout: &[u8]) -> Result<Vec<UvPipListEntry>> {
+    serde_json::from_slice(stdout).map_err(ScoopError::Json)
 }
 
 impl Default for UvClient {
@@ -537,5 +598,56 @@ mod tests {
     #[test]
     fn pick_latest_python_empty_is_none() {
         assert!(pick_latest_python(vec![]).is_none());
+    }
+
+    // ====== parse_pip_list_json fixtures ======
+    // The pip_list flow is tested without spawning uv: parse_pip_list_json
+    // takes raw bytes, so a fixture verifies every shape contract we care
+    // about (entry shape, editable installs, empty list, extra fields,
+    // invalid input). The live spawn is covered by integration tests of
+    // `scoop diff` against a real env.
+
+    #[test]
+    fn parse_pip_list_canonical_entry() {
+        let json = br#"[{"name":"requests","version":"2.31.0"}]"#;
+        let entries = parse_pip_list_json(json).expect("valid json");
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].name, "requests");
+        assert_eq!(entries[0].version, "2.31.0");
+        assert!(entries[0].editable_project_location.is_none());
+    }
+
+    #[test]
+    fn parse_pip_list_editable_entry() {
+        let json = br#"[{"name":"myproj","version":"0.1.0","editable_project_location":"/home/u/myproj"}]"#;
+        let entries = parse_pip_list_json(json).expect("valid json");
+        assert_eq!(entries.len(), 1);
+        assert_eq!(
+            entries[0].editable_project_location.as_deref(),
+            Some(std::path::Path::new("/home/u/myproj"))
+        );
+    }
+
+    #[test]
+    fn parse_pip_list_empty_array() {
+        let entries = parse_pip_list_json(b"[]").expect("empty is valid");
+        assert!(entries.is_empty());
+    }
+
+    #[test]
+    fn parse_pip_list_ignores_extra_fields() {
+        // uv emits more fields (location, requires, requires_python, ...).
+        // serde drops them silently — same contract as UvPythonEntry.
+        let json = br#"[{"name":"x","version":"1.0","location":"/y","requires":[],"requires_python":">=3.8"}]"#;
+        let entries = parse_pip_list_json(json).expect("should parse with extras");
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].name, "x");
+    }
+
+    #[test]
+    fn parse_pip_list_rejects_invalid_json() {
+        assert!(parse_pip_list_json(b"not json").is_err());
+        // Also reject non-array shapes — uv only ever emits arrays here.
+        assert!(parse_pip_list_json(br#"{"name":"x"}"#).is_err());
     }
 }
