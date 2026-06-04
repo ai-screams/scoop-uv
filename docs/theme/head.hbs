@@ -1,0 +1,75 @@
+{{!--
+  scoop-uv documentation — locale switcher overlay.
+
+  mdBook lets you override individual theme files by dropping them
+  under `theme/`. This file replaces only the <head>-extension hook
+  (the `head.hbs` partial); everything else inherits from the
+  upstream `rust`/`ayu` themes configured in book.toml.
+
+  The switcher detects the current locale by looking at whether the
+  URL path (relative to site-url) starts with `/ko`. English lives
+  at the site root (`/scoop-uv/...`); Korean is a sibling subdir
+  (`/scoop-uv/ko/...`). Clicking a locale takes you to the same
+  page on the other side; root path stays at root.
+
+  `siteRoot` is hardcoded to match `site-url` in book.toml — if
+  the site moves, edit both together.
+--}}
+<style>
+  .locale-switcher {
+    position: fixed;
+    top: 8px;
+    right: 8px;
+    z-index: 1000;
+    font-size: 0.85em;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.85);
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+  }
+  .locale-switcher:hover { opacity: 1; }
+  .locale-switcher a { margin: 0 4px; text-decoration: none; }
+  .locale-switcher a[aria-current="true"] {
+    font-weight: bold;
+    color: #555;
+    pointer-events: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    .locale-switcher {
+      background: rgba(30, 30, 30, 0.85);
+      color: #ddd;
+    }
+    .locale-switcher a[aria-current="true"] { color: #999; }
+  }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var siteRoot = '/scoop-uv';  // must match `site-url` in book.toml
+    var path = location.pathname;
+
+    // Compute path relative to site root, preserving leading slash.
+    var rel = path.indexOf(siteRoot) === 0 ? path.slice(siteRoot.length) : path;
+    if (rel === '' || rel === '/') rel = '/';
+
+    // Korean lives under /ko (either /ko exactly or /ko/something).
+    var isKorean = rel === '/ko' || rel.indexOf('/ko/') === 0;
+
+    // Strip the /ko prefix to derive the canonical English path.
+    var enPath = isKorean ? (rel.replace(/^\/ko/, '') || '/') : rel;
+    var koPath = isKorean ? rel : ('/ko' + (rel === '/' ? '/' : rel));
+
+    var enHref = siteRoot + enPath;
+    var koHref = siteRoot + koPath;
+
+    var div = document.createElement('div');
+    div.className = 'locale-switcher';
+    div.innerHTML =
+      '<a href="' + enHref + '"' + (isKorean ? '' : ' aria-current="true"') + '>English</a>'
+      + ' | '
+      + '<a href="' + koHref + '"' + (isKorean ? ' aria-current="true"' : '') + '>한국어</a>';
+    document.body.appendChild(div);
+  });
+</script>

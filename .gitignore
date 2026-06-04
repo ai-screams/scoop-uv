@@ -167,6 +167,12 @@ secrets.json
 # mdBook build output
 docs/book/
 
+# mdbook-i18n-helpers: messages.pot is regenerated on every build
+# from docs/src/*, so committing it would create perpetual diff
+# noise. Locale .po files (docs/po/*.po) ARE committed — they are
+# the translation memory.
+docs/po/messages.pot
+
 # ==============================================================================
 # Misc
 # ==============================================================================

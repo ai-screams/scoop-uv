@@ -49,6 +49,7 @@
 
 - [Contributing](development/contributing.md)
 - [Translation](development/translation.md)
+- [Docs Translation](development/docs-translation.md)
 - [Architecture](development/architecture.md)
 - [API Reference](api.md)
 - [Testing](development/testing.md)
