@@ -225,8 +225,8 @@ msgstr ""
 #: src/index.md:5
 msgid "One scoop, endless envs — pyenv-style workflow with uv's blazing speed."
 msgstr ""
-"한 스쿱이면 수많은 환경을 손쉽게 — pyenv 스타일 워크플로와 uv의 폭주하는 속도"
-"를 함께."
+"한 스쿱이면 수많은 환경을 손쉽게 — pyenv 스타일 워크플로와 uv의 압도적인 속"
+"도를 함께."
 
 #: src/index.md:7
 msgid "What is scoop?"

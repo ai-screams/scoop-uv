@@ -66,11 +66,36 @@ jobs:
       # English source and msgmerge it into ko.po. If the resulting
       # ko.po differs from what's committed, source-level edits
       # without translation updates have crept in — fail the build.
+      #
+      # msgmerge rewrites two header lines (POT-Creation-Date and
+      # PO-Revision-Date) to "now" on every run, which would trip
+      # `git diff --exit-code` even when translations are in sync.
+      # Restore the original values after the merge so the diff only
+      # surfaces real semantic changes.
       - name: Verify ko translations are in sync
         working-directory: docs
         run: |
           MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po
+          cp po/ko.po /tmp/orig-ko.po
           msgmerge --update --backup=none po/ko.po po/messages.pot
+          # Restore the two timestamp headers so `git diff --exit-code`
+          # below only catches semantic changes. msgmerge rewrites both
+          # to "now" every run, which would otherwise turn this guard
+          # into a permanent CI failure (volatile timestamps != stale
+          # translations).
+          python3 - <<'PYEOF'
+          import re
+          ORIG = '/tmp/orig-ko.po'
+          NEW = 'po/ko.po'
+          orig = open(ORIG, encoding='utf-8').read()
+          new = open(NEW, encoding='utf-8').read()
+          for key in ('POT-Creation-Date', 'PO-Revision-Date'):
+              pattern = r'^"' + key + r':.*$'
+              m = re.search(pattern, orig, flags=re.M)
+              if m:
+                  new = re.sub(pattern, lambda _: m.group(0), new, count=1, flags=re.M)
+          open(NEW, 'w', encoding='utf-8').write(new)
+          PYEOF
           if ! git diff --exit-code po/ko.po; then
             echo '::error::docs/po/ko.po is out of date. Re-run `cd docs && MDBOOK_OUTPUT='\''{"xgettext": {}}'\'' mdbook build -d po && msgmerge --update --backup=none po/ko.po po/messages.pot` and commit the result.'
             exit 1

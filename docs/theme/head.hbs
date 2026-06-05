@@ -10,10 +10,14 @@
   URL path (relative to site-url) starts with `/ko`. English lives
   at the site root (`/scoop-uv/...`); Korean is a sibling subdir
   (`/scoop-uv/ko/...`). Clicking a locale takes you to the same
-  page on the other side; root path stays at root.
+  page on the other side; root path stays at root. Query string
+  (`?q=...`) and fragment (`#anchor`) are preserved so search
+  highlights and deep-linked anchors round-trip.
 
-  `siteRoot` is hardcoded to match `site-url` in book.toml — if
-  the site moves, edit both together.
+  `siteRoot` is hardcoded to match `[output.html] site-url` in
+  docs/book.toml — if the site moves, both must be edited
+  together. There is no programmatic way to read book.toml from
+  the rendered HTML; mdBook doesn't expose it to the theme.
 --}}
 <style>
   .locale-switcher {
@@ -61,8 +65,11 @@
     var enPath = isKorean ? (rel.replace(/^\/ko/, '') || '/') : rel;
     var koPath = isKorean ? rel : ('/ko' + (rel === '/' ? '/' : rel));
 
-    var enHref = siteRoot + enPath;
-    var koHref = siteRoot + koPath;
+    // Preserve query and fragment so search highlights / deep-linked
+    // anchors survive a locale switch.
+    var suffix = location.search + location.hash;
+    var enHref = siteRoot + enPath + suffix;
+    var koHref = siteRoot + koPath + suffix;
 
     var div = document.createElement('div');
     div.className = 'locale-switcher';
