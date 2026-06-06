@@ -812,6 +812,36 @@ impl Check for ShellCheck {
     }
 }
 
+/// Classify a non-empty version-file entry into a [`CheckResult`].
+///
+/// The `system` sentinel (case-insensitive) is the documented value
+/// for "use the system Python, no virtualenv active" — it's what
+/// `scoop use system` writes — and must NOT be treated as a regular
+/// env name to look up. Pre-0.14.1 the doctor's version checks
+/// flagged `.scoop-version: system` as a non-existent-env error
+/// because the post-self-update doctor pass took it as a regular
+/// reference. `use_env::mod.rs:41` uses the same case-insensitive
+/// match on the writer side, so we mirror that contract here.
+fn classify_version_entry(
+    id: &'static str,
+    name: &'static str,
+    entry: &str,
+    venvs_dir: Option<&std::path::Path>,
+) -> CheckResult {
+    if entry.eq_ignore_ascii_case("system") {
+        return CheckResult::ok(id, name).with_details("system Python (no virtualenv)");
+    }
+    let env_exists = venvs_dir
+        .map(|dir| dir.join(entry).exists())
+        .unwrap_or(false);
+    if env_exists {
+        CheckResult::ok(id, name).with_details(format!("set to '{}'", entry))
+    } else {
+        CheckResult::error(id, name, format!("references non-existent env '{}'", entry))
+            .with_suggestion(format!("Run: scoop create {} <python-version>", entry))
+    }
+}
+
 /// Check for version file validity.
 struct VersionCheck;
 
@@ -835,30 +865,12 @@ impl Check for VersionCheck {
                     Ok(content) => {
                         let env_name = content.trim();
                         if !env_name.is_empty() {
-                            // Check if referenced environment exists
-                            let env_exists = venvs_dir
-                                .as_ref()
-                                .map(|dir| dir.join(env_name).exists())
-                                .unwrap_or(false);
-
-                            if env_exists {
-                                results.push(
-                                    CheckResult::ok("version:global", "global version")
-                                        .with_details(format!("set to '{}'", env_name)),
-                                );
-                            } else {
-                                results.push(
-                                    CheckResult::error(
-                                        "version:global",
-                                        "global version",
-                                        format!("references non-existent env '{}'", env_name),
-                                    )
-                                    .with_suggestion(format!(
-                                        "Run: scoop create {} <python-version>",
-                                        env_name
-                                    )),
-                                );
-                            }
+                            results.push(classify_version_entry(
+                                "version:global",
+                                "global version",
+                                env_name,
+                                venvs_dir.as_deref(),
+                            ));
                         }
                     }
                     Err(_) => {
@@ -886,30 +898,12 @@ impl Check for VersionCheck {
                 Ok(content) => {
                     let env_name = content.trim();
                     if !env_name.is_empty() {
-                        // Check if referenced environment exists
-                        let env_exists = venvs_dir
-                            .as_ref()
-                            .map(|dir| dir.join(env_name).exists())
-                            .unwrap_or(false);
-
-                        if env_exists {
-                            results.push(
-                                CheckResult::ok("version:local", "local version")
-                                    .with_details(format!("set to '{}'", env_name)),
-                            );
-                        } else {
-                            results.push(
-                                CheckResult::error(
-                                    "version:local",
-                                    "local version",
-                                    format!("references non-existent env '{}'", env_name),
-                                )
-                                .with_suggestion(format!(
-                                    "Run: scoop create {} <python-version>",
-                                    env_name
-                                )),
-                            );
-                        }
+                        results.push(classify_version_entry(
+                            "version:local",
+                            "local version",
+                            env_name,
+                            venvs_dir.as_deref(),
+                        ));
                     }
                 }
                 Err(_) => {
@@ -1094,6 +1088,140 @@ mod tests {
                 "expected at least one error result, got {results:#?}"
             );
         });
+    }
+
+    // ==========================================================================
+    // VersionCheck: `system` sentinel handling
+    //
+    // The `system` value in .scoop-version (or the global version file) is
+    // a documented sentinel meaning "use the system Python, no virtualenv
+    // active" — written by `scoop use system`. Pre-0.14.1 the post-self-update
+    // doctor pass flagged it as a non-existent env, which the user
+    // reported as a false-positive after `scoop self update` to 0.14.0.
+    // ==========================================================================
+
+    #[test]
+    fn classify_treats_system_as_valid_sentinel() {
+        let result = classify_version_entry("version:test", "test version", "system", None);
+        assert!(
+            result.is_ok(),
+            "system must classify as Ok, got {result:#?}"
+        );
+        assert!(
+            result
+                .details
+                .as_deref()
+                .is_some_and(|d| d.contains("system Python")),
+            "details should explain the sentinel, got {:?}",
+            result.details
+        );
+    }
+
+    #[test]
+    fn classify_is_case_insensitive_for_system_sentinel() {
+        // The writer side (use_env::mod.rs:41) uses eq_ignore_ascii_case;
+        // doctor's reader must mirror that contract so `SYSTEM` or `System`
+        // round-trip cleanly even though `scoop use system` always writes
+        // the lowercase form.
+        for variant in ["SYSTEM", "System", "sYsTeM"] {
+            let result = classify_version_entry("version:test", "test version", variant, None);
+            assert!(
+                result.is_ok(),
+                "case-variant '{variant}' must classify as Ok"
+            );
+        }
+    }
+
+    #[test]
+    fn classify_existing_env_is_ok() {
+        let tmp = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(tmp.path().join("myenv")).unwrap();
+        let result =
+            classify_version_entry("version:test", "test version", "myenv", Some(tmp.path()));
+        assert!(result.is_ok());
+        assert!(
+            result
+                .details
+                .as_deref()
+                .is_some_and(|d| d.contains("myenv"))
+        );
+    }
+
+    #[test]
+    fn classify_missing_env_is_error() {
+        let tmp = tempfile::tempdir().unwrap();
+        // venvs dir exists but env doesn't — should error with suggestion.
+        let result = classify_version_entry(
+            "version:test",
+            "test version",
+            "missingenv",
+            Some(tmp.path()),
+        );
+        assert!(result.is_error());
+        assert!(
+            result
+                .suggestion
+                .as_deref()
+                .is_some_and(|s| s.contains("scoop create"))
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn version_check_treats_local_system_sentinel_as_ok() {
+        with_temp_scoop_home(|temp| {
+            // Materialise a `.scoop-version: system` file in the CWD.
+            let cwd_guard = TempDirCwdGuard::new();
+            std::fs::write(cwd_guard.path().join(".scoop-version"), "system").unwrap();
+
+            // Ensure virtualenvs dir exists so its absence doesn't muddle the
+            // assertion (we only want the system-sentinel branch to fire).
+            std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
+
+            let results = VersionCheck.run();
+            let local = results
+                .iter()
+                .find(|r| r.id == "version:local")
+                .expect("version:local check should run when .scoop-version exists");
+            assert!(
+                local.is_ok(),
+                "version:local must be Ok for system sentinel, got {local:#?}"
+            );
+        });
+    }
+
+    /// RAII guard: chdir into a fresh tempdir for the duration of the
+    /// test, then restore the original cwd on drop. The VersionCheck's
+    /// local-version branch reads `.scoop-version` from the current
+    /// directory, so we have to actually move there — env vars can't
+    /// substitute.
+    struct TempDirCwdGuard {
+        _tmp: tempfile::TempDir,
+        new_cwd: std::path::PathBuf,
+        original: std::path::PathBuf,
+    }
+
+    impl TempDirCwdGuard {
+        fn new() -> Self {
+            let original = std::env::current_dir().expect("cwd readable");
+            let tmp = tempfile::tempdir().unwrap();
+            let new_cwd = tmp.path().to_path_buf();
+            std::env::set_current_dir(&new_cwd).expect("chdir into tempdir");
+            Self {
+                _tmp: tmp,
+                new_cwd,
+                original,
+            }
+        }
+        fn path(&self) -> &std::path::Path {
+            &self.new_cwd
+        }
+    }
+
+    impl Drop for TempDirCwdGuard {
+        fn drop(&mut self) {
+            let _ = std::env::set_current_dir(&self.original);
+        }
     }
 
     #[test]
