@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780731897754,
+  "lastUpdate": 1780732120277,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -1139,6 +1139,102 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/version_like_reject",
             "value": 85,
             "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 21,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 191,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4877846b4363f011236a91816eb89357b0901a53",
+          "message": "Merge pull request #129 from ai-screams/chore/auto-register-guards\n\ntest(cli): auto-guard man/completions for every non-hidden subcommand",
+          "timestamp": "2026-06-06T16:41:55+09:00",
+          "tree_id": "ce82d8cd4d7658d7ab45073a1c9ce92e96a9f791",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/4877846b4363f011236a91816eb89357b0901a53"
+        },
+        "date": 1780732119749,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 82351,
+            "range": "± 910",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 93823,
+            "range": "± 1238",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3093,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 808,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_hit",
+            "value": 1631,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1001,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 97,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 99,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 89,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 85,
+            "range": "± 0",
             "unit": "ns/iter"
           },
           {
