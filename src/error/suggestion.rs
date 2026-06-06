@@ -103,3 +103,41 @@ impl ScoopError {
         self.suggestion_in(&locale)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// MigrationSourcesNotFound must surface an install-a-source-tool
+    /// hint. Pinning this kills the cargo-mutants `delete match arm`
+    /// mutation (which would have collapsed the variant into the
+    /// `_ => None` catchall and silently dropped the suggestion).
+    #[test]
+    fn migration_sources_not_found_has_install_suggestion() {
+        let err_any = ScoopError::MigrationSourcesNotFound { requested: None };
+        let hint_en = err_any
+            .suggestion_in("en")
+            .expect("must surface a suggestion");
+        assert!(hint_en.contains("pyenv"));
+        assert!(hint_en.contains("conda") || hint_en.contains("virtualenvwrapper"));
+
+        let err_filtered = ScoopError::MigrationSourcesNotFound {
+            requested: Some("pyenv".to_string()),
+        };
+        // Same suggestion key regardless of the requested-filter — the
+        // user still needs to install at least one tool.
+        assert!(err_filtered.suggestion_in("en").is_some());
+
+        // All four supported locales must render a non-empty hint so a
+        // locale-specific msgstr regression is caught at unit level.
+        for locale in ["en", "ko", "ja", "pt-BR"] {
+            let s = err_any
+                .suggestion_in(locale)
+                .unwrap_or_else(|| panic!("locale {locale} returned None"));
+            assert!(
+                !s.is_empty(),
+                "locale {locale} returned empty suggestion: {s:?}"
+            );
+        }
+    }
+}

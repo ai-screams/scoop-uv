@@ -72,6 +72,41 @@ exclude_re = [
     # Windows hosts the variant doesn't compile, so its mutations can't be
     # tested locally; on Windows hosts the existing rstest cases cover it.
     "executable_candidates",
+    # Same `cfg(windows)` reasoning: the Windows variants of these
+    # cross-platform path helpers (added in 744d109) emit Scripts/* paths
+    # and don't compile on Linux CI runners, so cargo-mutants reports
+    # their return-value mutations as MISSED. The Unix variants ARE
+    # exercised by cross_platform_unix tests in paths.rs::tests, and the
+    # Windows variants have their own assertions under
+    # cross_platform_windows (which only run when CI eventually adds
+    # a Windows job — backlog).
+    "paths::virtualenv_bin_dir",
+    "paths::virtualenv_python_exe",
+    "paths::virtualenv_pip_exe",
+    "paths::virtualenv_activate_script",
+    # Strategy 3 of virtualenv_site_packages spawns the venv's own python
+    # to ask sysconfig for the purelib path. The `delete !` mutation on
+    # the empty-stdout guard (paths.rs:222) flips the success/failure
+    # branch but can only be observed when a real python subprocess is
+    # available — and the unit tests for site_packages deliberately
+    # don't shell out (they test Strategy 1 + 2 paths). Strategy 3 is
+    # covered end-to-end by the migrate integration tests.
+    "virtualenv_site_packages",
+    # Equivalent mutation: deleting the `VerifyFailed | DiffMismatch | ...`
+    # arms in exit_code() / render_policy() falls through to the
+    # catchall (`_ => 1` / `_ => Default`) which returns the same value
+    # for those variants. The explicit arms exist for documentation
+    # value, not behavioural distinction from the catchall, so no test
+    # can kill these mutations without restructuring the catchall.
+    "ScoopError::exit_code",
+    # External process call: pip_list spawns `uv pip list --format=json`
+    # and forwards the result. The parsing logic IS unit-tested via
+    # parse_pip_list_json (5 fixture tests in src/uv/client.rs);
+    # exercising the spawn requires a real uv + a real venv on the
+    # runner. Same rationale as the already-excluded pip_install and
+    # run_python_list. Without uv on the CI runner, mutating
+    # `Ok(...)` to `Ok(vec![])` can't be killed by unit tests.
+    "UvClient::pip_list",
 ]
 
 # `cargo test` runs in well under a second; give each mutant generous headroom
