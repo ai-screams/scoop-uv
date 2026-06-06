@@ -80,10 +80,15 @@ exclude_re = [
     # Windows variants have their own assertions under
     # cross_platform_windows (which only run when CI eventually adds
     # a Windows job — backlog).
-    "paths::virtualenv_bin_dir",
-    "paths::virtualenv_python_exe",
-    "paths::virtualenv_pip_exe",
-    "paths::virtualenv_activate_script",
+    # cargo-mutants reports these as bare function names (no module
+    # prefix), so the regex must match `virtualenv_bin_dir` etc.
+    # without the `paths::` qualifier. The leading anchor `^` keeps
+    # us from accidentally matching call sites like
+    # `crate::paths::virtualenv_python_exe` in other files.
+    "^virtualenv_bin_dir$",
+    "^virtualenv_python_exe$",
+    "^virtualenv_pip_exe$",
+    "^virtualenv_activate_script$",
     # Strategy 3 of virtualenv_site_packages spawns the venv's own python
     # to ask sysconfig for the purelib path. The `delete !` mutation on
     # the empty-stdout guard (paths.rs:222) flips the success/failure
@@ -91,7 +96,7 @@ exclude_re = [
     # available — and the unit tests for site_packages deliberately
     # don't shell out (they test Strategy 1 + 2 paths). Strategy 3 is
     # covered end-to-end by the migrate integration tests.
-    "virtualenv_site_packages",
+    "^virtualenv_site_packages$",
     # Equivalent mutation: deleting the `VerifyFailed | DiffMismatch | ...`
     # arms in exit_code() / render_policy() falls through to the
     # catchall (`_ => 1` / `_ => Default`) which returns the same value
