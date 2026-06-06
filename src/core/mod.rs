@@ -88,7 +88,7 @@ fn normalize_pyvenv_version(raw: &str) -> String {
 /// println!("{} packages installed", pkgs.len());
 /// ```
 pub fn list_installed_packages(venv_path: &std::path::Path) -> Vec<(String, String)> {
-    let pip_path = venv_path.join("bin").join("pip");
+    let pip_path = crate::paths::virtualenv_pip_exe(venv_path);
     if !pip_path.exists() {
         return Vec::new();
     }

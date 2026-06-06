@@ -44,7 +44,8 @@ impl ScoopError {
             | Self::PyenvEnvNotFound { .. }
             | Self::VenvWrapperEnvNotFound { .. }
             | Self::CondaEnvNotFound { .. }
-            | Self::CorruptedEnvironment { .. } => MigrationExitCode::SourceError,
+            | Self::CorruptedEnvironment { .. }
+            | Self::MigrationSourcesNotFound { .. } => MigrationExitCode::SourceError,
             _ => MigrationExitCode::CompleteFailure,
         }
     }
@@ -78,6 +79,14 @@ mod tests {
                 name: "x".to_string(),
                 reason: "y".to_string(),
             },
+            // MigrationSourcesNotFound joined the SourceError arm in Inc 4.
+            // Without it the catchall would route to CompleteFailure (exit 2),
+            // breaking the exit-3 contract used by CI to detect missing
+            // source-tool setups.
+            ScoopError::MigrationSourcesNotFound {
+                requested: Some("pyenv".to_string()),
+            },
+            ScoopError::MigrationSourcesNotFound { requested: None },
         ];
         for err in cases {
             assert_eq!(

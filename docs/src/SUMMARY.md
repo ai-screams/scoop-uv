@@ -36,6 +36,7 @@
 - [gc](commands/gc.md)
 - [prune](commands/prune.md)
 - [verify](commands/verify.md)
+- [diff](commands/diff.md)
 - [lang](commands/lang.md)
 - [init](commands/init.md)
 - [shell](commands/shell.md)
@@ -48,6 +49,7 @@
 
 - [Contributing](development/contributing.md)
 - [Translation](development/translation.md)
+- [Docs Translation](development/docs-translation.md)
 - [Architecture](development/architecture.md)
 - [API Reference](api.md)
 - [Testing](development/testing.md)

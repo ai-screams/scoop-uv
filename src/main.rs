@@ -3,7 +3,7 @@
 use clap::Parser;
 use color_eyre::eyre::Result;
 
-use scoop_uv::cli::{Cli, Commands, SelfCommand};
+use scoop_uv::cli::{Cli, Commands, MigrateCommand, SelfCommand};
 use scoop_uv::output::Output;
 
 fn main() -> Result<()> {
@@ -110,7 +110,19 @@ fn main() -> Result<()> {
             scoop_uv::cli::commands::shell(&output, name.as_deref(), unset, shell)
         }
         Commands::Migrate { command } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            // Subcommand carries its own --json flag (list / all / @env).
+            // Without threading it into Output here, output.json_success()
+            // would no-op in production (only tests built Output directly
+            // with json=true), so the new emit_migrate_all_json_outcome
+            // helper would never fire from the CLI. Bug fix is bundled
+            // with Inc 4 because the rest of the JSON path depends on it.
+            let json = match &command {
+                Some(MigrateCommand::List { json, .. })
+                | Some(MigrateCommand::All { json, .. })
+                | Some(MigrateCommand::Env { json, .. }) => *json,
+                None => false,
+            };
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::migrate(&output, command)
         }
         Commands::Lang {
@@ -198,19 +210,52 @@ fn main() -> Result<()> {
             let output = Output::new(0, cli.quiet, cli.no_color, json);
             scoop_uv::cli::commands::verify(&output, name.as_deref(), strict)
         }
+        Commands::Diff {
+            env_a,
+            env_b,
+            packages_only,
+            metadata_only,
+            strict,
+            json,
+        } => {
+            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let mode = match (packages_only, metadata_only) {
+                (true, false) => scoop_uv::cli::commands::DiffMode::PackagesOnly,
+                (false, true) => scoop_uv::cli::commands::DiffMode::MetadataOnly,
+                // (false, false) is the default; (true, true) is blocked by clap.
+                _ => scoop_uv::cli::commands::DiffMode::All,
+            };
+            scoop_uv::cli::commands::diff(
+                &output,
+                &scoop_uv::cli::commands::DiffOpts {
+                    env_a,
+                    env_b,
+                    mode,
+                    strict,
+                },
+            )
+        }
     };
 
-    // Handle errors
+    // Handle errors via the policy layer in `src/error/exit.rs`:
+    //   - `render_policy()` decides whether to print the global `error:`
+    //     prefix (Default) or stay quiet because the command already
+    //     rendered its report (Quiet — e.g. `verify --strict`).
+    //   - `exit_code()` decides the process exit code (1 / 2 / 3) so CI
+    //     scripts can distinguish source-discovery failures (migrate, exit 3)
+    //     from generic operational errors (exit 1).
     if let Err(e) = result {
         let output = Output::new(0, cli.quiet, cli.no_color, false);
-        output.error(&e.to_string());
-
-        // Print suggestion hint if available
-        if let Some(suggestion) = e.suggestion() {
-            eprintln!("{suggestion}");
+        if matches!(
+            e.render_policy(),
+            scoop_uv::error::ErrorRenderPolicy::Default
+        ) {
+            output.error(&e.to_string());
+            if let Some(suggestion) = e.suggestion() {
+                eprintln!("{suggestion}");
+            }
         }
-
-        std::process::exit(1);
+        std::process::exit(i32::from(e.exit_code()));
     }
 
     Ok(())

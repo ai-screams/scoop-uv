@@ -20,9 +20,11 @@ use thiserror::Error;
 
 mod code;
 mod display;
+mod exit;
 mod migrate;
 mod suggestion;
 
+pub use exit::ErrorRenderPolicy;
 pub use migrate::MigrationExitCode;
 
 /// Result type alias using [`ScoopError`].
@@ -135,6 +137,48 @@ pub enum ScoopError {
     /// non-zero exit semantic without leaking `std::process::exit` into
     /// library code (which would skip destructors and stdout flush).
     VerifyFailed { issues: usize },
+
+    /// `paths::virtualenv_site_packages` could not locate the
+    /// `site-packages` directory inside a virtualenv root. The fallback
+    /// chain (pyvenv.cfg → glob → sysconfig subprocess) exhausted with
+    /// no usable result, so the env is likely malformed.
+    SitePackagesNotFound { venv: String },
+
+    /// `scoop migrate all`/`migrate @env` ran but no supported source
+    /// tool (pyenv, virtualenvwrapper, conda) was detected on the
+    /// system. Carries the requested filter (or `None` for "any") so
+    /// the rendered message can be specific.
+    ///
+    /// Distinct from "tools present but produced no envs" — that path
+    /// stays `Ok(())`. Exits 3 (`SourceError`) so CI can detect missing
+    /// source-tool setup without conflating with operational failures.
+    MigrationSourcesNotFound { requested: Option<String> },
+
+    /// `scoop migrate all` finished with at least one per-env failure
+    /// or one preflight name conflict (without `--force`). The batch
+    /// code has already rendered the full summary (human or JSON)
+    /// before returning this Err, so render policy is `Quiet`.
+    ///
+    /// Carries counts only — the structured per-env detail lives in
+    /// the already-emitted summary, not in the error variant.
+    MigrationBatchFailed {
+        failed_count: usize,
+        conflict_count: usize,
+    },
+
+    /// `scoop diff --strict` exit signal: the two envs differ in at
+    /// least one observable way (Python version, packages, or
+    /// metadata). The diff command has already rendered its report
+    /// (human table or JSON envelope) before returning this Err, so
+    /// render policy is `Quiet`.
+    ///
+    /// Carries both env names so the error message is self-rendering
+    /// without needing an external context.
+    DiffMismatch {
+        env_a: String,
+        env_b: String,
+        differences: usize,
+    },
 }
 
 #[cfg(test)]

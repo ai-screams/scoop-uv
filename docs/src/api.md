@@ -686,9 +686,33 @@ When analyzing or modifying this codebase:
 
 3. **Preserve conventions**:
    - Error codes are string constants (e.g., "ENV_NOT_FOUND", "UV_COMMAND_FAILED")
-   - Process exit codes: 0 = success, 1 = failure
-   - Path handling via `paths.rs` utilities
+   - Process exit codes follow a layered contract (see **Process exit codes** below)
+   - Path handling via `paths.rs` utilities (cross-platform — Unix `bin/` vs Windows `Scripts/`)
    - Shell detection via `shell::detect_shell()` function
+
+### Process exit codes
+
+scoop centralises exit-code policy in `src/error/exit.rs` via
+`ScoopError::exit_code()`. Commands that already render their own
+report (e.g. `verify`) opt into `ErrorRenderPolicy::Quiet` so `main.rs`
+does not append a duplicate `error:` line.
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | Generic failure or semantic finding (verify failed, generic operational error) |
+| `2` | Migration failure / `MigrationNameConflict` (and reserved for future probe/tool failures) |
+| `3` | Migration source-discovery error (pyenv/conda/venvwrapper missing or corrupted) |
+
+Per-command exit code table:
+
+| Command | 0 | 1 | 2 | 3 |
+|---------|---|---|---|---|
+| `verify` | always (informational) | — | — | — |
+| `verify --strict` | clean | any Fail check | — | — |
+| `migrate @env` / `migrate all` | success | — | failure / conflict | source tool not found |
+| `doctor` | clean | warning | error | — |
+| Other commands | success | failure | — | — |
 
 4. **Documentation requirements**:
    - All `pub fn` must have doc comments

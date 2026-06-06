@@ -359,7 +359,7 @@ impl Doctor {
         };
 
         // Recreate symlink
-        let symlink_path = venv_path.join("bin").join("python");
+        let symlink_path = crate::paths::virtualenv_python_exe(&venv_path);
 
         // Remove old symlink if exists
         if symlink_path.exists() || symlink_path.is_symlink() {
@@ -582,7 +582,7 @@ impl Check for VirtualenvCheck {
                         .unwrap_or("unknown")
                         .to_string();
 
-                    let python_path = path.join("bin").join("python");
+                    let python_path = crate::paths::virtualenv_python_exe(&path);
                     let pyvenv_cfg = path.join("pyvenv.cfg");
 
                     if python_path.exists() && pyvenv_cfg.exists() {
@@ -653,7 +653,7 @@ impl Check for SymlinkCheck {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.is_dir() {
-                    let python_path = path.join("bin").join("python");
+                    let python_path = crate::paths::virtualenv_python_exe(&path);
 
                     if python_path.is_symlink() {
                         match std::fs::read_link(&python_path) {
@@ -1013,5 +1013,120 @@ mod tests {
             CheckStatus::Warning("a".to_string()),
             CheckStatus::Warning("b".to_string())
         );
+    }
+
+    // ==========================================================================
+    // VirtualenvCheck / SymlinkCheck / fix_symlink coverage
+    //
+    // These tests pin the run() / fix_symlink() implementations against
+    // the cargo-mutants `replace -> vec![]` / `replace -> None`
+    // mutations. Without them, deleting the entire function body would
+    // still pass the suite, masking real regressions.
+    // ==========================================================================
+
+    use crate::test_utils::with_temp_scoop_home;
+    use serial_test::serial;
+
+    #[test]
+    #[serial]
+    fn virtualenv_check_emits_broken_for_corrupted_env() {
+        with_temp_scoop_home(|temp| {
+            // Build a deliberately broken venv: directory exists but
+            // pyvenv.cfg is missing and there's no python binary. The
+            // check must surface this as a broken-virtualenv error
+            // (not silently return an empty vec or an Ok summary).
+            let broken = temp.path().join("virtualenvs").join("brokenenv");
+            std::fs::create_dir_all(&broken).unwrap();
+
+            let results = VirtualenvCheck.run();
+            assert!(!results.is_empty(), "expected at least one CheckResult");
+            assert!(
+                results.iter().any(|r| r.is_error()
+                    && r.name.contains("broken")
+                    && matches!(&r.status, CheckStatus::Error(msg) if msg.contains("brokenenv"))),
+                "expected an error CheckResult naming the broken env, got {results:#?}"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn virtualenv_check_returns_ok_for_healthy_env() {
+        with_temp_scoop_home(|temp| {
+            let env = temp.path().join("virtualenvs").join("healthy");
+            std::fs::create_dir_all(env.join("bin")).unwrap();
+            std::fs::write(env.join("bin").join("python"), "").unwrap();
+            std::fs::write(env.join("pyvenv.cfg"), "").unwrap();
+
+            let results = VirtualenvCheck.run();
+            assert!(!results.is_empty(), "expected a non-empty result set");
+            assert!(
+                results.iter().all(|r| r.is_ok()),
+                "all results should be Ok, got {results:#?}"
+            );
+        });
+    }
+
+    /// On Unix we can deterministically create a symlink whose target
+    /// doesn't exist, which is exactly the failure SymlinkCheck::run
+    /// surfaces. cfg-gated to Unix because the symlink primitive
+    /// differs on Windows (and the CI matrix that exercises mutants is
+    /// Linux only — same rationale as the existing
+    /// test_virtualenv_exists_with_broken_symlink in paths.rs).
+    #[cfg(unix)]
+    #[test]
+    #[serial]
+    fn symlink_check_emits_error_for_broken_python_symlink() {
+        with_temp_scoop_home(|temp| {
+            use std::os::unix::fs::symlink;
+
+            let env = temp.path().join("virtualenvs").join("brokenlink");
+            std::fs::create_dir_all(env.join("bin")).unwrap();
+            symlink("/nonexistent/python", env.join("bin").join("python")).unwrap();
+
+            let results = SymlinkCheck.run();
+            assert!(
+                !results.is_empty(),
+                "broken symlink env must produce at least one result"
+            );
+            assert!(
+                results.iter().any(|r| r.is_error()),
+                "expected at least one error result, got {results:#?}"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn fix_symlink_returns_some_for_parseable_error_name() {
+        with_temp_scoop_home(|temp| {
+            // fix_symlink parses the env name out of a "Python symlink
+            // in 'name' is broken" message. If the parse succeeds and
+            // the env doesn't exist, it returns Some(error suggesting
+            // scoop create). The cargo-mutants -> None replacement
+            // would silently drop that guidance.
+            let broken = temp.path().join("virtualenvs");
+            std::fs::create_dir_all(&broken).unwrap();
+
+            let probe = CheckResult::error(
+                "symlink",
+                "broken symlink",
+                "Python symlink in 'fix-target' is broken".to_string(),
+            );
+            let doctor = Doctor::new();
+            let output = crate::output::Output::new(0, true, true, false);
+
+            let fixed = doctor.fix_symlink(&probe, &output);
+            assert!(fixed.is_some(), "fix_symlink must return Some");
+            let r = fixed.unwrap();
+            assert!(r.is_error() || r.is_warning());
+            // Suggestion text should point the user at `scoop create`.
+            assert!(
+                r.suggestion
+                    .as_deref()
+                    .is_some_and(|s| s.contains("scoop create"))
+                    || matches!(&r.status, CheckStatus::Error(msg) if msg.contains("fix-target"))
+            );
+        });
     }
 }

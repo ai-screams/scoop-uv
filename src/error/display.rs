@@ -182,6 +182,43 @@ impl ScoopError {
                 issues = issues.to_string()
             )
             .to_string(),
+            Self::SitePackagesNotFound { venv } => t!(
+                "error.site_packages_not_found",
+                locale = locale,
+                venv = venv
+            )
+            .to_string(),
+            Self::MigrationSourcesNotFound { requested } => match requested {
+                Some(name) => t!(
+                    "error.migration_sources_not_found_filtered",
+                    locale = locale,
+                    source = name
+                )
+                .to_string(),
+                None => t!("error.migration_sources_not_found", locale = locale).to_string(),
+            },
+            Self::MigrationBatchFailed {
+                failed_count,
+                conflict_count,
+            } => t!(
+                "error.migration_batch_failed",
+                locale = locale,
+                failed = failed_count.to_string(),
+                conflicts = conflict_count.to_string()
+            )
+            .to_string(),
+            Self::DiffMismatch {
+                env_a,
+                env_b,
+                differences,
+            } => t!(
+                "error.diff_mismatch",
+                locale = locale,
+                a = env_a,
+                b = env_b,
+                n = differences.to_string()
+            )
+            .to_string(),
         }
     }
 }

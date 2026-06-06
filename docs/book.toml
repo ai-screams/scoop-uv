@@ -11,6 +11,15 @@ src = "src"
 [build]
 build-dir = "book"
 create-missing = true
+extra-watch-dirs = ["po"]
+
+# mdbook-i18n-helpers (Google) — gettext-based docs translation.
+# English source in `src/` is canonical; translations live as
+# overlays in `po/<locale>.po`. The preprocessor swaps msgstr in
+# at render time; untranslated strings fall back to English.
+# Per-locale build: `MDBOOK_BOOK__LANGUAGE=ko mdbook build -d book/ko`.
+[preprocessor.gettext]
+after = ["links"]
 
 [output.html]
 site-url = "/scoop-uv/"

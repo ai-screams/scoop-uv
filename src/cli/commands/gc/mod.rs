@@ -403,13 +403,9 @@ fn classify(path: &Path) -> Option<EnvGcReason> {
         return Some(EnvGcReason::OrphanMissingMetadata);
     }
     // Check that the interpreter the env points at still exists. We avoid
-    // re-running uv here — a stat on the bin dir is enough to catch the
-    // common "Python uninstalled out from under the env" case.
-    let bin = if cfg!(windows) {
-        path.join("Scripts").join("python.exe")
-    } else {
-        path.join("bin").join("python")
-    };
+    // re-running uv here — a stat on the python executable is enough to
+    // catch the common "Python uninstalled out from under the env" case.
+    let bin = paths::virtualenv_python_exe(path);
     if !bin.exists() {
         return Some(EnvGcReason::OrphanBrokenPython);
     }
