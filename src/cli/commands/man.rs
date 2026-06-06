@@ -148,6 +148,32 @@ mod tests {
         }
     }
 
+    /// Future-proof regression guard: every non-hidden subcommand in
+    /// the clap tree must get its own man page. This is what catches
+    /// "we added a new command but the man emission missed it"
+    /// before reviewers do. The previous static list
+    /// (list/create/doctor) caught the renderer crashing wholesale
+    /// but not a per-command miss; this one does.
+    #[test]
+    fn render_to_dir_emits_page_for_every_non_hidden_subcommand() {
+        let tmp = TempDir::new().unwrap();
+        let output = Output::new(0, true, true, false);
+        execute(&output, Some(tmp.path())).unwrap();
+
+        let cmd = Cli::command();
+        for sub in cmd.get_subcommands() {
+            if sub.is_hide_set() {
+                continue;
+            }
+            let filename = format!("scoop-{}.1", sub.get_name());
+            assert!(
+                tmp.path().join(&filename).exists(),
+                "expected man page {filename} for subcommand '{}'",
+                sub.get_name()
+            );
+        }
+    }
+
     #[test]
     fn render_to_dir_skips_hidden_subcommands() {
         let tmp = TempDir::new().unwrap();
