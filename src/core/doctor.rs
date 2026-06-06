@@ -1166,6 +1166,34 @@ mod tests {
         );
     }
 
+    /// Mirror of the local-version test for the global path. Without
+    /// this, deleting the `!` in the `if !env_name.is_empty()` guard
+    /// on the global branch (doctor.rs:867) silently dropped every
+    /// version:global result and went unkilled by mutation testing.
+    #[test]
+    #[serial]
+    fn version_check_treats_global_system_sentinel_as_ok() {
+        with_temp_scoop_home(|temp| {
+            // Global version file lives at <SCOOP_HOME>/version (see
+            // paths::global_version_file). Materialise it with the
+            // sentinel value.
+            std::fs::write(temp.path().join("version"), "system").unwrap();
+            // virtualenvs dir presence shouldn't matter for the
+            // sentinel, but create it so other checks behave normally.
+            std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
+
+            let results = VersionCheck.run();
+            let global = results
+                .iter()
+                .find(|r| r.id == "version:global")
+                .expect("version:global must run when ~/.scoop/version exists");
+            assert!(
+                global.is_ok(),
+                "version:global must be Ok for system sentinel, got {global:#?}"
+            );
+        });
+    }
+
     #[test]
     #[serial]
     fn version_check_treats_local_system_sentinel_as_ok() {
