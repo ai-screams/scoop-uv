@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780883210990,
+  "lastUpdate": 1780883430499,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -1534,6 +1534,102 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/max_length",
             "value": 214,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "51aa6e4bcd338be3744c08827c9a431c57e5484c",
+          "message": "Merge pull request #133 from ai-screams/dependabot/github_actions/github-actions-484570b1b1\n\nci(deps): bump codecov/codecov-action from 6 to 7 in the github-actions group",
+          "timestamp": "2026-06-08T10:43:40+09:00",
+          "tree_id": "ea12aff704e5f0a9cc44818e88d61f89cf2c4ac0",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/51aa6e4bcd338be3744c08827c9a431c57e5484c"
+        },
+        "date": 1780883430052,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 75734,
+            "range": "± 687",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 87949,
+            "range": "± 458",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3287,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 868,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_hit",
+            "value": 1689,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1091,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 102,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 106,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 93,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 93,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 22,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 208,
             "range": "± 0",
             "unit": "ns/iter"
           }
