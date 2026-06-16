@@ -57,7 +57,7 @@ Docs can always be clearer. PRs welcome for:
 Help make scoop accessible to developers worldwide!
 
 **Quick start:**
-1. Add translations to `locales/app.yml` (106 keys)
+1. Add translations to `locales/app.yml` (220 keys)
 2. Register your language in `src/i18n.rs`
 3. Submit PR with title: `docs(i18n): add {Language} translation`
 

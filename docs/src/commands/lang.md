@@ -88,6 +88,7 @@ $ scoop lang --reset
 $ scoop lang --json
 {
   "status": "success",
+  "command": "lang",
   "data": {
     "current": "ko",
     "name": "한국어",

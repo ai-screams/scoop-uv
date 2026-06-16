@@ -17,7 +17,7 @@ scoop list [options]
 | `--pythons` | Show Python versions instead of virtualenvs |
 | `--python-version <VERSION>` | Filter environments by Python version (e.g., `3.12`) |
 | `--sort <MODE>` | Sort order: `name` (default), `created`, `last-used` |
-| `--bare` | Output names only (for scripting) |
+| `--bare` | Output names only (for scripting); hidden from `--help` |
 | `--json` | Output as JSON |
 
 ## Sort

@@ -4,7 +4,7 @@
 
 | Dependency | Version | Install Command |
 |------------|---------|-----------------|
-| **uv** | Latest | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| **uv** | 0.5.14 or newer | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | **Rust** | 1.85+ | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
 
 ## Install via Cargo
@@ -35,7 +35,7 @@ scoop --version
 
 ```bash
 scoop --version
-# scoop 0.11.0
+# scoop 0.14.1
 ```
 
 ## Troubleshooting

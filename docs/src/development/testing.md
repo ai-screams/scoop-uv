@@ -98,7 +98,7 @@ cargo test test_name -- --nocapture --test-threads=1
 
 ### Unit Tests
 
-The bulk of the suite (703 tests, ~92% of the total 769) lives within source files using `#[cfg(test)]`:
+The bulk of the suite (844 tests, ~92% of the total 913) lives within source files using `#[cfg(test)]`:
 
 ```rust
 #[cfg(test)]
@@ -146,7 +146,7 @@ Some tests are marked `#[ignore]` because they require `uv` installed:
 cargo test -- --ignored
 ```
 
-### Doc Tests (21 tests)
+### Doc Tests (24 tests)
 
 Examples in documentation comments:
 

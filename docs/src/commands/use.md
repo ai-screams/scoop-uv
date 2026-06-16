@@ -24,6 +24,7 @@ scoop use --unset [options]
 | `--global`, `-g` | Set as global default |
 | `--link` | Create `.venv` symlink for IDE compatibility |
 | `--no-link` | Do not create `.venv` symlink (default) |
+| `--json` | Output result as JSON |
 
 ## Behavior
 

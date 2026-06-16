@@ -57,7 +57,7 @@ Field notes:
 - `packages` is what the venv's own pip reports — versions are pinned exactly so
   imports are reproducible.
 
-> **Note (Unreleased / post-0.12.0):** The export schema is still v1
+> **Note:** The export schema is still v1
 > and intentionally does **not** include the new `last_used`
 > timestamp. `last_used` is local usage telemetry — it describes how
 > you've been using *this* env, not what an importer needs to recreate
