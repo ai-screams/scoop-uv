@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781491030029,
+  "lastUpdate": 1781590405459,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -1727,6 +1727,102 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 192,
             "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3439031ecbc33a7c622d4825726b6171e1a0d123",
+          "message": "Merge pull request #135 from ai-screams/docs/refresh-0.14.1\n\ndocs: refresh documentation to 0.14.1 (code fact-check)",
+          "timestamp": "2026-06-16T15:09:49+09:00",
+          "tree_id": "d9b149138ac4e01cc4eb1559bb7e93f0c4503a92",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/3439031ecbc33a7c622d4825726b6171e1a0d123"
+        },
+        "date": 1781590404943,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 74118,
+            "range": "± 1430",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 86965,
+            "range": "± 1256",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3291,
+            "range": "± 34",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 830,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_hit",
+            "value": 1675,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1098,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 105,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 107,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 94,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 89,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 22,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 213,
+            "range": "± 1",
             "unit": "ns/iter"
           }
         ]
