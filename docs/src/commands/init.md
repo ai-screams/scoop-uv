@@ -12,7 +12,7 @@ scoop init <shell>
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `shell` | Yes | Shell type: `bash`, `zsh`, `fish`, `powershell` |
+| `shell` | Yes | Shell type: `bash`, `zsh`, `fish`, `powershell` (alias: `pwsh`) |
 
 ## Setup
 

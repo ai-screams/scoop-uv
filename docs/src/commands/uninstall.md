@@ -20,6 +20,7 @@ scoop uninstall <version>
 |--------|-------------|
 | `--cascade` | Also remove all virtual environments using this Python version |
 | `--force`, `-f` | Skip confirmation for cascade removal (requires `--cascade`) |
+| `--json` | Output result as JSON |
 
 ## Examples
 

@@ -38,6 +38,7 @@
 - [verify](commands/verify.md)
 - [diff](commands/diff.md)
 - [lang](commands/lang.md)
+- [self](commands/self.md)
 - [init](commands/init.md)
 - [shell](commands/shell.md)
 - [completions](commands/completions.md)

@@ -14,6 +14,8 @@ src/
 │   ├── version.rs    # Version file resolution
 │   ├── virtualenv/   # Virtualenv entity (mod.rs + tests.rs)
 │   ├── doctor.rs     # Health check system
+│   ├── manifest.rs   # Sync manifest (.scoop.toml, backs `scoop sync`)
+│   ├── export_schema.rs  # Export/import schema (backs `scoop export`/`import`)
 │   └── migrate/      # Migration from pyenv/conda/virtualenvwrapper
 │       ├── mod.rs
 │       ├── discovery.rs  # Source detection
@@ -27,8 +29,10 @@ src/
 │   ├── fish.rs       # Fish init script
 │   └── powershell.rs # PowerShell init script
 ├── output/           # Terminal UI and JSON output
+│   └── time.rs       # last_used fuzzy-age formatter
 ├── uv/               # uv CLI wrapper
-├── error.rs          # ScoopError enum
+├── error/            # ScoopError module
+│   └── exit.rs       # Exit code policy
 ├── paths.rs          # Path utilities
 ├── validate.rs       # Input validation
 ├── i18n.rs           # Internationalization

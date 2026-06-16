@@ -35,7 +35,8 @@ cargo test
 src/
 ├── main.rs              # Entry point
 ├── lib.rs               # Library root
-├── error.rs             # Error types (ScoopError)
+├── error/               # Error types (ScoopError)
+│   └── exit.rs          # Exit code policy
 ├── paths.rs             # Path utilities
 ├── validate.rs          # Name/version validation
 
@@ -48,6 +49,8 @@ src/
 │   ├── virtualenv/      # VirtualenvService (mod.rs + tests.rs)
 │   ├── version.rs       # VersionService
 │   ├── metadata.rs      # Metadata structs
+│   ├── manifest.rs      # Sync manifest (.scoop.toml)
+│   ├── export_schema.rs # Export/import schema
 │   └── doctor.rs        # Health diagnostics
 
 ├── cli/                 # CLI layer
@@ -73,7 +76,8 @@ src/
 
 └── output/              # Output formatting
     ├── mod.rs
-    └── spinner.rs
+    ├── spinner.rs
+    └── time.rs          # last_used fuzzy-age formatter
 
 docs/                    # Public documentation
 .docs/                   # Internal technical docs

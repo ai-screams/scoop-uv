@@ -34,7 +34,7 @@ create.success:
 
 **Important:**
 
-- Add translations to all ~115 keys
+- Add translations to all ~220 keys
 - Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc.
 - Preserve special characters: `→`, quotes, backticks
 
@@ -46,6 +46,7 @@ Edit `src/i18n.rs` and add your language to `SUPPORTED_LANGS`:
 pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
     ("en", "English"),
     ("ko", "한국어"),
+    ("ja", "日本語"),
     ("pt-BR", "Português (Brasil)"),
     ("{lang}", "Your Language Name"),  // Add your language
 ];
@@ -73,7 +74,7 @@ SCOOP_LANG={lang} ./target/debug/scoop lang
 
 **Required files in PR:**
 
-- [ ] `locales/app.yml` - All 115 keys translated
+- [ ] `locales/app.yml` - All 220 keys translated
 - [ ] `src/i18n.rs` - Language registered in SUPPORTED_LANGS
 
 **PR Title Format:**
@@ -288,7 +289,7 @@ All languages must have ALL keys. Missing keys fall back to English.
 
 Before submitting PR:
 
-- [ ] All 115 keys translated
+- [ ] All 220 keys translated
 - [ ] All placeholders preserved (`%{name}`, `%{version}`, etc.)
 - [ ] Language registered in SUPPORTED_LANGS
 - [ ] `cargo build` succeeds

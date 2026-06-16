@@ -20,6 +20,7 @@ scoop install [version] [options]
 |--------|-------------|
 | `--latest` | Install latest stable Python (default) |
 | `--stable` | Install oldest fully-supported Python (3.10) |
+| `--json` | Output result as JSON |
 
 ## Version Resolution
 

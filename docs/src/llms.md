@@ -20,7 +20,7 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 |---------|-------------|
 | `scoop list` | List virtualenvs (aliases: `ls`) |
 | `scoop list --pythons` | List installed Python versions |
-| `scoop list --sort <name\|created\|last-used>` | Sort order; envs missing the timestamp sort last with name tie-break (Unreleased) |
+| `scoop list --sort <name\|created\|last-used>` | Sort order; envs missing the timestamp sort last with name tie-break (0.13.0) |
 | `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
 | `scoop create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
 | `scoop use <name>` | Set + activate environment |
@@ -32,8 +32,8 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 | `scoop clone <src> <dst>` | Duplicate an env in-place (`--no-packages` for skeleton) (v0.11.0) |
 | `scoop install [version]` | Install Python version |
 | `scoop uninstall <version>` | Remove Python version |
-| `scoop info <name>` | Show virtualenv details (includes `Last used:` row since Unreleased) |
-| `scoop status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since Unreleased |
+| `scoop info <name>` | Show virtualenv details (includes `Last used:` row since 0.13.0) |
+| `scoop status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since 0.13.0 |
 | `scoop which <exe>` | Resolve an executable inside the active env (v0.11.0) |
 | `scoop run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
 | `scoop sync` | Reconcile the active env with `.scoop.toml` manifest (v0.11.0) |
@@ -53,6 +53,8 @@ All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME
 | `scoop prune` | Prune the uv cache (`uv cache prune` wrapper) |
 | `scoop verify [NAME]` | Per-env health diagnosis — 6 checks (metadata, python binary, pyvenv.cfg, activate, exec, manifest drift); `--strict` exits 1 on issues |
 | `scoop man [DIR]` | Generate man pages (stdout or one file per subcommand in DIR) |
+| `scoop diff <a> <b>` | Compare two environments: Python, packages, metadata |
+| `scoop self update` | Update scoop itself from crates.io |
 
 Most commands support `--json` for machine-readable output.
 

@@ -253,7 +253,7 @@ Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
 
 ```bash
 scoop --version
-# → scoop 0.11.0 🍨
+# → scoop 0.14.1 🍨
 ```
 
 #### What this enables
@@ -330,6 +330,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop export <name>` | Snapshot an env as portable JSON |
 | `scoop import <file>` | Recreate an env from an export file |
 | `scoop clone <src> <dst>` | Duplicate an environment |
+| `scoop diff <a> <b>` | Compare two environments (Python, packages, metadata) |
 | `scoop remove <name>` | Delete an environment |
 | `scoop install [version]` | Install Python version |
 | `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove, `--older-than <n>d/w/y` for stale envs) |
@@ -366,6 +367,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop export <name>`           | Bottle a flavor as portable JSON       |
 | `scoop import <file>`           | Unbottle it on another machine         |
 | `scoop clone <src> <dst>`       | Twin scoop — same flavor, new cup      |
+| `scoop diff <a> <b>`            | Spot the difference between two flavors |
 | `scoop remove <name>`           | Melt a flavor away                     |
 
 ### Managing the Freezer
@@ -393,6 +395,8 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 | `scoop migrate all`         | Migrate all environments (parallel)      |
 
 > **Supported sources:** pyenv-virtualenv, virtualenvwrapper, conda
+
+> Flags: `--source {pyenv|virtualenvwrapper|conda}`, `--dry-run`, `--force`, `--yes`, `--strict`, `--delete-source`, `--json`; `@env` also `--rename`/`--auto-rename`.
 
 ### Cleanup 🧹
 

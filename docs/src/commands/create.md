@@ -22,6 +22,7 @@ scoop create <name> [python-version]
 | `--force`, `-f` | Overwrite existing virtualenv |
 | `--python-path <PATH>` | Use a specific Python executable instead of version discovery |
 | `--install-python` | Install the requested Python version first if it's not already available (conflicts with `--python-path`) |
+| `--json` | Output result as JSON |
 
 ## Examples
 

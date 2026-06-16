@@ -30,6 +30,7 @@ Complete reference for all scoop commands.
 | [`scoop init`](init.md) | - | Shell init script |
 | [`scoop completions`](completions.md) | - | Completion script |
 | [`scoop man`](man.md) | - | Generate man pages (for distro packagers) |
+| [`scoop self update`](self.md) | - | Reinstall scoop from crates.io (update or pin version) |
 
 ## Global Options
 
@@ -50,6 +51,9 @@ Available for all commands:
 | `SCOOP_NO_AUTO` | Disable auto-activation | (unset) |
 | `SCOOP_LANG` | Display language (en, ko, ja, pt-BR) | System locale |
 | `NO_COLOR` | Disable colored output | (unset) |
+| `SCOOP_VERSION` | Shell-session override; highest-priority version selector (set by `scoop shell`) | (unset) |
+| `SCOOP_ACTIVE` | Name of the currently active environment (set by the activation script; read by `status`/`which`/`run`) | (unset) |
+| `SCOOP_RESOLVE_MAX_DEPTH` | Caps the parent-directory walk when resolving `.scoop-version` (0 = current dir only; unset = unlimited) | (unset) |
 
 ## Directory Layout
 

@@ -21,6 +21,7 @@ scoop remove <name> [options]
 | Option | Description |
 |--------|-------------|
 | `--force`, `-f` | Skip confirmation prompt |
+| `--json` | Output result as JSON |
 
 ## Examples
 
