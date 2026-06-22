@@ -33,7 +33,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Rust (pinned by rust-toolchain.toml)
         # rust-toolchain.toml drives the version; this just makes sure

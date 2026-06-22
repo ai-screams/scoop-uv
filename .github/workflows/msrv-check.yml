@@ -43,7 +43,7 @@ jobs:
     steps:
       # Step 1: Get the code
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Step 2: Install stable Rust (cargo-msrv itself doesn't need MSRV)
       - name: Install Rust toolchain

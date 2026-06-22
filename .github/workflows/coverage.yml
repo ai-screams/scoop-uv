@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 30  # llvm-cov instrumentation overhead
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
