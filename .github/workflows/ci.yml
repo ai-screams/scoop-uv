@@ -29,7 +29,7 @@ jobs:
     timeout-minutes: 10  # Prevent runaway linting jobs
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -77,7 +77,7 @@ jobs:
     timeout-minutes: 20  # Test suite + ignored tests
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -120,7 +120,7 @@ jobs:
     timeout-minutes: 25  # MSRV can be slower than stable
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Install MSRV toolchain with clippy component
       # Must match rust-version in Cargo.toml
@@ -173,7 +173,7 @@ jobs:
     timeout-minutes: 15  # Build + extract + shellcheck
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable

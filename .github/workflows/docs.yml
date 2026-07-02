@@ -39,7 +39,7 @@ jobs:
     timeout-minutes: 15  # mdBook + i18n-helpers compile + dual-locale build
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install gettext
         run: sudo apt-get install -y gettext
