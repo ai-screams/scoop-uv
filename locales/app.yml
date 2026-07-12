@@ -1399,3 +1399,30 @@ man.written:
   ko: "%{dir} 에 최상위 매뉴얼 페이지 %{count}개 생성 (서브-서브커맨드는 부모 페이지에 포함됨)"
   pt-BR: "Escritas %{count} man page(s) de nível superior em %{dir} (subcomandos aninhados são incluídos na página pai)"
   ja: "%{dir} に最上位 man ページ %{count} 件を書き出しました (ネストされたサブコマンドは親ページに含まれます)"
+
+# ============================================================================
+# Deprecation warnings (scoop -> scuv rename, removed in v0.16.0)
+# ============================================================================
+deprecation.env_var:
+  en: "%{old} is deprecated; use %{new} (support ends in v0.16.0)"
+  ko: "%{old}은(는) 곧 사라져요; %{new}을(를) 사용하세요 (v0.16.0에서 지원 종료)"
+  pt-BR: "%{old} está obsoleto; use %{new} (suporte encerra na v0.16.0)"
+  ja: "%{old} は非推奨です。%{new} を使用してください (v0.16.0でサポート終了)"
+
+deprecation.version_file:
+  en: ".scoop-version is deprecated; rename it to .scuv-version (support ends in v0.16.0)"
+  ko: ".scoop-version은 곧 사라져요; .scuv-version으로 이름을 바꿔주세요 (v0.16.0에서 지원 종료)"
+  pt-BR: ".scoop-version está obsoleto; renomeie para .scuv-version (suporte encerra na v0.16.0)"
+  ja: ".scoop-version は非推奨です。.scuv-version にリネームしてください (v0.16.0でサポート終了)"
+
+deprecation.manifest_file:
+  en: ".scoop.toml is deprecated; rename it to .scuv.toml (support ends in v0.16.0)"
+  ko: ".scoop.toml은 곧 사라져요; .scuv.toml으로 이름을 바꿔주세요 (v0.16.0에서 지원 종료)"
+  pt-BR: ".scoop.toml está obsoleto; renomeie para .scuv.toml (suporte encerra na v0.16.0)"
+  ja: ".scoop.toml は非推奨です。.scuv.toml にリネームしてください (v0.16.0でサポート終了)"
+
+deprecation.home_dir:
+  en: "~/.scoop is deprecated; run `mv ~/.scoop ~/.scuv` (support ends in v0.16.0)"
+  ko: "~/.scoop은 곧 사라져요; `mv ~/.scoop ~/.scuv` 명령을 실행해 주세요 (v0.16.0에서 지원 종료)"
+  pt-BR: "~/.scoop está obsoleto; execute `mv ~/.scoop ~/.scuv` (suporte encerra na v0.16.0)"
+  ja: "~/.scoop は非推奨です。`mv ~/.scoop ~/.scuv` を実行してください (v0.16.0でサポート終了)"
