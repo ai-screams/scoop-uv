@@ -40,7 +40,7 @@ impl TestFixture {
 
 /// Helper to get a fresh command with SCOOP_HOME set
 fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
-    let mut cmd = Command::cargo_bin("scoop").unwrap();
+    let mut cmd = Command::cargo_bin("scuv").unwrap();
     cmd.env("SCOOP_HOME", scoop_home);
     // Force English locale for consistent test assertions
     cmd.env("SCOOP_LANG", "en");
@@ -49,23 +49,23 @@ fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
 
 #[test]
 fn test_help_flag() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("scoop"))
+        .stdout(predicate::str::contains("scuv"))
         .stdout(predicate::str::contains("COMMAND"));
 }
 
 #[test]
 fn test_version_flag() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .arg("--version")
         .assert()
         .success()
-        .stdout(predicate::str::contains("scoop"));
+        .stdout(predicate::str::contains("scuv"));
 }
 
 #[test]
@@ -100,7 +100,7 @@ fn test_list_bare_format() {
 
 #[test]
 fn test_init_bash() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["init", "bash"])
         .assert()
@@ -111,7 +111,7 @@ fn test_init_bash() {
 
 #[test]
 fn test_init_zsh() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["init", "zsh"])
         .assert()
@@ -124,7 +124,7 @@ fn test_init_zsh() {
 
 #[test]
 fn test_completions_bash() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["completions", "bash"])
         .assert()
@@ -133,7 +133,7 @@ fn test_completions_bash() {
 
 #[test]
 fn test_completions_zsh() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["completions", "zsh"])
         .assert()
@@ -247,7 +247,7 @@ fn test_resolve_with_version_file() {
 
 #[test]
 fn test_unknown_subcommand() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .arg("unknowncommand")
         .assert()
@@ -382,7 +382,7 @@ mod error_cases {
 
     #[test]
     fn test_init_without_shell() {
-        Command::cargo_bin("scoop")
+        Command::cargo_bin("scuv")
             .unwrap()
             .arg("init")
             .assert()
@@ -391,7 +391,7 @@ mod error_cases {
 
     #[test]
     fn test_completions_without_shell() {
-        Command::cargo_bin("scoop")
+        Command::cargo_bin("scuv")
             .unwrap()
             .arg("completions")
             .assert()
@@ -411,7 +411,7 @@ mod error_cases {
     #[test]
     fn test_invalid_subcommand_suggestion() {
         // Test that invalid subcommand gives helpful error
-        Command::cargo_bin("scoop")
+        Command::cargo_bin("scuv")
             .unwrap()
             .arg("craete") // typo
             .assert()
@@ -422,7 +422,7 @@ mod error_cases {
     fn test_help_for_subcommand() {
         // Each subcommand should support --help
         for subcmd in ["list", "create", "remove", "use", "install"] {
-            Command::cargo_bin("scoop")
+            Command::cargo_bin("scuv")
                 .unwrap()
                 .args([subcmd, "--help"])
                 .assert()
@@ -440,7 +440,7 @@ mod output_format {
 
     #[test]
     fn test_version_output_format() {
-        let output = Command::cargo_bin("scoop")
+        let output = Command::cargo_bin("scuv")
             .unwrap()
             .arg("--version")
             .output()
@@ -448,14 +448,14 @@ mod output_format {
 
         let stdout = String::from_utf8_lossy(&output.stdout);
 
-        // Version format should be "scoop X.Y.Z"
+        // Version format should be "scuv X.Y.Z"
         assert!(
-            stdout.starts_with("scoop "),
-            "Version should start with 'scoop '"
+            stdout.starts_with("scuv "),
+            "Version should start with 'scuv '"
         );
 
         // Verify semver format (X.Y.Z)
-        let version_part = stdout.trim().strip_prefix("scoop ").unwrap();
+        let version_part = stdout.trim().strip_prefix("scuv ").unwrap();
         let parts: Vec<&str> = version_part.split('.').collect();
         assert_eq!(parts.len(), 3, "Version should be semver format X.Y.Z");
         for (i, part) in parts.iter().enumerate() {
@@ -470,7 +470,7 @@ mod output_format {
 
     #[test]
     fn test_help_has_required_sections() {
-        let output = Command::cargo_bin("scoop")
+        let output = Command::cargo_bin("scuv")
             .unwrap()
             .arg("--help")
             .output()
@@ -492,7 +492,7 @@ mod output_format {
 
     #[test]
     fn test_help_lists_all_subcommands() {
-        let output = Command::cargo_bin("scoop")
+        let output = Command::cargo_bin("scuv")
             .unwrap()
             .arg("--help")
             .output()
