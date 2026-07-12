@@ -1,4 +1,20 @@
 //! Version file service
+//!
+//! # Precedence contract
+//!
+//! Resolution order, highest priority first:
+//!
+//! 1. `SCUV_VERSION` environment variable.
+//! 2. Legacy `SCOOP_VERSION` environment variable (deprecated; emits a
+//!    one-shot warning).
+//! 3. Nearest directory walking up from the target directory. Within a
+//!    single directory, `.scuv-version` wins over a legacy `.scoop-version`
+//!    (deprecated; emits a one-shot warning). A legacy file in a *nearer*
+//!    directory still beats a new-named file in a parent directory —
+//!    nearest-directory-first is unchanged by the file rename.
+//! 4. The global version file (`~/.scuv/version`).
+//!
+//! DEPRECATION(0.16.0): remove both legacy branches (env var and file name).
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -29,8 +45,28 @@ impl VersionService {
 
     /// Get the local version for a directory
     pub fn get_local(dir: &Path) -> Option<String> {
-        let version_file = paths::local_version_file(dir);
+        let version_file = Self::resolve_local_version_file(dir);
         Self::read_version_file(&version_file)
+    }
+
+    /// Resolve the local version-file path for a directory: the new
+    /// `.scuv-version` name wins when present, otherwise falls back to the
+    /// legacy `.scoop-version` name (warning once).
+    ///
+    /// DEPRECATION(0.16.0): remove the legacy fallback branch.
+    fn resolve_local_version_file(dir: &Path) -> PathBuf {
+        let version_file = dir.join(paths::VERSION_FILE);
+        if version_file.exists() {
+            version_file
+        } else {
+            let legacy = dir.join(paths::LEGACY_VERSION_FILE);
+            if legacy.exists() {
+                crate::output::deprecation::warn_once(&rust_i18n::t!("deprecation.version_file"));
+                legacy
+            } else {
+                version_file
+            }
+        }
     }
 
     /// Get the global version
@@ -39,10 +75,17 @@ impl VersionService {
         Self::read_version_file(&version_file)
     }
 
-    /// Resolve the version for a directory (local -> parent -> global)
+    /// Resolve the version for a directory (env var -> local -> parent -> global)
+    ///
+    /// See the module-level precedence contract for the full ordering,
+    /// including the `.scuv-version` / legacy `.scoop-version` per-directory
+    /// rule.
     ///
     /// # Environment Variables
     ///
+    /// - `SCUV_VERSION` (or legacy `SCOOP_VERSION`): overrides file-based
+    ///   resolution entirely when set to a valid environment name or
+    ///   `system`.
     /// - `SCUV_RESOLVE_MAX_DEPTH` (or legacy `SCOOP_RESOLVE_MAX_DEPTH`):
     ///   Limits parent directory traversal depth.
     ///   Useful for slow network filesystems (NFS, SSHFS, etc).
@@ -50,6 +93,11 @@ impl VersionService {
     ///   - `3` = current + up to 3 parent directories
     ///   - unset = unlimited (default behavior)
     pub fn resolve(dir: &Path) -> Option<String> {
+        // Priority 1: SCUV_VERSION / legacy SCOOP_VERSION environment variable.
+        if let Some(name) = Self::resolve_env_version() {
+            return Some(name);
+        }
+
         // Get max depth from environment variable (None = unlimited).
         // DEPRECATION(0.16.0): remove legacy env fallback.
         let max_depth = std::env::var("SCUV_RESOLVE_MAX_DEPTH")
@@ -106,17 +154,50 @@ impl VersionService {
     fn read_version_file(path: &PathBuf) -> Option<String> {
         fs::read_to_string(path)
             .ok()
-            .map(|s| s.trim().to_string())
-            .filter(|s| !s.is_empty())
-            .filter(|s| s.eq_ignore_ascii_case("system") || crate::validate::is_valid_env_name(s))
-            // Normalize "system" to lowercase for consistent shell hook comparison
-            .map(|s| {
-                if s.eq_ignore_ascii_case("system") {
-                    "system".to_string()
-                } else {
-                    s
-                }
-            })
+            .and_then(|s| Self::normalize_version_value(&s))
+    }
+
+    /// Validate and normalize a raw version value (from a file or an
+    /// environment variable).
+    ///
+    /// Returns `None` if the trimmed value is empty or is not a valid
+    /// environment name / `system` (security: prevents command injection).
+    /// `system` is normalized to lowercase for consistent shell hook
+    /// comparison, regardless of source-value casing.
+    fn normalize_version_value(raw: &str) -> Option<String> {
+        let trimmed = raw.trim();
+        if trimmed.is_empty() {
+            return None;
+        }
+        if trimmed.eq_ignore_ascii_case("system") {
+            return Some("system".to_string());
+        }
+        crate::validate::is_valid_env_name(trimmed).then(|| trimmed.to_string())
+    }
+
+    /// Priority-1 environment-variable override: `SCUV_VERSION`, then legacy
+    /// `SCOOP_VERSION` (deprecated; emits a one-shot warning). Falls through
+    /// to `None` (i.e. file-based resolution) when neither is set to a
+    /// valid value.
+    ///
+    /// DEPRECATION(0.16.0): remove the legacy `SCOOP_VERSION` branch.
+    fn resolve_env_version() -> Option<String> {
+        if let Ok(raw) = std::env::var("SCUV_VERSION") {
+            if let Some(name) = Self::normalize_version_value(&raw) {
+                return Some(name);
+            }
+        }
+        if let Ok(raw) = std::env::var("SCOOP_VERSION") {
+            if let Some(name) = Self::normalize_version_value(&raw) {
+                crate::output::deprecation::warn_once(&rust_i18n::t!(
+                    "deprecation.env_var",
+                    old = "SCOOP_VERSION",
+                    new = "SCUV_VERSION"
+                ));
+                return Some(name);
+            }
+        }
+        None
     }
 
     /// Unset local version
@@ -193,6 +274,9 @@ mod tests {
     fn test_read_version_file_normalizes_system_case() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
+        // DEPRECATION(0.16.0): kept on the legacy filename deliberately — this
+        // doubles as a legacy-shim regression test that normalization still
+        // applies when the value comes through the fallback path.
         let version_file = dir.join(".scoop-version");
 
         // Test various case combinations - all should normalize to lowercase "system"
@@ -204,6 +288,25 @@ mod tests {
                 "'{variant}' should normalize to 'system'"
             );
         }
+    }
+
+    // =========================================================================
+    // Dual Version-File Walk Tests (.scuv-version / legacy .scoop-version)
+    // =========================================================================
+
+    #[test]
+    fn scuv_version_file_wins_within_same_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join(".scuv-version"), "newenv").unwrap();
+        std::fs::write(dir.path().join(".scoop-version"), "oldenv").unwrap();
+        assert_eq!(VersionService::get_local(dir.path()).unwrap(), "newenv");
+    }
+
+    #[test]
+    fn legacy_version_file_still_resolves() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join(".scoop-version"), "oldenv").unwrap();
+        assert_eq!(VersionService::get_local(dir.path()).unwrap(), "oldenv");
     }
 
     // =========================================================================
@@ -404,6 +507,51 @@ mod tests {
 
     #[test]
     #[serial]
+    fn resolve_env_scuv_version_wins_over_files() {
+        with_temp_scoop_home(|_temp_dir| {
+            let temp = TempDir::new().unwrap();
+            let dir = temp.path();
+            VersionService::set_local(dir, "fileenv").unwrap();
+            VersionService::set_global("globalenv").unwrap();
+
+            // SAFETY: serial test, no concurrent env access.
+            unsafe {
+                std::env::set_var("SCUV_VERSION", "envenv");
+                std::env::remove_var("SCOOP_VERSION");
+            }
+            assert_eq!(VersionService::resolve(dir), Some("envenv".to_string()));
+            // SAFETY: serial test, no concurrent env access.
+            unsafe {
+                std::env::remove_var("SCUV_VERSION");
+            }
+        });
+    }
+
+    /// DEPRECATION(0.16.0): exercises the legacy `SCOOP_VERSION` env-var
+    /// fallback; remove alongside the fallback itself.
+    #[test]
+    #[serial]
+    fn resolve_env_legacy_scoop_version_still_read_when_scuv_unset() {
+        with_temp_scoop_home(|_temp_dir| {
+            let temp = TempDir::new().unwrap();
+            let dir = temp.path();
+            VersionService::set_local(dir, "fileenv").unwrap();
+
+            // SAFETY: serial test, no concurrent env access.
+            unsafe {
+                std::env::remove_var("SCUV_VERSION");
+                std::env::set_var("SCOOP_VERSION", "legacyenv");
+            }
+            assert_eq!(VersionService::resolve(dir), Some("legacyenv".to_string()));
+            // SAFETY: serial test, no concurrent env access.
+            unsafe {
+                std::env::remove_var("SCOOP_VERSION");
+            }
+        });
+    }
+
+    #[test]
+    #[serial]
     fn test_resolve_fallback_to_global() {
         with_temp_scoop_home(|_temp_dir| {
             let temp = TempDir::new().unwrap();
@@ -464,7 +612,7 @@ mod tests {
     fn test_version_file_trimmed() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         // Write with extra whitespace
         std::fs::write(&version_file, "  myenv  \n\n").unwrap();
@@ -477,7 +625,7 @@ mod tests {
     fn test_version_file_empty_returns_none() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         // Write empty content
         std::fs::write(&version_file, "").unwrap();
@@ -489,7 +637,7 @@ mod tests {
     fn test_version_file_whitespace_only_returns_none() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         // Write whitespace only
         std::fs::write(&version_file, "   \n\t\n  ").unwrap();
@@ -520,7 +668,7 @@ mod tests {
     fn test_set_local_creates_file_with_newline() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         VersionService::set_local(dir, "myenv").unwrap();
 
@@ -536,6 +684,9 @@ mod tests {
     fn test_read_version_file_rejects_command_injection() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
+        // DEPRECATION(0.16.0): kept on the legacy filename deliberately — this
+        // doubles as a legacy-shim regression test that security validation
+        // still applies when the value comes through the fallback path.
         let version_file = dir.join(".scoop-version");
 
         // Write malicious content (command injection attempt)
@@ -553,7 +704,7 @@ mod tests {
     fn test_read_version_file_rejects_backtick_injection() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         // Write backtick command substitution attempt
         std::fs::write(&version_file, "`rm -rf /`\n").unwrap();
@@ -569,7 +720,7 @@ mod tests {
     fn test_read_version_file_rejects_dollar_expansion() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         // Write variable expansion attempt
         std::fs::write(&version_file, "$(whoami)\n").unwrap();
@@ -585,7 +736,7 @@ mod tests {
     fn test_read_version_file_rejects_path_traversal() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         // Write path traversal attempt
         std::fs::write(&version_file, "../../../etc/passwd\n").unwrap();
@@ -601,7 +752,7 @@ mod tests {
     fn test_read_version_file_rejects_newline_injection() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         // Write multiline injection attempt
         std::fs::write(&version_file, "safe\nrm -rf /\n").unwrap();
@@ -619,7 +770,7 @@ mod tests {
     fn test_read_version_file_accepts_valid_names() {
         let temp = TempDir::new().unwrap();
         let dir = temp.path();
-        let version_file = dir.join(".scoop-version");
+        let version_file = dir.join(".scuv-version");
 
         // Test various valid environment names
         let valid_names = ["myenv", "my-project", "test_env", "Env123", "a"];

@@ -24,7 +24,8 @@ const SOURCE_VERSION_FILE: &str = "version_file";
 pub(crate) enum State {
     /// Shell-activated via `SCOOP_ACTIVE`.
     Active(String),
-    /// Resolved from a `.scoop-version` file (local or global).
+    /// Resolved from a version file (local or global; `.scuv-version`, with
+    /// legacy `.scoop-version` fallback).
     Configured(String),
     /// `system` sentinel (system Python is in use, no virtualenv active).
     System,
@@ -213,7 +214,7 @@ mod tests {
             }
 
             let workdir = TempDir::new().unwrap();
-            std::fs::write(workdir.path().join(".scoop-version"), "fileenv\n").unwrap();
+            std::fs::write(workdir.path().join(".scuv-version"), "fileenv\n").unwrap();
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
@@ -234,7 +235,7 @@ mod tests {
         with_temp_scoop_home(|_| {
             clear_env_vars();
             let workdir = TempDir::new().unwrap();
-            std::fs::write(workdir.path().join(".scoop-version"), "fileenv\n").unwrap();
+            std::fs::write(workdir.path().join(".scuv-version"), "fileenv\n").unwrap();
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
@@ -269,7 +270,7 @@ mod tests {
         with_temp_scoop_home(|_| {
             clear_env_vars();
             let workdir = TempDir::new().unwrap();
-            std::fs::write(workdir.path().join(".scoop-version"), "system\n").unwrap();
+            std::fs::write(workdir.path().join(".scuv-version"), "system\n").unwrap();
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 

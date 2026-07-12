@@ -1198,9 +1198,9 @@ mod tests {
     #[serial]
     fn version_check_treats_local_system_sentinel_as_ok() {
         with_temp_scoop_home(|temp| {
-            // Materialise a `.scoop-version: system` file in the CWD.
+            // Materialise a `.scuv-version: system` file in the CWD.
             let cwd_guard = TempDirCwdGuard::new();
-            std::fs::write(cwd_guard.path().join(".scoop-version"), "system").unwrap();
+            std::fs::write(cwd_guard.path().join(".scuv-version"), "system").unwrap();
 
             // Ensure virtualenvs dir exists so its absence doesn't muddle the
             // assertion (we only want the system-sentinel branch to fire).
@@ -1210,7 +1210,7 @@ mod tests {
             let local = results
                 .iter()
                 .find(|r| r.id == "version:local")
-                .expect("version:local check should run when .scoop-version exists");
+                .expect("version:local check should run when .scuv-version exists");
             assert!(
                 local.is_ok(),
                 "version:local must be Ok for system sentinel, got {local:#?}"
@@ -1220,7 +1220,7 @@ mod tests {
 
     /// RAII guard: chdir into a fresh tempdir for the duration of the
     /// test, then restore the original cwd on drop. The VersionCheck's
-    /// local-version branch reads `.scoop-version` from the current
+    /// local-version branch reads `.scuv-version` from the current
     /// directory, so we have to actually move there — env vars can't
     /// substitute.
     struct TempDirCwdGuard {

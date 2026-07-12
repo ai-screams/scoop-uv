@@ -31,7 +31,7 @@ pub fn handle(output: &Output, cwd: &Path, global: bool) -> Result<()> {
             UseData {
                 name: "system".to_string(),
                 mode: "local",
-                version_file: Some(cwd.join(".scoop-version").display().to_string()),
+                version_file: Some(cwd.join(crate::paths::VERSION_FILE).display().to_string()),
                 symlink: None,
             },
             &t!("use.system_local"),

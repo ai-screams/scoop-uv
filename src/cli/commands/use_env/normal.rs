@@ -47,7 +47,7 @@ pub fn handle(output: &Output, cwd: &Path, name: &str, global: bool, link: bool)
             UseData {
                 name: name.to_string(),
                 mode: "local",
-                version_file: Some(cwd.join(".scoop-version").display().to_string()),
+                version_file: Some(cwd.join(crate::paths::VERSION_FILE).display().to_string()),
                 symlink: symlink_path,
             },
             &t!("use.set_local", name = name),

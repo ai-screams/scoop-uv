@@ -226,11 +226,14 @@ fn test_deactivate_when_not_active() {
         .success();
 }
 
+/// DEPRECATION(0.16.0): legacy-shim regression test — verifies `scoop
+/// resolve` still honors a legacy `.scoop-version` file end-to-end. Remove
+/// alongside the legacy fallback itself.
 #[test]
 fn test_resolve_with_version_file() {
     let fixture = TestFixture::new();
 
-    // Create a version file in the temp directory
+    // Create a legacy-named version file in the temp directory
     std::fs::write(fixture.temp_dir.path().join(".scoop-version"), "testenv").unwrap();
 
     // resolve should succeed and output the env name
@@ -718,10 +721,10 @@ mod shell_commands {
             .assert()
             .success();
 
-        let version_file = project_dir.join(".scoop-version");
+        let version_file = project_dir.join(".scuv-version");
         assert!(
             version_file.exists(),
-            ".scoop-version file should be created"
+            ".scuv-version file should be created"
         );
         let content = std::fs::read_to_string(&version_file).unwrap();
         assert_eq!(content.trim(), "system");

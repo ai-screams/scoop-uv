@@ -19,8 +19,7 @@ const SCUV_HOME_DIR: &str = ".scuv";
 const LEGACY_HOME_DIR: &str = ".scoop";
 
 /// Version file name.
-/// TASK-3 FLIPS THIS to ".scuv-version" together with the dual-walk read logic.
-pub const VERSION_FILE: &str = ".scoop-version";
+pub const VERSION_FILE: &str = ".scuv-version";
 /// DEPRECATION(0.16.0): remove legacy version-file fallback.
 pub const LEGACY_VERSION_FILE: &str = ".scoop-version";
 
@@ -592,7 +591,7 @@ mod tests {
         // This test doesn't use environment variables
         let dir = PathBuf::from("/some/project");
         let version_file = local_version_file(&dir);
-        assert_eq!(version_file, dir.join(".scoop-version"));
+        assert_eq!(version_file, dir.join(".scuv-version"));
     }
 
     #[test]
