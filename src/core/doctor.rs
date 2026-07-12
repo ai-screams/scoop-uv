@@ -913,7 +913,7 @@ impl Check for VersionCheck {
                             "local version",
                             "could not read local version file",
                         )
-                        .with_suggestion("Check .scoop-version file permissions"),
+                        .with_suggestion(format!("Check file: {}", local_file.display())),
                     );
                 }
             }
@@ -1214,6 +1214,37 @@ mod tests {
             assert!(
                 local.is_ok(),
                 "version:local must be Ok for system sentinel, got {local:#?}"
+            );
+        });
+    }
+
+    /// Regression: the local-version read-error suggestion must name the
+    /// actual resolved version-file path, not a hardcoded literal (which
+    /// would silently go stale across a rename). A directory at the
+    /// version-file path makes `.exists()` true but `read_to_string` fail,
+    /// forcing the error branch without relying on platform-specific
+    /// permission bits.
+    #[test]
+    #[serial]
+    fn version_check_local_read_error_suggestion_names_version_file() {
+        with_temp_scoop_home(|temp| {
+            let cwd_guard = TempDirCwdGuard::new();
+            std::fs::create_dir(cwd_guard.path().join(paths::VERSION_FILE)).unwrap();
+            std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
+
+            let results = VersionCheck.run();
+            let local = results
+                .iter()
+                .find(|r| r.id == "version:local")
+                .expect("version:local check should run when the version-file path exists");
+            assert!(
+                local.is_warning(),
+                "expected a warning for an unreadable version file, got {local:#?}"
+            );
+            let suggestion = local.suggestion.as_deref().unwrap_or_default();
+            assert!(
+                suggestion.contains(paths::VERSION_FILE),
+                "suggestion should name the actual version-file path, got: {suggestion}"
             );
         });
     }
