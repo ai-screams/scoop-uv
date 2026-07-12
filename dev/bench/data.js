@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783672015360,
+  "lastUpdate": 1783822087729,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -2207,6 +2207,102 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 202,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ef558b1f7991a27c3f469608630f2f7a4dacadc7",
+          "message": "fix(deps): bump crossbeam-epoch 0.9.20, anyhow 1.0.103 (RUSTSEC-2026-0204) (#141)\n\nScheduled Security scan (run #368) failed after new advisories were\npublished against the committed lockfile:\n\n- RUSTSEC-2026-0204 (error): crossbeam-epoch 0.9.18 invalid pointer\n  dereference in fmt::Pointer for Atomic/Shared -> 0.9.20 (transitive\n  via rayon / rust-i18n's ignore)\n- RUSTSEC-2026-0190 (warning): anyhow 1.0.102 Error::downcast_mut()\n  unsoundness -> 1.0.103\n\nLockfile-only, MSRV 1.85 compatible. Verified: cargo audit clean,\ncargo deny --all-features check ok, cargo check --all-targets passes.",
+          "timestamp": "2026-07-12T11:04:31+09:00",
+          "tree_id": "6bd3c2205509298aaa5bff40cd9b55b77e63cd2a",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/ef558b1f7991a27c3f469608630f2f7a4dacadc7"
+        },
+        "date": 1783822087362,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 83921,
+            "range": "± 1255",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 99327,
+            "range": "± 1354",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3075,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 824,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_hit",
+            "value": 1647,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1074,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 103,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 108,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 96,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 96,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 22,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 200,
+            "range": "± 0",
             "unit": "ns/iter"
           }
         ]
