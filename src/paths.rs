@@ -4,40 +4,65 @@ use std::path::{Path, PathBuf};
 
 use once_cell::sync::Lazy;
 use regex::Regex;
+use rust_i18n::t;
 
 use crate::error::{Result, ScoopError};
 
-/// Environment variable for scoop home directory
-pub const SCOOP_HOME_ENV: &str = "SCOOP_HOME";
+/// Environment variable for the scuv home directory.
+pub const SCUV_HOME_ENV: &str = "SCUV_HOME";
+/// DEPRECATION(0.16.0): remove legacy env fallback.
+pub const LEGACY_HOME_ENV: &str = "SCOOP_HOME";
 
-/// Default scoop home directory name
-const SCOOP_HOME_DIR: &str = ".scoop";
+/// Default scuv home directory name.
+const SCUV_HOME_DIR: &str = ".scuv";
+/// DEPRECATION(0.16.0): remove legacy dir fallback.
+const LEGACY_HOME_DIR: &str = ".scoop";
 
 /// Version file name
 pub const VERSION_FILE: &str = ".scoop-version";
 
-/// Get the scoop home directory (~/.scoop or $SCOOP_HOME)
+/// Get the scuv home directory.
+///
+/// Resolution order: `$SCUV_HOME` > legacy `$SCOOP_HOME` > `~/.scuv` >
+/// legacy `~/.scoop` (only when `~/.scuv` doesn't exist yet). Reading either
+/// legacy fallback emits a one-shot deprecation warning on stderr.
 pub fn scoop_home() -> Result<PathBuf> {
-    if let Ok(home) = std::env::var(SCOOP_HOME_ENV) {
+    if let Ok(home) = std::env::var(SCUV_HOME_ENV) {
         return Ok(PathBuf::from(home));
     }
 
-    dirs::home_dir()
-        .map(|h| h.join(SCOOP_HOME_DIR))
-        .ok_or(ScoopError::HomeNotFound)
+    // DEPRECATION(0.16.0): remove legacy env fallback.
+    if let Ok(home) = std::env::var(LEGACY_HOME_ENV) {
+        crate::output::deprecation::warn_once(&t!(
+            "deprecation.env_var",
+            old = LEGACY_HOME_ENV,
+            new = SCUV_HOME_ENV
+        ));
+        return Ok(PathBuf::from(home));
+    }
+
+    let base = dirs::home_dir().ok_or(ScoopError::HomeNotFound)?;
+    let new = base.join(SCUV_HOME_DIR);
+    // DEPRECATION(0.16.0): remove legacy dir fallback.
+    let legacy = base.join(LEGACY_HOME_DIR);
+    if !new.exists() && legacy.exists() {
+        crate::output::deprecation::warn_once(&t!("deprecation.home_dir"));
+        return Ok(legacy);
+    }
+    Ok(new)
 }
 
-/// Get the virtualenvs directory (~/.scoop/virtualenvs)
+/// Get the virtualenvs directory (~/.scuv/virtualenvs)
 pub fn virtualenvs_dir() -> Result<PathBuf> {
     Ok(scoop_home()?.join("virtualenvs"))
 }
 
-/// Get the pythons directory (~/.scoop/pythons)
+/// Get the pythons directory (~/.scuv/pythons)
 pub fn pythons_dir() -> Result<PathBuf> {
     Ok(scoop_home()?.join("pythons"))
 }
 
-/// Get the global version file path (~/.scoop/version)
+/// Get the global version file path (~/.scuv/version)
 pub fn global_version_file() -> Result<PathBuf> {
     Ok(scoop_home()?.join("version"))
 }
@@ -237,9 +262,9 @@ pub fn virtualenv_site_packages(venv_root: &Path) -> Result<PathBuf> {
 /// Ensure all scoop directories exist
 ///
 /// Creates the following directory structure:
-/// - ~/.scoop/
-/// - ~/.scoop/virtualenvs/
-/// - ~/.scoop/pythons/
+/// - ~/.scuv/
+/// - ~/.scuv/virtualenvs/
+/// - ~/.scuv/pythons/
 pub fn ensure_scoop_dirs() -> Result<()> {
     let home = scoop_home()?;
     std::fs::create_dir_all(&home)?;
@@ -386,8 +411,37 @@ mod tests {
     fn test_scoop_home_default() {
         with_no_scoop_home(|| {
             let home = scoop_home().unwrap();
-            assert!(home.ends_with(".scoop"));
+            // .scoop only when a legacy dir already exists on the machine.
+            assert!(home.ends_with(".scuv") || home.ends_with(".scoop"));
         });
+    }
+
+    #[test]
+    #[serial]
+    fn scuv_home_env_wins_over_legacy() {
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, Some("/tmp/newhome")),
+            (LEGACY_HOME_ENV, Some("/tmp/oldhome")),
+        ]);
+        assert_eq!(scoop_home().unwrap(), PathBuf::from("/tmp/newhome"));
+    }
+
+    #[test]
+    #[serial]
+    fn legacy_home_env_still_read() {
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, None),
+            (LEGACY_HOME_ENV, Some("/tmp/oldhome")),
+        ]);
+        assert_eq!(scoop_home().unwrap(), PathBuf::from("/tmp/oldhome"));
+    }
+
+    #[test]
+    #[serial]
+    fn default_home_is_dot_scuv() {
+        let _g = crate::test_utils::env_guard(&[(SCUV_HOME_ENV, None), (LEGACY_HOME_ENV, None)]);
+        let home = scoop_home().unwrap();
+        assert!(home.ends_with(".scuv") || home.ends_with(".scoop")); // .scoop only when legacy dir exists on the machine
     }
 
     #[test]

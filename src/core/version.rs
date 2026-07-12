@@ -43,15 +43,26 @@ impl VersionService {
     ///
     /// # Environment Variables
     ///
-    /// - `SCOOP_RESOLVE_MAX_DEPTH`: Limits parent directory traversal depth.
+    /// - `SCUV_RESOLVE_MAX_DEPTH` (or legacy `SCOOP_RESOLVE_MAX_DEPTH`):
+    ///   Limits parent directory traversal depth.
     ///   Useful for slow network filesystems (NFS, SSHFS, etc).
     ///   - `0` = current directory only
     ///   - `3` = current + up to 3 parent directories
     ///   - unset = unlimited (default behavior)
     pub fn resolve(dir: &Path) -> Option<String> {
-        // Get max depth from environment variable (None = unlimited)
-        let max_depth = std::env::var("SCOOP_RESOLVE_MAX_DEPTH")
+        // Get max depth from environment variable (None = unlimited).
+        // DEPRECATION(0.16.0): remove legacy env fallback.
+        let max_depth = std::env::var("SCUV_RESOLVE_MAX_DEPTH")
             .ok()
+            .or_else(|| {
+                std::env::var("SCOOP_RESOLVE_MAX_DEPTH").ok().inspect(|_| {
+                    crate::output::deprecation::warn_once(&rust_i18n::t!(
+                        "deprecation.env_var",
+                        old = "SCOOP_RESOLVE_MAX_DEPTH",
+                        new = "SCUV_RESOLVE_MAX_DEPTH"
+                    ));
+                })
+            })
             .and_then(|s| s.parse::<usize>().ok());
 
         // Check current and parent directories for local version
@@ -311,26 +322,26 @@ mod tests {
             // SAFETY: This test runs in serial mode, so no concurrent access
             unsafe {
                 // Without limit: should find rootenv
-                std::env::remove_var("SCOOP_RESOLVE_MAX_DEPTH");
+                std::env::remove_var("SCUV_RESOLVE_MAX_DEPTH");
                 assert_eq!(VersionService::resolve(&deep), Some("rootenv".to_string()));
 
                 // With limit=1: should not find rootenv (only checks deep and deep/a)
                 // and fall back to global
-                std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "1");
+                std::env::set_var("SCUV_RESOLVE_MAX_DEPTH", "1");
                 assert_eq!(
                     VersionService::resolve(&deep),
                     Some("globalenv".to_string())
                 );
 
                 // With limit=0: only checks current directory, falls back to global
-                std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "0");
+                std::env::set_var("SCUV_RESOLVE_MAX_DEPTH", "0");
                 assert_eq!(
                     VersionService::resolve(&deep),
                     Some("globalenv".to_string())
                 );
 
                 // Cleanup
-                std::env::remove_var("SCOOP_RESOLVE_MAX_DEPTH");
+                std::env::remove_var("SCUV_RESOLVE_MAX_DEPTH");
             }
         });
     }
@@ -352,11 +363,39 @@ mod tests {
 
             // SAFETY: serial test, no concurrent env access.
             unsafe {
-                std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "1");
+                std::env::set_var("SCUV_RESOLVE_MAX_DEPTH", "1");
                 assert_eq!(
                     VersionService::resolve(&deep),
                     Some("parentenv".to_string()),
                     "limit=1 must still reach the immediate parent"
+                );
+                std::env::remove_var("SCUV_RESOLVE_MAX_DEPTH");
+            }
+        });
+    }
+
+    /// DEPRECATION(0.16.0): exercises the legacy `SCOOP_RESOLVE_MAX_DEPTH`
+    /// fallback; remove alongside the fallback itself.
+    #[test]
+    #[serial]
+    fn test_resolve_max_depth_legacy_env_still_read() {
+        with_temp_scoop_home(|_temp_dir| {
+            let temp = TempDir::new().unwrap();
+            let parent = temp.path().join("a").join("b");
+            let deep = parent.join("c");
+            std::fs::create_dir_all(&deep).unwrap();
+
+            VersionService::set_local(&parent, "parentenv").unwrap();
+            VersionService::set_global("globalenv").unwrap();
+
+            // SAFETY: serial test, no concurrent env access.
+            unsafe {
+                std::env::remove_var("SCUV_RESOLVE_MAX_DEPTH");
+                std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "1");
+                assert_eq!(
+                    VersionService::resolve(&deep),
+                    Some("parentenv".to_string()),
+                    "legacy SCOOP_RESOLVE_MAX_DEPTH must still be honored"
                 );
                 std::env::remove_var("SCOOP_RESOLVE_MAX_DEPTH");
             }
