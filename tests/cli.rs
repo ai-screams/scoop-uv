@@ -22,15 +22,15 @@ struct TestFixture {
     /// Temporary directory - held to prevent cleanup until fixture is dropped
     #[allow(dead_code)]
     temp_dir: TempDir,
-    /// SCOOP_HOME path
+    /// SCUV_HOME path
     scoop_home: PathBuf,
 }
 
 impl TestFixture {
-    /// Create a new test fixture with isolated SCOOP_HOME
+    /// Create a new test fixture with isolated SCUV_HOME
     fn new() -> Self {
         let temp_dir = TempDir::new().expect("Failed to create temp dir");
-        let scoop_home = temp_dir.path().join(".scoop");
+        let scoop_home = temp_dir.path().join(".scuv");
         Self {
             temp_dir,
             scoop_home,
@@ -38,12 +38,15 @@ impl TestFixture {
     }
 }
 
-/// Helper to get a fresh command with SCOOP_HOME set
+/// Helper to get a fresh command with SCUV_HOME set
 fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
     let mut cmd = Command::cargo_bin("scuv").unwrap();
-    cmd.env("SCOOP_HOME", scoop_home);
+    cmd.env("SCUV_HOME", scoop_home);
+    // 부모 환경의 레거시 변수가 fallback 경로로 새어들지 않게 차단
+    cmd.env_remove("SCOOP_HOME");
     // Force English locale for consistent test assertions
-    cmd.env("SCOOP_LANG", "en");
+    cmd.env("SCUV_LANG", "en");
+    cmd.env_remove("SCOOP_LANG");
     cmd
 }
 
@@ -66,6 +69,24 @@ fn test_version_flag() {
         .assert()
         .success()
         .stdout(predicate::str::contains("scuv"));
+}
+
+/// Legacy-shim integration regression (the ONE end-to-end legacy-env test):
+/// the deprecated SCOOP_HOME/SCOOP_LANG names must still work through the
+/// real binary, emitting the deprecation warning on stderr.
+/// DEPRECATION(0.16.0): remove together with the legacy env-var shims.
+#[test]
+fn test_legacy_scoop_env_vars_still_work() {
+    let fixture = TestFixture::new();
+    let mut cmd = Command::cargo_bin("scuv").unwrap();
+    cmd.env_remove("SCUV_HOME");
+    cmd.env_remove("SCUV_LANG");
+    cmd.env("SCOOP_HOME", &fixture.scoop_home);
+    cmd.env("SCOOP_LANG", "en");
+    cmd.arg("list")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("SCOOP_HOME is deprecated"));
 }
 
 #[test]
