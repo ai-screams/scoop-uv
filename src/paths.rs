@@ -18,8 +18,11 @@ const SCUV_HOME_DIR: &str = ".scuv";
 /// DEPRECATION(0.16.0): remove legacy dir fallback.
 const LEGACY_HOME_DIR: &str = ".scoop";
 
-/// Version file name
+/// Version file name.
+/// TASK-3 FLIPS THIS to ".scuv-version" together with the dual-walk read logic.
 pub const VERSION_FILE: &str = ".scoop-version";
+/// DEPRECATION(0.16.0): remove legacy version-file fallback.
+pub const LEGACY_VERSION_FILE: &str = ".scoop-version";
 
 /// Get the scuv home directory.
 ///
