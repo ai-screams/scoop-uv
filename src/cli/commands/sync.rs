@@ -1,6 +1,6 @@
 //! Handler for the `scoop sync` command.
 //!
-//! Reads `.scoop.toml` (walking cwd → parents), creates the declared env if
+//! Reads `.scuv.toml` (or legacy `.scoop.toml`, walking cwd → parents), creates the declared env if
 //! it doesn't exist (with implicit lazy Python install), and installs the
 //! merged `default` + selected groups via uv pip. Idempotent — re-running on
 //! a clean env is a no-op past the pip resolve.
@@ -188,7 +188,7 @@ mod tests {
     use tempfile::TempDir;
 
     fn write_manifest(dir: &std::path::Path, content: &str) {
-        std::fs::write(dir.join(".scoop.toml"), content).unwrap();
+        std::fs::write(dir.join(".scuv.toml"), content).unwrap();
     }
 
     #[test]
@@ -245,9 +245,9 @@ mod tests {
     #[serial]
     fn execute_returns_manifest_not_found_when_absent() {
         with_temp_scoop_home(|_| {
-            // Use a sandboxed working dir that has no .scoop.toml. The walk
-            // may still hit one in a parent of the real cwd on dev machines,
-            // so isolate cwd inside a tempdir.
+            // Use a sandboxed working dir that has no .scuv.toml (or legacy
+            // .scoop.toml). The walk may still hit one in a parent of the
+            // real cwd on dev machines, so isolate cwd inside a tempdir.
             let workdir = TempDir::new().unwrap();
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
@@ -259,9 +259,10 @@ mod tests {
                 std::env::set_current_dir(p).unwrap();
             }
 
-            // Some test machines may have .scoop.toml in /tmp's parents; we
-            // can't reliably assert ManifestNotFound there. Only assert when
-            // no manifest exists anywhere along the path.
+            // Some test machines may have .scuv.toml (or legacy .scoop.toml)
+            // in /tmp's parents; we can't reliably assert ManifestNotFound
+            // there. Only assert when no manifest exists anywhere along the
+            // path.
             match result {
                 Err(ScoopError::ManifestNotFound { .. }) => {}
                 Err(other) => panic!("expected ManifestNotFound, got {other:?}"),
