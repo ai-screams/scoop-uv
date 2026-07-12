@@ -201,10 +201,23 @@ impl VersionService {
     }
 
     /// Unset local version
+    ///
+    /// Removes both the new `.scuv-version` file and a legacy
+    /// `.scoop-version` file in `dir`, if present. Unsetting is explicit user
+    /// intent to clear the local pin — leaving a legacy file behind would
+    /// make `resolve()` silently re-read it, so `use --unset` must clear
+    /// both names, not just migrate the write path.
+    ///
+    /// DEPRECATION(0.16.0): remove the legacy-file cleanup branch.
     pub fn unset_local(dir: &Path) -> Result<()> {
         let version_file = paths::local_version_file(dir);
         if version_file.exists() {
             fs::remove_file(&version_file)?;
+        }
+        let legacy = dir.join(paths::LEGACY_VERSION_FILE);
+        if legacy.exists() {
+            fs::remove_file(&legacy)?;
+            crate::output::deprecation::warn_once(&rust_i18n::t!("deprecation.version_file"));
         }
         Ok(())
     }
@@ -268,6 +281,23 @@ mod tests {
 
         // Unset on non-existent file should succeed
         assert!(VersionService::unset_local(dir).is_ok());
+    }
+
+    /// DEPRECATION(0.16.0): `unset_local` must clean up the legacy filename
+    /// too — otherwise `resolve()` would re-read the surviving legacy file
+    /// and `use --unset` would silently fail to unset.
+    #[test]
+    fn test_unset_local_removes_both_new_and_legacy_files() {
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+
+        std::fs::write(dir.join(".scuv-version"), "newenv\n").unwrap();
+        std::fs::write(dir.join(".scoop-version"), "oldenv\n").unwrap();
+
+        VersionService::unset_local(dir).unwrap();
+
+        assert!(!dir.join(".scuv-version").exists());
+        assert!(!dir.join(".scoop-version").exists());
     }
 
     #[test]
