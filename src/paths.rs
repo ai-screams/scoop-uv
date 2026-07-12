@@ -447,6 +447,54 @@ mod tests {
         assert!(home.ends_with(".scuv") || home.ends_with(".scoop")); // .scoop only when legacy dir exists on the machine
     }
 
+    // Directory-existence fallback branch (no env vars set at all): with
+    // both SCUV_HOME/SCOOP_HOME unset, `scoop_home()` falls through to
+    // `~/.scuv` vs. legacy `~/.scoop` based on which actually exists on
+    // disk. `dirs::home_dir()` reads `$HOME` on Unix, so `env_guard` can
+    // steer it at a tempdir — matching the isolation approach
+    // `with_isolated_migrate_env` already uses elsewhere in this crate.
+    #[test]
+    #[serial]
+    fn dir_fallback_uses_legacy_scoop_when_only_legacy_dir_exists() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir(tmp.path().join(".scoop")).unwrap();
+        let home_str = tmp.path().to_str().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, None),
+            (LEGACY_HOME_ENV, None),
+            ("HOME", Some(home_str)),
+        ]);
+        assert_eq!(scoop_home().unwrap(), tmp.path().join(".scoop"));
+    }
+
+    #[test]
+    #[serial]
+    fn dir_fallback_prefers_scuv_when_both_dirs_exist() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir(tmp.path().join(".scuv")).unwrap();
+        std::fs::create_dir(tmp.path().join(".scoop")).unwrap();
+        let home_str = tmp.path().to_str().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, None),
+            (LEGACY_HOME_ENV, None),
+            ("HOME", Some(home_str)),
+        ]);
+        assert_eq!(scoop_home().unwrap(), tmp.path().join(".scuv"));
+    }
+
+    #[test]
+    #[serial]
+    fn dir_fallback_defaults_to_scuv_when_neither_dir_exists() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let home_str = tmp.path().to_str().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, None),
+            (LEGACY_HOME_ENV, None),
+            ("HOME", Some(home_str)),
+        ]);
+        assert_eq!(scoop_home().unwrap(), tmp.path().join(".scuv"));
+    }
+
     #[test]
     fn test_scoop_home_env() {
         with_temp_scoop_home(|temp_dir| {

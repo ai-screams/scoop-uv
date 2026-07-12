@@ -57,13 +57,13 @@ pub fn dir_size(path: &Path) -> u64 {
 /// ```
 /// use scoop_uv::core::migrate::common::check_name_conflict;
 ///
-/// # // Setup: create temp SCOOP_HOME with an existing environment
+/// # // Setup: create temp SCUV_HOME with an existing environment
 /// # let temp = tempfile::tempdir().unwrap();
 /// # let venvs_dir = temp.path().join("virtualenvs");
 /// # std::fs::create_dir_all(&venvs_dir).unwrap();
 /// # std::fs::create_dir(venvs_dir.join("existing-env")).unwrap();
 /// # // SAFETY: Single-threaded doctest, no concurrent access
-/// # unsafe { std::env::set_var("SCOOP_HOME", temp.path()); }
+/// # unsafe { std::env::set_var("SCUV_HOME", temp.path()); }
 /// #
 /// // Check for existing environment
 /// if let Some(existing_path) = check_name_conflict("existing-env") {
@@ -74,7 +74,7 @@ pub fn dir_size(path: &Path) -> u64 {
 /// // Check for non-existing environment
 /// assert!(check_name_conflict("new-project").is_none());
 /// # // SAFETY: Restoring original environment
-/// # unsafe { std::env::remove_var("SCOOP_HOME"); }
+/// # unsafe { std::env::remove_var("SCUV_HOME"); }
 /// ```
 pub fn check_name_conflict(name: &str) -> Option<PathBuf> {
     if let Ok(venvs_dir) = paths::virtualenvs_dir() {
@@ -100,11 +100,11 @@ pub fn check_name_conflict(name: &str) -> Option<PathBuf> {
 /// use scoop_uv::core::migrate::common::determine_status;
 /// use scoop_uv::core::migrate::EnvironmentStatus;
 ///
-/// # // Setup: isolated SCOOP_HOME to avoid real conflicts
+/// # // Setup: isolated SCUV_HOME to avoid real conflicts
 /// # let temp = tempfile::tempdir().unwrap();
 /// # std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
 /// # // SAFETY: Single-threaded doctest, no concurrent access
-/// # unsafe { std::env::set_var("SCOOP_HOME", temp.path()); }
+/// # unsafe { std::env::set_var("SCUV_HOME", temp.path()); }
 /// #
 /// // Modern Python, no conflict
 /// let status = determine_status("new_env", "3.12.0");
@@ -118,7 +118,7 @@ pub fn check_name_conflict(name: &str) -> Option<PathBuf> {
 /// let status = determine_status("ancient_env", "2.7.18");
 /// assert!(matches!(status, EnvironmentStatus::PythonEol { .. }));
 /// # // SAFETY: Restoring original environment
-/// # unsafe { std::env::remove_var("SCOOP_HOME"); }
+/// # unsafe { std::env::remove_var("SCUV_HOME"); }
 /// ```
 pub fn determine_status(name: &str, python_version: &str) -> EnvironmentStatus {
     // Check for name conflict first
