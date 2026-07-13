@@ -785,19 +785,26 @@ mod tests {
     // ==========================================================================
 
     #[test]
+    #[serial]
     fn test_abbreviate_home_with_home_path() {
-        // Path under home directory should be abbreviated
-        if let Some(home) = dirs::home_dir() {
-            let path = home.join(".scoop").join("virtualenvs").join("myenv");
-            let result = abbreviate_home(&path);
-            assert!(result.starts_with("~/"));
-            assert!(result.contains(".scoop/virtualenvs/myenv"));
-        }
+        // Pin HOME so parallel tests that mutate it can't race this one
+        // (dirs::home_dir() reads the process-wide env live).
+        let tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[("HOME", tmp.path().to_str())]);
+        let path = tmp.path().join(".scuv").join("virtualenvs").join("myenv");
+        let result = abbreviate_home(&path);
+        assert!(result.starts_with("~/"));
+        assert!(result.contains(".scuv/virtualenvs/myenv"));
     }
 
     #[test]
+    #[serial]
     fn test_abbreviate_home_outside_home() {
-        // Path outside home directory should remain unchanged
+        // Path outside home directory should remain unchanged. HOME is pinned
+        // away from /tmp because parallel tests point HOME at tempdirs (which
+        // live under /tmp on Linux) and would make this path abbreviable.
+        let home = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[("HOME", home.path().to_str())]);
         let path = PathBuf::from("/tmp/some/path");
         let result = abbreviate_home(&path);
         assert_eq!(result, "/tmp/some/path");
