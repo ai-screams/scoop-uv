@@ -295,7 +295,7 @@ Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell)'
 
 ```bash
 scuv --version
-# → scuv 0.14.1 🍨
+# → scuv 0.15.0 🍨
 ```
 
 #### What this enables

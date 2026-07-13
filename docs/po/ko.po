@@ -457,8 +457,8 @@ msgid "Verify Installation"
 msgstr "설치 확인"
 
 #: src/installation.md:37
-msgid "# scuv 0.14.1\n"
-msgstr "# scuv 0.14.1\n"
+msgid "# scuv 0.15.0\n"
+msgstr "# scuv 0.15.0\n"
 
 #: src/installation.md:41 src/python-management.md:175
 #: src/development/testing.md:384 src/development/code-quality.md:420
@@ -10788,8 +10788,8 @@ msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
 #: src/api.md:725
-msgid "**Last Updated:** 2026-06-16 **scuv Version:** 0.14.1"
-msgstr "**최종 업데이트:** 2026-06-16 **scuv 버전:** 0.14.1"
+msgid "**Last Updated:** 2026-06-16 **scuv Version:** 0.15.0"
+msgstr "**최종 업데이트:** 2026-06-16 **scuv 버전:** 0.15.0"
 
 #: src/development/testing.md:3
 msgid "Comprehensive guide for testing scuv."
@@ -11487,13 +11487,13 @@ msgstr "멀티 소스 통합 (Docker 매트릭스)"
 #: src/development/testing.md:459
 msgid ""
 "The Dockerfile builds three per-source leaf stages — `pyenv-test`, `conda-"
-"test`, `venvwrapper-test` — on top of a shared `scoop-test-base`. Each "
+"test`, `venvwrapper-test` — on top of a shared `scuv-test-base`. Each "
 "carries only the source-tool it migrates from, so CI can matrix-build just "
 "one variant."
 msgstr ""
-"Dockerfile은 공유 `scoop-test-base` 위에 `pyenv-test`, `conda-test`, "
-"`venvwrapper-test` 세 가지 소스별 리프 스테이지를 빌드합니다. 각 스테이지는 마이그레이션하는 소스 도구만 포함하므로, "
-"CI에서 하나의 변형만 선택적으로 매트릭스 빌드할 수 있습니다."
+"Dockerfile은 공유 `scuv-test-base` 위에 `pyenv-test`, `conda-test`, `venvwrapper-"
+"test` 세 가지 소스별 리프 스테이지를 빌드합니다. 각 스테이지는 마이그레이션하는 소스 도구만 포함하므로, CI에서 하나의 변형만 "
+"선택적으로 매트릭스 빌드할 수 있습니다."
 
 #: src/development/testing.md:465
 msgid "# Local (sequential)\n"

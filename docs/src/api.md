@@ -723,4 +723,4 @@ Per-command exit code table:
 ---
 
 > **Last Updated:** 2026-06-16
-> **scuv Version:** 0.14.1
+> **scuv Version:** 0.15.0
