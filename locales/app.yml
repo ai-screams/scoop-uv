@@ -1401,6 +1401,21 @@ man.written:
   ja: "%{dir} に最上位 man ページ %{count} 件を書き出しました (ネストされたサブコマンドは親ページに含まれます)"
 
 # ============================================================================
+# Doctor command - legacy scoop remnants (scoop -> scuv rename, removed in v0.16.0)
+# ============================================================================
+doctor.legacy_found:
+  en: "Legacy scoop settings found: %{items}"
+  ko: "레거시 scoop 설정이 남아 있어요: %{items}"
+  pt-BR: "Configurações legadas do scoop encontradas: %{items}"
+  ja: "レガシーな scoop の設定が見つかりました: %{items}"
+
+doctor.legacy_suggestion:
+  en: "Rename SCOOP_* environment variables to SCUV_*, run `mv ~/.scoop ~/.scuv`, and rename .scoop-version/.scoop.toml to the new names (support ends in v0.16.0)"
+  ko: "SCOOP_* 환경 변수를 SCUV_*(으)로 바꾸고, `mv ~/.scoop ~/.scuv`를 실행하고, .scoop-version/.scoop.toml도 새 이름으로 바꿔주세요 (v0.16.0에서 지원 종료)"
+  pt-BR: "Renomeie as variáveis SCOOP_* para SCUV_*, execute `mv ~/.scoop ~/.scuv` e renomeie .scoop-version/.scoop.toml para os novos nomes (suporte encerra na v0.16.0)"
+  ja: "SCOOP_* 環境変数を SCUV_* にリネームし、`mv ~/.scoop ~/.scuv` を実行し、.scoop-version/.scoop.toml も新しい名前にリネームしてください (v0.16.0でサポート終了)"
+
+# ============================================================================
 # Deprecation warnings (scoop -> scuv rename, removed in v0.16.0)
 # ============================================================================
 deprecation.env_var:
