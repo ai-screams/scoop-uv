@@ -6,6 +6,8 @@
 
 > ⚠️ **Work in Progress** — Under active development. API may change.
 
+> 📢 **Renamed in v0.15.0:** the CLI command is now **`scuv`** (formerly `scoop`) — renamed to coexist with [Scoop](https://scoop.sh), the Windows package manager. The crate/repo keep the name `scoop-uv`. Legacy `SCOOP_*`/`.scoop-*` settings are still read (with a deprecation warning) until v0.16.0 — see the [CHANGELOG](CHANGELOG.md) for migration notes.
+
 **One scoop, endless envs — pyenv-style Python environment manager powered by uv**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/ai-screams/scoop-uv/ci.yml?style=for-the-badge&logo=github&label=CI)](https://github.com/ai-screams/scoop-uv/actions/workflows/ci.yml)
