@@ -457,7 +457,7 @@ persistence.
 ## Multi-source Integration (Docker matrix)
 
 The Dockerfile builds three per-source leaf stages — `pyenv-test`,
-`conda-test`, `venvwrapper-test` — on top of a shared `scoop-test-base`.
+`conda-test`, `venvwrapper-test` — on top of a shared `scuv-test-base`.
 Each carries only the source-tool it migrates from, so CI can
 matrix-build just one variant.
 

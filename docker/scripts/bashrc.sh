@@ -1,5 +1,5 @@
 #!/bin/bash
-# Shell configuration for scoop test container
+# Shell configuration for scuv test container
 
 # ============================================================
 # pyenv
@@ -43,16 +43,16 @@ export RUST_BACKTRACE=1
 # ============================================================
 # Prompt
 # ============================================================
-PS1='\[\033[1;36m\][scoop-test]\[\033[0m\] \w $ '
+PS1='\[\033[1;36m\][scuv-test]\[\033[0m\] \w $ '
 
 # ============================================================
-# scoop (workspace build takes precedence over /usr/local/bin)
+# scuv (workspace build takes precedence over /usr/local/bin)
 # ============================================================
 if [ -d "/workspace/target/release" ]; then
     export PATH="/workspace/target/release:$PATH"
     # Initialize shell integration if available
-    if [ -x "/workspace/target/release/scoop" ]; then
-        eval "$(/workspace/target/release/scoop init bash)" 2>/dev/null || true
+    if [ -x "/workspace/target/release/scuv" ]; then
+        eval "$(/workspace/target/release/scuv init bash)" 2>/dev/null || true
     fi
 fi
 

@@ -11,7 +11,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  SCOOP_LANG: en
+  SCUV_LANG: en
 
 # Cancel stale PR runs when new commits are pushed
 # Never cancel main branch runs

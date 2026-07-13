@@ -1,4 +1,4 @@
-# scoop fish config
+# scuv fish config
 
 # ============================================================
 # pyenv
@@ -31,13 +31,13 @@ set -gx PATH /usr/local/cargo/bin /root/.cargo/bin $PATH
 set -gx PATH /root/.local/bin $PATH
 
 # ============================================================
-# scoop (workspace build takes precedence over /usr/local/bin)
+# scuv (workspace build takes precedence over /usr/local/bin)
 # ============================================================
 if test -d /workspace/target/release
     set -gx PATH /workspace/target/release $PATH
     # Initialize shell integration if available
-    if test -x /workspace/target/release/scoop
-        /workspace/target/release/scoop init fish | source 2>/dev/null; or true
+    if test -x /workspace/target/release/scuv
+        /workspace/target/release/scuv init fish | source 2>/dev/null; or true
     end
 end
 
@@ -51,7 +51,7 @@ set -gx RUST_BACKTRACE 1
 # Prompt
 # ============================================================
 function fish_prompt
-    echo -n (set_color cyan)"[scoop-test]"(set_color normal)" "(prompt_pwd)" \$ "
+    echo -n (set_color cyan)"[scuv-test]"(set_color normal)" "(prompt_pwd)" \$ "
 end
 
 # ============================================================

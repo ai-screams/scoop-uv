@@ -48,7 +48,7 @@ services:
       target: full
       args:
         BUILDKIT_INLINE_CACHE: "1"
-    image: ghcr.io/ai-screams/scoop:latest
+    image: ghcr.io/ai-screams/scuv:latest
     environment:
       - RUST_BACKTRACE=1
       - CARGO_TERM_COLOR=always
@@ -73,7 +73,7 @@ services:
       target: slim
       args:
         BUILDKIT_INLINE_CACHE: "1"
-    image: ghcr.io/ai-screams/scoop:slim
+    image: ghcr.io/ai-screams/scuv:slim
 
   # ============================================================
   # Per-source test images — one stage per migration source so the
@@ -87,7 +87,7 @@ services:
       target: pyenv-test
       args:
         BUILDKIT_INLINE_CACHE: "1"
-    image: ghcr.io/ai-screams/scoop:pyenv-test
+    image: ghcr.io/ai-screams/scuv:pyenv-test
 
   conda-test:
     <<: *common-svc
@@ -97,7 +97,7 @@ services:
       target: conda-test
       args:
         BUILDKIT_INLINE_CACHE: "1"
-    image: ghcr.io/ai-screams/scoop:conda-test
+    image: ghcr.io/ai-screams/scuv:conda-test
 
   venvwrapper-test:
     <<: *common-svc
@@ -107,7 +107,7 @@ services:
       target: venvwrapper-test
       args:
         BUILDKIT_INLINE_CACHE: "1"
-    image: ghcr.io/ai-screams/scoop:venvwrapper-test
+    image: ghcr.io/ai-screams/scuv:venvwrapper-test
 
   # ============================================================
   # Profile-gated test runners. Compose `--profile test` brings the

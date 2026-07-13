@@ -31,7 +31,7 @@ body:
       label: "💡 Proposed solution"
       description: "How do you envision this feature working?"
       placeholder: |
-        I'd love to be able to run `scoop ...` and have it...
+        I'd love to be able to run `scuv ...` and have it...
     validations:
       required: true
 
@@ -78,7 +78,7 @@ body:
       description: "Show us how you'd use this feature"
       render: shell
       placeholder: |
-        $ scoop new-command --flag
+        $ scuv new-command --flag
         Expected output...
 
   - type: textarea

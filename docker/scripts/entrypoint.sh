@@ -54,7 +54,7 @@ fi
 # dying with exit 127 in 0.4s, before our entrypoint produced any
 # output.
 #
-# Sourcing isn't actually needed here: `scoop migrate list`
+# Sourcing isn't actually needed here: `scuv migrate list`
 # discovers virtualenvwrapper envs by enumerating $WORKON_HOME,
 # which doesn't require the `mkvirtualenv`/`workon` shell functions
 # to be loaded. Interactive shells (`docker run -it ... bash`) load
@@ -65,16 +65,16 @@ export WORKON_HOME="/root/.virtualenvs"
 mkdir -p "$WORKON_HOME"
 
 # ============================================================
-# scoop build (workspace version takes precedence)
+# scuv build (workspace version takes precedence)
 # ============================================================
 if [ -d "/workspace/src" ]; then
-  SCOOP_BIN="/workspace/target/release/scoop"
+  SCUV_BIN="/workspace/target/release/scuv"
 
-  # Build scoop if binary doesn't exist or source is newer
-  if [ ! -f "$SCOOP_BIN" ] || \
-     [ "$(find /workspace/src -name '*.rs' -newer "$SCOOP_BIN" 2>/dev/null | head -1)" ] || \
-     [ "$(find /workspace/locales -name '*.yml' -newer "$SCOOP_BIN" 2>/dev/null | head -1)" ]; then
-    echo "Building scoop..."
+  # Build scuv if binary doesn't exist or source is newer
+  if [ ! -f "$SCUV_BIN" ] || \
+     [ "$(find /workspace/src -name '*.rs' -newer "$SCUV_BIN" 2>/dev/null | head -1)" ] || \
+     [ "$(find /workspace/locales -name '*.yml' -newer "$SCUV_BIN" 2>/dev/null | head -1)" ]; then
+    echo "Building scuv..."
     cargo build --release --manifest-path=/workspace/Cargo.toml
   fi
 fi
