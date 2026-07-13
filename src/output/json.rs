@@ -272,7 +272,7 @@ pub struct StatusData {
     pub state: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// Where the env name came from: `"scoop_active_env"` or `"version_file"`.
+    /// Where the env name came from: `"scuv_active_env"` or `"version_file"`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]

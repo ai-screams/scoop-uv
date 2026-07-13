@@ -52,7 +52,7 @@ pub fn execute(output: &Output, exe: &str, env: Option<&str>) -> Result<()> {
 }
 
 /// Resolve the environment to look in: explicit `--env`, otherwise the active
-/// (`SCOOP_ACTIVE`) env, otherwise the version-file resolution.
+/// (`SCUV_ACTIVE`) env, otherwise the version-file resolution.
 fn resolve_target_env(explicit: Option<&str>) -> Result<String> {
     if let Some(name) = explicit {
         validate::validate_env_name(name)?;
@@ -104,7 +104,7 @@ mod tests {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
             // SAFETY: serial test; no concurrent env access.
             unsafe {
-                std::env::remove_var("SCOOP_ACTIVE");
+                std::env::remove_var("SCUV_ACTIVE");
             }
             let output = Output::new(0, true, true, false);
             // Use a tempdir as CWD that has no .scoop-version file.

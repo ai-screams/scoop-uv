@@ -1,7 +1,7 @@
 //! Handler for the `scoop run` command.
 //!
 //! Spawns a program inside an environment without activating it in the parent
-//! shell. The child sees the same `VIRTUAL_ENV` / `PATH` prefix / `SCOOP_ACTIVE`
+//! shell. The child sees the same `VIRTUAL_ENV` / `PATH` prefix / `SCUV_ACTIVE`
 //! that `scoop activate` would set, and `scoop run` propagates the child's
 //! exit code as its own.
 
@@ -69,7 +69,7 @@ fn build_command(venv_path: &Path, bin_dir: &Path, env_name: &str, command: &[St
     let mut cmd = Command::new(program);
     cmd.args(&command[1..])
         .env("VIRTUAL_ENV", venv_path)
-        .env("SCOOP_ACTIVE", env_name)
+        .env("SCUV_ACTIVE", env_name)
         .env_remove("PYTHONHOME");
 
     // Mirror activation: prepend the env's bin dir to PATH so any indirect
@@ -140,7 +140,7 @@ mod tests {
             Some("/envs/myenv")
         );
         assert_eq!(
-            lookup("SCOOP_ACTIVE")
+            lookup("SCUV_ACTIVE")
                 .and_then(|v| v)
                 .and_then(|v| v.to_str()),
             Some("myenv")

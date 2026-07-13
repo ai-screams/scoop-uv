@@ -1,7 +1,7 @@
 //! PowerShell shell integration
 //!
-//! Provides PowerShell support for scoop, including:
-//! - Wrapper function for `scoop` command
+//! Provides PowerShell support for scuv, including:
+//! - Wrapper function for `scuv` command
 //! - Auto-activate hook via prompt override
 //! - Tab completion with dynamic environment names and Python versions
 //!
@@ -15,7 +15,7 @@ use crate::{file_resolution_check, scoop_version_check};
 /// This script should be evaluated in the user's `$PROFILE`:
 ///
 /// ```powershell
-/// Invoke-Expression (& scoop init powershell)
+/// Invoke-Expression (& scuv init powershell)
 /// ```
 ///
 /// # Examples
@@ -24,57 +24,57 @@ use crate::{file_resolution_check, scoop_version_check};
 /// let script = scoop_uv::shell::powershell::init_script();
 ///
 /// // Script contains the wrapper function
-/// assert!(script.contains("function scoop"));
+/// assert!(script.contains("function scuv"));
 ///
 /// // Script contains the auto-activate hook
-/// assert!(script.contains("function _scoop_hook"));
+/// assert!(script.contains("function _scuv_hook"));
 ///
 /// // Script contains completion definitions
 /// assert!(script.contains("Register-ArgumentCompleter"));
 /// ```
 pub fn init_script() -> &'static str {
     concat!(
-        r#"# scoop shell integration for PowerShell
-# Add to your $PROFILE: Invoke-Expression (& scoop init powershell)
+        r#"# scuv shell integration for PowerShell
+# Add to your $PROFILE: Invoke-Expression (& scuv init powershell)
 
-# Get the scoop binary path (avoids conflict with wrapper function)
-$script:ScoopBin = (Get-Command scoop -CommandType Application -ErrorAction SilentlyContinue).Source
-if (-not $script:ScoopBin) {
-    Write-Warning "scoop binary not found in PATH"
+# Get the scuv binary path (avoids conflict with wrapper function)
+$script:ScuvBin = (Get-Command scuv -CommandType Application -ErrorAction SilentlyContinue).Source
+if (-not $script:ScuvBin) {
+    Write-Warning "scuv binary not found in PATH"
     return
 }
 
-# Wrapper function for scoop
-function scoop {
+# Wrapper function for scuv
+function scuv {
     param([Parameter(ValueFromRemainingArguments=$true)]$Arguments)
 
     $command = if ($Arguments.Count -gt 0) { $Arguments[0] } else { '' }
 
     switch ($command) {
         'use' {
-            & $script:ScoopBin @Arguments
+            & $script:ScuvBin @Arguments
             if ($LASTEXITCODE -eq 0) {
                 $name = $Arguments | Where-Object { $_ -notmatch '^-' } | Select-Object -Skip 1 -First 1
                 if ($name) {
-                    Invoke-Expression (& $script:ScoopBin activate $name)
+                    Invoke-Expression (& $script:ScuvBin activate $name)
                 }
             }
         }
         { $_ -in 'activate', 'deactivate', 'shell' } {
             if ($Arguments -match '(-h|--help|-V|--version)') {
-                & $script:ScoopBin @Arguments
+                & $script:ScuvBin @Arguments
             } else {
-                Invoke-Expression (& $script:ScoopBin @Arguments)
+                Invoke-Expression (& $script:ScuvBin @Arguments)
             }
         }
         default {
-            & $script:ScoopBin @Arguments
+            & $script:ScuvBin @Arguments
         }
     }
 }
 
 # Auto-activate hook
-function _scoop_hook {
+function _scuv_hook {
 "#,
         scoop_version_check!(powershell),
         file_resolution_check!(powershell),
@@ -82,19 +82,20 @@ function _scoop_hook {
 }
 
 # Override prompt to call hook
-if (-not $env:SCOOP_NO_AUTO) {
-    $global:_scoop_original_prompt = $function:prompt
+# DEPRECATION(0.16.0): drop the legacy SCOOP_NO_AUTO fallback check.
+if ((-not $env:SCUV_NO_AUTO) -and (-not $env:SCOOP_NO_AUTO)) {
+    $global:_scuv_original_prompt = $function:prompt
     function global:prompt {
-        _scoop_hook
-        & $global:_scoop_original_prompt
+        _scuv_hook
+        & $global:_scuv_original_prompt
     }
 }
 
 # Run hook on startup
-_scoop_hook
+_scuv_hook
 
 # Tab completion
-Register-ArgumentCompleter -Native -CommandName scoop -ScriptBlock {
+Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
     $commands = @('list', 'create', 'use', 'remove', 'info', 'install', 'uninstall',
@@ -114,7 +115,7 @@ Register-ArgumentCompleter -Native -CommandName scoop -ScriptBlock {
 
     # Environment name completion for specific commands
     if ($cmd -in 'use', 'remove', 'info', 'activate', 'shell') {
-        $envs = & $script:ScoopBin list --bare 2>$null
+        $envs = & $script:ScuvBin list --bare 2>$null
         if ($envs) {
             $envs | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
                 [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
@@ -125,7 +126,7 @@ Register-ArgumentCompleter -Native -CommandName scoop -ScriptBlock {
 
     # Python version completion
     if ($cmd -in 'install', 'uninstall', 'create') {
-        $versions = & $script:ScoopBin list --pythons --bare 2>$null | Sort-Object -Unique
+        $versions = & $script:ScuvBin list --pythons --bare 2>$null | Sort-Object -Unique
         if ($versions) {
             $versions | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
                 [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
@@ -216,7 +217,7 @@ mod tests {
     fn test_init_script_defines_wrapper_function() {
         let script = init_script();
         assert!(
-            script.contains("function scoop"),
+            script.contains("function scuv"),
             "Script missing wrapper function"
         );
     }
@@ -225,7 +226,7 @@ mod tests {
     fn test_init_script_defines_hook_function() {
         let script = init_script();
         assert!(
-            script.contains("function _scoop_hook"),
+            script.contains("function _scuv_hook"),
             "Script missing auto-activate hook"
         );
     }
@@ -253,11 +254,16 @@ mod tests {
     // =========================================================================
 
     #[test]
-    fn test_init_script_checks_scoop_no_auto() {
+    fn test_init_script_checks_scuv_no_auto() {
         let script = init_script();
         assert!(
+            script.contains("SCUV_NO_AUTO"),
+            "Script must check SCUV_NO_AUTO environment variable"
+        );
+        // Legacy SCOOP_NO_AUTO must still gate auto-activation (deprecated fallback).
+        assert!(
             script.contains("SCOOP_NO_AUTO"),
-            "Script must check SCOOP_NO_AUTO environment variable"
+            "Script must still honor legacy SCOOP_NO_AUTO"
         );
     }
 
@@ -287,11 +293,11 @@ mod tests {
     fn test_init_script_stores_binary_path() {
         let script = init_script();
         assert!(
-            script.contains("$script:ScoopBin"),
+            script.contains("$script:ScuvBin"),
             "Script must store binary path to avoid recursion"
         );
         assert!(
-            script.contains("Get-Command scoop -CommandType Application"),
+            script.contains("Get-Command scuv -CommandType Application"),
             "Script must use Get-Command to find binary"
         );
     }

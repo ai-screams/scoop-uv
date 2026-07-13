@@ -5,15 +5,15 @@ use crate::{file_resolution_check, scoop_version_check};
 /// Generate bash initialization script
 pub fn init_script() -> &'static str {
     concat!(
-        r#"# scoop shell integration for bash
+        r#"# scuv shell integration for bash
 
-# Wrapper function for scoop
-scoop() {
+# Wrapper function for scuv
+scuv() {
     local command="${1:-}"
 
     case "$command" in
         use)
-            command scoop "$@"
+            command scuv "$@"
             local ret=$?
             if [[ $ret -eq 0 ]]; then
                 shift  # remove 'use'
@@ -25,7 +25,7 @@ scoop() {
                     esac
                 done
                 if [[ -n "$name" ]]; then
-                    eval "$(command scoop activate "$name")"
+                    eval "$(command scuv activate "$name")"
                 fi
             fi
             return $ret
@@ -33,38 +33,39 @@ scoop() {
         activate|deactivate|shell)
             # Pass through help/version flags without eval
             if [[ "$*" == *--help* ]] || [[ "$*" == *-h* ]] || [[ "$*" == *--version* ]] || [[ "$*" == *-V* ]]; then
-                command scoop "$@"
+                command scuv "$@"
             else
-                eval "$(command scoop "$@")"
+                eval "$(command scuv "$@")"
             fi
             ;;
         *)
-            command scoop "$@"
+            command scuv "$@"
             ;;
     esac
 }
 
 # Auto-activate hook
-_scoop_hook() {"#,
+_scuv_hook() {"#,
         scoop_version_check!(bash),
         file_resolution_check!(bash),
         r#"
 }
 
 # Set up PROMPT_COMMAND for auto-activate
-if [[ -z "$SCOOP_NO_AUTO" ]]; then
+# DEPRECATION(0.16.0): drop the legacy SCOOP_NO_AUTO fallback check.
+if [[ -z "$SCUV_NO_AUTO" && -z "$SCOOP_NO_AUTO" ]]; then
     if [[ -z "$PROMPT_COMMAND" ]]; then
-        PROMPT_COMMAND="_scoop_hook"
+        PROMPT_COMMAND="_scuv_hook"
     else
-        PROMPT_COMMAND="_scoop_hook;$PROMPT_COMMAND"
+        PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"
     fi
 fi
 
 # Run hook on startup
-_scoop_hook
+_scuv_hook
 
-# Bash completion for scoop
-_scoop_complete() {
+# Bash completion for scuv
+_scuv_complete() {
     local cur cmd i
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
@@ -237,11 +238,11 @@ _scoop_complete() {
                 fi
             done
             if [[ "$has_arg" == false ]]; then
-                COMPREPLY=($(compgen -W "$(command scoop list --bare 2>/dev/null)" -- "$cur"))
+                COMPREPLY=($(compgen -W "$(command scuv list --bare 2>/dev/null)" -- "$cur"))
             fi
             ;;
         uninstall)
-            COMPREPLY=($(compgen -W "$(command scoop list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
+            COMPREPLY=($(compgen -W "$(command scuv list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
             ;;
         init|completions)
             COMPREPLY=($(compgen -W "bash zsh fish powershell" -- "$cur"))
@@ -256,7 +257,7 @@ _scoop_complete() {
             done
             if [[ $arg_count -eq 1 ]]; then
                 # Second positional arg: python version
-                COMPREPLY=($(compgen -W "$(command scoop list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
+                COMPREPLY=($(compgen -W "$(command scuv list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
             fi
             ;;
         lang)
@@ -269,7 +270,7 @@ _scoop_complete() {
             ;;
     esac
 }
-complete -o nosort -F _scoop_complete scoop
+complete -o nosort -F _scuv_complete scuv
 "#
     )
 }
@@ -327,7 +328,7 @@ mod tests {
         let script = init_script();
 
         // These functions MUST exist for the shell integration to work
-        let required_functions = ["scoop()", "_scoop_hook()", "_scoop_complete()"];
+        let required_functions = ["scuv()", "_scuv_hook()", "_scuv_complete()"];
 
         for func in required_functions {
             assert!(
@@ -355,7 +356,7 @@ mod tests {
 
         // Must register completion function
         assert!(
-            script.contains("complete -o nosort -F _scoop_complete scoop"),
+            script.contains("complete -o nosort -F _scuv_complete scuv"),
             "Script must register bash completion"
         );
     }

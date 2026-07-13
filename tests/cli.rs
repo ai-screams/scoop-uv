@@ -126,8 +126,8 @@ fn test_init_bash() {
         .args(["init", "bash"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("scoop()"))
-        .stdout(predicate::str::contains("_scoop_hook"));
+        .stdout(predicate::str::contains("scuv()"))
+        .stdout(predicate::str::contains("_scuv_hook"));
 }
 
 #[test]
@@ -137,7 +137,7 @@ fn test_init_zsh() {
         .args(["init", "zsh"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("scoop()"))
+        .stdout(predicate::str::contains("scuv()"))
         .stdout(predicate::str::contains("add-zsh-hook"));
 }
 

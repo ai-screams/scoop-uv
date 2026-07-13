@@ -30,26 +30,26 @@ pub fn print_activate_script(shell: ShellType, venv_path: &Path, bin_path: &Path
         ShellType::Fish => {
             // Save original PATH only on first activation
             println!(
-                r#"if not set -q _SCOOP_OLD_PATH
-    set -gx _SCOOP_OLD_PATH $PATH
+                r#"if not set -q _SCUV_OLD_PATH
+    set -gx _SCUV_OLD_PATH $PATH
 end
 if set -q PYTHONHOME
-    set -gx _SCOOP_OLD_PYTHONHOME $PYTHONHOME
+    set -gx _SCUV_OLD_PYTHONHOME $PYTHONHOME
 end"#
             );
             println!("set -gx VIRTUAL_ENV '{}'", venv_path.display());
             println!("set -gx PATH '{}' $PATH", bin_path.display());
-            println!("set -gx SCOOP_ACTIVE '{}'", name);
+            println!("set -gx SCUV_ACTIVE '{}'", name);
             println!("set -e PYTHONHOME");
         }
         ShellType::Powershell => {
             // Save original PATH only on first activation
             println!(
-                r#"if (-not $env:_SCOOP_OLD_PATH) {{
-    $env:_SCOOP_OLD_PATH = $env:PATH
+                r#"if (-not $env:_SCUV_OLD_PATH) {{
+    $env:_SCUV_OLD_PATH = $env:PATH
 }}
 if ($env:PYTHONHOME) {{
-    $env:_SCOOP_OLD_PYTHONHOME = $env:PYTHONHOME
+    $env:_SCUV_OLD_PYTHONHOME = $env:PYTHONHOME
 }}"#
             );
             // Use [IO.Path]::PathSeparator for cross-platform
@@ -62,24 +62,24 @@ if ($env:PYTHONHOME) {{
                 "$env:PATH = '{}' + [IO.Path]::PathSeparator + $env:PATH",
                 bin_escaped
             );
-            println!("$env:SCOOP_ACTIVE = '{}'", name_escaped);
+            println!("$env:SCUV_ACTIVE = '{}'", name_escaped);
             println!("Remove-Item Env:\\PYTHONHOME -ErrorAction SilentlyContinue");
         }
         _ => {
             // Save original PATH only on first activation
             println!(
-                r#"if [ -z "$_SCOOP_OLD_PATH" ]; then
-    _SCOOP_OLD_PATH="$PATH"
-    export _SCOOP_OLD_PATH
+                r#"if [ -z "$_SCUV_OLD_PATH" ]; then
+    _SCUV_OLD_PATH="$PATH"
+    export _SCUV_OLD_PATH
 fi
 if [ -n "$PYTHONHOME" ]; then
-    _SCOOP_OLD_PYTHONHOME="$PYTHONHOME"
-    export _SCOOP_OLD_PYTHONHOME
+    _SCUV_OLD_PYTHONHOME="$PYTHONHOME"
+    export _SCUV_OLD_PYTHONHOME
 fi"#
             );
             println!("export VIRTUAL_ENV=\"{}\"", venv_path.display());
             println!("export PATH=\"{}:$PATH\"", bin_path.display());
-            println!("export SCOOP_ACTIVE=\"{}\"", name);
+            println!("export SCUV_ACTIVE=\"{}\"", name);
             println!("unset PYTHONHOME");
         }
     }
@@ -91,17 +91,17 @@ pub fn print_deactivate_script(shell: ShellType) {
             println!(
                 r#"if set -q VIRTUAL_ENV
     # Restore original PATH
-    if set -q _SCOOP_OLD_PATH
-        set PATH $_SCOOP_OLD_PATH
-        set -e _SCOOP_OLD_PATH
+    if set -q _SCUV_OLD_PATH
+        set PATH $_SCUV_OLD_PATH
+        set -e _SCUV_OLD_PATH
     end
     # Restore PYTHONHOME if it was saved
-    if set -q _SCOOP_OLD_PYTHONHOME
-        set -gx PYTHONHOME $_SCOOP_OLD_PYTHONHOME
-        set -e _SCOOP_OLD_PYTHONHOME
+    if set -q _SCUV_OLD_PYTHONHOME
+        set -gx PYTHONHOME $_SCUV_OLD_PYTHONHOME
+        set -e _SCUV_OLD_PYTHONHOME
     end
     set -e VIRTUAL_ENV
-    set -e SCOOP_ACTIVE
+    set -e SCUV_ACTIVE
 end"#
             );
         }
@@ -109,17 +109,17 @@ end"#
             println!(
                 r#"if ($env:VIRTUAL_ENV) {{
     # Restore original PATH
-    if ($env:_SCOOP_OLD_PATH) {{
-        $env:PATH = $env:_SCOOP_OLD_PATH
-        Remove-Item Env:\\_SCOOP_OLD_PATH -ErrorAction SilentlyContinue
+    if ($env:_SCUV_OLD_PATH) {{
+        $env:PATH = $env:_SCUV_OLD_PATH
+        Remove-Item Env:\\_SCUV_OLD_PATH -ErrorAction SilentlyContinue
     }}
     # Restore PYTHONHOME if it was saved
-    if ($env:_SCOOP_OLD_PYTHONHOME) {{
-        $env:PYTHONHOME = $env:_SCOOP_OLD_PYTHONHOME
-        Remove-Item Env:\\_SCOOP_OLD_PYTHONHOME -ErrorAction SilentlyContinue
+    if ($env:_SCUV_OLD_PYTHONHOME) {{
+        $env:PYTHONHOME = $env:_SCUV_OLD_PYTHONHOME
+        Remove-Item Env:\\_SCUV_OLD_PYTHONHOME -ErrorAction SilentlyContinue
     }}
     Remove-Item Env:\\VIRTUAL_ENV -ErrorAction SilentlyContinue
-    Remove-Item Env:\\SCOOP_ACTIVE -ErrorAction SilentlyContinue
+    Remove-Item Env:\\SCUV_ACTIVE -ErrorAction SilentlyContinue
 }}"#
             );
         }
@@ -127,19 +127,19 @@ end"#
             println!(
                 r#"if [ -n "$VIRTUAL_ENV" ]; then
     # Restore original PATH
-    if [ -n "$_SCOOP_OLD_PATH" ]; then
-        PATH="$_SCOOP_OLD_PATH"
+    if [ -n "$_SCUV_OLD_PATH" ]; then
+        PATH="$_SCUV_OLD_PATH"
         export PATH
-        unset _SCOOP_OLD_PATH
+        unset _SCUV_OLD_PATH
     fi
     # Restore PYTHONHOME if it was saved
-    if [ -n "$_SCOOP_OLD_PYTHONHOME" ]; then
-        PYTHONHOME="$_SCOOP_OLD_PYTHONHOME"
+    if [ -n "$_SCUV_OLD_PYTHONHOME" ]; then
+        PYTHONHOME="$_SCUV_OLD_PYTHONHOME"
         export PYTHONHOME
-        unset _SCOOP_OLD_PYTHONHOME
+        unset _SCUV_OLD_PYTHONHOME
     fi
     unset VIRTUAL_ENV
-    unset SCOOP_ACTIVE
+    unset SCUV_ACTIVE
 fi"#
             );
         }

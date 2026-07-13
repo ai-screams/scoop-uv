@@ -1,7 +1,7 @@
 //! Fish shell integration
 //!
-//! Provides Fish shell support for scoop, including:
-//! - Wrapper function for `scoop` command
+//! Provides Fish shell support for scuv, including:
+//! - Wrapper function for `scuv` command
 //! - Auto-activate hook via `--on-variable PWD`
 //! - Tab completion with option deduplication
 
@@ -13,7 +13,7 @@ use crate::{file_resolution_check, scoop_version_check};
 /// This script should be evaluated in the user's `config.fish`:
 ///
 /// ```fish
-/// eval (scoop init fish)
+/// eval (scuv init fish)
 /// ```
 ///
 /// # Examples
@@ -22,30 +22,30 @@ use crate::{file_resolution_check, scoop_version_check};
 /// let script = scoop_uv::shell::fish::init_script();
 ///
 /// // Script contains the wrapper function
-/// assert!(script.contains("function scoop"));
+/// assert!(script.contains("function scuv"));
 ///
 /// // Script contains the auto-activate hook
-/// assert!(script.contains("function _scoop_hook --on-variable PWD"));
+/// assert!(script.contains("function _scuv_hook --on-variable PWD"));
 ///
 /// // Script contains completion definitions
-/// assert!(script.contains("complete -c scoop"));
+/// assert!(script.contains("complete -c scuv"));
 /// ```
 pub fn init_script() -> &'static str {
     concat!(
-        r#"# scoop shell integration for fish
+        r#"# scuv shell integration for fish
 
-# Wrapper function for scoop
-function scoop
+# Wrapper function for scuv
+function scuv
     set -l cmd $argv[1]
 
     switch "$cmd"
         case use
-            command scoop $argv
+            command scuv $argv
             set -l ret $status
             if test $ret -eq 0
                 for arg in $argv[2..-1]
                     if not string match -q -- '-*' "$arg"
-                        eval (command scoop activate "$arg")
+                        eval (command scuv activate "$arg")
                         break
                     end
                 end
@@ -55,18 +55,18 @@ function scoop
         case activate deactivate shell
             # Pass through help/version flags without eval
             if string match -qr -- '(-h|--help|-V|--version)' $argv
-                command scoop $argv
+                command scuv $argv
             else
-                eval (command scoop $argv)
+                eval (command scuv $argv)
             end
 
         case '*'
-            command scoop $argv
+            command scuv $argv
     end
 end
 
 # Auto-activate hook
-function _scoop_hook --on-variable PWD
+function _scuv_hook --on-variable PWD
 "#,
         scoop_version_check!(fish),
         file_resolution_check!(fish),
@@ -74,113 +74,114 @@ function _scoop_hook --on-variable PWD
 end
 
 # Set up auto-activate on startup
-if not set -q SCOOP_NO_AUTO
-    _scoop_hook
+# DEPRECATION(0.16.0): drop the legacy SCOOP_NO_AUTO fallback check.
+if not set -q SCUV_NO_AUTO; and not set -q SCOOP_NO_AUTO
+    _scuv_hook
 end
 
-# Fish completion for scoop
-complete -c scoop -f
+# Fish completion for scuv
+complete -c scuv -f
 
 # Subcommands
 set -l commands list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang
 
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "list" -d "List all virtual environments"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "use" -d "Set local environment for current directory"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "create" -d "Create a new virtual environment"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "remove" -d "Remove a virtual environment"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "info" -d "Show detailed information"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "install" -d "Install a Python version"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "uninstall" -d "Uninstall a Python version"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "doctor" -d "Diagnose installation issues"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "init" -d "Output shell initialization script"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "completions" -d "Output shell completion script"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "activate" -d "Activate a virtual environment"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "deactivate" -d "Deactivate current virtual environment"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "shell" -d "Set shell-specific environment"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "migrate" -d "Migrate environments from other tools"
-complete -c scoop -n "not __fish_seen_subcommand_from $commands" -a "lang" -d "Set or show language preference"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "list" -d "List all virtual environments"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "use" -d "Set local environment for current directory"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "create" -d "Create a new virtual environment"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "remove" -d "Remove a virtual environment"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "info" -d "Show detailed information"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "install" -d "Install a Python version"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "uninstall" -d "Uninstall a Python version"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "doctor" -d "Diagnose installation issues"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "init" -d "Output shell initialization script"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "completions" -d "Output shell completion script"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "activate" -d "Activate a virtual environment"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "deactivate" -d "Deactivate current virtual environment"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "shell" -d "Set shell-specific environment"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "migrate" -d "Migrate environments from other tools"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "lang" -d "Set or show language preference"
 
 # Options for 'list' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt pythons" -l pythons -d "Show installed Python versions"
-complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt sort" -l sort -d "Sort order" -x -a "name created last-used"
-complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt json" -l json -d "Output as JSON"
-complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from list; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt pythons" -l pythons -d "Show installed Python versions"
+complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt sort" -l sort -d "Sort order" -x -a "name created last-used"
+complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt json" -l json -d "Output as JSON"
+complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'use' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt unset" -l unset -d "Remove version setting"
-complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt global" -l global -d "Set as global default"
-complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l link -d "Create .venv symlink"
-complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l no-link -d "Do not create .venv symlink"
-complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from use; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt unset" -l unset -d "Remove version setting"
+complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt global" -l global -d "Set as global default"
+complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l link -d "Create .venv symlink"
+complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l no-link -d "Do not create .venv symlink"
+complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'create' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from create; and not __fish_contains_opt force" -l force -d "Overwrite existing environment"
-complete -c scoop -n "__fish_seen_subcommand_from create; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from create; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt force" -l force -d "Overwrite existing environment"
+complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'remove' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt force" -l force -d "Skip confirmation"
-complete -c scoop -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt force" -l force -d "Skip confirmation"
+complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'info' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from info; and not __fish_contains_opt json" -l json -d "Output as JSON"
-complete -c scoop -n "__fish_seen_subcommand_from info; and not __fish_contains_opt all-packages" -l all-packages -d "Show all installed packages"
-complete -c scoop -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-size" -l no-size -d "Skip directory size calculation"
-complete -c scoop -n "__fish_seen_subcommand_from info; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt json" -l json -d "Output as JSON"
+complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt all-packages" -l all-packages -d "Show all installed packages"
+complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-size" -l no-size -d "Skip directory size calculation"
+complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'install' (with duplicate prevention, --latest/--stable mutually exclusive)
-complete -c scoop -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l latest -d "Install latest stable Python"
-complete -c scoop -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l stable -d "Install oldest fully-supported Python"
-complete -c scoop -n "__fish_seen_subcommand_from install; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from install; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l latest -d "Install latest stable Python"
+complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l stable -d "Install oldest fully-supported Python"
+complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'uninstall' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'doctor' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s v verbose" -s v -l verbose -d "Increase verbosity"
-complete -c scoop -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt json" -l json -d "Output as JSON"
-complete -c scoop -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s v verbose" -s v -l verbose -d "Increase verbosity"
+complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt json" -l json -d "Output as JSON"
+complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'shell' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt unset" -l unset -d "Clear shell-specific environment"
-complete -c scoop -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scoop -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt unset" -l unset -d "Clear shell-specific environment"
+complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Dynamic completions: virtual environment names
-complete -c scoop -n "__fish_seen_subcommand_from use remove info activate shell" -a "(command scoop list --bare 2>/dev/null)" -d "Virtual environment"
+complete -c scuv -n "__fish_seen_subcommand_from use remove info activate shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
 
 # Dynamic completions: Python versions for uninstall
-# Note: scoop list --pythons --bare already returns unique, sorted versions
-complete -c scoop -n "__fish_seen_subcommand_from uninstall" -a "(command scoop list --pythons --bare 2>/dev/null)" -d "Python version"
+# Note: scuv list --pythons --bare already returns unique, sorted versions
+complete -c scuv -n "__fish_seen_subcommand_from uninstall" -a "(command scuv list --pythons --bare 2>/dev/null)" -d "Python version"
 
 # Dynamic completions: Python versions for create (second positional arg)
-complete -c scoop -n "__fish_seen_subcommand_from create; and __fish_is_nth_token 3" -a "(command scoop list --pythons --bare 2>/dev/null)" -d "Python version"
+complete -c scuv -n "__fish_seen_subcommand_from create; and __fish_is_nth_token 3" -a "(command scuv list --pythons --bare 2>/dev/null)" -d "Python version"
 
 # Shell types for init/completions
-complete -c scoop -n "__fish_seen_subcommand_from init completions" -a "bash zsh fish powershell" -d "Shell type"
+complete -c scuv -n "__fish_seen_subcommand_from init completions" -a "bash zsh fish powershell" -d "Shell type"
 
 # Options for 'lang' (with duplicate prevention)
-complete -c scoop -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt list" -l list -d "List supported languages"
-complete -c scoop -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt reset" -l reset -d "Reset to system default"
-complete -c scoop -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt json" -l json -d "Output as JSON"
+complete -c scuv -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt list" -l list -d "List supported languages"
+complete -c scuv -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt reset" -l reset -d "Reset to system default"
+complete -c scuv -n "__fish_seen_subcommand_from lang; and not __fish_contains_opt json" -l json -d "Output as JSON"
 
 # Language codes for lang command
-complete -c scoop -n "__fish_seen_subcommand_from lang" -a "en" -d "English"
-complete -c scoop -n "__fish_seen_subcommand_from lang" -a "ko" -d "Korean"
-complete -c scoop -n "__fish_seen_subcommand_from lang" -a "ja" -d "Japanese"
-complete -c scoop -n "__fish_seen_subcommand_from lang" -a "pt-BR" -d "Portuguese (Brazilian)"
+complete -c scuv -n "__fish_seen_subcommand_from lang" -a "en" -d "English"
+complete -c scuv -n "__fish_seen_subcommand_from lang" -a "ko" -d "Korean"
+complete -c scuv -n "__fish_seen_subcommand_from lang" -a "ja" -d "Japanese"
+complete -c scuv -n "__fish_seen_subcommand_from lang" -a "pt-BR" -d "Portuguese (Brazilian)"
 
 # Subcommands for 'migrate'
-complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "list" -d "List environments available for migration"
-complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "all" -d "Migrate all environments"
-complete -c scoop -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "@env" -d "Migrate a specific environment"
+complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "list" -d "List environments available for migration"
+complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "all" -d "Migrate all environments"
+complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "@env" -d "Migrate a specific environment"
 "#
     )
 }
@@ -239,11 +240,11 @@ mod tests {
 
         // These functions MUST exist for the shell integration to work
         assert!(
-            script.contains("function scoop"),
+            script.contains("function scuv"),
             "Script missing wrapper function"
         );
         assert!(
-            script.contains("function _scoop_hook --on-variable PWD"),
+            script.contains("function _scuv_hook --on-variable PWD"),
             "Script missing auto-activate hook"
         );
     }
@@ -265,7 +266,7 @@ mod tests {
 
         // Must register completion function
         assert!(
-            script.contains("complete -c scoop"),
+            script.contains("complete -c scuv"),
             "Script must register fish completion"
         );
     }
@@ -275,19 +276,25 @@ mod tests {
     // =========================================================================
 
     #[test]
-    fn test_init_script_checks_scoop_no_auto() {
+    fn test_init_script_checks_scuv_no_auto() {
         let script = init_script();
 
-        // SCOOP_NO_AUTO must be checked to allow disabling auto-activation
+        // SCUV_NO_AUTO must be checked to allow disabling auto-activation
         assert!(
-            script.contains("SCOOP_NO_AUTO"),
-            "Script must check SCOOP_NO_AUTO environment variable"
+            script.contains("SCUV_NO_AUTO"),
+            "Script must check SCUV_NO_AUTO environment variable"
         );
 
         // Must use `set -q` to check if variable is set
         assert!(
-            script.contains("not set -q SCOOP_NO_AUTO"),
-            "Script must use 'set -q' to check SCOOP_NO_AUTO"
+            script.contains("not set -q SCUV_NO_AUTO"),
+            "Script must use 'set -q' to check SCUV_NO_AUTO"
+        );
+
+        // Legacy SCOOP_NO_AUTO must still gate auto-activation (deprecated fallback).
+        assert!(
+            script.contains("SCOOP_NO_AUTO"),
+            "Script must still honor legacy SCOOP_NO_AUTO"
         );
     }
 
@@ -318,13 +325,13 @@ mod tests {
 
         // Dynamic completions for environment names
         assert!(
-            script.contains("scoop list --bare"),
+            script.contains("scuv list --bare"),
             "Script must provide dynamic env name completions"
         );
 
         // Dynamic completions for Python versions
         assert!(
-            script.contains("scoop list --pythons --bare"),
+            script.contains("scuv list --pythons --bare"),
             "Script must provide dynamic Python version completions"
         );
     }
