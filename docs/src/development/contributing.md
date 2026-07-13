@@ -1,6 +1,6 @@
 # Contributing
 
-Guide for contributing to scoop development.
+Guide for contributing to scuv development.
 
 ## Prerequisites
 
@@ -49,7 +49,7 @@ src/
 │   ├── virtualenv/      # VirtualenvService (mod.rs + tests.rs)
 │   ├── version.rs       # VersionService
 │   ├── metadata.rs      # Metadata structs
-│   ├── manifest.rs      # Sync manifest (.scoop.toml)
+│   ├── manifest.rs      # Sync manifest (.scuv.toml)
 │   ├── export_schema.rs # Export/import schema
 │   └── doctor.rs        # Health diagnostics
 
@@ -114,17 +114,17 @@ For detailed guides, see:
 
 **VirtualenvService** (`src/core/virtualenv/`)
 
-- Manages virtualenvs in `~/.scoop/virtualenvs/`
+- Manages virtualenvs in `~/.scuv/virtualenvs/`
 - Wraps uv commands for venv creation
 
 **VersionService** (`src/core/version.rs`)
 
-- Manages `.scoop-version` files
+- Manages `.scuv-version` files
 - Resolves current directory to active environment
 
 **Doctor** (`src/core/doctor.rs`)
 
-- Health diagnostics for scoop setup
+- Health diagnostics for scuv setup
 - Checks uv, shell integration, paths, environments
 
 **UvClient** (`src/uv/client.rs`)
@@ -202,7 +202,7 @@ use assert_cmd::Command;
 
 #[test]
 fn test_cli_command() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["list"])
         .assert()

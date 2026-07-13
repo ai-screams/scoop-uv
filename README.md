@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/logo/logo-with-text.png" width="180" alt="scoop logo">
+<img src="assets/logo/logo-with-text.png" width="180" alt="scuv logo">
 
-# 🍨 scoop
+# 🍨 scuv
 
 > ⚠️ **Work in Progress** — Under active development. API may change.
 
@@ -49,22 +49,22 @@
 
 ---
 
-## What is scoop? 🍨
+## What is scuv? 🍨
 
-**scoop** scoops up uv's blazing speed — centralizing all your Python virtual environments in one place.
+**scuv** scoops up uv's blazing speed — centralizing all your Python virtual environments in one place.
 
 > 🍨 Think of it like running an ice cream parlor:
-> - **The Freezer** (`~/.scoop/`) keeps all your flavors fresh
+> - **The Freezer** (`~/.scuv/`) keeps all your flavors fresh
 > - **Flavors** are your virtualenvs — mix once, serve anywhere
 > - **One scoop** is all you need to get the right env
 
-| The Old Way (Yuck 🫠)                | The scoop Way (Fresh 🍨)             |
+| The Old Way (Yuck 🫠)                | The scuv Way (Fresh 🍨)             |
 |-------------------------------------|--------------------------------------|
-| `.venv` scattered across projects   | `~/.scoop/virtualenvs/` centralized  |
+| `.venv` scattered across projects   | `~/.scuv/virtualenvs/` centralized  |
 | Manual `source .venv/bin/activate`  | Auto-activate on directory entry     |
 | pyenv-virtualenv is slow            | uv-powered, 100x+ faster             |
-| Which Python? Which venv? Chaos.    | `scoop doctor` checks everything     |
-| Migrating envs? Manual nightmare.   | `scoop migrate all` does it all      |
+| Which Python? Which venv? Chaos.    | `scuv doctor` checks everything     |
+| Migrating envs? Manual nightmare.   | `scuv migrate all` does it all      |
 | English-only CLI                    | Multi-language support (en, ko, ja, pt-BR) |
 
 ---
@@ -74,17 +74,17 @@
 ```bash
 # 1. Install prerequisites
 curl -LsSf https://astral.sh/uv/install.sh | sh  # uv
-cargo install scoop-uv                           # scoop
+cargo install scoop-uv                           # installs the scuv command
 
 # 2. Initialize your shell (zsh example)
-echo 'eval "$(scoop init zsh)"' >> ~/.zshrc && source ~/.zshrc
+echo 'eval "$(scuv init zsh)"' >> ~/.zshrc && source ~/.zshrc
 
 # 3. Create your first environment
-scoop install 3.12
-scoop create myproject 3.12
+scuv install 3.12
+scuv create myproject 3.12
 
 # 4. Use it (auto-activates when you enter the directory!)
-scoop use myproject
+scuv use myproject
 (myproject) $ pip install -r requirements.txt
 ```
 
@@ -95,26 +95,26 @@ scoop use myproject
 Use this when you want new shell sessions to default to an environment built on Python 3.11.0:
 
 ```bash
-scoop install 3.11.0
-scoop create py311 3.11.0
-scoop use py311 --global
+scuv install 3.11.0
+scuv create py311 3.11.0
+scuv use py311 --global
 ```
 
-This writes `py311` to `~/.scoop/version`.
-Priority still applies: `SCOOP_VERSION` (shell override) and local `.scoop-version` take precedence.
+This writes `py311` to `~/.scuv/version`.
+Priority still applies: `SCUV_VERSION` (shell override) and local `.scuv-version` take precedence.
 
 ### Create a Project Env with Python 3.9.5
 
 Use this when you want a new project environment pinned to an exact Python patch version:
 
 ```bash
-scoop install 3.9.5
-scoop create myproject 3.9.5
-scoop info myproject
+scuv install 3.9.5
+scuv create myproject 3.9.5
+scuv info myproject
 ```
 
 If `3.9.5` is missing, check available versions with `uv python list` and
-`scoop list --pythons`, then install and retry.
+`scuv list --pythons`, then install and retry.
 
 ### Uninstall Python + Associated Envs
 
@@ -122,49 +122,49 @@ Use this to remove one Python version and every environment using it:
 
 ```bash
 # Optional preview
-scoop list --python-version 3.12
+scuv list --python-version 3.12
 
 # Remove Python 3.12 and all dependent environments
-scoop uninstall 3.12 --cascade
+scuv uninstall 3.12 --cascade
 
 # Verify cleanup
-scoop list --pythons
-scoop doctor
+scuv list --pythons
+scuv doctor
 ```
 
 For CI/scripts, add `--force` to skip confirmation.
 
 ### List Python Versions + Associated Envs
 
-Use this to inspect what scoop currently manages:
+Use this to inspect what scuv currently manages:
 
 ```bash
 # All managed Python versions
-scoop list --pythons
+scuv list --pythons
 
 # All environments and their Python versions
-scoop list
+scuv list
 
 # Environments associated with one Python version
-scoop list --python-version 3.12
+scuv list --python-version 3.12
 ```
 
 For scripts, use `--json` or `--bare`.
 
 ### Integrate Custom or Pre-Existing Python
 
-If the required version is not available from default scoop/uv sources:
+If the required version is not available from default scuv/uv sources:
 
 ```bash
 # Recommended: explicit interpreter path
-scoop create myenv --python-path /opt/python-debug/bin/python3
+scuv create myenv --python-path /opt/python-debug/bin/python3
 
 # Alternative: PATH-based discovery
 export PATH="/opt/python-debug/bin:$PATH"
-scoop create myenv 3.13
+scuv create myenv 3.13
 ```
 
-Verify integration with `uv python list`, `scoop info myenv`, and `scoop doctor -v`.
+Verify integration with `uv python list`, `scuv info myenv`, and `scuv doctor -v`.
 
 ### Project-Scoped Auto-Activation Control
 
@@ -172,16 +172,16 @@ Need temporary or directory-specific behavior without touching global settings?
 
 ```bash
 # Temporary: current shell only
-export SCOOP_NO_AUTO=1
-unset SCOOP_NO_AUTO
+export SCUV_NO_AUTO=1
+unset SCUV_NO_AUTO
 
-# Directory-local behavior (writes .scoop-version in current directory)
-scoop use system      # force system Python for this project
-scoop use myproject   # pin this project to a specific env
+# Directory-local behavior (writes .scuv-version in current directory)
+scuv use system      # force system Python for this project
+scuv use myproject   # pin this project to a specific env
 
 # Terminal-only override (no file changes)
-scoop shell system
-scoop shell --unset
+scuv shell system
+scuv shell --unset
 ```
 
 ---
@@ -195,16 +195,58 @@ scoop shell --unset
 | **uv** (>= 0.5.14) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | The secret ingredient 🔮 |
 | **Rust** | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` | Build from source |
 
-> Minimum supported `uv` is **0.5.14**. Run `scoop doctor` to verify your installation.
+> Minimum supported `uv` is **0.5.14**. Run `scuv doctor` to verify your installation.
 
-### Install scoop
+<details>
+<summary>❓ <b>FAQ:</b> How is scuv different from uv, and is it related to Scoop (Windows)?</summary>
+
+### How is scuv different from uv's `centralized-project-envs` preview?
+
+They solve different problems, and scuv is built *on top of* uv — it's a complement, not a fork
+or a competitor.
+
+uv 0.11.25 added a preview feature (`centralized-project-envs`) that relocates a **project's**
+`.venv` into uv's cache directory. The environment is still bound to that one project: its
+identity is a cache key derived from the workspace path and interpreter (e.g.
+`my-project-cp3.12.4-0123abcd`), it cannot be shared between projects, there is no activation
+workflow, and `uv cache clean` / `uv cache prune` delete it unconditionally — by design it is a
+disposable cache entry that gets transparently recreated.
+
+scuv environments are the opposite in every one of those dimensions: **named, durable, and
+project-independent**.
+
+| | uv `centralized-project-envs` | scuv |
+|---|---|---|
+| Environment identity | hash cache key (not user-controlled) | a name you choose (`scuv create ml 3.12`) |
+| Shared across projects | no (key includes workspace path) | yes — any project with a `.scuv-version` file |
+| Activation workflow | none (`uv run`-centric; `.venv` link for IDEs) | shell auto-activation, `scuv use`, 4 shells |
+| Lifecycle | wiped by `uv cache clean`/`prune`, auto-recreated | durable; `gc` (dry-run first), `verify`, metadata (`last_used`) |
+| Extras | — | `clone`, `diff`, `export`/`import`, `.scuv.toml` sync, migration from pyenv / conda / virtualenvwrapper |
+
+The uv team has stated there are ["no current plans to support standalone environments not tied
+to a specific project"](https://github.com/astral-sh/uv/pull/18214). That standalone, named,
+pyenv-virtualenv-style workflow is exactly what scuv provides — with uv doing the fast parts
+underneath.
+
+### Is scuv related to Scoop, the Windows package manager?
+
+No. scuv — "a **sc**oop of **uv**" 🍨 — is a centralized Python virtual environment manager and
+is unrelated to [Scoop](https://scoop.sh), the Windows package manager. The project was
+originally command-named `scoop`; we renamed the command to `scuv` in v0.15.0 precisely so both
+tools can coexist cleanly on Windows. Installing scuv does not shadow or conflict with `scoop`
+in any shell, including PowerShell. (The repository and crate keep the historical name
+`scoop-uv`.)
+
+</details>
+
+### Install scuv
 
 ```bash
-cargo install scoop-uv
+cargo install scoop-uv  # installs the scuv command
 ```
 
 <details>
-<summary>💡 <code>scoop: command not found</code>?</summary>
+<summary>💡 <code>scuv: command not found</code>?</summary>
 
 Cargo installs binaries to `~/.cargo/bin`. Ensure it's in your PATH:
 
@@ -224,66 +266,66 @@ Or restart your terminal after installing Rust.
 **Zsh** (macOS default):
 
 ```bash
-echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
+echo 'eval "$(scuv init zsh)"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
 **Bash**:
 
 ```bash
-echo 'eval "$(scoop init bash)"' >> ~/.bashrc
+echo 'eval "$(scuv init bash)"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
 **Fish**:
 
 ```fish
-echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
+echo 'scuv init fish | source' >> ~/.config/fish/config.fish
 source ~/.config/fish/config.fish
 ```
 
 **PowerShell** (Core or Windows PowerShell):
 
 ```powershell
-Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
+Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell)'
 . $PROFILE
 ```
 
 #### Step 2: Verify
 
 ```bash
-scoop --version
-# → scoop 0.14.1 🍨
+scuv --version
+# → scuv 0.14.1 🍨
 ```
 
 #### What this enables
 
-- ✅ **Auto-activation** — enter a directory with `.scoop-version`, environment activates
+- ✅ **Auto-activation** — enter a directory with `.scuv-version`, environment activates
 - ✅ **Tab completion** — commands, environments, Python versions
-- ✅ **Shell wrapper** — `scoop activate/deactivate` works correctly
+- ✅ **Shell wrapper** — `scuv activate/deactivate` works correctly
 - ✅ **Migration ready** — import from pyenv, conda, virtualenvwrapper
 - ✅ **Multi-language** — English, 한국어, 日本語, Português (BR)
 
 #### Using with pyenv
 
-Add scoop **after** pyenv in your rc file (order matters — scoop gets the last scoop! 🍨):
+Add scuv **after** pyenv in your rc file (order matters — scuv gets the last scoop! 🍨):
 
 ```bash
 # ~/.zshrc
 eval "$(pyenv init -)"       # 1. pyenv first
-eval "$(scoop init zsh)"     # 2. scoop second
+eval "$(scuv init zsh)"     # 2. scuv second
 ```
 
 #### Options
 
 | Variable | Effect |
 |----------|--------|
-| `SCOOP_NO_AUTO=1` | Disable auto-activation |
-| `SCOOP_HOME=/path` | Custom freezer location (default: `~/.scoop`) |
+| `SCUV_NO_AUTO=1` | Disable auto-activation |
+| `SCUV_HOME=/path` | Custom freezer location (default: `~/.scuv`) |
 
 ```bash
 # Example: disable auto-activation
-echo 'export SCOOP_NO_AUTO=1' >> ~/.zshrc
+echo 'export SCUV_NO_AUTO=1' >> ~/.zshrc
 ```
 
 ---
@@ -293,22 +335,22 @@ echo 'export SCOOP_NO_AUTO=1' >> ~/.zshrc
 Your ice cream parlor lives here:
 
 ```
-~/.scoop/                    # 🧊 The Freezer
+~/.scuv/                    # 🧊 The Freezer
 ├── virtualenvs/             # 🍨 All your flavors
 │   ├── myproject/           #    → Python 3.12 flavor
 │   ├── webapp/              #    → Python 3.11 flavor
 │   └── experiment/          #    → Python 3.13 flavor
-└── version                  # 🥄 Default scoop preference
+└── version                  # 🥄 Default scuv preference
 ```
 
 **Version file priority** (first match wins):
 ```
-SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
-.scoop-version       →  "I want THIS flavor here" (local + parent walk)
-~/.scoop/version     →  "My usual order" (global default)
+SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
+.scuv-version       →  "I want THIS flavor here" (local + parent walk)
+~/.scuv/version     →  "My usual order" (global default)
 ```
 
-> **Note**: `.python-version` is not supported. Use `.scoop-version` for version pinning.
+> **Note**: `.python-version` is not supported. Use `.scuv-version` for version pinning.
 
 ---
 
@@ -320,24 +362,24 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 
 | Command | Description |
 |---------|-------------|
-| `scoop create <name> [version]` | Create a new environment |
-| `scoop use <name>` | Activate environment (auto-activates in directory) |
-| `scoop list` | List all environments (`--sort name\|created\|last-used`) |
-| `scoop status` | Show the currently active environment (includes `Last used:`) |
-| `scoop which <exe>` | Resolve an executable inside the active env |
-| `scoop run <env> -- <cmd>` | Run a command inside an env without activating |
-| `scoop sync` | Apply `.scoop.toml` (create env + install packages) |
-| `scoop export <name>` | Snapshot an env as portable JSON |
-| `scoop import <file>` | Recreate an env from an export file |
-| `scoop clone <src> <dst>` | Duplicate an environment |
-| `scoop diff <a> <b>` | Compare two environments (Python, packages, metadata) |
-| `scoop remove <name>` | Delete an environment |
-| `scoop install [version]` | Install Python version |
-| `scoop gc` | Garbage-collect orphan virtualenvs (`--yes` to remove, `--older-than <n>d/w/y` for stale envs) |
-| `scoop prune` | Prune the uv cache |
-| `scoop verify` | Per-env health check (metadata, python, pyvenv.cfg, ...) |
-| `scoop doctor` | Health check your setup |
-| `scoop self update` | Update scoop itself to the latest version |
+| `scuv create <name> [version]` | Create a new environment |
+| `scuv use <name>` | Activate environment (auto-activates in directory) |
+| `scuv list` | List all environments (`--sort name\|created\|last-used`) |
+| `scuv status` | Show the currently active environment (includes `Last used:`) |
+| `scuv which <exe>` | Resolve an executable inside the active env |
+| `scuv run <env> -- <cmd>` | Run a command inside an env without activating |
+| `scuv sync` | Apply `.scuv.toml` (create env + install packages) |
+| `scuv export <name>` | Snapshot an env as portable JSON |
+| `scuv import <file>` | Recreate an env from an export file |
+| `scuv clone <src> <dst>` | Duplicate an environment |
+| `scuv diff <a> <b>` | Compare two environments (Python, packages, metadata) |
+| `scuv remove <name>` | Delete an environment |
+| `scuv install [version]` | Install Python version |
+| `scuv gc` | Garbage-collect orphan virtualenvs (`--yes` to remove, `--older-than <n>d/w/y` for stale envs) |
+| `scuv prune` | Prune the uv cache |
+| `scuv verify` | Per-env health check (metadata, python, pyvenv.cfg, ...) |
+| `scuv doctor` | Health check your setup |
+| `scuv self update` | Update scuv itself to the latest version |
 
 **For the complete command reference**, see **[Commands Documentation →](https://ai-screams.github.io/scoop-uv/commands/)**
 
@@ -348,51 +390,51 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 
 | Command                         | Description                            |
 |---------------------------------|----------------------------------------|
-| `scoop create <name> [version]` | Mix a new flavor (default: latest Python) |
-| `scoop create <name> <ver> --install-python` | Mix a flavor, installing Python first if missing |
-| `scoop use <name>`              | Pick your flavor (auto-activates)      |
-| `scoop use <name> --link`       | Also create `.venv` symlink for IDE    |
-| `scoop use <name> --global`     | Set as your usual order                |
-| `scoop list`                    | What's in the freezer?                 |
-| `scoop list --pythons`          | What Python versions do we have?       |
-| `scoop list --sort last-used`   | Newest activity first (also `name` / `created`) |
-| `scoop list --json`             | Output as JSON                         |
-| `scoop info <name>`             | Show detailed info (incl. `Last used:`)|
-| `scoop info <name> --json`      | Output info as JSON                    |
-| `scoop status`                  | Which flavor am I scooping right now? (incl. `Last used:`)|
-| `scoop which <exe>`             | Where's that scoop in my freezer?      |
-| `scoop run <env> -- <cmd>`      | Scoop on demand — run without unpacking |
-| `scoop sync`                    | Read `.scoop.toml` and serve the flavor |
-| `scoop sync --with dev --dry-run` | Preview the plan, no scooping yet     |
-| `scoop export <name>`           | Bottle a flavor as portable JSON       |
-| `scoop import <file>`           | Unbottle it on another machine         |
-| `scoop clone <src> <dst>`       | Twin scoop — same flavor, new cup      |
-| `scoop diff <a> <b>`            | Spot the difference between two flavors |
-| `scoop remove <name>`           | Melt a flavor away                     |
+| `scuv create <name> [version]` | Mix a new flavor (default: latest Python) |
+| `scuv create <name> <ver> --install-python` | Mix a flavor, installing Python first if missing |
+| `scuv use <name>`              | Pick your flavor (auto-activates)      |
+| `scuv use <name> --link`       | Also create `.venv` symlink for IDE    |
+| `scuv use <name> --global`     | Set as your usual order                |
+| `scuv list`                    | What's in the freezer?                 |
+| `scuv list --pythons`          | What Python versions do we have?       |
+| `scuv list --sort last-used`   | Newest activity first (also `name` / `created`) |
+| `scuv list --json`             | Output as JSON                         |
+| `scuv info <name>`             | Show detailed info (incl. `Last used:`)|
+| `scuv info <name> --json`      | Output info as JSON                    |
+| `scuv status`                  | Which flavor am I scooping right now? (incl. `Last used:`)|
+| `scuv which <exe>`             | Where's that scoop in my freezer?      |
+| `scuv run <env> -- <cmd>`      | Scoop on demand — run without unpacking |
+| `scuv sync`                    | Read `.scuv.toml` and serve the flavor |
+| `scuv sync --with dev --dry-run` | Preview the plan, no scooping yet     |
+| `scuv export <name>`           | Bottle a flavor as portable JSON       |
+| `scuv import <file>`           | Unbottle it on another machine         |
+| `scuv clone <src> <dst>`       | Twin scoop — same flavor, new cup      |
+| `scuv diff <a> <b>`            | Spot the difference between two flavors |
+| `scuv remove <name>`           | Melt a flavor away                     |
 
 ### Managing the Freezer
 
 | Command                     | Description                              |
 |-----------------------------|------------------------------------------|
-| `scoop install [version]`   | Stock up on Python (default: latest)     |
-| `scoop install --stable`    | Get the oldest supported Python (3.10)   |
-| `scoop uninstall <version>` | Remove a Python version                  |
+| `scuv install [version]`   | Stock up on Python (default: latest)     |
+| `scuv install --stable`    | Get the oldest supported Python (3.10)   |
+| `scuv uninstall <version>` | Remove a Python version                  |
 
 ### Health Check 🩺
 
 | Command              | Description                            |
 |----------------------|----------------------------------------|
-| `scoop doctor`       | Is everything fresh? Check your setup! |
-| `scoop doctor --fix` | Auto-fix issues where possible         |
-| `scoop doctor --json`| Output diagnostics as JSON             |
+| `scuv doctor`       | Is everything fresh? Check your setup! |
+| `scuv doctor --fix` | Auto-fix issues where possible         |
+| `scuv doctor --json`| Output diagnostics as JSON             |
 
 ### Migration 🚚
 
 | Command                     | Description                              |
 |-----------------------------|------------------------------------------|
-| `scoop migrate list`        | Show environments to migrate             |
-| `scoop migrate @env <name>` | Migrate a single environment             |
-| `scoop migrate all`         | Migrate all environments (parallel)      |
+| `scuv migrate list`        | Show environments to migrate             |
+| `scuv migrate @env <name>` | Migrate a single environment             |
+| `scuv migrate all`         | Migrate all environments (parallel)      |
 
 > **Supported sources:** pyenv-virtualenv, virtualenvwrapper, conda
 
@@ -402,29 +444,29 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 
 | Command                  | Description                                                    |
 |--------------------------|----------------------------------------------------------------|
-| `scoop verify`           | Per-env health diagnosis — 6 checks per env                    |
-| `scoop verify --strict`  | Same, but exit 1 on any issue (CI gate)                        |
-| `scoop gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
-| `scoop gc --yes`         | Actually remove the orphans                                    |
-| `scoop gc --aggressive`  | Also flag unused uv-managed Python versions                    |
-| `scoop gc --older-than 30d` | Also flag envs idle past the cutoff (no `last_used` never matches) |
-| `scoop prune`            | Prune the uv download/wheel cache (`uv cache prune` wrapper)   |
+| `scuv verify`           | Per-env health diagnosis — 6 checks per env                    |
+| `scuv verify --strict`  | Same, but exit 1 on any issue (CI gate)                        |
+| `scuv gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
+| `scuv gc --yes`         | Actually remove the orphans                                    |
+| `scuv gc --aggressive`  | Also flag unused uv-managed Python versions                    |
+| `scuv gc --older-than 30d` | Also flag envs idle past the cutoff (no `last_used` never matches) |
+| `scuv prune`            | Prune the uv download/wheel cache (`uv cache prune` wrapper)   |
 
 ### Packaging 📦
 
 | Command                | Description                                                         |
 |------------------------|---------------------------------------------------------------------|
-| `scoop man`            | Print top-level `scoop.1` to stdout (pipe to `man -l -`)            |
-| `scoop man <DIR>`      | Write `scoop.1` + one `scoop-<sub>.1` per subcommand into `<DIR>`   |
+| `scuv man`            | Print top-level `scuv.1` to stdout (pipe to `man -l -`)            |
+| `scuv man <DIR>`      | Write `scuv.1` + one `scuv-<sub>.1` per subcommand into `<DIR>`   |
 
 ### Language 🌏
 
 | Command               | Description                        |
 |-----------------------|------------------------------------|
-| `scoop lang`          | Show current language              |
-| `scoop lang <code>`   | Set language (en, ko, ja, pt-BR)   |
-| `scoop lang --list`   | List supported languages           |
-| `scoop lang --reset`  | Reset to system default            |
+| `scuv lang`          | Show current language              |
+| `scuv lang <code>`   | Set language (en, ko, ja, pt-BR)   |
+| `scuv lang --list`   | List supported languages           |
+| `scuv lang --reset`  | Reset to system default            |
 
 > 🌍 **Want to help translate?** We welcome translations in any language! See [#44](https://github.com/ai-screams/scoop-uv/issues/44) to contribute.
 
@@ -432,11 +474,11 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 
 | Command                    | Description                        |
 |----------------------------|------------------------------------|
-| `scoop init <shell>`       | Output shell initialization script |
-| `scoop completions <shell>`| Generate completion script         |
-| `scoop use system`         | Switch to system Python            |
-| `scoop shell <name>`       | Set shell env (eval required)      |
-| `scoop shell --unset`      | Clear shell env setting            |
+| `scuv init <shell>`       | Output shell initialization script |
+| `scuv completions <shell>`| Generate completion script         |
+| `scuv use system`         | Switch to system Python            |
+| `scuv shell <name>`       | Set shell env (eval required)      |
+| `scuv shell --unset`      | Clear shell env setting            |
 
 > **Shells supported:** `bash`, `zsh`, `fish`, `powershell`
 
@@ -463,7 +505,7 @@ SCOOP_VERSION (env)  →  "Override for this shell session" (set by scoop shell)
 
 **Current MSRV:** 1.85 (required by Rust Edition 2024)
 
-scoop follows an **N-1 MSRV policy** — we support the current stable Rust and one previous version (~6 week lag).
+scuv follows an **N-1 MSRV policy** — we support the current stable Rust and one previous version (~6 week lag).
 
 | User Type | MSRV Impact | Action |
 |-----------|-------------|--------|
@@ -494,7 +536,7 @@ All MSRV changes are documented in [CHANGELOG.md](CHANGELOG.md) with clear ratio
 
 ### Edition 2024 Constraints
 
-scoop uses **Rust Edition 2024**, which requires:
+scuv uses **Rust Edition 2024**, which requires:
 - Minimum Rust 1.85 (hard floor)
 - MSRV-aware resolver enabled by default
 - Cannot downgrade below 1.85 without changing edition to 2021
@@ -595,29 +637,29 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 This project stands on the shoulders of giants:
 
 - **[uv](https://github.com/astral-sh/uv)** by [Astral](https://astral.sh) — The blazing-fast Python package manager
-  that powers scoop's backend. Without uv's incredible speed and reliability, scoop wouldn't exist. Thank you to Charlie
+  that powers scuv's backend. Without uv's incredible speed and reliability, scuv wouldn't exist. Thank you to Charlie
   Marsh and the entire Astral team for revolutionizing Python tooling.
 
 - **[pyenv](https://github.com/pyenv/pyenv)** & **[pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv)** —
-  The original inspiration for scoop's workflow. pyenv taught us how Python version management should feel,
+  The original inspiration for scuv's workflow. pyenv taught us how Python version management should feel,
   and pyenv-virtualenv showed us how to centralize virtual environments elegantly.
 
 - **[virtualenv](https://github.com/pypa/virtualenv)** by [PyPA](https://www.pypa.io/) — The pioneer of Python virtual
   environments. Thank you to Ian Bicking for the original concept that changed how we isolate Python projects.
 
-- **[Python](https://www.python.org/)** — The language that made programming accessible to everyone. scoop exists to
+- **[Python](https://www.python.org/)** — The language that made programming accessible to everyone. scuv exists to
   make Python development even more delightful. Thank you to Guido van Rossum and the Python community.
 
-- **[Rust](https://www.rust-lang.org/)** — The language that makes scoop fast, safe, and reliable. Thank you to the
+- **[Rust](https://www.rust-lang.org/)** — The language that makes scuv fast, safe, and reliable. Thank you to the
   Rust team and Ferris 🦀 for proving that systems programming can be both powerful and enjoyable.
 
 ---
 
 <div align="center">
 
-<img src="assets/community/ferris/scoop-ferris.png" width="160" alt="scoop ferris">
+<img src="assets/community/ferris/scoop-ferris.png" width="160" alt="scuv ferris">
 
-*I built scoop because I needed it — and now it's yours too.* 🍨
+*I built scuv because I needed it — and now it's yours too.* 🍨
 
 *Grab a scoop, enjoy the flavor, and if you have thoughts to share,*
 *the door to the ice cream parlor is always open.*

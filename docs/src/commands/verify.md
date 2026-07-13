@@ -5,10 +5,10 @@ Verify the health of one or all virtual environments. Where [`doctor`](doctor.md
 ## Usage
 
 ```bash
-scoop verify                # Check every environment
-scoop verify <NAME>         # Check just one environment
-scoop verify --json         # Machine-readable output
-scoop verify --strict       # Exit 1 if any check has Fail status (default: always 0)
+scuv verify                # Check every environment
+scuv verify <NAME>         # Check just one environment
+scuv verify --json         # Machine-readable output
+scuv verify --strict       # Exit 1 if any check has Fail status (default: always 0)
 ```
 
 ## What gets checked
@@ -22,12 +22,12 @@ Six checks run per environment, in order:
 | `pyvenv_cfg` | Fail | `pyvenv.cfg` venv marker is missing |
 | `activate_script` | Fail | `bin/activate` (`Scripts/Activate.ps1` on Windows) is missing |
 | `python_executes` | Fail | `python --version` fails to run (Skip if the binary is already missing) |
-| `manifest_match` | Warn | env's Python doesn't match `.scoop.toml` if a manifest exists in the cwd hierarchy (Skip otherwise) |
+| `manifest_match` | Warn | env's Python doesn't match `.scuv.toml` if a manifest exists in the cwd hierarchy (Skip otherwise) |
 
 A check returns one of:
 
 - **Pass** — everything looks right
-- **Skip** — irrelevant for this env (e.g. no `.scoop.toml`, or the prerequisite already failed)
+- **Skip** — irrelevant for this env (e.g. no `.scuv.toml`, or the prerequisite already failed)
 - **Warn** — soft issue; env may still work
 - **Fail** — hard breakage; env likely unusable
 
@@ -51,13 +51,13 @@ By default, `verify` always exits 0 — even when checks fail. This matches `doc
 
 ```bash
 # Quick health check on every env
-scoop verify
+scuv verify
 
 # Specific env, JSON for scripting
-scoop verify myproject --json | jq '.data.envs[0].healthy'
+scuv verify myproject --json | jq '.data.envs[0].healthy'
 
 # CI gate: fail the build if any env is broken
-scoop verify --strict
+scuv verify --strict
 ```
 
 ## JSON output

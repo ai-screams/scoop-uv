@@ -2,18 +2,18 @@
 
 Set shell-specific environment (current shell session only).
 
-Unlike `scoop use` which writes to a file, `scoop shell` sets the `SCOOP_VERSION` environment variable for the current shell session only.
+Unlike `scuv use` which writes to a file, `scuv shell` sets the `SCUV_VERSION` environment variable for the current shell session only.
 
 ## Usage
 
 ```bash
-eval "$(scoop shell <name>)"    # Bash/Zsh
-eval (scoop shell <name>)       # Fish
+eval "$(scuv shell <name>)"    # Bash/Zsh
+scuv shell <name> | source       # Fish
 ```
 
-> **Note:** If you have shell integration set up (`scoop init`), the `eval` is automatic:
+> **Note:** If you have shell integration set up (`scuv init`), the `eval` is automatic:
 > ```bash
-> scoop shell myenv    # Works directly
+> scuv shell myenv    # Works directly
 > ```
 
 ## Arguments
@@ -31,39 +31,39 @@ eval (scoop shell <name>)       # Fish
 
 ## Behavior
 
-- Sets `SCOOP_VERSION` environment variable
+- Sets `SCUV_VERSION` environment variable
 - If `name` is an environment: also outputs activation script
 - If `name` is `system`: also outputs deactivation script
-- `--unset`: outputs `unset SCOOP_VERSION`
+- `--unset`: outputs `unset SCUV_VERSION`
 
 ## Priority
 
-`SCOOP_VERSION` has the **highest priority** in version resolution:
+`SCUV_VERSION` has the **highest priority** in version resolution:
 
 ```
-1. SCOOP_VERSION env var    <- scoop shell (highest)
-2. .scoop-version file      <- scoop use
-3. ~/.scoop/version         <- scoop use --global
+1. SCUV_VERSION env var    <- scuv shell (highest)
+2. .scuv-version file      <- scuv use
+3. ~/.scuv/version         <- scuv use --global
 ```
 
-This means `scoop shell` **overrides** any file-based settings until:
-- You run `scoop shell --unset`
+This means `scuv shell` **overrides** any file-based settings until:
+- You run `scuv shell --unset`
 - You close the terminal
 
 ## Examples
 
 ```bash
 # Use a specific environment in this terminal
-scoop shell myproject
+scuv shell myproject
 
 # Use system Python in this terminal
-scoop shell system
+scuv shell system
 
 # Clear the shell setting (return to file-based resolution)
-scoop shell --unset
+scuv shell --unset
 
 # Explicit shell type
-scoop shell --shell fish myenv
+scuv shell --shell fish myenv
 ```
 
 ## Use Cases
@@ -72,16 +72,16 @@ scoop shell --shell fish myenv
 
 ```bash
 # Currently using myproject
-scoop shell testenv        # Switch to testenv temporarily
+scuv shell testenv        # Switch to testenv temporarily
 python test.py             # Test something
-scoop shell myproject      # Switch back
+scuv shell myproject      # Switch back
 ```
 
 ### Override Project Settings
 
 ```bash
-cd ~/project               # Has .scoop-version = projectenv
-scoop shell system         # Use system Python anyway
+cd ~/project               # Has .scuv-version = projectenv
+scuv shell system         # Use system Python anyway
 python --version           # System Python
-scoop shell --unset        # Back to projectenv
+scuv shell --unset        # Back to projectenv
 ```

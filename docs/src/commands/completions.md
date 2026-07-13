@@ -5,7 +5,7 @@ Generate shell completion script.
 ## Usage
 
 ```bash
-scoop completions <shell>
+scuv completions <shell>
 ```
 
 ## Arguments
@@ -17,15 +17,15 @@ scoop completions <shell>
 ## Examples
 
 ```bash
-scoop completions bash           # Output bash completions
-scoop completions zsh            # Output zsh completions
-scoop completions fish           # Output fish completions
-scoop completions powershell     # Output PowerShell completions
+scuv completions bash           # Output bash completions
+scuv completions zsh            # Output zsh completions
+scuv completions fish           # Output fish completions
+scuv completions powershell     # Output PowerShell completions
 ```
 
 ```powershell
 # PowerShell — add to $PROFILE
-scoop completions powershell | Out-String | Invoke-Expression
+scuv completions powershell | Out-String | Invoke-Expression
 ```
 
-> **Tip:** Usually you don't need this separately - `scoop init` includes completions.
+> **Tip:** Usually you don't need this separately - `scuv init` includes completions.

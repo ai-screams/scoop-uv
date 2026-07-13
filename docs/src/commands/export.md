@@ -1,12 +1,12 @@
 # export
 
 Write a portable JSON snapshot of an environment so another machine (or
-another teammate) can recreate it with [`scoop import`](import.md).
+another teammate) can recreate it with [`scuv import`](import.md).
 
 ## Usage
 
 ```bash
-scoop export <name> [-o <PATH>]
+scuv export <name> [-o <PATH>]
 ```
 
 ## Arguments
@@ -25,8 +25,8 @@ When `-o` is omitted, the JSON document is written to **stdout** and status
 messages stay on stderr. That keeps the command pipe-friendly:
 
 ```bash
-scoop export myenv > myenv.json
-scoop export myenv | jq '.packages | length'
+scuv export myenv > myenv.json
+scuv export myenv | jq '.packages | length'
 ```
 
 ## Schema
@@ -73,5 +73,5 @@ Field notes:
 
 ## See Also
 
-- [`scoop import`](import.md) — reverse operation
-- [`scoop sync`](sync.md) — declarative manifest with looser pinning
+- [`scuv import`](import.md) — reverse operation
+- [`scuv sync`](sync.md) — declarative manifest with looser pinning

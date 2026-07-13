@@ -1,23 +1,23 @@
 # Shell Integration
 
-scoop uses a shell wrapper pattern (like pyenv) where the CLI outputs shell code that gets evaluated by the shell.
+scuv uses a shell wrapper pattern (like pyenv) where the CLI outputs shell code that gets evaluated by the shell.
 
 ## How It Works
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
 │ User runs   │ --> │ CLI outputs │ --> │ Shell evals │
-│ scoop use   │     │ export ...  │     │ the output  │
+│ scuv use   │     │ export ...  │     │ the output  │
 └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-The `scoop` shell function wraps the CLI binary:
+The `scuv` shell function wraps the CLI binary:
 
 ```bash
-scoop() {
+scuv() {
     case "$1" in
         use)
-            command scoop "$@"
+            command scuv "$@"
             local name=""
             shift
             for arg in "$@"; do
@@ -27,14 +27,14 @@ scoop() {
                 esac
             done
             if [[ -n "$name" ]]; then
-                eval "$(command scoop activate "$name")"
+                eval "$(command scuv activate "$name")"
             fi
             ;;
         activate|deactivate|shell)
-            eval "$(command scoop "$@")"
+            eval "$(command scuv "$@")"
             ;;
         *)
-            command scoop "$@"
+            command scuv "$@"
             ;;
     esac
 }
@@ -45,21 +45,21 @@ scoop() {
 ### Zsh
 
 ```bash
-echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
+echo 'eval "$(scuv init zsh)"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
 ### Bash
 
 ```bash
-echo 'eval "$(scoop init bash)"' >> ~/.bashrc
+echo 'eval "$(scuv init bash)"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
 ### Fish
 
 ```fish
-echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
+echo 'scuv init fish | source' >> ~/.config/fish/config.fish
 source ~/.config/fish/config.fish
 ```
 
@@ -67,31 +67,31 @@ source ~/.config/fish/config.fish
 
 ```powershell
 # Add to $PROFILE
-Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
+Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell)'
 # Restart PowerShell
 ```
 
 ## Auto-Activation
 
-When enabled, scoop automatically activates environments based on version files.
+When enabled, scuv automatically activates environments based on version files.
 
 **Zsh**: Uses `chpwd` hook (runs on directory change)
 
 ```bash
 autoload -Uz add-zsh-hook
-add-zsh-hook chpwd _scoop_hook
+add-zsh-hook chpwd _scuv_hook
 ```
 
 **Bash**: Uses `PROMPT_COMMAND`
 
 ```bash
-PROMPT_COMMAND="_scoop_hook;$PROMPT_COMMAND"
+PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"
 ```
 
 **Fish**: Uses `--on-variable PWD` event handler
 
 ```fish
-function _scoop_hook --on-variable PWD
+function _scuv_hook --on-variable PWD
     # Check for version file and activate/deactivate
 end
 ```
@@ -100,37 +100,37 @@ The hook checks for version files and activates/deactivates accordingly.
 
 ## Version Resolution Priority
 
-scoop checks these sources in order (first match wins):
+scuv checks these sources in order (first match wins):
 
 | Priority | Source | Set by |
 |----------|--------|--------|
-| 1 | `SCOOP_VERSION` env var | `scoop shell` |
-| 2 | `.scoop-version` file | `scoop use` (walks parent directories) |
-| 3 | `~/.scoop/version` file | `scoop use --global` |
+| 1 | `SCUV_VERSION` env var | `scuv shell` |
+| 2 | `.scuv-version` file | `scuv use` (walks parent directories) |
+| 3 | `~/.scuv/version` file | `scuv use --global` |
 
 ### The "system" Value
 
-When any source contains the value `system`, scoop deactivates the current virtual environment and uses the system Python.
+When any source contains the value `system`, scuv deactivates the current virtual environment and uses the system Python.
 
 ```bash
-scoop use system          # Write "system" to .scoop-version
-scoop shell system        # Set SCOOP_VERSION=system (this terminal only)
+scuv use system          # Write "system" to .scuv-version
+scuv shell system        # Set SCUV_VERSION=system (this terminal only)
 ```
 
 ## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SCOOP_HOME` | Base directory | `~/.scoop` |
-| `SCOOP_VERSION` | Override version (highest priority) | (unset) |
-| `SCOOP_NO_AUTO` | Disable auto-activation | (unset) |
-| `SCOOP_ACTIVE` | Currently active environment | (set by scoop) |
-| `SCOOP_RESOLVE_MAX_DEPTH` | Limit parent directory traversal | (unlimited) |
+| `SCUV_HOME` | Base directory | `~/.scuv` |
+| `SCUV_VERSION` | Override version (highest priority) | (unset) |
+| `SCUV_NO_AUTO` | Disable auto-activation | (unset) |
+| `SCUV_ACTIVE` | Currently active environment | (set by scuv) |
+| `SCUV_RESOLVE_MAX_DEPTH` | Limit parent directory traversal | (unlimited) |
 
 ### Disable Auto-Activation
 
 ```bash
-export SCOOP_NO_AUTO=1
+export SCUV_NO_AUTO=1
 ```
 
 ### Temporary and Project-Scoped Control
@@ -138,9 +138,9 @@ export SCOOP_NO_AUTO=1
 Disable only in the current shell session (does not affect global settings):
 
 ```bash
-export SCOOP_NO_AUTO=1
+export SCUV_NO_AUTO=1
 # ...work without auto-activation...
-unset SCOOP_NO_AUTO
+unset SCUV_NO_AUTO
 ```
 
 For one project directory, use local version files instead of global settings:
@@ -149,24 +149,24 @@ For one project directory, use local version files instead of global settings:
 cd ~/project
 
 # Keep auto-activation, but force system Python in this project only
-scoop use system
+scuv use system
 
 # Or pin a specific environment for this project only
-scoop use myproject
+scuv use myproject
 ```
 
 For temporary per-terminal overrides without changing files:
 
 ```bash
-scoop shell system    # this terminal only
+scuv shell system    # this terminal only
 # ...test...
-scoop shell --unset   # return to file-based behavior
+scuv shell --unset   # return to file-based behavior
 ```
 
 ### Custom Home Directory
 
 ```bash
-export SCOOP_HOME=/custom/path
+export SCUV_HOME=/custom/path
 ```
 
 ### Network Filesystem Optimization
@@ -175,20 +175,20 @@ For slow network filesystems (NFS, SSHFS), limit directory traversal depth:
 
 ```bash
 # Only check current directory and up to 3 parents
-export SCOOP_RESOLVE_MAX_DEPTH=3
+export SCUV_RESOLVE_MAX_DEPTH=3
 
 # Only check current directory (fastest)
-export SCOOP_RESOLVE_MAX_DEPTH=0
+export SCUV_RESOLVE_MAX_DEPTH=0
 ```
 
 ## Using with pyenv
 
-Add scoop **after** pyenv in your shell config:
+Add scuv **after** pyenv in your shell config:
 
 ```bash
 # ~/.zshrc
 eval "$(pyenv init -)"       # 1. pyenv first
-eval "$(scoop init zsh)"     # 2. scoop second (takes precedence)
+eval "$(scuv init zsh)"     # 2. scuv second (takes precedence)
 ```
 
 ## Tab Completion
@@ -199,7 +199,7 @@ Shell integration includes completion for:
 - Python versions
 - Command options
 
-Completion is automatically enabled by `scoop init`.
+Completion is automatically enabled by `scuv init`.
 
 ## Supported Shells
 

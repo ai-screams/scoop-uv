@@ -1,23 +1,23 @@
 # gc
 
-Garbage-collect orphan virtual environments — directories under `~/.scoop/virtualenvs/` that no longer look like working environments, plus (optionally) environments that haven't been activated in a while.
+Garbage-collect orphan virtual environments — directories under `~/.scuv/virtualenvs/` that no longer look like working environments, plus (optionally) environments that haven't been activated in a while.
 
 ## Usage
 
 ```bash
-scoop gc                          # Preview orphans only (default)
-scoop gc --yes                    # Actually remove orphans
-scoop gc --aggressive             # Also flag unused Python versions
-scoop gc --aggressive --yes       # Remove orphans + unused Pythons
-scoop gc --older-than 30d         # Also preview envs idle >30 days
-scoop gc --older-than 6w --yes    # Remove orphans + stale envs (≥6 weeks idle)
+scuv gc                          # Preview orphans only (default)
+scuv gc --yes                    # Actually remove orphans
+scuv gc --aggressive             # Also flag unused Python versions
+scuv gc --aggressive --yes       # Remove orphans + unused Pythons
+scuv gc --older-than 30d         # Also preview envs idle >30 days
+scuv gc --older-than 6w --yes    # Remove orphans + stale envs (≥6 weeks idle)
 ```
 
 ## What counts as an orphan?
 
 An environment directory is considered an orphan if either:
 
-- It has no `.scoop-metadata.json` (it wasn't created by scoop, or the metadata was deleted), or
+- It has no `.scoop-metadata.json` (it wasn't created by scuv, or the metadata was deleted), or
 - Its Python interpreter is missing (`bin/python` on Unix / `Scripts/python.exe` on Windows) — typically because the Python version was uninstalled out from under it
 
 Healthy environments are left untouched.
@@ -51,15 +51,15 @@ Two cases are **never** flagged as stale, by design:
 - **Corrupt metadata** — if we can't read the metadata, we don't pretend to know its age.
 
 If you want to clean up un-activated envs anyway, surface them with
-`scoop list --sort last-used` — envs missing `last_used` always sort to
-the bottom — and remove individual ones with `scoop remove <name>`.
+`scuv list --sort last-used` — envs missing `last_used` always sort to
+the bottom — and remove individual ones with `scuv remove <name>`.
 For scripted enumeration:
 
 ```bash
-scoop list --json | jq -r '.data.virtualenvs[] | select(.last_used == null) | .name'
+scuv list --json | jq -r '.data.virtualenvs[] | select(.last_used == null) | .name'
 ```
 
-(Note: `scoop verify` checks per-env health — metadata / interpreter /
+(Note: `scuv verify` checks per-env health — metadata / interpreter /
 manifest drift — and intentionally does NOT flag a healthy env just
 because it has never been activated.)
 
@@ -85,23 +85,23 @@ Both surface in the JSON envelope as `outcome` values so scripts can distinguish
 
 ```bash
 # See what would be removed
-scoop gc
+scuv gc
 
 # Sample output:
 # Orphan virtualenvs (2):
-#   - broken-env (Python interpreter missing)  ~/.scoop/virtualenvs/broken-env
-#   - rogue-dir  (no .scoop-metadata.json)     ~/.scoop/virtualenvs/rogue-dir
+#   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-env
+#   - rogue-dir  (no .scoop-metadata.json)     ~/.scuv/virtualenvs/rogue-dir
 # (dry run — pass `--yes` to actually remove)
 
 # Actually clean up
-scoop gc --yes
+scuv gc --yes
 ```
 
 ## JSON output
 
 ```bash
-scoop gc --json
-scoop gc --older-than 30d --json
+scuv gc --json
+scuv gc --older-than 30d --json
 ```
 
 ```json
@@ -111,9 +111,9 @@ scoop gc --older-than 30d --json
   "data": {
     "dry_run": true,
     "envs": [
-      { "name": "broken-env", "path": "/Users/x/.scoop/virtualenvs/broken-env", "reason": "broken_python", "outcome": "pending" },
-      { "name": "rogue-dir",  "path": "/Users/x/.scoop/virtualenvs/rogue-dir",  "reason": "missing_metadata", "outcome": "pending" },
-      { "name": "old-poc",    "path": "/Users/x/.scoop/virtualenvs/old-poc",    "reason": "stale", "age_days": 62, "outcome": "pending" }
+      { "name": "broken-env", "path": "/Users/x/.scuv/virtualenvs/broken-env", "reason": "broken_python", "outcome": "pending" },
+      { "name": "rogue-dir",  "path": "/Users/x/.scuv/virtualenvs/rogue-dir",  "reason": "missing_metadata", "outcome": "pending" },
+      { "name": "old-poc",    "path": "/Users/x/.scuv/virtualenvs/old-poc",    "reason": "stale", "age_days": 62, "outcome": "pending" }
     ],
     "pythons": []
   }

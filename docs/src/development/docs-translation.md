@@ -4,7 +4,7 @@
 > consumed by the Rust binary), see [translation](translation.md)
 > instead. This page covers user-documentation translation only.
 
-scoop's user documentation lives in `docs/src/*.md` and is the
+scuv's user documentation lives in `docs/src/*.md` and is the
 single English source of truth. Translations are layered on top
 via [gettext](https://www.gnu.org/software/gettext/) `.po` files
 under `docs/po/`, processed by the

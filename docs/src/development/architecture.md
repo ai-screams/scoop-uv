@@ -1,6 +1,6 @@
 # Architecture
 
-scoop is built in Rust using a modular architecture.
+scuv is built in Rust using a modular architecture.
 
 ## Module Structure
 
@@ -14,8 +14,8 @@ src/
 │   ├── version.rs    # Version file resolution
 │   ├── virtualenv/   # Virtualenv entity (mod.rs + tests.rs)
 │   ├── doctor.rs     # Health check system
-│   ├── manifest.rs   # Sync manifest (.scoop.toml, backs `scoop sync`)
-│   ├── export_schema.rs  # Export/import schema (backs `scoop export`/`import`)
+│   ├── manifest.rs   # Sync manifest (.scuv.toml, backs `scuv sync`)
+│   ├── export_schema.rs  # Export/import schema (backs `scuv export`/`import`)
 │   └── migrate/      # Migration from pyenv/conda/virtualenvwrapper
 │       ├── mod.rs
 │       ├── discovery.rs  # Source detection
@@ -94,7 +94,7 @@ graph TB
 Generates shell scripts for integration:
 
 - `init_script()` - Returns shell initialization code
-- Wrapper function for `scoop` command
+- Wrapper function for `scuv` command
 - Auto-activation hooks
 - Tab completion definitions
 
@@ -122,15 +122,15 @@ The CLI outputs shell code to stdout, which the shell evaluates:
 
 ```bash
 # User runs
-scoop activate myenv
+scuv activate myenv
 
 # CLI outputs
-export VIRTUAL_ENV="/Users/x/.scoop/virtualenvs/myenv"
-export PATH="/Users/x/.scoop/virtualenvs/myenv/bin:$PATH"
-export SCOOP_ACTIVE="myenv"
+export VIRTUAL_ENV="/Users/x/.scuv/virtualenvs/myenv"
+export PATH="/Users/x/.scuv/virtualenvs/myenv/bin:$PATH"
+export SCUV_ACTIVE="myenv"
 
 # Shell wrapper evaluates this output
-eval "$(command scoop activate myenv)"
+eval "$(command scuv activate myenv)"
 ```
 
 This pattern is used by pyenv, rbenv, and other version managers.
@@ -166,9 +166,9 @@ impl std::fmt::Display for ScoopError {
 
 Centralizes path logic in `paths.rs`:
 
-- `scoop_home()` - Returns `SCOOP_HOME` or `~/.scoop`
+- `scoop_home()` - Returns `SCUV_HOME` or `~/.scuv`
 - `virtualenvs_dir()` - Returns virtualenvs directory
-- `global_version_file()` - Returns global version file path (~/.scoop/version)
+- `global_version_file()` - Returns global version file path (~/.scuv/version)
 - `local_version_file(dir)` - Returns local version file path in directory
 
 ## Data Flow
@@ -184,7 +184,7 @@ sequenceDiagram
     participant UV as UV Wrapper
     participant Output as Output Formatter
 
-    User->>CLI: scoop create myenv 3.12
+    User->>CLI: scuv create myenv 3.12
     CLI->>Cmd: parse & dispatch
     Cmd->>Core: VirtualenvService::create()
     Core->>UV: uv venv create
@@ -200,11 +200,11 @@ sequenceDiagram
 sequenceDiagram
     participant User
     participant Shell as Shell Wrapper
-    participant CLI as scoop CLI
+    participant CLI as scuv CLI
     participant Core as Core Logic
 
-    User->>Shell: scoop use myenv
-    Shell->>CLI: command scoop use myenv
+    User->>Shell: scuv use myenv
+    Shell->>CLI: command scuv use myenv
     CLI->>Core: resolve version & path
     Core-->>CLI: env vars to export
     CLI-->>Shell: echo shell script
@@ -217,11 +217,11 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    Start([User runs command]) --> Env{SCOOP_VERSION<br/>env set?<br/><small>shell hook</small>}
+    Start([User runs command]) --> Env{SCUV_VERSION<br/>env set?<br/><small>shell hook</small>}
     Env -->|Yes| Use[Use env value]
-    Env -->|No| Local{.scoop-version<br/>in current/parent<br/>dirs?}
+    Env -->|No| Local{.scuv-version<br/>in current/parent<br/>dirs?}
     Local -->|Yes| Use
-    Local -->|No| Global{~/.scoop/version<br/>exists?}
+    Local -->|No| Global{~/.scuv/version<br/>exists?}
     Global -->|Yes| Use
     Global -->|No| None[No version<br/>system Python]
 
@@ -229,13 +229,13 @@ graph LR
     style None fill:#fff9c4
 ```
 
-> **Note**: `.python-version` is not supported. Version resolution walks up parent directories to find `.scoop-version`.
+> **Note**: `.python-version` is not supported. Version resolution walks up parent directories to find `.scuv-version`.
 
 ### Health Check Flow
 
 ```mermaid
 flowchart TD
-    Start([scoop doctor]) --> Init[Initialize Doctor]
+    Start([scuv doctor]) --> Init[Initialize Doctor]
     Init --> Run[Run all checks]
 
     Run --> UV{UV Check}
@@ -276,11 +276,11 @@ flowchart TD
 
 ## Migration Architecture
 
-scoop supports migrating environments from pyenv-virtualenv, virtualenvwrapper, and conda.
+scuv supports migrating environments from pyenv-virtualenv, virtualenvwrapper, and conda.
 
 ```mermaid
 graph TD
-    Start([scoop migrate]) --> Detect[Detect Sources]
+    Start([scuv migrate]) --> Detect[Detect Sources]
 
     Detect --> Pyenv{pyenv-virtualenv}
     Detect --> Venv{virtualenvwrapper}
@@ -294,7 +294,7 @@ graph TD
     V1 --> Parse
     C1 --> Parse
 
-    Parse --> Create[Create in scoop]
+    Parse --> Create[Create in scuv]
     Create --> Copy[Copy packages]
     Copy --> Meta[Write metadata]
     Meta --> Done([Migration complete])
@@ -344,7 +344,7 @@ pub fn init_script() -> &'static str {
     // Return shell-specific initialization code as static string
     r#"
     # Shell initialization code here
-    scoop() { ... }
+    scuv() { ... }
     "#
 }
 ```
@@ -414,7 +414,7 @@ See [API Reference - Adding a New Health Check](../api.md#adding-a-new-health-ch
 
 ## Thread Safety
 
-scoop is a single-threaded CLI application. No concurrent operations are performed.
+scuv is a single-threaded CLI application. No concurrent operations are performed.
 
 **File locking:** Not implemented. Assumes single user on single machine. Concurrent operations (e.g., two terminals creating the same env) may result in race conditions.
 

@@ -6,13 +6,13 @@ Migrate virtual environments from other tools (pyenv-virtualenv, virtualenvwrapp
 
 ```bash
 # List migratable environments
-scoop migrate list
+scuv migrate list
 
 # Migrate a single environment
-scoop migrate @env <name>
+scuv migrate @env <name>
 
 # Migrate all environments
-scoop migrate all
+scuv migrate all
 ```
 
 ## Subcommands
@@ -38,7 +38,7 @@ scoop migrate all
 | `--source <pyenv\|virtualenvwrapper\|conda>` | all subcommands | Restrict to a single source tool |
 | `--json` | all subcommands | Machine-readable output (see [JSON Output](#json-output)) |
 | `--dry-run` | `@env`, `all` | Preview without making changes |
-| `--force` | `@env`, `all` | Overwrite existing scoop env with the same name; bypass EOL Python guard |
+| `--force` | `@env`, `all` | Overwrite existing scuv env with the same name; bypass EOL Python guard |
 | `--yes` | `@env`, `all` | Skip the interactive confirmation prompt |
 | `--strict` | `@env`, `all` | Fail on the first package install error inside an env (default: keep going) |
 | `--delete-source` | `@env`, `all` | Remove the source env after successful migration |
@@ -49,7 +49,7 @@ Global flags (`--quiet`, `--no-color`) apply to all subcommands.
 
 ## Exit codes
 
-`scoop migrate` follows the [layered exit-code contract](../api.md#process-exit-codes). The mapping differs slightly between `migrate all` (which partitions envs into buckets before iterating) and the single-env paths (`@env`, `list`).
+`scuv migrate` follows the [layered exit-code contract](../api.md#process-exit-codes). The mapping differs slightly between `migrate all` (which partitions envs into buckets before iterating) and the single-env paths (`@env`, `list`).
 
 ### `migrate all`
 
@@ -64,7 +64,7 @@ Global flags (`--quiet`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | The env migrated successfully (or the user chose `Skip` at the interactive conflict prompt) |
-| `2` | `MigrationNameConflict` (env exists in scoop home, `--force` not set, non-interactive context) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
+| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, non-interactive context) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
 | `3` | The named source env was not found in the requested source (`PyenvEnvNotFound`, `VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **or** the source env is `CorruptedEnvironment` |
 
 ### `migrate list`
@@ -88,17 +88,17 @@ contract.
 | Status of source env | With `--force` |
 |----------------------|----------------|
 | Ready | Migrated normally |
-| Name conflict with an existing scoop env | The existing scoop env is overwritten in place |
+| Name conflict with an existing scuv env | The existing scuv env is overwritten in place |
 | EOL Python version (e.g. 2.7) | Migrated anyway (the EOL guard is intentionally bypassed) |
 | Corrupted source env | **Not bypassed** — still returns `CorruptedEnvironment` (exit 3) |
 
 ### `--auto-rename` (name-conflict only)
 
 `--auto-rename` is a convenience for the pure name-conflict case:
-when a scoop env with the same name already exists, the migration
+when a scuv env with the same name already exists, the migration
 proceeds under an auto-generated name. It does **not** override any
 other status (EOL / corrupted), and it does **not** delete or overwrite
-the existing scoop env.
+the existing scuv env.
 
 Known limitations (tracked separately from this docs PR):
 
@@ -119,7 +119,7 @@ For deterministic conflict handling in scripts, prefer `--force` over
 ### List Migratable Environments
 
 ```bash
-$ scoop migrate list
+$ scuv migrate list
 📦 Migratable Environments
 
   pyenv-virtualenv:
@@ -133,16 +133,16 @@ $ scoop migrate list
 ### Migrate Single Environment
 
 ```bash
-$ scoop migrate @env myproject
+$ scuv migrate @env myproject
 ✓ Migrated 'myproject' from pyenv-virtualenv
   Source: ~/.pyenv/versions/myproject
-  Target: ~/.scoop/virtualenvs/myproject
+  Target: ~/.scuv/virtualenvs/myproject
 ```
 
 ### Migrate All
 
 ```bash
-$ scoop migrate all
+$ scuv migrate all
 ✓ Migrated 3 environments
   • myproject (pyenv-virtualenv)
   • webapp (pyenv-virtualenv)
@@ -154,12 +154,12 @@ $ scoop migrate all
 ```bash
 # Exits 2 if any env failed or a name conflict was skipped.
 # Exits 3 if no source tool is installed on the runner.
-scoop migrate all --yes
+scuv migrate all --yes
 ```
 
 ## JSON Output
 
-All three subcommands accept `--json`. The envelope follows scoop's standard
+All three subcommands accept `--json`. The envelope follows scuv's standard
 shape: `{status, command, data}` on success; `{status: "error", command,
 error: { code, message, ... }, data}` on failure paths that already
 rendered structured data.
@@ -227,7 +227,7 @@ without parsing the localized `reason` string in `skipped[]`.
         "packages_migrated": 42,
         "packages_failed": [],
         "dry_run": false,
-        "path": "/home/u/.scoop/virtualenvs/myproject",
+        "path": "/home/u/.scuv/virtualenvs/myproject",
         "source_deleted": false,
         "actual_python_version": "3.12.0"
       }
@@ -280,7 +280,7 @@ failure side either.
       {
         "name": "myproj",
         "source_type": "pyenv",
-        "existing": "/home/u/.scoop/virtualenvs/myproj"
+        "existing": "/home/u/.scuv/virtualenvs/myproj"
       }
     ],
     "summary": { "total": 2, "success": 0, "failed": 1, "skipped": 1 }
@@ -312,7 +312,7 @@ stays empty. Detect via the exit code.
 Script template:
 
 ```bash
-if ! scoop migrate all --json > out.json; then
+if ! scuv migrate all --json > out.json; then
   case $? in
     2) echo "batch failure — read out.json for detail" ;;
     3) echo "no source tool installed" ;;
@@ -329,7 +329,7 @@ asymmetry would require `batch.rs` (and `single.rs`) to call
 
 1. **Discovery**: Scans configured source paths for virtual environments
 2. **Extraction**: Identifies Python version and installed packages
-3. **Recreation**: Creates new scoop environment with same Python version
+3. **Recreation**: Creates new scuv environment with same Python version
 4. **Package Install**: Reinstalls packages using `uv pip install`
 5. **Cleanup**: Originals are preserved by default; `--delete-source` removes them after successful migration
 
@@ -341,7 +341,7 @@ asymmetry would require `batch.rs` (and `single.rs`) to call
 
 ## Performance
 
-`scoop migrate all` fans out across all CPU cores via [rayon] when migrating
+`scuv migrate all` fans out across all CPU cores via [rayon] when migrating
 more than one environment. The dominant cost (uv venv + pip install per env)
 is I/O-bound on subprocesses, so wall-clock time scales close to linearly
 with core count.

@@ -1,11 +1,11 @@
-# scoop
+# scuv
 
 > Centralized Python virtual environment manager — pyenv-style workflow powered by uv
 
 <!-- MAINTENANCE NOTE: When updating version or MSRV in Cargo.toml, also update references in this file.
      CI will verify MSRV consistency between Cargo.toml and llms-full.txt. -->
 
-scoop manages Python virtual environments from a single central location (`~/.scoop/`),
+scuv manages Python virtual environments from a single central location (`~/.scuv/`),
 combining pyenv-virtualenv's familiar workflow with uv's speed. Written in Rust.
 
 ## Installation
@@ -22,70 +22,70 @@ Add to your shell config and restart:
 
 ```bash
 # Bash
-echo 'eval "$(scoop init bash)"' >> ~/.bashrc
+echo 'eval "$(scuv init bash)"' >> ~/.bashrc
 
 # Zsh
-echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
+echo 'eval "$(scuv init zsh)"' >> ~/.zshrc
 
 # Fish
-echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
+echo 'scuv init fish | source' >> ~/.config/fish/config.fish
 
 # PowerShell
-Add-Content $PROFILE 'Invoke-Expression (& scoop init powershell)'
+Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell)'
 ```
 
 ## Quick Start
 
 ```bash
-scoop install 3.12           # Install Python 3.12 via uv
-scoop create myproject 3.12  # Create a virtualenv
-scoop use myproject           # Activate (auto-activates on directory entry)
-scoop list                    # List all virtualenvs
-scoop remove myproject        # Delete a virtualenv
+scuv install 3.12           # Install Python 3.12 via uv
+scuv create myproject 3.12  # Create a virtualenv
+scuv use myproject           # Activate (auto-activates on directory entry)
+scuv list                    # List all virtualenvs
+scuv remove myproject        # Delete a virtualenv
 ```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `scoop list` | List virtualenvs (aliases: `ls`) |
-| `scoop list --pythons` | List installed Python versions |
-| `scoop list --python-version <VER>` | Filter environments by Python version |
-| `scoop list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (Unreleased) |
-| `scoop create <name> [version]` | Create virtualenv (default: latest Python) |
-| `scoop create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
-| `scoop create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
-| `scoop use <name>` | Set + activate environment |
-| `scoop use <name> --global` | Set as global default |
-| `scoop use <name> --link` | Also create `.venv` symlink for IDE |
-| `scoop use system` | Deactivate, use system Python |
-| `scoop use --unset` | Remove version file |
-| `scoop remove <name>` | Delete virtualenv (aliases: `rm`, `delete`) |
-| `scoop clone <src> <dst>` | Duplicate an env in-place; `--no-packages` for skeleton (v0.11.0) |
-| `scoop install [version]` | Install Python version |
-| `scoop uninstall <version>` | Remove Python version |
-| `scoop uninstall <version> --cascade` | Remove Python version + all environments using it |
-| `scoop info <name>` | Show virtualenv details (includes `Last used:` row since Unreleased) |
-| `scoop status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since Unreleased |
-| `scoop which <exe>` | Resolve an executable path inside the active env (v0.11.0) |
-| `scoop run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
-| `scoop sync` | Reconcile the active env with `.scoop.toml` manifest (v0.11.0) |
-| `scoop export <name>` | Snapshot env as JSON (schema v1) (v0.11.0) |
-| `scoop import <file>` | Restore env from JSON snapshot; `--name <new>` to rename (v0.11.0) |
-| `scoop doctor` | Health check |
-| `scoop doctor --fix` | Auto-fix issues |
-| `scoop shell <name>` | Set shell-specific env (temporary) |
-| `scoop shell --unset` | Clear shell-specific setting |
-| `scoop init <shell>` | Output shell init script |
-| `scoop completions <shell>` | Generate completion script |
-| `scoop lang [code]` | Get/set language (en, ko, ja, pt-BR) |
-| `scoop migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
-| `scoop migrate @env <name>` | Migrate single environment |
-| `scoop migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
-| `scoop gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons; `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (Unreleased) |
-| `scoop prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
-| `scoop verify [NAME]` | Per-env health diagnosis (6 checks). Default always exits 0; `--strict` exits 1 on any issue |
-| `scoop man [DIR]` | Generate man pages — stdout for top-level, or write `scoop.1` + `scoop-<sub>.1` per subcommand into DIR |
+| `scuv list` | List virtualenvs (aliases: `ls`) |
+| `scuv list --pythons` | List installed Python versions |
+| `scuv list --python-version <VER>` | Filter environments by Python version |
+| `scuv list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (Unreleased) |
+| `scuv create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scuv create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
+| `scuv create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
+| `scuv use <name>` | Set + activate environment |
+| `scuv use <name> --global` | Set as global default |
+| `scuv use <name> --link` | Also create `.venv` symlink for IDE |
+| `scuv use system` | Deactivate, use system Python |
+| `scuv use --unset` | Remove version file |
+| `scuv remove <name>` | Delete virtualenv (aliases: `rm`, `delete`) |
+| `scuv clone <src> <dst>` | Duplicate an env in-place; `--no-packages` for skeleton (v0.11.0) |
+| `scuv install [version]` | Install Python version |
+| `scuv uninstall <version>` | Remove Python version |
+| `scuv uninstall <version> --cascade` | Remove Python version + all environments using it |
+| `scuv info <name>` | Show virtualenv details (includes `Last used:` row since Unreleased) |
+| `scuv status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since Unreleased |
+| `scuv which <exe>` | Resolve an executable path inside the active env (v0.11.0) |
+| `scuv run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
+| `scuv sync` | Reconcile the active env with `.scuv.toml` manifest (v0.11.0) |
+| `scuv export <name>` | Snapshot env as JSON (schema v1) (v0.11.0) |
+| `scuv import <file>` | Restore env from JSON snapshot; `--name <new>` to rename (v0.11.0) |
+| `scuv doctor` | Health check |
+| `scuv doctor --fix` | Auto-fix issues |
+| `scuv shell <name>` | Set shell-specific env (temporary) |
+| `scuv shell --unset` | Clear shell-specific setting |
+| `scuv init <shell>` | Output shell init script |
+| `scuv completions <shell>` | Generate completion script |
+| `scuv lang [code]` | Get/set language (en, ko, ja, pt-BR) |
+| `scuv migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
+| `scuv migrate @env <name>` | Migrate single environment |
+| `scuv migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
+| `scuv gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons; `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (Unreleased) |
+| `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
+| `scuv verify [NAME]` | Per-env health diagnosis (6 checks). Default always exits 0; `--strict` exits 1 on any issue |
+| `scuv man [DIR]` | Generate man pages — stdout for top-level, or write `scuv.1` + `scuv-<sub>.1` per subcommand into DIR |
 
 Most commands support `--json` for machine-readable output.
 
@@ -95,40 +95,40 @@ Global options: `--quiet`, `--no-color`
 
 ### Central Storage
 
-All virtualenvs are stored in `~/.scoop/virtualenvs/`. Override with `SCOOP_HOME` env var.
+All virtualenvs are stored in `~/.scuv/virtualenvs/`. Override with `SCUV_HOME` env var.
 
 ### Set a Specific Python Version as Global Default
 
 To set Python `3.11.0` as the global default for new shells:
 
 ```bash
-scoop install 3.11.0
-scoop create py311 3.11.0
-scoop use py311 --global
+scuv install 3.11.0
+scuv create py311 3.11.0
+scuv use py311 --global
 ```
 
-Important: `--global` stores an environment name (`py311`) in `~/.scoop/version`,
-not the raw Python version string. Local `.scoop-version` and `SCOOP_VERSION`
+Important: `--global` stores an environment name (`py311`) in `~/.scuv/version`,
+not the raw Python version string. Local `.scuv-version` and `SCUV_VERSION`
 override the global default.
 
 ### Create a Project Environment with Python 3.9.5
 
 ```bash
-scoop install 3.9.5
-scoop create myproject 3.9.5
-scoop info myproject
+scuv install 3.9.5
+scuv create myproject 3.9.5
+scuv info myproject
 ```
 
 If `3.9.5` is not found, check discovery with `uv python list` and
-`scoop list --pythons`, then install and retry.
+`scuv list --pythons`, then install and retry.
 
 ### Uninstall a Python Version and Associated Environments
 
 ```bash
-scoop list --python-version 3.12
-scoop uninstall 3.12 --cascade
-scoop list --pythons
-scoop doctor
+scuv list --python-version 3.12
+scuv uninstall 3.12 --cascade
+scuv list --pythons
+scuv doctor
 ```
 
 Use `--force` for non-interactive workflows.
@@ -137,14 +137,14 @@ Without `--cascade`, dependent environments are not removed and may break.
 ### Project-Scoped Auto-Activation Control
 
 ```bash
-export SCOOP_NO_AUTO=1
-unset SCOOP_NO_AUTO
+export SCUV_NO_AUTO=1
+unset SCUV_NO_AUTO
 
-scoop use system
-scoop use myproject
+scuv use system
+scuv use myproject
 
-scoop shell system
-scoop shell --unset
+scuv shell system
+scuv shell --unset
 ```
 
 Avoid `--global` when you want temporary or directory-only behavior.
@@ -161,9 +161,9 @@ Verify with `pip list`.
 ### List Python Versions and Associated Environments
 
 ```bash
-scoop list --pythons
-scoop list
-scoop list --python-version 3.12
+scuv list --pythons
+scuv list
+scuv list --python-version 3.12
 ```
 
 Use `--json` for machine-readable output and `--bare` for shell scripts.
@@ -171,28 +171,28 @@ Use `--json` for machine-readable output and `--bare` for shell scripts.
 ### Integrate Custom or Pre-Existing Python
 
 ```bash
-scoop create myenv --python-path /opt/python-debug/bin/python3
+scuv create myenv --python-path /opt/python-debug/bin/python3
 
 export PATH="/opt/python-debug/bin:$PATH"
-scoop create myenv 3.13
+scuv create myenv 3.13
 ```
 
-Verify with `uv python list`, `scoop info myenv`, and `scoop doctor -v`.
+Verify with `uv python list`, `scuv info myenv`, and `scuv doctor -v`.
 Custom interpreter path is recorded in metadata (`python_path`).
 
 ### Version Files
 
 Priority (first match wins):
-1. `SCOOP_VERSION` env var (shell session override, set by `scoop shell`)
-2. `.scoop-version` in current directory (local, walks parent directories)
-3. `~/.scoop/version` (global default)
+1. `SCUV_VERSION` env var (shell session override, set by `scuv shell`)
+2. `.scuv-version` in current directory (local, walks parent directories)
+3. `~/.scuv/version` (global default)
 
 ### Shell Integration
 
-scoop outputs shell code to stdout; the shell wrapper `eval`s it (pyenv pattern).
-Auto-activation triggers on directory change when `.scoop-version` is present.
+scuv outputs shell code to stdout; the shell wrapper `eval`s it (pyenv pattern).
+Auto-activation triggers on directory change when `.scuv-version` is present.
 
-Disable auto-activation: `export SCOOP_NO_AUTO=1`
+Disable auto-activation: `export SCUV_NO_AUTO=1`
 
 ### Environment Name Rules
 
@@ -212,13 +212,13 @@ Import environments from pyenv-virtualenv, virtualenvwrapper, and conda.
 
 Supported languages: English (`en`), Korean (`ko`), Japanese (`ja`), Portuguese-BR (`pt-BR`)
 
-Priority: `SCOOP_LANG` env > `~/.scoop/config.json` > system locale > `en`
+Priority: `SCUV_LANG` env > `~/.scuv/config.json` > system locale > `en`
 
 ## Configuration
 
-- Config file: `~/.scoop/config.json`
-- Home directory: `~/.scoop/` (override: `SCOOP_HOME`)
-- Metadata: `~/.scoop/virtualenvs/<name>/.scoop-metadata.json`
+- Config file: `~/.scuv/config.json`
+- Home directory: `~/.scuv/` (override: `SCUV_HOME`)
+- Metadata: `~/.scuv/virtualenvs/<name>/.scoop-metadata.json`
 
 ## Links
 

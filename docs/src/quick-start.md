@@ -1,34 +1,34 @@
 # Quick Start
 
-This guide walks you through the basic scoop workflow.
+This guide walks you through the basic scuv workflow.
 
 ## 1. Set Up Shell Integration
 
 **Zsh** (macOS default):
 
 ```bash
-echo 'eval "$(scoop init zsh)"' >> ~/.zshrc
+echo 'eval "$(scuv init zsh)"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
 **Bash**:
 
 ```bash
-echo 'eval "$(scoop init bash)"' >> ~/.bashrc
+echo 'eval "$(scuv init bash)"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
 **Fish**:
 
 ```fish
-echo 'eval (scoop init fish)' >> ~/.config/fish/config.fish
+echo 'scuv init fish | source' >> ~/.config/fish/config.fish
 source ~/.config/fish/config.fish
 ```
 
 **PowerShell**:
 
 ```powershell
-Add-Content -Path $PROFILE -Value 'Invoke-Expression (& scoop init powershell)'
+Add-Content -Path $PROFILE -Value 'Invoke-Expression (& scuv init powershell)'
 . $PROFILE
 ```
 
@@ -36,35 +36,35 @@ Add-Content -Path $PROFILE -Value 'Invoke-Expression (& scoop init powershell)'
 
 ```bash
 # Install latest Python
-scoop install 3.12
+scuv install 3.12
 
 # Verify installation
-scoop list --pythons
+scuv list --pythons
 ```
 
 ## 3. Create a Virtual Environment
 
 ```bash
-scoop create myproject 3.12
+scuv create myproject 3.12
 ```
 
-This creates a virtual environment at `~/.scoop/virtualenvs/myproject/`.
+This creates a virtual environment at `~/.scuv/virtualenvs/myproject/`.
 
 If Python 3.12 isn't installed yet, add `--install-python` to install it on demand:
 
 ```bash
-scoop create myproject 3.12 --install-python
+scuv create myproject 3.12 --install-python
 ```
 
 ## 4. Use the Environment
 
 ```bash
 cd ~/projects/myproject
-scoop use myproject
+scuv use myproject
 ```
 
 This:
-1. Creates `.scoop-version` file in the current directory
+1. Creates `.scuv-version` file in the current directory
 2. Activates the environment (prompt shows `(myproject)`)
 
 ## 5. Work With Your Environment
@@ -81,7 +81,7 @@ This:
 
 ## 6. Auto-Activation
 
-Once configured, entering a directory with `.scoop-version` automatically activates the environment:
+Once configured, entering a directory with `.scuv-version` automatically activates the environment:
 
 ```bash
 cd ~/projects/myproject
@@ -92,21 +92,21 @@ cd ~/projects/myproject
 
 | Task | Command |
 |------|---------|
-| List environments | `scoop list` |
-| List Python versions | `scoop list --pythons` |
-| Show environment info | `scoop info myproject` |
-| Remove environment | `scoop remove myproject` |
-| Check installation | `scoop doctor` |
+| List environments | `scuv list` |
+| List Python versions | `scuv list --pythons` |
+| Show environment info | `scuv info myproject` |
+| Remove environment | `scuv remove myproject` |
+| Check installation | `scuv doctor` |
 
 ## IDE Integration
 
 Create a `.venv` symlink for IDE compatibility:
 
 ```bash
-scoop use myproject --link
+scuv use myproject --link
 ```
 
-This creates `.venv` pointing to the scoop environment, recognized by VS Code, PyCharm, etc.
+This creates `.venv` pointing to the scuv environment, recognized by VS Code, PyCharm, etc.
 
 ## Next Steps
 

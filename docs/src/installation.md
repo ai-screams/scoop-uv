@@ -13,34 +13,34 @@
 cargo install scoop-uv
 ```
 
-The binary is installed to `~/.cargo/bin/scoop`.
+The binary is installed to `~/.cargo/bin/scuv`.
 
 ## Upgrade
 
-To upgrade scoop to the latest version:
+To upgrade scuv to the latest version:
 
 ```bash
 cargo install scoop-uv
 ```
 
-This overwrites the existing binary in `~/.cargo/bin/scoop`. Your virtual environments in `~/.scoop/` are preserved.
+This overwrites the existing binary in `~/.cargo/bin/scuv`. Your virtual environments in `~/.scuv/` are preserved.
 
 Verify the upgrade:
 
 ```bash
-scoop --version
+scuv --version
 ```
 
 ## Verify Installation
 
 ```bash
-scoop --version
-# scoop 0.14.1
+scuv --version
+# scuv 0.14.1
 ```
 
 ## Troubleshooting
 
-### `scoop: command not found`
+### `scuv: command not found`
 
 Ensure `~/.cargo/bin` is in your PATH:
 
@@ -57,7 +57,7 @@ source ~/.zshrc  # or ~/.bashrc
 
 ### uv not found
 
-scoop requires uv to be installed and available in PATH. Verify:
+scuv requires uv to be installed and available in PATH. Verify:
 
 ```bash
 uv --version

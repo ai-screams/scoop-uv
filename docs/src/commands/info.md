@@ -1,14 +1,14 @@
 # info
 
 Show detailed information about a virtual environment — heavier
-sibling of [`scoop status`](status.md). Reads metadata, walks the
+sibling of [`scuv status`](status.md). Reads metadata, walks the
 directory for size, and shells out to the venv's own `pip` for a
 package list.
 
 ## Usage
 
 ```bash
-scoop info <name>
+scuv info <name>
 ```
 
 ## Arguments
@@ -30,7 +30,7 @@ scoop info <name>
 ```
 Name:        myproject
 Python:      3.12.1
-Path:        ~/.scoop/virtualenvs/myproject
+Path:        ~/.scuv/virtualenvs/myproject
 Active:      yes
 Created:     2026-05-29 12:34:56
 Last used:   3 hours ago
@@ -41,14 +41,14 @@ Packages:    8
 ```
 
 The `Last used:` row reads `never` for envs whose metadata exists but
-have never been activated (`scoop activate` / `scoop run` /
-`scoop shell` is what touches it), and is omitted entirely when there
+have never been activated (`scuv activate` / `scuv run` /
+`scuv shell` is what touches it), and is omitted entirely when there
 is no on-disk metadata at all.
 
 ## JSON Output
 
 ```bash
-scoop info myproject --json
+scuv info myproject --json
 ```
 
 ```json
@@ -58,7 +58,7 @@ scoop info myproject --json
   "data": {
     "name": "myproject",
     "python": "3.12.1",
-    "path": "/Users/me/.scoop/virtualenvs/myproject",
+    "path": "/Users/me/.scuv/virtualenvs/myproject",
     "active": true,
     "created_at": "2026-05-29T12:34:56+00:00",
     "last_used": "2026-06-02T09:00:00+00:00",
@@ -75,8 +75,8 @@ activated. `size_bytes` / `size_display` are omitted under `--no-size`.
 ## Examples
 
 ```bash
-scoop info myproject              # Default top-5 packages
-scoop info myproject --all-packages
-scoop info myproject --no-size    # Skip directory-size walk
-scoop info myproject --json
+scuv info myproject              # Default top-5 packages
+scuv info myproject --all-packages
+scuv info myproject --no-size    # Skip directory-size walk
+scuv info myproject --json
 ```

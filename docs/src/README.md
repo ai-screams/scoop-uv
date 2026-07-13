@@ -1,49 +1,49 @@
 # Introduction
 
-**scoop** is a centralized Python virtual environment manager powered by [uv](https://github.com/astral-sh/uv).
+**scuv** is a centralized Python virtual environment manager powered by [uv](https://github.com/astral-sh/uv).
 
 > One scoop, endless envs — pyenv-style workflow with uv's blazing speed.
 
-## What is scoop?
+## What is scuv?
 
 Think of it like running an ice cream parlor:
 
-- **The Freezer** (`~/.scoop/`) keeps all your flavors fresh
+- **The Freezer** (`~/.scuv/`) keeps all your flavors fresh
 - **Flavors** are your virtualenvs — mix once, serve anywhere
 - **One scoop** is all you need to get the right env
 
-| The Old Way | The scoop Way |
+| The Old Way | The scuv Way |
 |-------------|---------------|
-| `.venv` scattered across projects | `~/.scoop/virtualenvs/` centralized |
+| `.venv` scattered across projects | `~/.scuv/virtualenvs/` centralized |
 | Manual `source .venv/bin/activate` | Auto-activate on directory entry |
 | pyenv-virtualenv is slow | uv-powered, 100x+ faster |
-| Which Python? Which venv? Chaos. | `scoop doctor` checks everything |
+| Which Python? Which venv? Chaos. | `scuv doctor` checks everything |
 
 ## Quick Example
 
 ```bash
 # Install Python
-scoop install 3.12
+scuv install 3.12
 
 # Create a virtualenv
-scoop create myproject 3.12
+scuv create myproject 3.12
 
 # Use it (auto-activates!)
-scoop use myproject
+scuv use myproject
 (myproject) $ pip install -r requirements.txt
 
 # Check what's available
-scoop list
+scuv list
 ```
 
 ## Features
 
 - **Fast** — Powered by uv, virtualenv creation is nearly instant
-- **Centralized** — All environments live in `~/.scoop/virtualenvs/`
+- **Centralized** — All environments live in `~/.scuv/virtualenvs/`
 - **Auto-activation** — Enter a directory, environment activates automatically
 - **Shell integration** — Works with bash, zsh, fish, and PowerShell
-- **IDE friendly** — `scoop use --link` creates `.venv` symlink for IDE discovery
-- **Health checks** — `scoop doctor` diagnoses your setup
+- **IDE friendly** — `scuv use --link` creates `.venv` symlink for IDE discovery
+- **Health checks** — `scuv doctor` diagnoses your setup
 
 ## Getting Started
 

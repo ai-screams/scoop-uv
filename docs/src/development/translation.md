@@ -1,13 +1,13 @@
 # Translation Guide
 
-This document provides guidelines for contributing translations to scoop.
+This document provides guidelines for contributing translations to scuv.
 
 ## Current Status
 
 For the latest translation status, see:
 
 - **[Issue #42: i18n Translation Tracking](https://github.com/ai-screams/scoop-uv/issues/42)**
-- Run `scoop lang --list` to see currently supported languages
+- Run `scuv lang --list` to see currently supported languages
 
 ---
 
@@ -66,8 +66,8 @@ cargo build
 cargo test
 
 # Test your language (replace {lang} with your language code)
-SCOOP_LANG={lang} ./target/debug/scoop --help
-SCOOP_LANG={lang} ./target/debug/scoop lang
+SCUV_LANG={lang} ./target/debug/scuv --help
+SCUV_LANG={lang} ./target/debug/scuv lang
 ```
 
 ### Step 5: Create Pull Request
@@ -93,7 +93,7 @@ docs(i18n): add {Language Name} translation
 
 - **Word choice is yours** — Pick terms that feel natural to native speakers
 - **Creativity welcome** — Witty expressions are fine if they're clear and widely understood
-- **Casual over formal** — scoop is a friendly CLI tool, not enterprise software
+- **Casual over formal** — scuv is a friendly CLI tool, not enterprise software
 
 ### General Principles
 
@@ -123,7 +123,7 @@ docs(i18n): add {Language Name} translation
 | Progress | "Installing..."             | Use progressive/ongoing form        |
 | Success  | "Created 'myenv'"           | Completion — feel free to add flair |
 | Error    | "Can't find 'myenv'"        | Clear and actionable                |
-| Hint     | "→ Create: scoop create..." | Helpful, not lecturing              |
+| Hint     | "→ Create: scuv create..." | Helpful, not lecturing              |
 
 ### Translator's Discretion
 
@@ -156,7 +156,7 @@ These terms should remain in English in all languages:
 
 | Term                | Reason                           |
 |---------------------|----------------------------------|
-| `scoop`             | Brand name                       |
+| `scuv`             | Brand name                       |
 | `uv`                | Tool name                        |
 | `pyenv`             | Tool name                        |
 | `conda`             | Tool name                        |
@@ -177,7 +177,7 @@ All commands and code examples must stay in English:
 hint: "→ Create: {translated_command} myenv 3.12"
 
 # CORRECT - Only description translated
-hint: "→ {translated_word}: scoop create myenv 3.12"
+hint: "→ {translated_word}: scuv create myenv 3.12"
 ```
 
 ### Common Terms to Translate
@@ -203,13 +203,13 @@ These are core concepts you'll need to translate. Reference existing translation
 
 ### Ice Cream Metaphor (README only)
 
-scoop uses ice cream metaphors in documentation:
+scuv uses ice cream metaphors in documentation:
 
 | Term    | Meaning             | Guidance                                         |
 |---------|---------------------|--------------------------------------------------|
-| scoop   | The tool            | Always keep as "scoop"                           |
+| scuv   | The tool            | Always keep as "scuv"                           |
 | flavor  | virtualenv          | Translate if the metaphor works in your language |
-| freezer | ~/.scoop/ directory | Translate if the metaphor works                  |
+| freezer | ~/.scuv/ directory | Translate if the metaphor works                  |
 
 **Note:** The metaphor is mainly in README.md, not in CLI messages (`locales/app.yml`).
 
@@ -237,8 +237,8 @@ scoop uses ice cream metaphors in documentation:
 
 ```rust
 // Language detection priority:
-// 1. SCOOP_LANG environment variable
-// 2. Config file (~/.scoop/config.json)
+// 1. SCUV_LANG environment variable
+// 2. Config file (~/.scuv/config.json)
 // 3. System locale
 // 4. Default: "en"
 
@@ -255,7 +255,7 @@ pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
 
 ### 1. Missing `SUPPORTED_LANGS` Registration
 
-**Symptom:** Translation exists but `scoop lang {code}` doesn't work
+**Symptom:** Translation exists but `scuv lang {code}` doesn't work
 
 **Fix:** Add language to `src/i18n.rs` SUPPORTED_LANGS
 
@@ -276,7 +276,7 @@ error: "Cannot find '%{name}' environment"
 hint: "→ List: {translated} list"
 
 # CORRECT - Only label translated
-hint: "→ {Translated Label}: scoop list"
+hint: "→ {Translated Label}: scuv list"
 ```
 
 ### 4. Inconsistent Key Coverage
@@ -294,7 +294,7 @@ Before submitting PR:
 - [ ] Language registered in SUPPORTED_LANGS
 - [ ] `cargo build` succeeds
 - [ ] `cargo test` passes
-- [ ] `SCOOP_LANG={code} scoop lang` shows your language
+- [ ] `SCUV_LANG={code} scuv lang` shows your language
 - [ ] Messages display correctly in terminal
 
 ---

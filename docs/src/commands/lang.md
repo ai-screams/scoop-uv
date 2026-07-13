@@ -1,21 +1,21 @@
 # lang
 
-Get or set the display language for scoop CLI messages.
+Get or set the display language for scuv CLI messages.
 
 ## Usage
 
 ```bash
 # Show current language
-scoop lang
+scuv lang
 
 # Set language
-scoop lang <code>
+scuv lang <code>
 
 # List supported languages
-scoop lang --list
+scuv lang --list
 
 # Reset to system default
-scoop lang --reset
+scuv lang --reset
 ```
 
 ## Arguments
@@ -43,8 +43,8 @@ scoop lang --reset
 
 ## Language Detection Priority
 
-1. `SCOOP_LANG` environment variable
-2. `~/.scoop/config.json` setting
+1. `SCUV_LANG` environment variable
+2. `~/.scuv/config.json` setting
 3. System locale (via `sys-locale`)
 4. Default: `en`
 
@@ -53,21 +53,21 @@ scoop lang --reset
 ### Show Current Language
 
 ```bash
-$ scoop lang
+$ scuv lang
 Current language: en (English)
 ```
 
 ### Set Korean
 
 ```bash
-$ scoop lang ko
+$ scuv lang ko
 ✓ Language set to Korean (한국어)
 ```
 
 ### List Languages
 
 ```bash
-$ scoop lang --list
+$ scuv lang --list
 Supported languages:
   en - English
   ko - 한국어 (Korean)
@@ -78,14 +78,14 @@ Supported languages:
 ### Reset to System Default
 
 ```bash
-$ scoop lang --reset
+$ scuv lang --reset
 ✓ Language reset to system default
 ```
 
 ### JSON Output
 
 ```bash
-$ scoop lang --json
+$ scuv lang --json
 {
   "status": "success",
   "command": "lang",
@@ -102,7 +102,7 @@ $ scoop lang --json
 Language preference is stored in:
 
 ```
-~/.scoop/config.json
+~/.scuv/config.json
 ```
 
 ```json
@@ -113,10 +113,10 @@ Language preference is stored in:
 
 ```bash
 # Temporarily use English regardless of config
-SCOOP_LANG=en scoop list
+SCUV_LANG=en scuv list
 
 # Set for current session
-export SCOOP_LANG=ko
+export SCUV_LANG=ko
 ```
 
 ## Notes

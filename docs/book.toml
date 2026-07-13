@@ -2,7 +2,7 @@
 # https://rust-lang.github.io/mdBook/format/configuration/
 
 [book]
-title = "scoop Documentation"
+title = "scuv Documentation"
 description = "Centralized Python virtual environment manager using uv"
 authors = ["ai-screams"]
 language = "en"

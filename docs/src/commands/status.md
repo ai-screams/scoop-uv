@@ -1,13 +1,13 @@
 # status
 
 Summarise the current environment in one shot — designed to be fast (no
-package listing, no directory size walk). Use [`scoop info`](info.md) for the
+package listing, no directory size walk). Use [`scuv info`](info.md) for the
 heavier per-env view.
 
 ## Usage
 
 ```bash
-scoop status [--json]
+scuv status [--json]
 ```
 
 ## States
@@ -16,12 +16,12 @@ scoop status [--json]
 
 | State | Trigger |
 |-------|---------|
-| `active` | `$SCOOP_ACTIVE` is set (shell-activated) |
-| `configured` | A `.scoop-version` file or `~/.scoop/version` selects an env |
+| `active` | `$SCUV_ACTIVE` is set (shell-activated) |
+| `configured` | A `.scuv-version` file or `~/.scuv/version` selects an env |
 | `system` | The configured env is the literal name `system` |
 | `none` | Nothing resolved |
 
-`$SCOOP_ACTIVE` wins over version files because it reflects what the shell
+`$SCUV_ACTIVE` wins over version files because it reflects what the shell
 actually activated.
 
 ## Human Output
@@ -30,22 +30,22 @@ For a real env (`active` / `configured`):
 
 ```
 Name:     myenv
-Source:   scoop_active_env
+Source:   scuv_active_env
 Python:   3.12.1
-Path:     ~/.scoop/virtualenvs/myenv
+Path:     ~/.scuv/virtualenvs/myenv
 Created:  2026-05-29 12:34:56
 Last used:3 hours ago
 ```
 
 The `Last used:` row reads `never` for envs that have metadata but
-have not yet been activated (fresh `scoop create`, or envs whose
+have not yet been activated (fresh `scuv create`, or envs whose
 metadata predates the field). It's omitted entirely when there's no
 metadata at all — that way "we don't know" doesn't get conflated with
 "definitely never used".
 
 For `system`: a single line indicating system Python is in use.
 
-For `none`: a hint pointing to `scoop use <name>`.
+For `none`: a hint pointing to `scuv use <name>`.
 
 ## JSON Output
 
@@ -56,8 +56,8 @@ For `none`: a hint pointing to `scoop use <name>`.
   "data": {
     "state": "active",
     "name": "myenv",
-    "source": "scoop_active_env",
-    "path": "/Users/me/.scoop/virtualenvs/myenv",
+    "source": "scuv_active_env",
+    "path": "/Users/me/.scuv/virtualenvs/myenv",
     "python": "3.12.1",
     "created_at": "2026-05-29T12:34:56+00:00",
     "last_used": "2026-06-02T09:00:00+00:00"
@@ -82,6 +82,6 @@ to tell the two cases apart.
 ## Examples
 
 ```bash
-scoop status                       # human-readable
-scoop status --json                # machine-readable
+scuv status                       # human-readable
+scuv status --json                # machine-readable
 ```
