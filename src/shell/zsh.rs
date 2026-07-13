@@ -399,6 +399,14 @@ _scuv() {
 
 # Register completion only if compdef is available (requires compinit)
 (( $+functions[compdef] )) && compdef _scuv scuv
+
+# DEPRECATION(0.16.0): transitional forwarder; never emitted for PowerShell.
+if ! command -v scoop >/dev/null 2>&1; then
+    scoop() {
+        echo "warning: 'scoop' has been renamed to 'scuv'; this alias will be removed in v0.16.0" >&2
+        scuv "$@"
+    }
+fi
 "#
     )
 }
@@ -487,6 +495,12 @@ mod tests {
             script.contains("compdef _scuv scuv"),
             "Script must register zsh completion"
         );
+    }
+
+    #[test]
+    fn init_script_defines_deprecated_scoop_forwarder() {
+        assert!(init_script().contains("scoop() {"));
+        assert!(init_script().contains("renamed to 'scuv'"));
     }
 
     #[test]

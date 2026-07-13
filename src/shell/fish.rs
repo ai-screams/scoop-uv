@@ -186,6 +186,14 @@ complete -c scuv -n "__fish_seen_subcommand_from lang" -a "pt-BR" -d "Portuguese
 complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "list" -d "List environments available for migration"
 complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "all" -d "Migrate all environments"
 complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "@env" -d "Migrate a specific environment"
+
+# DEPRECATION(0.16.0): transitional forwarder; never emitted for PowerShell.
+if not command -q scoop
+    function scoop
+        echo "warning: 'scoop' has been renamed to 'scuv'; this alias will be removed in v0.16.0" >&2
+        scuv $argv
+    end
+end
 "#
     )
 }
@@ -338,6 +346,12 @@ mod tests {
             script.contains("scuv list --pythons --bare"),
             "Script must provide dynamic Python version completions"
         );
+    }
+
+    #[test]
+    fn init_script_defines_deprecated_scoop_forwarder() {
+        assert!(init_script().contains("function scoop"));
+        assert!(init_script().contains("renamed to 'scuv'"));
     }
 
     #[test]

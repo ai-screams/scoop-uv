@@ -310,4 +310,14 @@ mod tests {
             "Script must handle 'use' command specially"
         );
     }
+
+    /// Safety-critical: scoop.sh (the Windows package manager) coexistence.
+    /// PowerShell must NEVER define a `scoop` function or alias, or it would
+    /// shadow the real `scoop` command for scoop.sh users.
+    #[test]
+    fn init_script_never_defines_scoop() {
+        let s = init_script();
+        assert!(!s.to_lowercase().contains("function scoop"));
+        assert!(!s.to_lowercase().contains("set-alias scoop"));
+    }
 }
