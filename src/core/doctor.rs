@@ -1770,4 +1770,166 @@ mod tests {
             );
         });
     }
+
+    // ==========================================================================
+    // Check-trait dispatch coverage. The underlying logic above is tested
+    // directly; these pin the thin trait wrappers (id/name/run) so a broken
+    // registration or renamed check surfaces in tests, not in `doctor` output.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn legacy_check_trait_dispatch_reports_identity_and_runs() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_VERSION", None),
+            ("SCOOP_LANG", None),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let _cwd = TempDirCwdGuard::new();
+
+        let check: &dyn Check = &LegacyCheck;
+        assert_eq!(check.id(), "legacy");
+        assert_eq!(check.name(), "legacy scoop remnants");
+        let results = check.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert_eq!(results[0].id, "legacy");
+        assert!(results[0].is_ok(), "clean env must be Ok, got {results:#?}");
+    }
+
+    #[test]
+    #[serial]
+    fn home_check_trait_dispatch_ok_on_existing_writable_home() {
+        with_temp_scoop_home(|temp| {
+            let check: &dyn Check = &HomeCheck;
+            assert_eq!(check.id(), "home");
+            assert_eq!(check.name(), "SCUV_HOME directory");
+            let results = check.run();
+            assert_eq!(results.len(), 1, "got {results:#?}");
+            assert!(results[0].is_ok(), "got {results:#?}");
+            let details = results[0].details.as_deref().unwrap_or_default();
+            assert!(
+                details.contains(temp.path().to_str().unwrap()),
+                "details should name the home path, got {details:?}"
+            );
+        });
+    }
+
+    #[test]
+    fn uv_check_trait_dispatch_always_reports_under_uv_id() {
+        // Environment-tolerant: passes whether or not a usable `uv` is on
+        // PATH — what it pins is that run() actually runs and every result
+        // carries this check's identity.
+        let check: &dyn Check = &UvCheck;
+        assert_eq!(check.id(), "uv");
+        assert_eq!(check.name(), "uv installation");
+        let results = check.run();
+        assert!(!results.is_empty(), "run() must produce results");
+        assert!(
+            results.iter().all(|r| r.id == "uv"),
+            "all results must carry the uv id, got {results:#?}"
+        );
+    }
+
+    // ==========================================================================
+    // ShellCheck zsh branch (the `shell_name == "zsh"` boundary): the
+    // suggestion must name `scuv init zsh`, not bash, and read .zshrc.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn shell_check_zsh_warns_on_legacy_only_line_with_zsh_suggestion() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        std::fs::write(
+            home_tmp.path().join(".zshrc"),
+            "eval \"$(scoop init zsh)\"\n",
+        )
+        .unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/zsh")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(results[0].is_warning(), "got {results:#?}");
+        let suggestion = results[0].suggestion.as_deref().unwrap_or_default();
+        assert!(
+            suggestion.contains("scuv init zsh"),
+            "zsh shell must get a zsh suggestion, got {suggestion:?}"
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn shell_check_zsh_is_ok_with_current_scuv_init_line() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        std::fs::write(
+            home_tmp.path().join(".zshrc"),
+            "eval \"$(scuv init zsh)\"\n",
+        )
+        .unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/zsh")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(results[0].is_ok(), "got {results:#?}");
+    }
+
+    // ==========================================================================
+    // Doctor::fix_home — creates the missing home (+ virtualenvs) only for
+    // "not found" errors, and leaves anything else alone.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn fix_home_creates_missing_home_and_virtualenvs_dir() {
+        let tmp = tempfile::tempdir().unwrap();
+        let missing_home = tmp.path().join("scuvhome");
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(missing_home.to_str().unwrap()),
+        )]);
+
+        let doctor = Doctor::new();
+        let output = crate::output::Output::new(0, true, true, false);
+        let broken = CheckResult::error("home", "SCUV_HOME directory", "directory not found");
+
+        let fixed = doctor.fix_home(&broken, &output);
+        let fixed = fixed.expect("a 'not found' home error must be fixable");
+        assert!(fixed.is_ok(), "got {fixed:#?}");
+        assert!(missing_home.is_dir(), "home dir must be created");
+        assert!(
+            missing_home.join("virtualenvs").is_dir(),
+            "virtualenvs subdir must be created"
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn fix_home_ignores_non_not_found_results() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(tmp.path().to_str().unwrap()),
+        )]);
+
+        let doctor = Doctor::new();
+        let output = crate::output::Output::new(0, true, true, false);
+        let unrelated = CheckResult::error("home", "SCUV_HOME directory", "permission denied");
+        assert!(doctor.fix_home(&unrelated, &output).is_none());
+
+        let warning = CheckResult::warn("home", "SCUV_HOME directory", "directory not found");
+        assert!(
+            doctor.fix_home(&warning, &output).is_none(),
+            "only Error status is fixable, not Warning"
+        );
+    }
 }
