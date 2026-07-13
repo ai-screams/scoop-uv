@@ -541,8 +541,8 @@ mod tests {
         };
         let suggestion = err.suggestion_in("en").expect("should have suggestion");
         assert!(
-            suggestion.contains("scoop install") && suggestion.contains("3.13"),
-            "PythonNotInstalled suggestion should include scoop install"
+            suggestion.contains("scuv install") && suggestion.contains("3.13"),
+            "PythonNotInstalled suggestion should include scuv install"
         );
     }
 
@@ -943,7 +943,7 @@ mod tests {
         let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("myenv"));
-        assert!(suggestion.contains("scoop create"));
+        assert!(suggestion.contains("scuv create"));
     }
 
     #[test]
@@ -984,7 +984,7 @@ mod tests {
         let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
         assert!(suggestion.contains("3.13"));
-        assert!(suggestion.contains("scoop install"));
+        assert!(suggestion.contains("scuv install"));
     }
 
     #[test]
@@ -994,7 +994,7 @@ mod tests {
         };
         let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
-        assert!(suggestion.contains("scoop list --pythons"));
+        assert!(suggestion.contains("scuv list --pythons"));
     }
 
     #[test]
@@ -1050,7 +1050,7 @@ mod tests {
         };
         let suggestion = err.suggestion_in("en").unwrap();
         assert!(suggestion.starts_with("→"));
-        assert!(suggestion.contains("scoop doctor"));
+        assert!(suggestion.contains("scuv doctor"));
     }
 
     #[test]
@@ -1087,7 +1087,7 @@ mod tests {
             version: "3.12".into(),
             message: "network error".into(),
         };
-        assert!(err.suggestion_in("en").unwrap().contains("scoop doctor"));
+        assert!(err.suggestion_in("en").unwrap().contains("scuv doctor"));
     }
 
     #[test]
@@ -1096,7 +1096,7 @@ mod tests {
             version: "3.11".into(),
             message: "in use".into(),
         };
-        assert!(err.suggestion_in("en").unwrap().contains("scoop doctor"));
+        assert!(err.suggestion_in("en").unwrap().contains("scuv doctor"));
     }
 
     #[test]
@@ -1121,7 +1121,7 @@ mod tests {
         // match arm would collapse this to `None`, which the assertions catch.
         let s = ScoopError::NoActiveEnvironment.suggestion_in("en").unwrap();
         assert!(s.starts_with("→"));
-        assert!(s.contains("scoop use"));
+        assert!(s.contains("scuv use"));
         assert!(s.contains("--env"));
     }
 
@@ -1135,7 +1135,7 @@ mod tests {
         assert!(s.starts_with("→"));
         // Must interpolate the env name so the user knows where to look.
         assert!(s.contains("myenv"));
-        assert!(s.contains("scoop info"));
+        assert!(s.contains("scuv info"));
     }
 
     #[test]

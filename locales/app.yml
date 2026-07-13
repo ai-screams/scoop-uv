@@ -1,4 +1,4 @@
-# scoop i18n translations
+# scuv i18n translations
 # Format: rust-i18n Version 2
 _version: 2
 
@@ -36,10 +36,10 @@ lang.list_header:
   ja: "対応言語:"
 
 lang.hint:
-  en: "Run 'scoop lang --list' to see supported languages"
-  ko: "'scoop lang --list'로 지원 언어 확인"
-  pt-BR: "Execute 'scoop lang --list' para ver os idiomas suportados"
-  ja: "'scoop lang --list' を実行するとサポートされている言語を確認できます"
+  en: "Run 'scuv lang --list' to see supported languages"
+  ko: "'scuv lang --list'로 지원 언어 확인"
+  pt-BR: "Execute 'scuv lang --list' para ver os idiomas suportados"
+  ja: "'scuv lang --list' を実行するとサポートされている言語を確認できます"
 
 # ============================================================================
 # Create command
@@ -69,10 +69,10 @@ create.path:
   ja: "  パス: %{path}"
 
 create.activate_hint:
-  en: "  Activate: scoop use %{name}"
-  ko: "  활성화: scoop use %{name}"
-  pt-BR: "  Ativar: scoop use %{name}"
-  ja: "  有効化: scoop use %{name}"
+  en: "  Activate: scuv use %{name}"
+  ko: "  활성화: scuv use %{name}"
+  pt-BR: "  Ativar: scuv use %{name}"
+  ja: "  有効化: scuv use %{name}"
 
 create.creating_with_path:
   en: "Creating '%{name}' (Python: %{path})..."
@@ -159,19 +159,19 @@ error.unsupported_export_version:
   ja: "エクスポートファイルのバージョン '%{version}' は未対応です (このバイナリは '%{supported}')"
 
 suggestion.unsupported_export_version:
-  en: "→ Upgrade scoop to a build that supports version '%{supported}' or higher, or re-export from a compatible source"
-  ko: "→ '%{supported}' 이상을 지원하는 scoop으로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
-  pt-BR: "→ Atualize o scoop para uma versão que suporte '%{supported}' ou superior, ou re-exporte de uma fonte compatível"
-  ja: "→ '%{supported}' 以降に対応する scoop にアップグレードするか、互換性のある環境から再エクスポートしてください"
+  en: "→ Upgrade scuv to a build that supports version '%{supported}' or higher, or re-export from a compatible source"
+  ko: "→ '%{supported}' 이상을 지원하는 scuv로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
+  pt-BR: "→ Atualize o scuv para uma versão que suporte '%{supported}' ou superior, ou re-exporte de uma fonte compatível"
+  ja: "→ '%{supported}' 以降に対応する scuv にアップグレードするか、互換性のある環境から再エクスポートしてください"
 
 # ============================================================================
-# Sync command (.scoop.toml)
+# Sync command (.scuv.toml)
 # ============================================================================
 sync.creating_env:
-  en: "Creating '%{name}' (Python %{python}) per .scoop.toml..."
-  ko: ".scoop.toml에 따라 '%{name}' 생성 중 (Python %{python})..."
-  pt-BR: "Criando '%{name}' (Python %{python}) conforme .scoop.toml..."
-  ja: ".scoop.toml に従って '%{name}' を作成中 (Python %{python})..."
+  en: "Creating '%{name}' (Python %{python}) per .scuv.toml..."
+  ko: ".scuv.toml에 따라 '%{name}' 생성 중 (Python %{python})..."
+  pt-BR: "Criando '%{name}' (Python %{python}) conforme .scuv.toml..."
+  ja: ".scuv.toml に従って '%{name}' を作成中 (Python %{python})..."
 
 sync.installing:
   en: "Installing %{count} packages..."
@@ -198,22 +198,22 @@ sync.dry_run_header:
   ja: "Dry-run 計画:"
 
 sync.python_mismatch_warn:
-  en: "'%{name}' uses Python %{actual} but .scoop.toml asks for %{wanted} — syncing packages anyway"
-  ko: "'%{name}'은 Python %{actual} 사용 중이지만 .scoop.toml은 %{wanted} 요청 — 패키지 동기화는 계속 진행"
-  pt-BR: "'%{name}' usa Python %{actual} mas .scoop.toml pede %{wanted} — sincronizando pacotes mesmo assim"
-  ja: "'%{name}' は Python %{actual} を使用していますが .scoop.toml は %{wanted} を要求 — パッケージ同期は続行"
+  en: "'%{name}' uses Python %{actual} but .scuv.toml asks for %{wanted} — syncing packages anyway"
+  ko: "'%{name}'은 Python %{actual} 사용 중이지만 .scuv.toml은 %{wanted} 요청 — 패키지 동기화는 계속 진행"
+  pt-BR: "'%{name}' usa Python %{actual} mas .scuv.toml pede %{wanted} — sincronizando pacotes mesmo assim"
+  ja: "'%{name}' は Python %{actual} を使用していますが .scuv.toml は %{wanted} を要求 — パッケージ同期は続行"
 
 sync.unknown_group_error:
-  en: "Group '%{group}' is not defined in .scoop.toml (available: %{groups})"
-  ko: "'%{group}' 그룹이 .scoop.toml에 정의되어 있지 않음 (사용 가능: %{groups})"
-  pt-BR: "Grupo '%{group}' não está definido em .scoop.toml (disponíveis: %{groups})"
-  ja: ".scoop.toml にグループ '%{group}' が定義されていません (利用可能: %{groups})"
+  en: "Group '%{group}' is not defined in .scuv.toml (available: %{groups})"
+  ko: "'%{group}' 그룹이 .scuv.toml에 정의되어 있지 않음 (사용 가능: %{groups})"
+  pt-BR: "Grupo '%{group}' não está definido em .scuv.toml (disponíveis: %{groups})"
+  ja: ".scuv.toml にグループ '%{group}' が定義されていません (利用可能: %{groups})"
 
 error.manifest_not_found:
-  en: "No .scoop.toml found in '%{path}' or any parent directory"
-  ko: "'%{path}' 또는 상위 디렉터리 어디에도 .scoop.toml이 없어요"
-  pt-BR: "Nenhum .scoop.toml encontrado em '%{path}' ou nos diretórios pai"
-  ja: "'%{path}' またはその上位ディレクトリに .scoop.toml が見つかりません"
+  en: "No .scuv.toml found in '%{path}' or any parent directory"
+  ko: "'%{path}' 또는 상위 디렉터리 어디에도 .scuv.toml이 없어요"
+  pt-BR: "Nenhum .scuv.toml encontrado em '%{path}' ou nos diretórios pai"
+  ja: "'%{path}' またはその上位ディレクトリに .scuv.toml が見つかりません"
 
 suggestion.manifest_not_found:
   en: "→ Create one at the project root (see https://ai-screams.github.io/scoop-uv/commands/sync.html)"
@@ -225,10 +225,10 @@ suggestion.manifest_not_found:
 # Run command
 # ============================================================================
 run.empty_command:
-  en: "scoop run requires a command to execute"
-  ko: "scoop run은 실행할 명령이 필요해요"
-  pt-BR: "scoop run requer um comando para executar"
-  ja: "scoop run には実行するコマンドが必要です"
+  en: "scuv run requires a command to execute"
+  ko: "scuv run은 실행할 명령이 필요해요"
+  pt-BR: "scuv run requer um comando para executar"
+  ja: "scuv run には実行するコマンドが必要です"
 
 # ============================================================================
 # Remove command
@@ -273,10 +273,10 @@ list.no_envs:
   ja: "環境がまだありません"
 
 list.no_envs_hint:
-  en: "→ Create one: scoop create myenv 3.12"
-  ko: "→ 생성: scoop create myenv 3.12"
-  pt-BR: "→ Criar um: scoop create myenv 3.12"
-  ja: "→ 新規作成: scoop create myenv 3.12"
+  en: "→ Create one: scuv create myenv 3.12"
+  ko: "→ 생성: scuv create myenv 3.12"
+  pt-BR: "→ Criar um: scuv create myenv 3.12"
+  ja: "→ 新規作成: scuv create myenv 3.12"
 
 list.filtered_no_envs:
   en: "No environments using Python %{version}"
@@ -285,10 +285,10 @@ list.filtered_no_envs:
   ja: "Python %{version} を使用している環境はありません"
 
 list.filtered_hint:
-  en: "→ See all: scoop list"
-  ko: "→ 전체 보기: scoop list"
-  pt-BR: "→ Ver todos: scoop list"
-  ja: "→ 全件表示: scoop list"
+  en: "→ See all: scuv list"
+  ko: "→ 전체 보기: scuv list"
+  pt-BR: "→ Ver todos: scuv list"
+  ja: "→ 全件表示: scuv list"
 
 list.no_pythons:
   en: "No Python versions installed"
@@ -297,10 +297,10 @@ list.no_pythons:
   ja: "インストール済みの Python バージョンがありません"
 
 list.no_pythons_hint:
-  en: "→ Install one: scoop install 3.12"
-  ko: "→ 설치: scoop install 3.12"
-  pt-BR: "→ Instalar um: scoop install 3.12"
-  ja: "→ インストール: scoop install 3.12"
+  en: "→ Install one: scuv install 3.12"
+  ko: "→ 설치: scuv install 3.12"
+  pt-BR: "→ Instalar um: scuv install 3.12"
+  ja: "→ インストール: scuv install 3.12"
 
 # ============================================================================
 # Use command
@@ -468,16 +468,16 @@ migrate.found:
   ja: "%{count}個の環境が見つかりました:"
 
 migrate.hint_single:
-  en: "To migrate: scoop migrate @env <name>"
-  ko: "마이그레이션: scoop migrate @env <name>"
-  pt-BR: "Para migrar: scoop migrate @env <name>"
-  ja: "移行: scoop migrate @env <name>"
+  en: "To migrate: scuv migrate @env <name>"
+  ko: "마이그레이션: scuv migrate @env <name>"
+  pt-BR: "Para migrar: scuv migrate @env <name>"
+  ja: "移行: scuv migrate @env <name>"
 
 migrate.hint_preview:
-  en: "To preview: scoop migrate @env <name> --dry-run"
-  ko: "미리보기: scoop migrate @env <name> --dry-run"
-  pt-BR: "Para pré-visualizar: scoop migrate @env <name> --dry-run"
-  ja: "プレビュー: scoop migrate @env <name> --dry-run"
+  en: "To preview: scuv migrate @env <name> --dry-run"
+  ko: "미리보기: scuv migrate @env <name> --dry-run"
+  pt-BR: "Para pré-visualizar: scuv migrate @env <name> --dry-run"
+  ja: "プレビュー: scuv migrate @env <name> --dry-run"
 
 # ============================================================================
 # Migrate command - single
@@ -531,10 +531,10 @@ migrate.success:
   ja: "'%{name}' を移行しました"
 
 migrate.activate_hint:
-  en: "→ Activate: scoop use %{name}"
-  ko: "→ 활성화: scoop use %{name}"
-  pt-BR: "→ Ativar: scoop use %{name}"
-  ja: "→ 有効化: scoop use %{name}"
+  en: "→ Activate: scuv use %{name}"
+  ko: "→ 활성화: scuv use %{name}"
+  pt-BR: "→ Ativar: scuv use %{name}"
+  ja: "→ 有効化: scuv use %{name}"
 
 migrate.source_path:
   en: "  Source: %{path}"
@@ -750,10 +750,10 @@ error.invalid_python_version:
   ja: "無効な Python バージョン: %{version}"
 
 error.uv_not_found:
-  en: "uv not found (scoop's core engine)"
-  ko: "uv를 찾을 수 없음 (scoop 핵심 엔진)"
-  pt-BR: "uv não encontrado (engine principal do scoop)"
-  ja: "uv が見つかりません (scoop のコアエンジン)"
+  en: "uv not found (scuv's core engine)"
+  ko: "uv를 찾을 수 없음 (scuv 핵심 엔진)"
+  pt-BR: "uv não encontrado (engine principal do scuv)"
+  ja: "uv が見つかりません (scuv のコアエンジン)"
 
 error.uv_command_failed:
   en: "uv %{command} failed: %{message}"
@@ -897,10 +897,10 @@ error.shell_missing_name:
 # Error suggestions
 # ============================================================================
 suggestion.virtualenv_not_found:
-  en: "→ Create: scoop create %{name} 3.12"
-  ko: "→ 생성: scoop create %{name} 3.12"
-  pt-BR: "→ Criar: scoop create %{name} 3.12"
-  ja: "→ 作成: scoop create %{name} 3.12"
+  en: "→ Create: scuv create %{name} 3.12"
+  ko: "→ 생성: scuv create %{name} 3.12"
+  pt-BR: "→ Criar: scuv create %{name} 3.12"
+  ja: "→ 作成: scuv create %{name} 3.12"
 
 suggestion.virtualenv_exists:
   en: "→ Use --force to overwrite"
@@ -921,22 +921,22 @@ suggestion.uv_not_found:
   ja: "→ インストール: curl -LsSf https://astral.sh/uv/install.sh | sh"
 
 suggestion.run_doctor:
-  en: "→ Run `scoop doctor` to diagnose (e.g. uv missing or below the minimum version)"
-  ko: "→ `scoop doctor`로 진단해 보세요 (예: uv 미설치 또는 최소 버전 미달)"
-  pt-BR: "→ Execute `scoop doctor` para diagnosticar (ex: uv ausente ou abaixo da versão mínima)"
-  ja: "→ `scoop doctor` を実行して診断してください (例: uv 未インストールまたは最小バージョン未満)"
+  en: "→ Run `scuv doctor` to diagnose (e.g. uv missing or below the minimum version)"
+  ko: "→ `scuv doctor`로 진단해 보세요 (예: uv 미설치 또는 최소 버전 미달)"
+  pt-BR: "→ Execute `scuv doctor` para diagnosticar (ex: uv ausente ou abaixo da versão mínima)"
+  ja: "→ `scuv doctor` を実行して診断してください (例: uv 未インストールまたは最小バージョン未満)"
 
 suggestion.python_not_installed:
-  en: "→ Install: scoop install %{version}"
-  ko: "→ 설치: scoop install %{version}"
-  pt-BR: "→ Instalar: scoop install %{version}"
-  ja: "→ インストール: scoop install %{version}"
+  en: "→ Install: scuv install %{version}"
+  ko: "→ 설치: scuv install %{version}"
+  pt-BR: "→ Instalar: scuv install %{version}"
+  ja: "→ インストール: scuv install %{version}"
 
 suggestion.no_python_versions:
-  en: "→ See versions: scoop list --pythons"
-  ko: "→ 버전 목록: scoop list --pythons"
-  pt-BR: "→ Ver versões: scoop list --pythons"
-  ja: "→ バージョン一覧: scoop list --pythons"
+  en: "→ See versions: scuv list --pythons"
+  ko: "→ 버전 목록: scuv list --pythons"
+  pt-BR: "→ Ver versões: scuv list --pythons"
+  ja: "→ バージョン一覧: scuv list --pythons"
 
 suggestion.pyenv_not_found:
   en: "→ Check PYENV_ROOT or ~/.pyenv directory\n→ Install: https://github.com/pyenv/pyenv#installation"
@@ -945,10 +945,10 @@ suggestion.pyenv_not_found:
   ja: "→ PYENV_ROOT または ~/.pyenv を確認\n→ インストール: https://github.com/pyenv/pyenv#installation"
 
 suggestion.source_env_not_found:
-  en: "→ See available: scoop migrate list"
-  ko: "→ 목록 확인: scoop migrate list"
-  pt-BR: "→ Ver disponíveis: scoop migrate list"
-  ja: "→ 利用可能一覧: scoop migrate list"
+  en: "→ See available: scuv migrate list"
+  ko: "→ 목록 확인: scuv migrate list"
+  pt-BR: "→ Ver disponíveis: scuv migrate list"
+  ja: "→ 利用可能一覧: scuv migrate list"
 
 suggestion.migration_name_conflict:
   en: "→ Use --force to overwrite, or pick a different name"
@@ -981,10 +981,10 @@ status.no_env:
   ja: "設定された環境がありません"
 
 status.hint_use:
-  en: "→ Activate one: scoop use <name>"
-  ko: "→ 활성화: scoop use <이름>"
-  pt-BR: "→ Ative um: scoop use <nome>"
-  ja: "→ 有効化: scoop use <名前>"
+  en: "→ Activate one: scuv use <name>"
+  ko: "→ 활성화: scuv use <이름>"
+  pt-BR: "→ Ative um: scuv use <nome>"
+  ja: "→ 有効化: scuv use <名前>"
 
 status.system_python:
   en: "Using system Python (no virtualenv active)"
@@ -1002,10 +1002,10 @@ error.no_active_environment:
   ja: "アクティブな環境がありません"
 
 suggestion.no_active_environment:
-  en: "→ Activate one (scoop use <name>) or pass --env <name>"
-  ko: "→ 환경을 활성화하거나(scoop use <이름>) --env <이름>를 지정해 주세요"
-  pt-BR: "→ Ative um (scoop use <nome>) ou use --env <nome>"
-  ja: "→ 環境を有効化する (scoop use <名前>) か --env <名前> を指定してください"
+  en: "→ Activate one (scuv use <name>) or pass --env <name>"
+  ko: "→ 환경을 활성화하거나(scuv use <이름>) --env <이름>를 지정해 주세요"
+  pt-BR: "→ Ative um (scuv use <nome>) ou use --env <nome>"
+  ja: "→ 環境を有効化する (scuv use <名前>) か --env <名前> を指定してください"
 
 error.executable_not_found:
   en: "'%{exe}' not found in '%{env}'"
@@ -1014,13 +1014,13 @@ error.executable_not_found:
   ja: "'%{env}' に '%{exe}' が見つかりません"
 
 suggestion.executable_not_found:
-  en: "→ List installed packages: scoop info %{env}"
-  ko: "→ 설치된 패키지 확인: scoop info %{env}"
-  pt-BR: "→ Listar pacotes instalados: scoop info %{env}"
-  ja: "→ インストール済みパッケージを確認: scoop info %{env}"
+  en: "→ List installed packages: scuv info %{env}"
+  ko: "→ 설치된 패키지 확인: scuv info %{env}"
+  pt-BR: "→ Listar pacotes instalados: scuv info %{env}"
+  ja: "→ インストール済みパッケージを確認: scuv info %{env}"
 
 # ============================================================================
-# Self-update command (`scoop self update`)
+# Self-update command (`scuv self update`)
 # ============================================================================
 selfupdate.checking_latest:
   en: "Checking latest version on crates.io..."
@@ -1041,10 +1041,10 @@ selfupdate.already_on_requested:
   ja: "すでに指定されたバージョンです (%{version})"
 
 selfupdate.installing:
-  en: "Updating scoop %{from} → %{to}..."
-  ko: "scoop %{from} → %{to} 업데이트 중..."
-  pt-BR: "Atualizando scoop %{from} → %{to}..."
-  ja: "scoop %{from} → %{to} を更新中..."
+  en: "Updating scuv %{from} → %{to}..."
+  ko: "scuv %{from} → %{to} 업데이트 중..."
+  pt-BR: "Atualizando scuv %{from} → %{to}..."
+  ja: "scuv %{from} → %{to} を更新中..."
 
 selfupdate.installed:
   en: "Updated to %{version}"
@@ -1059,16 +1059,16 @@ selfupdate.verifying:
   ja: "新しいバイナリで環境を検証中..."
 
 selfupdate.verify_doctor_warnings:
-  en: "Update complete, but `scoop doctor` reported warnings. Please review the output above."
-  ko: "업데이트는 완료했지만 `scoop doctor`가 경고를 알려줬어요. 위 출력을 확인해 주세요."
-  pt-BR: "Atualização concluída, mas `scoop doctor` reportou avisos. Verifique a saída acima."
-  ja: "更新は完了しましたが、`scoop doctor` が警告を報告しました。上の出力を確認してください。"
+  en: "Update complete, but `scuv doctor` reported warnings. Please review the output above."
+  ko: "업데이트는 완료했지만 `scuv doctor`가 경고를 알려줬어요. 위 출력을 확인해 주세요."
+  pt-BR: "Atualização concluída, mas `scuv doctor` reportou avisos. Verifique a saída acima."
+  ja: "更新は完了しましたが、`scuv doctor` が警告を報告しました。上の出力を確認してください。"
 
 selfupdate.verify_doctor_errors:
-  en: "Update complete, but `scoop doctor` reported errors (e.g. uv below the new minimum). Please review the output above."
-  ko: "업데이트는 완료했지만 `scoop doctor`가 오류를 알려줬어요 (예: uv가 새 최소 버전 미달). 위 출력을 확인해 주세요."
-  pt-BR: "Atualização concluída, mas `scoop doctor` reportou erros (ex: uv abaixo do novo mínimo). Verifique a saída acima."
-  ja: "更新は完了しましたが、`scoop doctor` がエラーを報告しました (例: uv が新しい最小バージョン未満)。上の出力を確認してください。"
+  en: "Update complete, but `scuv doctor` reported errors (e.g. uv below the new minimum). Please review the output above."
+  ko: "업데이트는 완료했지만 `scuv doctor`가 오류를 알려줬어요 (예: uv가 새 최소 버전 미달). 위 출력을 확인해 주세요."
+  pt-BR: "Atualização concluída, mas `scuv doctor` reportou erros (ex: uv abaixo do novo mínimo). Verifique a saída acima."
+  ja: "更新は完了しましたが、`scuv doctor` がエラーを報告しました (例: uv が新しい最小バージョン未満)。上の出力を確認してください。"
 
 selfupdate.verify_launch_failed:
   en: "Verification skipped — could not run doctor: %{error}"
@@ -1203,10 +1203,10 @@ verify.file_missing:
   ja: "%{path} が見つかりません"
 
 verify.manifest_drift:
-  en: "env Python %{env} does not match .scoop.toml (%{manifest})"
-  ko: "환경의 Python %{env} 가 .scoop.toml (%{manifest}) 과 달라요"
-  pt-BR: "Python do ambiente %{env} não corresponde ao .scoop.toml (%{manifest})"
-  ja: "環境の Python %{env} は .scoop.toml (%{manifest}) と一致しません"
+  en: "env Python %{env} does not match .scuv.toml (%{manifest})"
+  ko: "환경의 Python %{env} 가 .scuv.toml (%{manifest}) 과 달라요"
+  pt-BR: "Python do ambiente %{env} não corresponde ao .scuv.toml (%{manifest})"
+  ja: "環境の Python %{env} は .scuv.toml (%{manifest}) と一致しません"
 
 verify.python_unknown:
   en: "Python version unknown"
@@ -1245,10 +1245,10 @@ verify.check_python_executes:
   ja: "Python 実行"
 
 verify.check_manifest_match:
-  en: "matches .scoop.toml"
-  ko: ".scoop.toml 일치"
-  pt-BR: "corresponde a .scoop.toml"
-  ja: ".scoop.toml と一致"
+  en: "matches .scuv.toml"
+  ko: ".scuv.toml 일치"
+  pt-BR: "corresponde a .scuv.toml"
+  ja: ".scuv.toml と一致"
 
 verify.summary_with_warnings:
   en: "%{total} env(s) checked: %{healthy} healthy, %{warnings} with warnings, %{issues} with issues"
@@ -1347,10 +1347,10 @@ migrate.batch_other_skipped:
   ja: "他 %{count} 件の環境をスキップ (破損 / EOL)"
 
 migrate.batch_force_hint:
-  en: "→ Pass --force to overwrite existing scoop environments"
-  ko: "→ --force 로 기존 scoop 환경 덮어쓰기"
-  pt-BR: "→ Use --force para sobrescrever ambientes scoop existentes"
-  ja: "→ --force で既存の scoop 環境を上書きできます"
+  en: "→ Pass --force to overwrite existing scuv environments"
+  ko: "→ --force 로 기존 scuv 환경 덮어쓰기"
+  pt-BR: "→ Use --force para sobrescrever ambientes scuv existentes"
+  ja: "→ --force で既存の scuv 環境を上書きできます"
 
 migrate.batch_conflicts_header:
   en: "%{count} name conflict(s) skipped (use --force):"
