@@ -563,7 +563,7 @@ pub enum Commands {
 
     /// Generate man pages (top-level + one per subcommand)
     Man {
-        /// Write `scoop.1` + `scoop-<sub>.1` files into this directory.
+        /// Write `scuv.1` + `scuv-<sub>.1` files into this directory.
         /// Omit to print the top-level page to stdout.
         #[arg(value_name = "DIR")]
         output_dir: Option<PathBuf>,
