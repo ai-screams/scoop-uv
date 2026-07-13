@@ -765,17 +765,42 @@ impl Check for ShellCheck {
             }
         };
 
-        // Check if any config file contains scuv init — or the legacy
-        // `scoop init` invocation, which still works through the deprecated
-        // forwarder function (DEPRECATION(0.16.0): drop the legacy match arm).
+        let shell_type = if shell_name == "zsh" { "zsh" } else { "bash" };
+
+        // Check if any config file contains scuv init. A legacy-only
+        // `scoop init` line does NOT count as configured: the deprecated
+        // `scoop` shell function is defined *inside* `scuv init`'s own
+        // output (see shell/bash.rs, shell/zsh.rs), so it only exists once
+        // that init line has already run successfully in the session. An rc
+        // file that still invokes `eval "$(scoop init ...)"` calls the
+        // `scoop` *binary* directly — which no longer ships after upgrade —
+        // so the eval fails at shell startup and integration never loads.
+        // That must be flagged as a warning, not treated as configured.
+        //
+        // DEPRECATION(0.16.0): drop the legacy branch once the shim window
+        // closes.
         for (_shell_type, config_path) in &config_files {
             if config_path.exists() {
                 match std::fs::read_to_string(config_path) {
                     Ok(content) => {
-                        if content.contains("scuv init") || content.contains("scoop init") {
+                        if content.contains("scuv init") {
                             return vec![
                                 CheckResult::ok(self.id(), self.name())
                                     .with_details(format!("found in {}", config_path.display())),
+                            ];
+                        }
+                        if content.contains("scoop init") {
+                            return vec![
+                                CheckResult::warn(
+                                    self.id(),
+                                    self.name(),
+                                    "shell config still references the removed `scoop` command (init line fails at startup)",
+                                )
+                                .with_details(format!("found in {}", config_path.display()))
+                                .with_suggestion(format!(
+                                    "Replace with: eval \"$(scuv init {})\"",
+                                    shell_type
+                                )),
                             ];
                         }
                     }
@@ -790,8 +815,7 @@ impl Check for ShellCheck {
             }
         }
 
-        // No scuv init found
-        let shell_type = if shell_name == "zsh" { "zsh" } else { "bash" };
+        // No scuv init (or legacy scoop init) found
         let config_file = if shell_name == "zsh" {
             "~/.zshrc"
         } else if cfg!(target_os = "macos") {
@@ -1403,6 +1427,86 @@ mod tests {
                     || matches!(&r.status, CheckStatus::Error(msg) if msg.contains("fix-target"))
             );
         });
+    }
+
+    // ==========================================================================
+    // ShellCheck: scuv init vs. legacy scoop init in rc files
+    //
+    // A legacy-only `scoop init` line must warn, not pass — the deprecated
+    // `scoop` shell function is defined by `scuv init`'s own output (see
+    // shell/bash.rs), so it doesn't exist yet when an rc file's
+    // `eval "$(scoop init ...)"` line runs at shell startup; that line
+    // invokes the (now-removed) `scoop` binary directly and fails.
+    // ==========================================================================
+
+    /// Write `content` to both `.bash_profile` and `.bashrc` so the test is
+    /// deterministic regardless of which one `ShellCheck` consults on the
+    /// host OS (macOS checks `.bash_profile` first, Linux only `.bashrc`).
+    fn write_bash_rc(home: &std::path::Path, content: &str) {
+        std::fs::write(home.join(".bash_profile"), content).unwrap();
+        std::fs::write(home.join(".bashrc"), content).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn shell_check_is_ok_when_current_scuv_init_line_present() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        write_bash_rc(home_tmp.path(), "eval \"$(scuv init bash)\"\n");
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/bash")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(results[0].is_ok(), "expected Ok, got {:#?}", results[0]);
+    }
+
+    /// Pins the exact branch order in `ShellCheck::run`: a `scuv init` match
+    /// must short-circuit before the legacy-only warning branch is even
+    /// reached, so an rc file that still has an old, now-inert comment or
+    /// leftover `scoop init` reference alongside a working `scuv init` line
+    /// is not incorrectly flagged.
+    #[test]
+    #[serial]
+    fn shell_check_ok_when_both_scuv_and_legacy_scoop_init_present() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        write_bash_rc(
+            home_tmp.path(),
+            "# old: eval \"$(scoop init bash)\"\neval \"$(scuv init bash)\"\n",
+        );
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/bash")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(results[0].is_ok(), "expected Ok, got {:#?}", results[0]);
+    }
+
+    #[test]
+    #[serial]
+    fn shell_check_warns_on_legacy_only_scoop_init_line() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        write_bash_rc(home_tmp.path(), "eval \"$(scoop init bash)\"\n");
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/bash")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(
+            results[0].is_warning(),
+            "expected Warning, got {:#?}",
+            results[0]
+        );
+        let suggestion = results[0].suggestion.as_deref().unwrap_or_default();
+        assert!(
+            suggestion.contains("scuv init"),
+            "suggestion should point at scuv init, got: {suggestion}"
+        );
     }
 
     // ==========================================================================
