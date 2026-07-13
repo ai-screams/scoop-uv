@@ -1,4 +1,4 @@
-//! Error types for scoop.
+//! Error types for scuv.
 //!
 //! The [`ScoopError`] enum + its `From` derives live here; per-concern
 //! `impl` blocks are split across submodules to keep each file under
@@ -30,7 +30,7 @@ pub use migrate::MigrationExitCode;
 /// Result type alias using [`ScoopError`].
 pub type Result<T> = std::result::Result<T, ScoopError>;
 
-/// Main error type for scoop
+/// Main error type for scuv
 #[derive(Error, Debug)]
 pub enum ScoopError {
     /// Virtual environment not found
@@ -105,7 +105,7 @@ pub enum ScoopError {
     /// Migration failed
     MigrationFailed { reason: String },
 
-    /// Name conflict with existing scoop environment
+    /// Name conflict with existing scuv environment
     MigrationNameConflict { name: String, existing: PathBuf },
 
     /// Invalid Python path (not found, not executable, not a Python binary)
@@ -114,7 +114,7 @@ pub enum ScoopError {
     /// Cascade uninstall aborted by user
     CascadeAborted,
 
-    /// `scoop self update` failed (search, install, or post-install verify).
+    /// `scuv self update` failed (search, install, or post-install verify).
     SelfUpdateFailed { message: String },
 
     /// No environment is currently active and none was specified.
@@ -123,7 +123,7 @@ pub enum ScoopError {
     /// Executable not found within an environment's bin directory.
     ExecutableNotFound { exe: String, env: String },
 
-    /// `.scoop.toml` could not be located walking up from `start_dir`.
+    /// `.scuv.toml` could not be located walking up from `start_dir`.
     ManifestNotFound { start_dir: PathBuf },
 
     /// Export file failed to parse / load (invalid JSON or schema mismatch).
@@ -132,7 +132,7 @@ pub enum ScoopError {
     /// Export file's `scoop_export_version` is not one this binary supports.
     UnsupportedExportVersion { version: String, supported: String },
 
-    /// `scoop verify --strict` exit signal: at least one env has a failing
+    /// `scuv verify --strict` exit signal: at least one env has a failing
     /// check. The report itself was already rendered; this just carries the
     /// non-zero exit semantic without leaking `std::process::exit` into
     /// library code (which would skip destructors and stdout flush).
@@ -144,7 +144,7 @@ pub enum ScoopError {
     /// no usable result, so the env is likely malformed.
     SitePackagesNotFound { venv: String },
 
-    /// `scoop migrate all`/`migrate @env` ran but no supported source
+    /// `scuv migrate all`/`migrate @env` ran but no supported source
     /// tool (pyenv, virtualenvwrapper, conda) was detected on the
     /// system. Carries the requested filter (or `None` for "any") so
     /// the rendered message can be specific.
@@ -154,7 +154,7 @@ pub enum ScoopError {
     /// source-tool setup without conflating with operational failures.
     MigrationSourcesNotFound { requested: Option<String> },
 
-    /// `scoop migrate all` finished with at least one per-env failure
+    /// `scuv migrate all` finished with at least one per-env failure
     /// or one preflight name conflict (without `--force`). The batch
     /// code has already rendered the full summary (human or JSON)
     /// before returning this Err, so render policy is `Quiet`.
@@ -166,7 +166,7 @@ pub enum ScoopError {
         conflict_count: usize,
     },
 
-    /// `scoop diff --strict` exit signal: the two envs differ in at
+    /// `scuv diff --strict` exit signal: the two envs differ in at
     /// least one observable way (Python version, packages, or
     /// metadata). The diff command has already rendered its report
     /// (human table or JSON envelope) before returning this Err, so

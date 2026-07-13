@@ -217,7 +217,7 @@ impl PackagesInfo {
     }
 }
 
-/// `scoop which` response data
+/// `scuv which` response data
 #[derive(Serialize)]
 pub struct WhichData {
     pub exe: String,
@@ -225,7 +225,7 @@ pub struct WhichData {
     pub path: String,
 }
 
-/// `scoop clone` response data
+/// `scuv clone` response data
 #[derive(Serialize)]
 pub struct CloneData {
     pub src: String,
@@ -237,7 +237,7 @@ pub struct CloneData {
     pub packages_skipped: bool,
 }
 
-/// `scoop import` response data
+/// `scuv import` response data
 #[derive(Serialize)]
 pub struct ImportData {
     pub name: String,
@@ -246,10 +246,10 @@ pub struct ImportData {
     pub source: String,
 }
 
-/// `scoop sync` response data
+/// `scuv sync` response data
 #[derive(Serialize)]
 pub struct SyncData {
-    /// Absolute path of the resolved `.scoop.toml`.
+    /// Absolute path of the resolved `.scuv.toml`.
     pub manifest_path: String,
     /// Environment name the manifest targets.
     pub environment: String,
@@ -259,13 +259,13 @@ pub struct SyncData {
     pub groups: Vec<String>,
     /// Packages that would be / were installed (deduped, ordered).
     pub packages: Vec<String>,
-    /// `true` if `scoop sync` created the env; `false` if it already existed.
+    /// `true` if `scuv sync` created the env; `false` if it already existed.
     pub env_created: bool,
     /// `true` when `--dry-run` was passed (no side effects performed).
     pub dry_run: bool,
 }
 
-/// `scoop status` response data
+/// `scuv status` response data
 #[derive(Serialize)]
 pub struct StatusData {
     /// `"active"` (shell-activated), `"configured"` (version-file), `"system"`, or `"none"`.
@@ -281,7 +281,7 @@ pub struct StatusData {
     pub python: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
-    /// RFC 3339 timestamp of the last `scoop activate` / `run` / `shell`
+    /// RFC 3339 timestamp of the last `scuv activate` / `run` / `shell`
     /// against this env. `None` for legacy envs whose metadata predates
     /// the field, and for freshly created envs that have never been
     /// activated. Omitted from JSON when absent so old consumers don't

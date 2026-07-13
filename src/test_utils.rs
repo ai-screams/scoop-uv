@@ -1,4 +1,4 @@
-//! Shared test utilities for scoop
+//! Shared test utilities for scuv
 //!
 //! This module provides common test helpers to avoid code duplication
 //! across test modules.
@@ -53,7 +53,7 @@ impl Drop for LocaleGuard {
 /// # Examples
 ///
 /// ```ignore
-/// use scoop::test_utils::with_no_scoop_home;
+/// use scoop_uv::test_utils::with_no_scoop_home;
 ///
 /// #[test]
 /// fn test_default_home() {
@@ -116,7 +116,7 @@ where
 /// # Examples
 ///
 /// ```ignore
-/// use scoop::test_utils::with_temp_scoop_home;
+/// use scoop_uv::test_utils::with_temp_scoop_home;
 ///
 /// #[test]
 /// fn test_something() {
@@ -137,7 +137,7 @@ where
     // Recover from poisoned mutex if a previous test panicked
     let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     // Restore the global i18n locale on exit so locale-mutating command tests
-    // (e.g. `scoop lang ko`) don't leak into later tests.
+    // (e.g. `scuv lang ko`) don't leak into later tests.
     let _locale = LocaleGuard::capture();
     let temp_dir = TempDir::new().expect("Failed to create temp dir for SCUV_HOME");
 
@@ -240,7 +240,7 @@ pub fn env_guard(vars: &[(&'static str, Option<&str>)]) -> EnvGuard {
 /// # Examples
 ///
 /// ```ignore
-/// use scoop::test_utils::{with_temp_scoop_home, create_mock_venv};
+/// use scoop_uv::test_utils::{with_temp_scoop_home, create_mock_venv};
 ///
 /// #[test]
 /// fn test_list() {
@@ -400,7 +400,7 @@ pub static MIGRATE_ENV_LOCK: Mutex<()> = Mutex::new(());
 /// # Examples
 ///
 /// ```ignore
-/// use scoop::test_utils::with_isolated_migrate_env;
+/// use scoop_uv::test_utils::with_isolated_migrate_env;
 ///
 /// #[test]
 /// fn test_find_returns_error_when_not_found() {
@@ -475,7 +475,7 @@ where
 ///
 /// ```ignore
 /// use tempfile::TempDir;
-/// use scoop::test_utils::create_mock_pyenv_env;
+/// use scoop_uv::test_utils::create_mock_pyenv_env;
 ///
 /// let temp = TempDir::new().unwrap();
 /// create_mock_pyenv_env(temp.path(), "myenv", "3.12.0");
@@ -547,7 +547,7 @@ where
     let scoop_home = TempDir::new().expect("Failed to create temp SCUV_HOME");
     let pyenv_root = TempDir::new().expect("Failed to create temp PYENV_ROOT");
 
-    // Create virtualenvs directory for scoop
+    // Create virtualenvs directory for scuv
     std::fs::create_dir_all(scoop_home.path().join("virtualenvs"))
         .expect("Failed to create virtualenvs dir");
 

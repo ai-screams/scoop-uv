@@ -47,9 +47,9 @@ pub fn dir_size(path: &Path) -> u64 {
         .sum()
 }
 
-/// Check if environment name conflicts with existing scoop environment.
+/// Check if environment name conflicts with existing scuv environment.
 ///
-/// Returns `Some(path)` if a scoop environment with the same name exists,
+/// Returns `Some(path)` if a scuv environment with the same name exists,
 /// `None` otherwise.
 ///
 /// # Examples
@@ -90,7 +90,7 @@ pub fn check_name_conflict(name: &str) -> Option<PathBuf> {
 ///
 /// # Status Priority
 ///
-/// 1. Name conflict (existing scoop environment)
+/// 1. Name conflict (existing scuv environment)
 /// 2. Python EOL (3.8 and below, or Python 2.x)
 /// 3. Ready to migrate
 ///

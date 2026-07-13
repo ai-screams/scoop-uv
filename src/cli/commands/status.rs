@@ -1,4 +1,4 @@
-//! Handler for the `scoop status` command.
+//! Handler for the `scuv status` command.
 //!
 //! Summarises the current environment in one shot: which env is active, where
 //! it came from (shell-activated vs version file), and a few metadata fields.

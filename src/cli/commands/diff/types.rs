@@ -1,4 +1,4 @@
-//! Data structures for `scoop diff`.
+//! Data structures for `scuv diff`.
 //!
 //! Layered per Clean Architecture: this module is pure data with
 //! no I/O, no error returns, and no behaviour. Compute, render, and
@@ -65,7 +65,7 @@ pub struct PackageDiff {
 /// regardless of *why* (metadata file missing, field absent in
 /// metadata, or field present-as-null). Diff intentionally does
 /// not surface the cause; callers needing that signal should
-/// inspect the env directly with `scoop info`.
+/// inspect the env directly with `scuv info`.
 ///
 /// `changed = a != b` under `Option` equality: both-`None` is not
 /// a change; exactly-one-`None` is.
@@ -84,7 +84,7 @@ impl<T: Serialize + PartialEq> ScalarDiff<T> {
     }
 }
 
-/// Comparison of every metadata field scoop tracks.
+/// Comparison of every metadata field scuv tracks.
 ///
 /// See [`ScalarDiff`] for the 2-state nullable contract that
 /// applies to every field here.

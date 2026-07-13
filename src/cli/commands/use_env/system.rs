@@ -10,7 +10,7 @@ use crate::output::{Output, UseData};
 
 use super::output::output_result;
 
-/// Handle `scoop use system` (use system Python)
+/// Handle `scuv use system` (use system Python)
 pub fn handle(output: &Output, cwd: &Path, global: bool) -> Result<()> {
     if global {
         VersionService::set_global("system")?;

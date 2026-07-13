@@ -1,4 +1,4 @@
-//! Path utilities for scoop
+//! Path utilities for scuv
 
 use std::path::{Path, PathBuf};
 
@@ -142,7 +142,7 @@ pub fn virtualenv_pip_exe(venv_root: &Path) -> PathBuf {
 ///
 /// Distinct from [`virtualenv_activate`], which returns the cmd.exe
 /// `.bat` variant on Windows. PowerShell users are surfaced through
-/// this helper (used by `scoop verify`).
+/// this helper (used by `scuv verify`).
 #[cfg(unix)]
 pub fn virtualenv_activate_script(venv_root: &Path) -> PathBuf {
     virtualenv_bin_dir(venv_root).join("activate")
@@ -261,7 +261,7 @@ pub fn virtualenv_site_packages(venv_root: &Path) -> Result<PathBuf> {
     })
 }
 
-/// Ensure all scoop directories exist
+/// Ensure all scuv directories exist
 ///
 /// Creates the following directory structure:
 /// - ~/.scuv/
@@ -337,7 +337,7 @@ pub fn calculate_dir_size(path: &std::path::Path) -> std::io::Result<u64> {
 /// Locate `exe` inside `dir`, returning the full path if a matching file
 /// exists. On Windows the standard executable extensions are probed in turn.
 ///
-/// Shared by `scoop which` (display the resolved path) and `scoop run`
+/// Shared by `scuv which` (display the resolved path) and `scuv run`
 /// (preflight a program lookup against the env's `bin/` before spawning).
 ///
 /// # Examples
@@ -390,7 +390,7 @@ fn executable_candidates(exe: &str) -> Vec<String> {
 ///
 /// // Home directory paths get abbreviated
 /// let home = dirs::home_dir().unwrap();
-/// let path = home.join(".scoop/virtualenvs/myenv");
+/// let path = home.join(".scuv/virtualenvs/myenv");
 /// let abbreviated = abbreviate_home(&path);
 /// assert!(abbreviated.starts_with("~/"));
 /// ```

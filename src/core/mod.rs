@@ -75,7 +75,7 @@ fn normalize_pyvenv_version(raw: &str) -> String {
 /// the venv's own `pip list --format=json`.
 ///
 /// Best-effort: missing pip, non-zero exit, and unparseable JSON all collapse
-/// to an empty vector so callers (`scoop info`, `scoop status`) can degrade
+/// to an empty vector so callers (`scuv info`, `scuv status`) can degrade
 /// gracefully when the env is broken or pip simply isn't present.
 ///
 /// # Examples

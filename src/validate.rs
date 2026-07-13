@@ -1,4 +1,4 @@
-//! Validation utilities for scoop
+//! Validation utilities for scuv
 
 use std::path::Path;
 use std::process::Command;

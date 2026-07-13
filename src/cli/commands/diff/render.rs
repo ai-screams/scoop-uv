@@ -1,4 +1,4 @@
-//! Human-form rendering for `scoop diff`.
+//! Human-form rendering for `scuv diff`.
 //!
 //! Three sections, suppressible per [`DiffMode`]: Python / Packages /
 //! Metadata. Output goes through [`Output`] so quiet / no-color flags

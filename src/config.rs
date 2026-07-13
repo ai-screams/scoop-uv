@@ -1,6 +1,6 @@
 //! Configuration management
 //!
-//! Handles persistent user settings stored in `~/.scoop/config.json`.
+//! Handles persistent user settings stored in `~/.scuv/config.json`.
 
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use crate::error::Result;
 use crate::paths;
 
-/// User configuration stored in `~/.scoop/config.json`
+/// User configuration stored in `~/.scuv/config.json`
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
     /// Preferred language code (e.g., "en", "ko")
@@ -17,7 +17,7 @@ pub struct Config {
 }
 
 impl Config {
-    /// Get config file path: `~/.scoop/config.json`
+    /// Get config file path: `~/.scuv/config.json`
     pub fn path() -> Result<PathBuf> {
         Ok(paths::scoop_home()?.join("config.json"))
     }

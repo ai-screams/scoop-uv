@@ -1,4 +1,4 @@
-//! scoop - Python virtual environment manager powered by uv
+//! scuv - Python virtual environment manager powered by uv
 
 use clap::Parser;
 use color_eyre::eyre::Result;

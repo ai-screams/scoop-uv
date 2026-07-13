@@ -1,4 +1,4 @@
-//! Handler for the `scoop clone` command.
+//! Handler for the `scuv clone` command.
 //!
 //! Composes existing service primitives (`create` + `list_installed_packages` +
 //! `pip_install`) rather than adding a clone method on `VirtualenvService`:

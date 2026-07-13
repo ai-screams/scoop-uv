@@ -1,6 +1,6 @@
-//! Doctor diagnostic module for scoop installation health checks.
+//! Doctor diagnostic module for scuv installation health checks.
 //!
-//! This module provides functionality to diagnose the scoop installation
+//! This module provides functionality to diagnose the scuv installation
 //! and report any issues with suggested fixes.
 
 use std::process::Command;
@@ -109,7 +109,7 @@ impl CheckResult {
 /// Trait for implementing health checks.
 ///
 /// Each check should be independent and focused on a single aspect
-/// of the scoop installation.
+/// of the scuv installation.
 pub trait Check: Send + Sync {
     /// Returns the check identifier.
     fn id(&self) -> &'static str;

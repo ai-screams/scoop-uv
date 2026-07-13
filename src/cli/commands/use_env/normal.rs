@@ -11,7 +11,7 @@ use crate::output::{Output, UseData};
 use super::output::output_result;
 use super::symlink::create_venv_symlink;
 
-/// Handle `scoop use <name>` (normal environment)
+/// Handle `scuv use <name>` (normal environment)
 pub fn handle(output: &Output, cwd: &Path, name: &str, global: bool, link: bool) -> Result<()> {
     let service = VirtualenvService::auto()?;
 

@@ -1,6 +1,6 @@
 //! Migration-specific exit semantics for [`ScoopError`].
 //!
-//! `scoop migrate` returns different shell exit codes depending on
+//! `scuv migrate` returns different shell exit codes depending on
 //! whether the failure was a source-tool problem (3), a complete
 //! migration failure (2), partial success (1), or success (0).
 //! [`ScoopError::migration_exit_code`] is the mapping from error variant
@@ -56,7 +56,7 @@ mod tests {
     use super::*;
     use std::path::PathBuf;
 
-    // Each source-tool variant must map to SourceError so `scoop migrate`
+    // Each source-tool variant must map to SourceError so `scuv migrate`
     // can distinguish "your source pyenv/conda setup is broken" (exit 3)
     // from "the migration itself failed" (exit 2). Without these tests,
     // the cargo-mutants `--in-diff` gate flagged the SourceError arm as

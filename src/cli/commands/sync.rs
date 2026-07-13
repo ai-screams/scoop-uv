@@ -1,4 +1,4 @@
-//! Handler for the `scoop sync` command.
+//! Handler for the `scuv sync` command.
 //!
 //! Reads `.scuv.toml` (or legacy `.scoop.toml`, walking cwd → parents), creates the declared env if
 //! it doesn't exist (with implicit lazy Python install), and installs the
@@ -69,7 +69,7 @@ pub fn execute(output: &Output, extra_groups: &[String], dry_run: bool) -> Resul
         if !python_matches(&actual, &wanted_python) {
             // Warn-and-proceed: recreating an existing env on a version
             // mismatch is destructive, so leave that to an explicit
-            // `scoop remove` + `scoop sync`.
+            // `scuv remove` + `scuv sync`.
             output.warn(&t!(
                 "sync.python_mismatch_warn",
                 name = env_name,

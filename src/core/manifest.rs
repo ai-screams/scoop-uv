@@ -1,5 +1,5 @@
 //! `.scuv.toml` project manifest — opt-in declarative env definition
-//! consumed by `scoop sync`.
+//! consumed by `scuv sync`.
 //!
 //! Resolution walks cwd → parents; within a single directory `.scuv.toml`
 //! wins over a legacy `.scoop.toml` (deprecated; emits a one-shot warning).
@@ -53,7 +53,7 @@ pub struct Environment {
     pub python: String,
 }
 
-/// Package groups. `default` is always installed by `scoop sync`; any extra
+/// Package groups. `default` is always installed by `scuv sync`; any extra
 /// keys become opt-in groups selected via `--with <group>`.
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq)]
 pub struct Packages {

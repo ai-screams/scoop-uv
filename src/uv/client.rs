@@ -264,7 +264,7 @@ impl UvClient {
 
     /// List packages installed in `venv_path` via `uv pip list --format=json`.
     ///
-    /// Used by `scoop diff` to enumerate packages on each side. Calls uv
+    /// Used by `scuv diff` to enumerate packages on each side. Calls uv
     /// directly (rather than the venv's own pip) so the command works on
     /// envs whose pip is absent or broken — uv only needs the interpreter
     /// path to inspect a venv's `site-packages`.
@@ -605,7 +605,7 @@ mod tests {
     // takes raw bytes, so a fixture verifies every shape contract we care
     // about (entry shape, editable installs, empty list, extra fields,
     // invalid input). The live spawn is covered by integration tests of
-    // `scoop diff` against a real env.
+    // `scuv diff` against a real env.
 
     #[test]
     fn parse_pip_list_canonical_entry() {

@@ -1,6 +1,6 @@
 //! Pure diff logic — no I/O, no error returns.
 //!
-//! This module is the core of `scoop diff`: it takes two slices of
+//! This module is the core of `scuv diff`: it takes two slices of
 //! [`PackageEntry`] and produces a [`PackageDiff`]. Keeping the
 //! algorithm pure means it's trivially unit-tested with inline
 //! fixtures and never blocked on filesystem / process state.

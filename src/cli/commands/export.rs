@@ -1,9 +1,9 @@
-//! Handler for the `scoop export` command.
+//! Handler for the `scuv export` command.
 //!
 //! Writes a portable, versioned JSON document describing the env so another
-//! machine can recreate it with `scoop import`. Stdout *is* the schema, so
+//! machine can recreate it with `scuv import`. Stdout *is* the schema, so
 //! status messages always go to stderr — keeps the command pipe-friendly:
-//! `scoop export myenv > myenv.json`.
+//! `scuv export myenv > myenv.json`.
 
 use std::path::Path;
 

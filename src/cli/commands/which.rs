@@ -1,7 +1,7 @@
-//! Handler for the `scoop which` command.
+//! Handler for the `scuv which` command.
 //!
-//! Resolves the absolute path of an executable within a scoop environment's
-//! `bin/` directory — the pyenv-which equivalent for scoop.
+//! Resolves the absolute path of an executable within a scuv environment's
+//! `bin/` directory — the pyenv-which equivalent for scuv.
 
 use crate::core::{VersionService, VirtualenvService, get_active_env};
 use crate::error::{Result, ScoopError};
@@ -107,7 +107,7 @@ mod tests {
                 std::env::remove_var("SCUV_ACTIVE");
             }
             let output = Output::new(0, true, true, false);
-            // Use a tempdir as CWD that has no .scoop-version file.
+            // Use a tempdir as CWD that has no .scuv-version file.
             let workdir = TempDir::new().unwrap();
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();

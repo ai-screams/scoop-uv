@@ -1,4 +1,4 @@
-//! Handler for the `scoop verify` command.
+//! Handler for the `scuv verify` command.
 //!
 //! Per-env health diagnosis. Where [`doctor`](super::doctor) reports on the
 //! system (uv installed, shell wrapper wired up, etc.), `verify` looks at each
@@ -13,7 +13,7 @@
 //! 4. **activate_script** — shell activate script exists
 //! 5. **python_executes** — `python --version` actually runs (skipped if
 //!    the binary is missing — would just duplicate check #2)
-//! 6. **manifest_match** — if a `.scoop.toml` exists in the cwd hierarchy,
+//! 6. **manifest_match** — if a `.scuv.toml` exists in the cwd hierarchy,
 //!    the env's recorded Python matches the manifest. Skipped silently when
 //!    there's no manifest — drift only matters in manifest-managed projects.
 //!
@@ -108,7 +108,7 @@ struct Summary {
     /// All checks Pass or Skip (no Warn, no Fail). The "perfect" bucket.
     healthy: usize,
     /// At least one Warn check but no Fail. Informational drift (e.g.
-    /// `.scoop.toml` python version mismatch) lives here — the env still
+    /// `.scuv.toml` python version mismatch) lives here — the env still
     /// works, the user should just know about it. Does NOT trigger
     /// `--strict` exit.
     warnings: usize,
@@ -126,7 +126,7 @@ struct VerifyData {
 /// Execute the `verify` command.
 ///
 /// * `target` — `Some(name)` to check just that env; `None` checks every env
-///   under `~/.scoop/virtualenvs/`.
+///   under `~/.scuv/virtualenvs/`.
 /// * `strict` — when true, return [`ScoopError::VerifyFailed`] when any env
 ///   has at least one Fail check, so main.rs maps it to a non-zero exit.
 pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: bool) -> Result<()> {
@@ -314,7 +314,7 @@ fn emit_empty(output: &crate::output::Output) {
     }
 }
 
-/// Walk up from cwd looking for `.scoop.toml`. Returns the parsed manifest if
+/// Walk up from cwd looking for `.scuv.toml`. Returns the parsed manifest if
 /// found *and* parseable. Parse errors are treated as "no manifest" — we don't
 /// want a broken manifest to drown out the actual env checks.
 fn load_manifest_for_drift_check() -> Option<ScoopManifest> {
@@ -602,7 +602,7 @@ mod tests {
 
             // Verify the per-env classification directly: every check must
             // be Pass (Unix runs the shell script we wrote) or Skip
-            // (manifest_match skips with no .scoop.toml). Q10: previous
+            // (manifest_match skips with no .scuv.toml). Q10: previous
             // version of this test only asserted "no error", which would
             // have passed even if every check silently degraded to Warn.
             let service = VirtualenvService::auto().unwrap();

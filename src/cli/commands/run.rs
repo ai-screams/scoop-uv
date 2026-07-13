@@ -1,8 +1,8 @@
-//! Handler for the `scoop run` command.
+//! Handler for the `scuv run` command.
 //!
 //! Spawns a program inside an environment without activating it in the parent
 //! shell. The child sees the same `VIRTUAL_ENV` / `PATH` prefix / `SCUV_ACTIVE`
-//! that `scoop activate` would set, and `scoop run` propagates the child's
+//! that `scuv activate` would set, and `scuv run` propagates the child's
 //! exit code as its own.
 
 use std::path::{Path, PathBuf};
@@ -88,7 +88,7 @@ fn build_command(venv_path: &Path, bin_dir: &Path, env_name: &str, command: &[St
 
 /// Pick the program path to invoke: an explicit relative/absolute path is used
 /// verbatim, but a bare name is first looked up inside the env's bin dir so
-/// `scoop run env -- python` runs the env's interpreter (not a system one).
+/// `scuv run env -- python` runs the env's interpreter (not a system one).
 fn resolve_program(bin_dir: &Path, program: &str) -> PathBuf {
     if program.contains('/') || program.contains('\\') {
         return PathBuf::from(program);

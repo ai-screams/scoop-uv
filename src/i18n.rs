@@ -51,7 +51,7 @@ pub fn detect_locale() -> String {
         }
     }
 
-    // 2. Config file (scoop lang command)
+    // 2. Config file (scuv lang command)
     if let Ok(config) = Config::load() {
         if let Some(lang) = config.lang {
             if let Some(code) = resolve_supported(&lang) {
