@@ -31,6 +31,26 @@ Verify the upgrade:
 scuv --version
 ```
 
+### Upgrading from scoop (≤ 0.14.x)
+
+The CLI command was renamed in v0.15.0 (`scoop` → `scuv`). One-time migration:
+
+```bash
+scoop self update        # installs the new `scuv` binary
+                         # (the "could not locate the freshly installed
+                         #  `scoop` binary" warning is expected)
+rm -f ~/.cargo/bin/scoop # remove the old binary if cargo left one behind
+mv ~/.scoop ~/.scuv      # move your environments
+```
+
+Then update your shell rc file — replace `eval "$(scoop init <shell>)"` with
+`eval "$(scuv init <shell>)"` (fish: `scuv init fish | source`), restart your
+shell, and run `scuv doctor` to confirm nothing legacy is left over.
+
+Legacy `SCOOP_*` env vars and `.scoop-version` / `.scoop.toml` files keep
+working with a one-shot deprecation warning until v0.16.0. Don't skip the
+`rm` step: a leftover old binary keeps running 0.14.x silently.
+
 ## Verify Installation
 
 ```bash

@@ -453,59 +453,105 @@ msgid "Verify the upgrade:"
 msgstr "업그레이드 확인:"
 
 #: src/installation.md:34
+msgid "Upgrading from scoop (≤ 0.14.x)"
+msgstr "scoop(≤ 0.14.x)에서 업그레이드하기"
+
+#: src/installation.md:36
+msgid ""
+"The CLI command was renamed in v0.15.0 (`scoop` → `scuv`). One-time "
+"migration:"
+msgstr "CLI 명령어가 v0.15.0에서 이름이 바뀌었습니다(`scoop` → `scuv`). 일회성 마이그레이션:"
+
+#: src/installation.md:39
+msgid ""
+"# installs the new `scuv` binary\n"
+"                         # (the \"could not locate the freshly installed\n"
+"                         #  `scoop` binary\" warning is expected)\n"
+msgstr ""
+
+#: src/installation.md:42
+msgid "# remove the old binary if cargo left one behind\n"
+msgstr ""
+
+#: src/installation.md:43
+msgid "# move your environments\n"
+msgstr "환경 삭제"
+
+#: src/installation.md:46
+msgid ""
+"Then update your shell rc file — replace `eval \"$(scoop init <shell>)\"` "
+"with `eval \"$(scuv init <shell>)\"` (fish: `scuv init fish | source`), "
+"restart your shell, and run `scuv doctor` to confirm nothing legacy is left "
+"over."
+msgstr ""
+"그다음 셸 rc 파일을 갱신하세요 — `eval \"$(scoop init <shell>)\"`를 `eval \"$(scuv init "
+"<shell>)\"`로 바꾸고(fish는 `scuv init fish | source`), 셸을 재시작한 뒤 `scuv doctor`를 "
+"실행해 남은 레거시가 없는지 확인합니다."
+
+#: src/installation.md:50
+msgid ""
+"Legacy `SCOOP_*` env vars and `.scoop-version` / `.scoop.toml` files keep "
+"working with a one-shot deprecation warning until v0.16.0. Don't skip the "
+"`rm` step: a leftover old binary keeps running 0.14.x silently."
+msgstr ""
+"레거시 `SCOOP_*` 환경 변수와 `.scoop-version` / `.scoop.toml` 파일은 v0.16.0까지 일회성 사용 "
+"중단 경고와 함께 계속 동작합니다. `rm` 단계를 건너뛰지 마세요 — 남은 옛 바이너리는 아무 경고 없이 0.14.x를 계속 "
+"실행합니다."
+
+#: src/installation.md:54
 msgid "Verify Installation"
 msgstr "설치 확인"
 
-#: src/installation.md:37
+#: src/installation.md:57
 msgid "# scuv 0.15.0\n"
 msgstr "# scuv 0.15.0\n"
 
-#: src/installation.md:41 src/python-management.md:175
+#: src/installation.md:61 src/python-management.md:175
 #: src/development/testing.md:384 src/development/code-quality.md:420
 msgid "Troubleshooting"
 msgstr "문제 해결"
 
-#: src/installation.md:43
+#: src/installation.md:63
 msgid "`scuv: command not found`"
 msgstr "`scuv: command not found`"
 
-#: src/installation.md:45
+#: src/installation.md:65
 msgid "Ensure `~/.cargo/bin` is in your PATH:"
 msgstr "`~/.cargo/bin`이 PATH에 포함되어 있는지 확인하세요:"
 
-#: src/installation.md:48
+#: src/installation.md:68
 msgid "# Add to ~/.zshrc or ~/.bashrc\n"
 msgstr "# ~/.zshrc 또는 ~/.bashrc에 추가\n"
 
-#: src/installation.md:49
+#: src/installation.md:69
 msgid "\"$HOME/.cargo/bin:$PATH\""
 msgstr "\"$HOME/.cargo/bin:$PATH\""
 
-#: src/installation.md:52
+#: src/installation.md:72
 msgid "Then restart your terminal or run:"
 msgstr "이후 터미널을 재시작하거나 다음을 실행하세요:"
 
-#: src/installation.md:55
+#: src/installation.md:75
 msgid "# or ~/.bashrc\n"
 msgstr "# 또는 ~/.bashrc\n"
 
-#: src/installation.md:58
+#: src/installation.md:78
 msgid "uv not found"
 msgstr "uv를 찾을 수 없음"
 
-#: src/installation.md:60
+#: src/installation.md:80
 msgid "scuv requires uv to be installed and available in PATH. Verify:"
 msgstr "scuv는 uv가 설치되어 있고 PATH에서 사용 가능해야 합니다. 확인 방법:"
 
-#: src/installation.md:66
+#: src/installation.md:86
 msgid "If not installed, run:"
 msgstr "설치되어 있지 않다면 다음을 실행하세요:"
 
-#: src/installation.md:72 src/quick-start.md:111
+#: src/installation.md:92 src/quick-start.md:111
 msgid "Next Steps"
 msgstr "다음 단계"
 
-#: src/installation.md:74
+#: src/installation.md:94
 msgid ""
 "After installation, set up [Shell Integration](shell-integration.md) to "
 "enable auto-activation and tab completion."
