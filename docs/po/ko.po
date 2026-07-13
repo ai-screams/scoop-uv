@@ -224,7 +224,7 @@ msgid ""
 "**scuv** is a centralized Python virtual environment manager powered by "
 "[uv](https://github.com/astral-sh/uv)."
 msgstr ""
-"**scuv**은 [uv](https://github.com/astral-sh/uv) 기반의 중앙 집중식 Python 가상환경 "
+"**scuv**는 [uv](https://github.com/astral-sh/uv) 기반의 중앙 집중식 Python 가상환경 "
 "관리자예요."
 
 #: src/index.md:5
@@ -1788,7 +1788,7 @@ msgid ""
 "**scuv** is an _environment and workflow manager_ powered by "
 "[uv](https://github.com/astral-sh/uv). It focuses on:"
 msgstr ""
-"**scuv**은 [uv](https://github.com/astral-sh/uv) 기반의 _환경 및 워크플로우 관리자_입니다. 다음에"
+"**scuv**는 [uv](https://github.com/astral-sh/uv) 기반의 _환경 및 워크플로우 관리자_입니다. 다음에"
 " 초점을 맞춥니다:"
 
 #: src/faq.md:12
@@ -2269,7 +2269,7 @@ msgid ""
 "**scuv** is a _lightweight environment manager_ powered by "
 "[uv](https://github.com/astral-sh/uv). It:"
 msgstr ""
-"**scuv**은 [uv](https://github.com/astral-sh/uv) 기반의 _경량 환경 관리자_입니다. 다음을 "
+"**scuv**는 [uv](https://github.com/astral-sh/uv) 기반의 _경량 환경 관리자_입니다. 다음을 "
 "지원합니다:"
 
 #: src/faq.md:246
@@ -12501,7 +12501,7 @@ msgid ""
 "**scuv** is a centralized Python virtual environment manager — pyenv-style "
 "workflow powered by uv. Written in Rust."
 msgstr ""
-"**scuv**은 중앙 집중식 Python 가상 환경 관리자로, uv를 기반으로 pyenv 스타일의 워크플로우를 제공합니다. Rust로 "
+"**scuv**는 중앙 집중식 Python 가상 환경 관리자로, uv를 기반으로 pyenv 스타일의 워크플로우를 제공합니다. Rust로 "
 "작성되었습니다."
 
 #: src/llms.md:15
