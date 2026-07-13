@@ -10,10 +10,14 @@ use crate::{file_resolution_check, scoop_version_check};
 /// Generate fish initialization script.
 ///
 /// Returns a static string containing the Fish shell integration script.
-/// This script should be evaluated in the user's `config.fish`:
+/// This script should be loaded in the user's `config.fish`. Prefer piping to
+/// `source` over `eval (...)`: fish's command substitution splits multi-line
+/// output into separate arguments, which `eval` then rejoins with spaces —
+/// collapsing the newlines this script's function/switch syntax relies on,
+/// so the `scuv` function silently fails to get defined.
 ///
 /// ```fish
-/// eval (scuv init fish)
+/// scuv init fish | source
 /// ```
 ///
 /// # Examples
