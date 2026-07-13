@@ -674,6 +674,7 @@ mod shell_commands {
             .args(["shell", "shelltest"])
             .assert()
             .success()
+            .stdout(predicate::str::contains("SCUV_VERSION"))
             .stdout(predicate::str::contains("SCOOP_VERSION"))
             .stdout(predicate::str::contains("VIRTUAL_ENV"));
     }
@@ -688,6 +689,7 @@ mod shell_commands {
             .assert()
             .success()
             // Security: verify quotes are present to prevent shell injection
+            .stdout(predicate::str::contains(r#"export SCUV_VERSION="system""#))
             .stdout(predicate::str::contains(r#"export SCOOP_VERSION="system""#))
             .stdout(predicate::str::contains("unset VIRTUAL_ENV"));
     }
@@ -702,6 +704,7 @@ mod shell_commands {
             .assert()
             .success()
             // Security: double quotes prevent shell injection
+            .stdout(predicate::str::contains(r#"export SCUV_VERSION="system""#))
             .stdout(predicate::str::contains(r#"export SCOOP_VERSION="system""#));
     }
 
@@ -709,12 +712,13 @@ mod shell_commands {
     fn test_shell_fish_uses_single_quotes() {
         let fixture = TestFixture::new();
 
-        // Fish shell should use single quotes for SCOOP_VERSION
+        // Fish shell should use single quotes for SCUV_VERSION/SCOOP_VERSION
         scoop_cmd(&fixture.scoop_home)
             .args(["shell", "--shell", "fish", "system"])
             .assert()
             .success()
             // Fish uses single quotes which also prevent injection
+            .stdout(predicate::str::contains("set -gx SCUV_VERSION 'system'"))
             .stdout(predicate::str::contains("set -gx SCOOP_VERSION 'system'"));
     }
 
@@ -727,6 +731,7 @@ mod shell_commands {
             .args(["shell", "--shell", "bash", "--unset"])
             .assert()
             .success()
+            .stdout(predicate::str::contains("unset SCUV_VERSION"))
             .stdout(predicate::str::contains("unset SCOOP_VERSION"));
     }
 
@@ -767,6 +772,7 @@ mod shell_commands {
             .args(["shell", "--shell", "fish", "fishenv"])
             .assert()
             .success()
+            .stdout(predicate::str::contains("set -gx SCUV_VERSION"))
             .stdout(predicate::str::contains("set -gx SCOOP_VERSION"))
             .stdout(predicate::str::contains("set -gx VIRTUAL_ENV"));
     }

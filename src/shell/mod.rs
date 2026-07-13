@@ -146,30 +146,59 @@ fi"#
     }
 }
 
-/// Print unset SCOOP_VERSION script for the given shell
+/// Print unset SCUV_VERSION script for the given shell.
+///
+/// Clears both the primary `SCUV_VERSION` and the legacy `SCOOP_VERSION` name
+/// it was exported alongside (see [`print_export_scoop_version`]) — leaving
+/// either behind would let it silently resurface on the next hook run.
+///
+/// DEPRECATION(0.16.0): stop clearing the legacy name.
 pub fn print_unset_scoop_version(shell: ShellType) {
     match shell {
-        ShellType::Fish => println!("set -e SCOOP_VERSION"),
-        ShellType::Powershell => {
-            println!("Remove-Item Env:\\SCOOP_VERSION -ErrorAction SilentlyContinue")
+        ShellType::Fish => {
+            println!("set -e SCUV_VERSION");
+            println!("set -e SCOOP_VERSION");
         }
-        _ => println!("unset SCOOP_VERSION"),
+        ShellType::Powershell => {
+            println!("Remove-Item Env:\\SCUV_VERSION -ErrorAction SilentlyContinue");
+            println!("Remove-Item Env:\\SCOOP_VERSION -ErrorAction SilentlyContinue");
+        }
+        _ => {
+            println!("unset SCUV_VERSION");
+            println!("unset SCOOP_VERSION");
+        }
     }
 }
 
-/// Print export SCOOP_VERSION script for the given shell
+/// Print export SCUV_VERSION script for the given shell.
+///
+/// Exports both the primary `SCUV_VERSION` and the legacy `SCOOP_VERSION`
+/// name, in that order. Both are needed during the transition: our own
+/// binary's readers (`VersionService::resolve_env_version`) check
+/// `SCUV_VERSION` first, so exporting it means `scuv status`/`which`/etc. run
+/// while this pin is active never fall into the legacy branch and never fire
+/// a one-shot deprecation warning on every invocation. Exporting the legacy
+/// name too keeps a still-loaded 0.14-era shell hook (which only reads
+/// `SCOOP_VERSION`) working across the upgrade.
+///
+/// DEPRECATION(0.16.0): stop emitting the legacy name.
 pub fn print_export_scoop_version(shell: ShellType, value: &str) {
     match shell {
         ShellType::Fish => {
             // Fish: escape single quotes by replacing ' with \'
             let escaped = value.replace('\'', "\\'");
+            println!("set -gx SCUV_VERSION '{}'", escaped);
             println!("set -gx SCOOP_VERSION '{}'", escaped);
         }
         ShellType::Powershell => {
             // PowerShell: escape single quotes by doubling them
             let escaped = value.replace('\'', "''");
+            println!("$env:SCUV_VERSION = '{}'", escaped);
             println!("$env:SCOOP_VERSION = '{}'", escaped);
         }
-        _ => println!("export SCOOP_VERSION=\"{}\"", value),
+        _ => {
+            println!("export SCUV_VERSION=\"{}\"", value);
+            println!("export SCOOP_VERSION=\"{}\"", value);
+        }
     }
 }
