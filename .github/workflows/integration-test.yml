@@ -53,7 +53,7 @@ jobs:
           file: docker/Dockerfile
           target: ${{ matrix.source-env }}-test
           load: true
-          tags: scoop:${{ matrix.source-env }}-test
+          tags: scuv:${{ matrix.source-env }}-test
           cache-from: type=gha,scope=integration-${{ matrix.source-env }}
           cache-to: type=gha,mode=max,scope=integration-${{ matrix.source-env }}
 
@@ -69,10 +69,10 @@ jobs:
             -w /workspace \
             -e CARGO_TERM_COLOR=always \
             -e RUST_BACKTRACE=1 \
-            -e SCOOP_LANG=en \
-            scoop:${{ matrix.source-env }}-test \
+            -e SCUV_LANG=en \
+            scuv:${{ matrix.source-env }}-test \
             bash -c "
               cargo build --release &&
               cargo test --release &&
-              ./target/release/scoop migrate list
+              ./target/release/scuv migrate list
             "

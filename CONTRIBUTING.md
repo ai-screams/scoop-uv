@@ -1,8 +1,8 @@
-# 🍨 Contributing to scoop
+# 🍨 Contributing to scuv
 
 > *"Every great flavor started with someone willing to experiment!"*
 
-Thank you for your interest in contributing to scoop! Whether you're fixing a bug, adding a feature, or improving documentation, your help makes scoop better for everyone.
+Thank you for your interest in contributing to scuv! Whether you're fixing a bug, adding a feature, or improving documentation, your help makes scuv better for everyone.
 
 ---
 
@@ -34,7 +34,7 @@ Found a melted scoop? [Open a bug report](https://github.com/ai-screams/scoop-uv
 
 Before reporting:
 - Search existing issues to avoid duplicates
-- Use the latest version of scoop
+- Use the latest version of scuv
 - Include reproduction steps
 
 ### 🍦 Request Features
@@ -52,9 +52,9 @@ Docs can always be clearer. PRs welcome for:
 - Clarifications
 - New examples
 
-### 🌍 Translate scoop
+### 🌍 Translate scuv
 
-Help make scoop accessible to developers worldwide!
+Help make scuv accessible to developers worldwide!
 
 **Quick start:**
 1. Add translations to `locales/app.yml` (220 keys)
@@ -99,7 +99,7 @@ cargo run -- --help
 
 ### Rust Version & MSRV
 
-scoop requires **Rust 1.85 or newer** (our MSRV - Minimum Supported Rust Version). The project uses `rust-toolchain.toml` to automatically select the correct version.
+scuv requires **Rust 1.85 or newer** (our MSRV - Minimum Supported Rust Version). The project uses `rust-toolchain.toml` to automatically select the correct version.
 
 #### First-Time Setup
 
@@ -329,10 +329,10 @@ All warnings are treated as errors. Fix them before submitting.
 |------|------------|---------|
 | Functions | `snake_case` | `create_virtualenv()` |
 | Types/Structs | `PascalCase` | `VirtualenvService` |
-| Constants | `SCREAMING_SNAKE` | `SCOOP_HOME_ENV` |
+| Constants | `SCREAMING_SNAKE` | `SCUV_HOME_ENV` |
 | Modules | `snake_case` | `mod shell_integration;` |
-| CLI commands | `kebab-case` | `scoop create-env` |
-| Environment vars | `SCREAMING_SNAKE` | `SCOOP_NO_AUTO` |
+| CLI commands | `kebab-case` | `scuv create-env` |
+| Environment vars | `SCREAMING_SNAKE` | `SCUV_NO_AUTO` |
 
 ### 📚 Documentation Style
 
@@ -590,7 +590,7 @@ use predicates::prelude::*;
 
 #[test]
 fn test_list_command() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["list"])
         .assert()
@@ -599,7 +599,7 @@ fn test_list_command() {
 
 #[test]
 fn test_invalid_command() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["invalid"])
         .assert()
@@ -856,7 +856,7 @@ Stuck? Here's how to get unstuck:
 
 ## Thank You! 🙏
 
-Every contribution, no matter how small, makes scoop better. Whether it's a typo fix or a major feature, we appreciate your time and effort.
+Every contribution, no matter how small, makes scuv better. Whether it's a typo fix or a major feature, we appreciate your time and effort.
 
 > *"A scoop shared is a scoop enjoyed twice!"* 🍨
 

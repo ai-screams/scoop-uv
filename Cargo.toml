@@ -1,10 +1,10 @@
 [package]
 name = "scoop-uv"
-version = "0.14.2"
+version = "0.15.0"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Hanyul <pignuante@gmail.com>"]
-description = "Scoop up your Python envs — pyenv-style workflow powered by uv"
+description = "Scoop up your Python envs with uv — the command is scuv"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ai-screams/scoop-uv"
 homepage = "https://ai-screams.github.io/scoop-uv/"
@@ -23,7 +23,7 @@ include = [
 ]
 
 [[bin]]
-name = "scoop"
+name = "scuv"
 path = "src/main.rs"
 
 [dependencies]

@@ -1,4 +1,4 @@
-//! `scoop self update` — reinstall scoop-uv from crates.io.
+//! `scuv self update` — reinstall scoop-uv from crates.io.
 //!
 //! Layered design:
 //! * [`execute`] orchestrates; it owns user-facing output and never inspects
@@ -22,14 +22,14 @@ use crate::error::{Result, ScoopError};
 use crate::output::Output;
 
 const CRATE_NAME: &str = "scoop-uv";
-const BINARY_NAME: &str = "scoop";
+const BINARY_NAME: &str = "scuv";
 const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // ============================================================================
 // Domain types
 // ============================================================================
 
-/// Outcome of the post-install `scoop doctor` step.
+/// Outcome of the post-install `scuv doctor` step.
 ///
 /// Tagged JSON shape: `{ "status": "...", ... }`. Adding new variants is
 /// backward-compatible for consumers that branch on `status`.
@@ -60,7 +60,7 @@ struct UpdateData {
 // Entry point
 // ============================================================================
 
-/// Execute `scoop self update`.
+/// Execute `scuv self update`.
 pub fn execute(output: &Output, force: bool, version: Option<&str>, no_verify: bool) -> Result<()> {
     let requested_explicit = version.is_some();
     let target = resolve_target_version(output, version)?;
@@ -262,7 +262,7 @@ fn verify_with_new_binary(json_mode: bool) -> VerifyOutcome {
 ///
 /// Prefer the deterministic cargo install target
 /// (`$CARGO_INSTALL_ROOT/bin` → `$CARGO_HOME/bin` → `~/.cargo/bin`) over
-/// `which::which`, because the user's `PATH` may have an older `scoop`
+/// `which::which`, because the user's `PATH` may have an older `scuv`
 /// from a different install channel ranked higher. Falling back to
 /// `which` only when the deterministic path doesn't exist preserves
 /// compatibility with non-cargo install layouts (manual symlinks, etc.).

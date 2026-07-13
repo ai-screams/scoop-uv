@@ -1,6 +1,6 @@
-//! Doctor diagnostic module for scoop installation health checks.
+//! Doctor diagnostic module for scuv installation health checks.
 //!
-//! This module provides functionality to diagnose the scoop installation
+//! This module provides functionality to diagnose the scuv installation
 //! and report any issues with suggested fixes.
 
 use std::process::Command;
@@ -109,7 +109,7 @@ impl CheckResult {
 /// Trait for implementing health checks.
 ///
 /// Each check should be independent and focused on a single aspect
-/// of the scoop installation.
+/// of the scuv installation.
 pub trait Check: Send + Sync {
     /// Returns the check identifier.
     fn id(&self) -> &'static str;
@@ -145,6 +145,7 @@ impl Doctor {
                 Box::new(SymlinkCheck),
                 Box::new(ShellCheck),
                 Box::new(VersionCheck),
+                Box::new(LegacyCheck),
             ],
         }
     }
@@ -192,7 +193,7 @@ impl Doctor {
         }
     }
 
-    /// Fix SCOOP_HOME directory issues.
+    /// Fix SCUV_HOME directory issues.
     fn fix_home(
         &self,
         result: &CheckResult,
@@ -211,7 +212,7 @@ impl Doctor {
                             let _ = std::fs::create_dir_all(home.join("virtualenvs"));
 
                             return Some(
-                                CheckResult::ok("home", "SCOOP_HOME directory")
+                                CheckResult::ok("home", "SCUV_HOME directory")
                                     .with_details(format!("created {}", home.display())),
                             );
                         }
@@ -219,7 +220,7 @@ impl Doctor {
                             return Some(
                                 CheckResult::error(
                                     "home",
-                                    "SCOOP_HOME directory",
+                                    "SCUV_HOME directory",
                                     format!("failed to create: {}", e),
                                 )
                                 .with_suggestion("Check permissions"),
@@ -259,7 +260,7 @@ impl Doctor {
                     "broken symlink",
                     format!("environment '{}' not found", venv_name),
                 )
-                .with_suggestion(format!("scoop create {} <python-version>", venv_name)),
+                .with_suggestion(format!("scuv create {} <python-version>", venv_name)),
             );
         }
 
@@ -302,7 +303,7 @@ impl Doctor {
                         format!("could not determine Python version for '{}'", venv_name),
                     )
                     .with_suggestion(format!(
-                        "scoop remove {} && scoop create {} <python-version>",
+                        "scuv remove {} && scuv create {} <python-version>",
                         venv_name, venv_name
                     )),
                 );
@@ -332,7 +333,7 @@ impl Doctor {
                             "broken symlink",
                             format!("Python {} path not found", python_version),
                         )
-                        .with_suggestion(format!("scoop install {}", python_version)),
+                        .with_suggestion(format!("scuv install {}", python_version)),
                     );
                 }
             },
@@ -343,7 +344,7 @@ impl Doctor {
                         "broken symlink",
                         format!("Python {} not installed", python_version),
                     )
-                    .with_suggestion(format!("scoop install {}", python_version)),
+                    .with_suggestion(format!("scuv install {}", python_version)),
                 );
             }
             Err(_) => {
@@ -353,7 +354,7 @@ impl Doctor {
                         "broken symlink",
                         "failed to find Python installation",
                     )
-                    .with_suggestion(format!("scoop install {}", python_version)),
+                    .with_suggestion(format!("scuv install {}", python_version)),
                 );
             }
         };
@@ -479,7 +480,7 @@ impl Check for UvCheck {
             _ => {
                 vec![
                     CheckResult::error(self.id(), self.name(), "uv not found in PATH")
-                        .with_details("scoop requires uv to manage Python environments")
+                        .with_details("scuv requires uv to manage Python environments")
                         .with_suggestion(format!("Install uv: {}", Self::install_hint())),
                 ]
             }
@@ -487,7 +488,7 @@ impl Check for UvCheck {
     }
 }
 
-/// Check for SCOOP_HOME directory.
+/// Check for SCUV_HOME directory.
 struct HomeCheck;
 
 impl Check for HomeCheck {
@@ -496,7 +497,7 @@ impl Check for HomeCheck {
     }
 
     fn name(&self) -> &'static str {
-        "SCOOP_HOME directory"
+        "SCUV_HOME directory"
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -531,7 +532,7 @@ impl Check for HomeCheck {
                         self.name(),
                         "could not determine home directory",
                     )
-                    .with_suggestion("Set SCOOP_HOME environment variable"),
+                    .with_suggestion("Set SCUV_HOME environment variable"),
                 ]
             }
         }
@@ -603,7 +604,7 @@ impl Check for VirtualenvCheck {
                     format!("'{}' is corrupted", name),
                 )
                 .with_suggestion(format!(
-                    "scoop remove {} && scoop create {} <python-version>",
+                    "scuv remove {} && scuv create {} <python-version>",
                     name, name
                 )),
             );
@@ -686,7 +687,7 @@ impl Check for SymlinkCheck {
                     format!("Python symlink in '{}' is broken", name),
                 )
                 .with_suggestion(format!(
-                    "scoop remove {} && scoop create {} <python-version>",
+                    "scuv remove {} && scuv create {} <python-version>",
                     name, name
                 )),
             );
@@ -704,7 +705,7 @@ impl Check for SymlinkCheck {
     }
 }
 
-/// Check for shell configuration (scoop init).
+/// Check for shell configuration (scuv init).
 struct ShellCheck;
 
 impl Check for ShellCheck {
@@ -764,16 +765,42 @@ impl Check for ShellCheck {
             }
         };
 
-        // Check if any config file contains scoop init
+        let shell_type = if shell_name == "zsh" { "zsh" } else { "bash" };
+
+        // Check if any config file contains scuv init. A legacy-only
+        // `scoop init` line does NOT count as configured: the deprecated
+        // `scoop` shell function is defined *inside* `scuv init`'s own
+        // output (see shell/bash.rs, shell/zsh.rs), so it only exists once
+        // that init line has already run successfully in the session. An rc
+        // file that still invokes `eval "$(scoop init ...)"` calls the
+        // `scoop` *binary* directly — which no longer ships after upgrade —
+        // so the eval fails at shell startup and integration never loads.
+        // That must be flagged as a warning, not treated as configured.
+        //
+        // DEPRECATION(0.16.0): drop the legacy branch once the shim window
+        // closes.
         for (_shell_type, config_path) in &config_files {
             if config_path.exists() {
                 match std::fs::read_to_string(config_path) {
                     Ok(content) => {
-                        // Look for scoop init pattern
-                        if content.contains("scoop init") {
+                        if content.contains("scuv init") {
                             return vec![
                                 CheckResult::ok(self.id(), self.name())
                                     .with_details(format!("found in {}", config_path.display())),
+                            ];
+                        }
+                        if content.contains("scoop init") {
+                            return vec![
+                                CheckResult::warn(
+                                    self.id(),
+                                    self.name(),
+                                    "shell config still references the removed `scoop` command (init line fails at startup)",
+                                )
+                                .with_details(format!("found in {}", config_path.display()))
+                                .with_suggestion(format!(
+                                    "Replace with: eval \"$(scuv init {})\"",
+                                    shell_type
+                                )),
                             ];
                         }
                     }
@@ -788,8 +815,7 @@ impl Check for ShellCheck {
             }
         }
 
-        // No scoop init found
-        let shell_type = if shell_name == "zsh" { "zsh" } else { "bash" };
+        // No scuv init (or legacy scoop init) found
         let config_file = if shell_name == "zsh" {
             "~/.zshrc"
         } else if cfg!(target_os = "macos") {
@@ -802,10 +828,10 @@ impl Check for ShellCheck {
             CheckResult::error(
                 self.id(),
                 self.name(),
-                "scoop init not found in shell config",
+                "scuv init not found in shell config",
             )
             .with_suggestion(format!(
-                "Add to {}: eval \"$(scoop init {})\"",
+                "Add to {}: eval \"$(scuv init {})\"",
                 config_file, shell_type
             )),
         ]
@@ -816,7 +842,7 @@ impl Check for ShellCheck {
 ///
 /// The `system` sentinel (case-insensitive) is the documented value
 /// for "use the system Python, no virtualenv active" — it's what
-/// `scoop use system` writes — and must NOT be treated as a regular
+/// `scuv use system` writes — and must NOT be treated as a regular
 /// env name to look up. Pre-0.14.1 the doctor's version checks
 /// flagged `.scoop-version: system` as a non-existent-env error
 /// because the post-self-update doctor pass took it as a regular
@@ -838,7 +864,31 @@ fn classify_version_entry(
         CheckResult::ok(id, name).with_details(format!("set to '{}'", entry))
     } else {
         CheckResult::error(id, name, format!("references non-existent env '{}'", entry))
-            .with_suggestion(format!("Run: scoop create {} <python-version>", entry))
+            .with_suggestion(format!("Run: scuv create {} <python-version>", entry))
+    }
+}
+
+/// Resolve the local version-file path for `dir` the way `doctor` should see
+/// it: the current `.scuv-version` name wins when present, otherwise falls
+/// back to the legacy `.scoop-version` name. Mirrors the per-directory
+/// precedence in `VersionService::resolve_local_version_file` so `doctor`
+/// and `resolve()` never disagree about which file is authoritative during
+/// the shim window — but skips that function's `warn_once` side effect,
+/// since `doctor` is a read-only diagnostic and the dedicated `legacy` check
+/// already surfaces a legacy-only file to the user.
+///
+/// DEPRECATION(0.16.0): remove the legacy fallback branch.
+fn resolve_local_version_file_for_doctor(dir: &std::path::Path) -> std::path::PathBuf {
+    let version_file = paths::local_version_file(dir);
+    if version_file.exists() {
+        version_file
+    } else {
+        let legacy = dir.join(paths::LEGACY_VERSION_FILE);
+        if legacy.exists() {
+            legacy
+        } else {
+            version_file
+        }
     }
 }
 
@@ -892,7 +942,7 @@ impl Check for VersionCheck {
             Ok(dir) => dir,
             Err(_) => return results,
         };
-        let local_file = paths::local_version_file(&current_dir);
+        let local_file = resolve_local_version_file_for_doctor(&current_dir);
         if local_file.exists() {
             match std::fs::read_to_string(&local_file) {
                 Ok(content) => {
@@ -913,7 +963,7 @@ impl Check for VersionCheck {
                             "local version",
                             "could not read local version file",
                         )
-                        .with_suggestion("Check .scoop-version file permissions"),
+                        .with_suggestion(format!("Check file: {}", local_file.display())),
                     );
                 }
             }
@@ -927,6 +977,67 @@ impl Check for VersionCheck {
         }
 
         results
+    }
+}
+
+/// Check for leftover legacy `scoop` state during the `scoop` → `scuv`
+/// shim window: env vars, `~/.scoop` without a sibling `~/.scuv`, and
+/// legacy-named files in the current directory.
+///
+/// DEPRECATION(0.16.0): remove this check together with the shims.
+fn check_legacy_remnants() -> CheckResult {
+    let mut found: Vec<String> = Vec::new();
+
+    for var in [paths::LEGACY_HOME_ENV, "SCOOP_VERSION", "SCOOP_LANG"] {
+        if std::env::var_os(var).is_some() {
+            found.push(format!("${var}"));
+        }
+    }
+
+    if let Some(home) = dirs::home_dir() {
+        if home.join(".scoop").exists() && !home.join(".scuv").exists() {
+            found.push("~/.scoop".to_string());
+        }
+    }
+
+    if let Ok(cwd) = std::env::current_dir() {
+        for f in [
+            paths::LEGACY_VERSION_FILE,
+            crate::core::manifest::LEGACY_MANIFEST_FILE,
+        ] {
+            if cwd.join(f).exists() {
+                found.push(f.to_string());
+            }
+        }
+    }
+
+    if found.is_empty() {
+        CheckResult::ok("legacy", "legacy scoop remnants")
+    } else {
+        CheckResult::warn(
+            "legacy",
+            "legacy scoop remnants",
+            rust_i18n::t!("doctor.legacy_found", items = found.join(", ")),
+        )
+        .with_suggestion(rust_i18n::t!("doctor.legacy_suggestion"))
+    }
+}
+
+/// Check for legacy scoop remnants (env vars, dirs, files) left over from
+/// the `scoop` → `scuv` rename.
+struct LegacyCheck;
+
+impl Check for LegacyCheck {
+    fn id(&self) -> &'static str {
+        "legacy"
+    }
+
+    fn name(&self) -> &'static str {
+        "legacy scoop remnants"
+    }
+
+    fn run(&self) -> Vec<CheckResult> {
+        vec![check_legacy_remnants()]
     }
 }
 
@@ -1093,11 +1204,12 @@ mod tests {
     // ==========================================================================
     // VersionCheck: `system` sentinel handling
     //
-    // The `system` value in .scoop-version (or the global version file) is
-    // a documented sentinel meaning "use the system Python, no virtualenv
-    // active" — written by `scoop use system`. Pre-0.14.1 the post-self-update
-    // doctor pass flagged it as a non-existent env, which the user
-    // reported as a false-positive after `scoop self update` to 0.14.0.
+    // The `system` value in .scuv-version (or legacy .scoop-version, or the
+    // global version file) is a documented sentinel meaning "use the system
+    // Python, no virtualenv active" — written by `scuv use system`.
+    // Pre-0.14.1 the post-self-update doctor pass flagged it as a
+    // non-existent env, which the user reported as a false-positive after
+    // `scoop self update` to 0.14.0.
     // ==========================================================================
 
     #[test]
@@ -1121,7 +1233,7 @@ mod tests {
     fn classify_is_case_insensitive_for_system_sentinel() {
         // The writer side (use_env::mod.rs:41) uses eq_ignore_ascii_case;
         // doctor's reader must mirror that contract so `SYSTEM` or `System`
-        // round-trip cleanly even though `scoop use system` always writes
+        // round-trip cleanly even though `scuv use system` always writes
         // the lowercase form.
         for variant in ["SYSTEM", "System", "sYsTeM"] {
             let result = classify_version_entry("version:test", "test version", variant, None);
@@ -1162,7 +1274,7 @@ mod tests {
             result
                 .suggestion
                 .as_deref()
-                .is_some_and(|s| s.contains("scoop create"))
+                .is_some_and(|s| s.contains("scuv create"))
         );
     }
 
@@ -1198,9 +1310,9 @@ mod tests {
     #[serial]
     fn version_check_treats_local_system_sentinel_as_ok() {
         with_temp_scoop_home(|temp| {
-            // Materialise a `.scoop-version: system` file in the CWD.
+            // Materialise a `.scuv-version: system` file in the CWD.
             let cwd_guard = TempDirCwdGuard::new();
-            std::fs::write(cwd_guard.path().join(".scoop-version"), "system").unwrap();
+            std::fs::write(cwd_guard.path().join(".scuv-version"), "system").unwrap();
 
             // Ensure virtualenvs dir exists so its absence doesn't muddle the
             // assertion (we only want the system-sentinel branch to fire).
@@ -1210,7 +1322,7 @@ mod tests {
             let local = results
                 .iter()
                 .find(|r| r.id == "version:local")
-                .expect("version:local check should run when .scoop-version exists");
+                .expect("version:local check should run when .scuv-version exists");
             assert!(
                 local.is_ok(),
                 "version:local must be Ok for system sentinel, got {local:#?}"
@@ -1218,9 +1330,40 @@ mod tests {
         });
     }
 
+    /// Regression: the local-version read-error suggestion must name the
+    /// actual resolved version-file path, not a hardcoded literal (which
+    /// would silently go stale across a rename). A directory at the
+    /// version-file path makes `.exists()` true but `read_to_string` fail,
+    /// forcing the error branch without relying on platform-specific
+    /// permission bits.
+    #[test]
+    #[serial]
+    fn version_check_local_read_error_suggestion_names_version_file() {
+        with_temp_scoop_home(|temp| {
+            let cwd_guard = TempDirCwdGuard::new();
+            std::fs::create_dir(cwd_guard.path().join(paths::VERSION_FILE)).unwrap();
+            std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
+
+            let results = VersionCheck.run();
+            let local = results
+                .iter()
+                .find(|r| r.id == "version:local")
+                .expect("version:local check should run when the version-file path exists");
+            assert!(
+                local.is_warning(),
+                "expected a warning for an unreadable version file, got {local:#?}"
+            );
+            let suggestion = local.suggestion.as_deref().unwrap_or_default();
+            assert!(
+                suggestion.contains(paths::VERSION_FILE),
+                "suggestion should name the actual version-file path, got: {suggestion}"
+            );
+        });
+    }
+
     /// RAII guard: chdir into a fresh tempdir for the duration of the
     /// test, then restore the original cwd on drop. The VersionCheck's
-    /// local-version branch reads `.scoop-version` from the current
+    /// local-version branch reads `.scuv-version` from the current
     /// directory, so we have to actually move there — env vars can't
     /// substitute.
     struct TempDirCwdGuard {
@@ -1259,7 +1402,7 @@ mod tests {
             // fix_symlink parses the env name out of a "Python symlink
             // in 'name' is broken" message. If the parse succeeds and
             // the env doesn't exist, it returns Some(error suggesting
-            // scoop create). The cargo-mutants -> None replacement
+            // scuv create). The cargo-mutants -> None replacement
             // would silently drop that guidance.
             let broken = temp.path().join("virtualenvs");
             std::fs::create_dir_all(&broken).unwrap();
@@ -1276,13 +1419,517 @@ mod tests {
             assert!(fixed.is_some(), "fix_symlink must return Some");
             let r = fixed.unwrap();
             assert!(r.is_error() || r.is_warning());
-            // Suggestion text should point the user at `scoop create`.
+            // Suggestion text should point the user at `scuv create`.
             assert!(
                 r.suggestion
                     .as_deref()
-                    .is_some_and(|s| s.contains("scoop create"))
+                    .is_some_and(|s| s.contains("scuv create"))
                     || matches!(&r.status, CheckStatus::Error(msg) if msg.contains("fix-target"))
             );
         });
+    }
+
+    // ==========================================================================
+    // ShellCheck: scuv init vs. legacy scoop init in rc files
+    //
+    // A legacy-only `scoop init` line must warn, not pass — the deprecated
+    // `scoop` shell function is defined by `scuv init`'s own output (see
+    // shell/bash.rs), so it doesn't exist yet when an rc file's
+    // `eval "$(scoop init ...)"` line runs at shell startup; that line
+    // invokes the (now-removed) `scoop` binary directly and fails.
+    // ==========================================================================
+
+    /// Write `content` to both `.bash_profile` and `.bashrc` so the test is
+    /// deterministic regardless of which one `ShellCheck` consults on the
+    /// host OS (macOS checks `.bash_profile` first, Linux only `.bashrc`).
+    fn write_bash_rc(home: &std::path::Path, content: &str) {
+        std::fs::write(home.join(".bash_profile"), content).unwrap();
+        std::fs::write(home.join(".bashrc"), content).unwrap();
+    }
+
+    #[test]
+    #[serial]
+    fn shell_check_is_ok_when_current_scuv_init_line_present() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        write_bash_rc(home_tmp.path(), "eval \"$(scuv init bash)\"\n");
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/bash")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(results[0].is_ok(), "expected Ok, got {:#?}", results[0]);
+    }
+
+    /// Pins the exact branch order in `ShellCheck::run`: a `scuv init` match
+    /// must short-circuit before the legacy-only warning branch is even
+    /// reached, so an rc file that still has an old, now-inert comment or
+    /// leftover `scoop init` reference alongside a working `scuv init` line
+    /// is not incorrectly flagged.
+    #[test]
+    #[serial]
+    fn shell_check_ok_when_both_scuv_and_legacy_scoop_init_present() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        write_bash_rc(
+            home_tmp.path(),
+            "# old: eval \"$(scoop init bash)\"\neval \"$(scuv init bash)\"\n",
+        );
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/bash")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(results[0].is_ok(), "expected Ok, got {:#?}", results[0]);
+    }
+
+    #[test]
+    #[serial]
+    fn shell_check_warns_on_legacy_only_scoop_init_line() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        write_bash_rc(home_tmp.path(), "eval \"$(scoop init bash)\"\n");
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/bash")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(
+            results[0].is_warning(),
+            "expected Warning, got {:#?}",
+            results[0]
+        );
+        let suggestion = results[0].suggestion.as_deref().unwrap_or_default();
+        assert!(
+            suggestion.contains("scuv init"),
+            "suggestion should point at scuv init, got: {suggestion}"
+        );
+    }
+
+    // ==========================================================================
+    // LegacyCheck / check_legacy_remnants: scoop -> scuv shim window
+    //
+    // These tests override HOME (not just SCUV_HOME) because the legacy
+    // check inspects `dirs::home_dir()` directly rather than going through
+    // `paths::scoop_home()` — the dev machine's real `~/.scoop` must never
+    // leak into the assertions below.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn legacy_check_is_ok_when_environment_is_clean() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_VERSION", None),
+            ("SCOOP_LANG", None),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let _cwd = TempDirCwdGuard::new();
+
+        let result = check_legacy_remnants();
+        assert!(
+            result.is_ok(),
+            "expected Ok on a clean environment, got {result:#?}"
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn legacy_check_warns_on_legacy_home_env_var() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (
+                paths::LEGACY_HOME_ENV,
+                Some("/tmp/legacy-home-doesnt-need-to-exist"),
+            ),
+            ("SCOOP_VERSION", None),
+            ("SCOOP_LANG", None),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let _cwd = TempDirCwdGuard::new();
+
+        let result = check_legacy_remnants();
+        assert!(result.is_warning(), "expected Warning, got {result:#?}");
+        let msg = match &result.status {
+            CheckStatus::Warning(m) => m.clone(),
+            other => panic!("expected Warning, got {other:?}"),
+        };
+        assert!(
+            msg.contains("SCOOP_HOME"),
+            "message should name $SCOOP_HOME, got: {msg}"
+        );
+        assert!(
+            result.suggestion.is_some(),
+            "a legacy-remnant warning must carry a suggestion"
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn legacy_check_warns_on_scoop_version_and_scoop_lang_env_vars() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_VERSION", Some("myenv")),
+            ("SCOOP_LANG", Some("ko")),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let _cwd = TempDirCwdGuard::new();
+
+        let result = check_legacy_remnants();
+        assert!(result.is_warning(), "expected Warning, got {result:#?}");
+        let msg = match &result.status {
+            CheckStatus::Warning(m) => m.clone(),
+            other => panic!("expected Warning, got {other:?}"),
+        };
+        assert!(msg.contains("SCOOP_VERSION"), "got: {msg}");
+        assert!(msg.contains("SCOOP_LANG"), "got: {msg}");
+    }
+
+    #[test]
+    #[serial]
+    fn legacy_check_warns_on_legacy_home_dir_without_new_dir() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        std::fs::create_dir(home_tmp.path().join(".scoop")).unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_VERSION", None),
+            ("SCOOP_LANG", None),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let _cwd = TempDirCwdGuard::new();
+
+        let result = check_legacy_remnants();
+        assert!(result.is_warning(), "expected Warning, got {result:#?}");
+        let msg = match &result.status {
+            CheckStatus::Warning(m) => m.clone(),
+            other => panic!("expected Warning, got {other:?}"),
+        };
+        assert!(msg.contains("~/.scoop"), "got: {msg}");
+    }
+
+    /// `~/.scoop` existing is only a remnant while `~/.scuv` hasn't been
+    /// created yet — once the user has migrated, the two can briefly
+    /// coexist (e.g. before the user deletes the old one) without that
+    /// being something doctor should flag.
+    #[test]
+    #[serial]
+    fn legacy_check_ok_when_both_scoop_and_scuv_home_dirs_exist() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        std::fs::create_dir(home_tmp.path().join(".scoop")).unwrap();
+        std::fs::create_dir(home_tmp.path().join(".scuv")).unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_VERSION", None),
+            ("SCOOP_LANG", None),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let _cwd = TempDirCwdGuard::new();
+
+        let result = check_legacy_remnants();
+        assert!(result.is_ok(), "expected Ok, got {result:#?}");
+    }
+
+    #[test]
+    #[serial]
+    fn legacy_check_warns_on_legacy_version_and_manifest_files_in_cwd() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_VERSION", None),
+            ("SCOOP_LANG", None),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let cwd_guard = TempDirCwdGuard::new();
+        std::fs::write(cwd_guard.path().join(".scoop-version"), "myenv").unwrap();
+        std::fs::write(cwd_guard.path().join(".scoop.toml"), "").unwrap();
+
+        let result = check_legacy_remnants();
+        assert!(result.is_warning(), "expected Warning, got {result:#?}");
+        let msg = match &result.status {
+            CheckStatus::Warning(m) => m.clone(),
+            other => panic!("expected Warning, got {other:?}"),
+        };
+        assert!(msg.contains(".scoop-version"), "got: {msg}");
+        assert!(msg.contains(".scoop.toml"), "got: {msg}");
+    }
+
+    #[test]
+    #[serial]
+    fn legacy_check_suggestion_names_current_env_var_and_removal_version() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        rust_i18n::set_locale("en");
+
+        let home_tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (
+                paths::LEGACY_HOME_ENV,
+                Some("/tmp/legacy-home-doesnt-need-to-exist"),
+            ),
+            ("SCOOP_VERSION", None),
+            ("SCOOP_LANG", None),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let _cwd = TempDirCwdGuard::new();
+
+        let result = check_legacy_remnants();
+        let suggestion = result.suggestion.as_deref().unwrap_or_default();
+        assert!(
+            suggestion.contains("SCUV_"),
+            "suggestion should point at SCUV_*, got: {suggestion}"
+        );
+        assert!(
+            suggestion.contains("v0.16.0"),
+            "suggestion should name the removal version, got: {suggestion}"
+        );
+    }
+
+    #[test]
+    fn doctor_registers_legacy_check() {
+        let doctor = Doctor::new();
+        assert!(
+            doctor.checks.iter().any(|c| c.id() == "legacy"),
+            "Doctor::new() must register the legacy check"
+        );
+    }
+
+    // ==========================================================================
+    // VersionCheck: dual-read local version file (new `.scuv-version` name
+    // wins, a legacy-only `.scoop-version` is still seen) — keeps doctor
+    // aligned with VersionService::resolve()'s per-directory precedence
+    // during the scoop -> scuv shim window.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn version_check_sees_legacy_only_local_version_file() {
+        with_temp_scoop_home(|temp| {
+            let cwd_guard = TempDirCwdGuard::new();
+            // Only the legacy filename exists in cwd — no `.scuv-version`.
+            std::fs::write(cwd_guard.path().join(".scoop-version"), "ghost-env").unwrap();
+            std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
+
+            let results = VersionCheck.run();
+            let local = results
+                .iter()
+                .find(|r| r.id == "version:local")
+                .expect("version:local must be reported from a legacy-only .scoop-version file");
+            assert!(
+                local.is_error(),
+                "references a non-existent env, so it should error, got {local:#?}"
+            );
+            assert!(
+                matches!(&local.status, CheckStatus::Error(msg) if msg.contains("ghost-env")),
+                "error should name the env read from the legacy file, got {local:#?}"
+            );
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn version_check_prefers_new_file_over_legacy_when_both_present() {
+        with_temp_scoop_home(|temp| {
+            let cwd_guard = TempDirCwdGuard::new();
+            std::fs::write(cwd_guard.path().join(".scuv-version"), "newenv").unwrap();
+            std::fs::write(cwd_guard.path().join(".scoop-version"), "oldenv").unwrap();
+            std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
+
+            let results = VersionCheck.run();
+            let local = results
+                .iter()
+                .find(|r| r.id == "version:local")
+                .expect("version:local must run");
+            assert!(
+                matches!(&local.status, CheckStatus::Error(msg) if msg.contains("newenv")),
+                "new-named file must win when both are present, got {local:#?}"
+            );
+        });
+    }
+
+    // ==========================================================================
+    // Check-trait dispatch coverage. The underlying logic above is tested
+    // directly; these pin the thin trait wrappers (id/name/run) so a broken
+    // registration or renamed check surfaces in tests, not in `doctor` output.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn legacy_check_trait_dispatch_reports_identity_and_runs() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_VERSION", None),
+            ("SCOOP_LANG", None),
+            (paths::SCUV_HOME_ENV, None),
+            ("SCUV_VERSION", None),
+            ("SCUV_LANG", None),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+        let _cwd = TempDirCwdGuard::new();
+
+        let check: &dyn Check = &LegacyCheck;
+        assert_eq!(check.id(), "legacy");
+        assert_eq!(check.name(), "legacy scoop remnants");
+        let results = check.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert_eq!(results[0].id, "legacy");
+        assert!(results[0].is_ok(), "clean env must be Ok, got {results:#?}");
+    }
+
+    #[test]
+    #[serial]
+    fn home_check_trait_dispatch_ok_on_existing_writable_home() {
+        with_temp_scoop_home(|temp| {
+            let check: &dyn Check = &HomeCheck;
+            assert_eq!(check.id(), "home");
+            assert_eq!(check.name(), "SCUV_HOME directory");
+            let results = check.run();
+            assert_eq!(results.len(), 1, "got {results:#?}");
+            assert!(results[0].is_ok(), "got {results:#?}");
+            let details = results[0].details.as_deref().unwrap_or_default();
+            assert!(
+                details.contains(temp.path().to_str().unwrap()),
+                "details should name the home path, got {details:?}"
+            );
+        });
+    }
+
+    #[test]
+    fn uv_check_trait_dispatch_always_reports_under_uv_id() {
+        // Environment-tolerant: passes whether or not a usable `uv` is on
+        // PATH — what it pins is that run() actually runs and every result
+        // carries this check's identity.
+        let check: &dyn Check = &UvCheck;
+        assert_eq!(check.id(), "uv");
+        assert_eq!(check.name(), "uv installation");
+        let results = check.run();
+        assert!(!results.is_empty(), "run() must produce results");
+        assert!(
+            results.iter().all(|r| r.id == "uv"),
+            "all results must carry the uv id, got {results:#?}"
+        );
+    }
+
+    // ==========================================================================
+    // ShellCheck zsh branch (the `shell_name == "zsh"` boundary): the
+    // suggestion must name `scuv init zsh`, not bash, and read .zshrc.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn shell_check_zsh_warns_on_legacy_only_line_with_zsh_suggestion() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        std::fs::write(
+            home_tmp.path().join(".zshrc"),
+            "eval \"$(scoop init zsh)\"\n",
+        )
+        .unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/zsh")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(results[0].is_warning(), "got {results:#?}");
+        let suggestion = results[0].suggestion.as_deref().unwrap_or_default();
+        assert!(
+            suggestion.contains("scuv init zsh"),
+            "zsh shell must get a zsh suggestion, got {suggestion:?}"
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn shell_check_zsh_is_ok_with_current_scuv_init_line() {
+        let home_tmp = tempfile::tempdir().unwrap();
+        std::fs::write(
+            home_tmp.path().join(".zshrc"),
+            "eval \"$(scuv init zsh)\"\n",
+        )
+        .unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/zsh")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        assert!(results[0].is_ok(), "got {results:#?}");
+    }
+
+    // ==========================================================================
+    // Doctor::fix_home — creates the missing home (+ virtualenvs) only for
+    // "not found" errors, and leaves anything else alone.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn fix_home_creates_missing_home_and_virtualenvs_dir() {
+        let tmp = tempfile::tempdir().unwrap();
+        let missing_home = tmp.path().join("scuvhome");
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(missing_home.to_str().unwrap()),
+        )]);
+
+        let doctor = Doctor::new();
+        let output = crate::output::Output::new(0, true, true, false);
+        let broken = CheckResult::error("home", "SCUV_HOME directory", "directory not found");
+
+        let fixed = doctor.fix_home(&broken, &output);
+        let fixed = fixed.expect("a 'not found' home error must be fixable");
+        assert!(fixed.is_ok(), "got {fixed:#?}");
+        assert!(missing_home.is_dir(), "home dir must be created");
+        assert!(
+            missing_home.join("virtualenvs").is_dir(),
+            "virtualenvs subdir must be created"
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn fix_home_ignores_non_not_found_results() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(tmp.path().to_str().unwrap()),
+        )]);
+
+        let doctor = Doctor::new();
+        let output = crate::output::Output::new(0, true, true, false);
+        let unrelated = CheckResult::error("home", "SCUV_HOME directory", "permission denied");
+        assert!(doctor.fix_home(&unrelated, &output).is_none());
+
+        let warning = CheckResult::warn("home", "SCUV_HOME directory", "directory not found");
+        assert!(
+            doctor.fix_home(&warning, &output).is_none(),
+            "only Error status is fixable, not Warning"
+        );
     }
 }

@@ -191,8 +191,8 @@ jobs:
 
       - name: Extract shell scripts
         run: |
-          ./target/debug/scoop init bash > /tmp/bash_init.sh
-          ./target/debug/scoop init zsh > /tmp/zsh_init.sh
+          ./target/debug/scuv init bash > /tmp/bash_init.sh
+          ./target/debug/scuv init zsh > /tmp/zsh_init.sh
 
       - name: ShellCheck bash script
         run: |

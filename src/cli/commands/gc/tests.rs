@@ -227,7 +227,7 @@ fn remove_skips_env_that_became_healthy() {
         let dir = paths::virtualenvs_dir().unwrap();
         fs::create_dir_all(&dir).unwrap();
         // Make a fully healthy env at the path the fake orphan record
-        // will reference. This simulates the racing `scoop create`
+        // will reference. This simulates the racing `scuv create`
         // that ran between scan and remove.
         let env_path = dir.join("racy");
         fs::create_dir_all(env_path.join("bin")).unwrap();

@@ -72,7 +72,7 @@ impl ScoopError {
 
             // Migration source-discovery (existing MigrationExitCode == 3).
             // MigrationSourcesNotFound joined this arm in Inc 4 so that
-            // `scoop migrate all` on a system with no source tools
+            // `scuv migrate all` on a system with no source tools
             // installed surfaces exit 3, distinct from generic exit 1.
             Self::PyenvNotFound
             | Self::PyenvEnvNotFound { .. }
@@ -91,7 +91,7 @@ impl ScoopError {
 
             // Narrow policy: every other operational variant exits 1 to
             // preserve the historical contract every CI script already
-            // expects from scoop. New diff/audit variants will be added
+            // expects from scuv. New diff/audit variants will be added
             // here as their feature increments land.
             _ => 1,
         }

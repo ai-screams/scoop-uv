@@ -1,12 +1,12 @@
-//! Shared test utilities for scoop
+//! Shared test utilities for scuv
 //!
 //! This module provides common test helpers to avoid code duplication
 //! across test modules.
 
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use tempfile::TempDir;
 
-use crate::paths::SCOOP_HOME_ENV;
+use crate::paths::{LEGACY_HOME_ENV, SCUV_HOME_ENV};
 
 /// Global mutex to synchronize tests that manipulate SCOOP_HOME environment variable.
 ///
@@ -42,22 +42,25 @@ impl Drop for LocaleGuard {
     }
 }
 
-/// Execute a test function with SCOOP_HOME environment variable unset.
+/// Execute a test function with SCUV_HOME and legacy SCOOP_HOME both unset.
 ///
-/// This helper ensures safe testing of default behavior when SCOOP_HOME is not set.
-/// Uses catch_unwind to guarantee cleanup even if the test panics.
+/// This helper ensures safe testing of default behavior when neither the
+/// current (`SCUV_HOME`) nor the legacy (`SCOOP_HOME`) env var is set —
+/// unsetting only one would let the other leak through `scoop_home()`'s
+/// fallback and mask the default-path behavior under test. Uses
+/// catch_unwind to guarantee cleanup even if the test panics.
 ///
 /// # Examples
 ///
 /// ```ignore
-/// use scoop::test_utils::with_no_scoop_home;
+/// use scoop_uv::test_utils::with_no_scoop_home;
 ///
 /// #[test]
 /// fn test_default_home() {
 ///     with_no_scoop_home(|| {
-///         // SCOOP_HOME is guaranteed to be unset here
+///         // SCUV_HOME and SCOOP_HOME are guaranteed to be unset here
 ///         let home = scoop_home().unwrap();
-///         assert!(home.ends_with(".scoop"));
+///         assert!(home.ends_with(".scuv") || home.ends_with(".scoop"));
 ///     });
 /// }
 /// ```
@@ -67,17 +70,28 @@ where
 {
     // Recover from poisoned mutex if a previous test panicked
     let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-    let backup = std::env::var(SCOOP_HOME_ENV).ok();
+    let backup_new = std::env::var(SCUV_HOME_ENV).ok();
+    let backup_legacy = std::env::var(LEGACY_HOME_ENV).ok();
 
     // SAFETY: Protected by ENV_LOCK mutex - only one test modifies this at a time
-    unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
+    unsafe {
+        std::env::remove_var(SCUV_HOME_ENV);
+        std::env::remove_var(LEGACY_HOME_ENV);
+    }
 
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
 
-    // Restore original value if it existed
-    if let Some(val) = backup {
-        // SAFETY: Protected by ENV_LOCK mutex
-        unsafe { std::env::set_var(SCOOP_HOME_ENV, val) };
+    // Restore original values if they existed
+    // SAFETY: Protected by ENV_LOCK mutex
+    unsafe {
+        match backup_new {
+            Some(val) => std::env::set_var(SCUV_HOME_ENV, val),
+            None => std::env::remove_var(SCUV_HOME_ENV),
+        }
+        match backup_legacy {
+            Some(val) => std::env::set_var(LEGACY_HOME_ENV, val),
+            None => std::env::remove_var(LEGACY_HOME_ENV),
+        }
     }
 
     match result {
@@ -86,24 +100,28 @@ where
     }
 }
 
-/// Execute a test function with an isolated temporary SCOOP_HOME.
+/// Execute a test function with an isolated temporary SCUV_HOME.
 ///
 /// This helper:
 /// 1. Acquires the global ENV_LOCK to prevent race conditions
-/// 2. Creates a temporary directory for SCOOP_HOME
-/// 3. Sets the SCOOP_HOME environment variable
+/// 2. Creates a temporary directory for SCUV_HOME
+/// 3. Sets the SCUV_HOME environment variable
 /// 4. Runs the provided test function
 /// 5. Cleans up the environment variable (even on panic)
+///
+/// Sets `SCUV_HOME` (the current-priority var read by `scoop_home()`), not
+/// the legacy `SCOOP_HOME` — since `SCUV_HOME` wins whenever both are set,
+/// this is the isolation callers actually want by default.
 ///
 /// # Examples
 ///
 /// ```ignore
-/// use scoop::test_utils::with_temp_scoop_home;
+/// use scoop_uv::test_utils::with_temp_scoop_home;
 ///
 /// #[test]
 /// fn test_something() {
 ///     with_temp_scoop_home(|temp_dir| {
-///         // temp_dir.path() is the temporary SCOOP_HOME
+///         // temp_dir.path() is the temporary SCUV_HOME
 ///         assert!(temp_dir.path().exists());
 ///     });
 /// }
@@ -119,22 +137,92 @@ where
     // Recover from poisoned mutex if a previous test panicked
     let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     // Restore the global i18n locale on exit so locale-mutating command tests
-    // (e.g. `scoop lang ko`) don't leak into later tests.
+    // (e.g. `scuv lang ko`) don't leak into later tests.
     let _locale = LocaleGuard::capture();
-    let temp_dir = TempDir::new().expect("Failed to create temp dir for SCOOP_HOME");
+    let temp_dir = TempDir::new().expect("Failed to create temp dir for SCUV_HOME");
 
     // SAFETY: Protected by ENV_LOCK mutex - only one test modifies this at a time
-    unsafe { std::env::set_var(SCOOP_HOME_ENV, temp_dir.path()) };
+    unsafe { std::env::set_var(SCUV_HOME_ENV, temp_dir.path()) };
 
     // Use catch_unwind to ensure cleanup even on panic
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&temp_dir)));
 
     // SAFETY: Protected by ENV_LOCK mutex - always cleanup
-    unsafe { std::env::remove_var(SCOOP_HOME_ENV) };
+    unsafe { std::env::remove_var(SCUV_HOME_ENV) };
 
     match result {
         Ok(val) => val,
         Err(e) => std::panic::resume_unwind(e),
+    }
+}
+
+/// RAII guard that sets/unsets a list of environment variables for its
+/// lifetime, restoring their previous values on drop.
+///
+/// Holds [`ENV_LOCK`] for the guard's lifetime, so callers are serialized
+/// against [`with_temp_scoop_home`], [`with_no_scoop_home`], and each other —
+/// unlike the single-variable helpers above, this covers an arbitrary set of
+/// vars in one call, which is useful for tests that need precise control
+/// over more than one variable at once (e.g. asserting priority between a
+/// current and a legacy env var). `Some(value)` sets/overwrites the
+/// variable; `None` removes it. Restoration happens even if the caller's
+/// closure panics, since `Drop` still runs during unwind — but only within
+/// the same thread; a panic that unwinds past the guard on another thread
+/// will not restore it.
+///
+/// # Examples
+///
+/// ```ignore
+/// use scoop_uv::test_utils::env_guard;
+///
+/// let _g = env_guard(&[
+///     ("SCOOP_UV_TEST_ENV_GUARD_DOCTEST_A", Some("value")),
+///     ("SCOOP_UV_TEST_ENV_GUARD_DOCTEST_B", None),
+/// ]);
+/// assert_eq!(
+///     std::env::var("SCOOP_UV_TEST_ENV_GUARD_DOCTEST_A").as_deref(),
+///     Ok("value")
+/// );
+/// assert!(std::env::var("SCOOP_UV_TEST_ENV_GUARD_DOCTEST_B").is_err());
+/// ```
+pub struct EnvGuard {
+    _lock: MutexGuard<'static, ()>,
+    backup: Vec<(&'static str, Option<String>)>,
+}
+
+impl Drop for EnvGuard {
+    fn drop(&mut self) {
+        for (name, value) in self.backup.drain(..) {
+            // SAFETY: Protected by ENV_LOCK, held by `self._lock` until this
+            // guard drops.
+            unsafe {
+                match value {
+                    Some(v) => std::env::set_var(name, v),
+                    None => std::env::remove_var(name),
+                }
+            }
+        }
+    }
+}
+
+/// Set/unset `vars` for the returned guard's lifetime; see [`EnvGuard`].
+pub fn env_guard(vars: &[(&'static str, Option<&str>)]) -> EnvGuard {
+    // Recover from poisoned mutex if a previous test panicked
+    let lock = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let mut backup = Vec::with_capacity(vars.len());
+    for (name, value) in vars {
+        backup.push((*name, std::env::var(name).ok()));
+        // SAFETY: Protected by ENV_LOCK, held by `lock` above.
+        unsafe {
+            match value {
+                Some(v) => std::env::set_var(name, v),
+                None => std::env::remove_var(name),
+            }
+        }
+    }
+    EnvGuard {
+        _lock: lock,
+        backup,
     }
 }
 
@@ -152,7 +240,7 @@ where
 /// # Examples
 ///
 /// ```ignore
-/// use scoop::test_utils::{with_temp_scoop_home, create_mock_venv};
+/// use scoop_uv::test_utils::{with_temp_scoop_home, create_mock_venv};
 ///
 /// #[test]
 /// fn test_list() {
@@ -312,7 +400,7 @@ pub static MIGRATE_ENV_LOCK: Mutex<()> = Mutex::new(());
 /// # Examples
 ///
 /// ```ignore
-/// use scoop::test_utils::with_isolated_migrate_env;
+/// use scoop_uv::test_utils::with_isolated_migrate_env;
 ///
 /// #[test]
 /// fn test_find_returns_error_when_not_found() {
@@ -387,7 +475,7 @@ where
 ///
 /// ```ignore
 /// use tempfile::TempDir;
-/// use scoop::test_utils::create_mock_pyenv_env;
+/// use scoop_uv::test_utils::create_mock_pyenv_env;
 ///
 /// let temp = TempDir::new().unwrap();
 /// create_mock_pyenv_env(temp.path(), "myenv", "3.12.0");
@@ -437,7 +525,7 @@ pub fn create_corrupted_pyenv_env(pyenv_root: &std::path::Path, name: &str, pyth
     fs::write(env_dir.join("pyvenv.cfg"), pyvenv_cfg).expect("Failed to write pyvenv.cfg");
 }
 
-/// Execute a test with both SCOOP_HOME and PYENV_ROOT isolated.
+/// Execute a test with both SCUV_HOME and PYENV_ROOT isolated.
 ///
 /// This helper combines `with_temp_scoop_home` and `with_isolated_migrate_env`,
 /// setting up a complete isolated environment for migration testing.
@@ -452,14 +540,14 @@ where
     use std::collections::HashMap;
 
     // Recover from poisoned mutex
-    let _env_guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let _env_lock = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let _migrate_guard = MIGRATE_ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
 
     // Create temp directories
-    let scoop_home = TempDir::new().expect("Failed to create temp SCOOP_HOME");
+    let scoop_home = TempDir::new().expect("Failed to create temp SCUV_HOME");
     let pyenv_root = TempDir::new().expect("Failed to create temp PYENV_ROOT");
 
-    // Create virtualenvs directory for scoop
+    // Create virtualenvs directory for scuv
     std::fs::create_dir_all(scoop_home.path().join("virtualenvs"))
         .expect("Failed to create virtualenvs dir");
 
@@ -469,11 +557,11 @@ where
         backup.insert(var, std::env::var(var).ok());
         unsafe { std::env::remove_var(var) };
     }
-    backup.insert("SCOOP_HOME", std::env::var("SCOOP_HOME").ok());
+    backup.insert(SCUV_HOME_ENV, std::env::var(SCUV_HOME_ENV).ok());
 
     // Set isolated environment
     unsafe {
-        std::env::set_var(SCOOP_HOME_ENV, scoop_home.path());
+        std::env::set_var(SCUV_HOME_ENV, scoop_home.path());
         std::env::set_var("PYENV_ROOT", pyenv_root.path());
     }
 
@@ -507,7 +595,7 @@ mod tests {
     #[serial]
     fn test_with_temp_scoop_home_sets_env() {
         with_temp_scoop_home(|temp_dir| {
-            let scoop_home = std::env::var(SCOOP_HOME_ENV).unwrap();
+            let scoop_home = std::env::var(SCUV_HOME_ENV).unwrap();
             assert_eq!(PathBuf::from(scoop_home), temp_dir.path());
         });
     }
@@ -518,8 +606,67 @@ mod tests {
         with_temp_scoop_home(|_| {
             // Do nothing
         });
-        // After the function, SCOOP_HOME should be unset
-        assert!(std::env::var(SCOOP_HOME_ENV).is_err());
+        // After the function, SCUV_HOME should be unset
+        assert!(std::env::var(SCUV_HOME_ENV).is_err());
+    }
+
+    #[test]
+    #[serial]
+    fn test_with_no_scoop_home_unsets_both_vars() {
+        // SAFETY: serialized via #[serial]; env restored after test.
+        unsafe {
+            std::env::set_var(SCUV_HOME_ENV, "/tmp/should-not-leak-new");
+            std::env::set_var(LEGACY_HOME_ENV, "/tmp/should-not-leak-legacy");
+        }
+        with_no_scoop_home(|| {
+            assert!(std::env::var(SCUV_HOME_ENV).is_err());
+            assert!(std::env::var(LEGACY_HOME_ENV).is_err());
+        });
+        assert_eq!(
+            std::env::var(SCUV_HOME_ENV).as_deref(),
+            Ok("/tmp/should-not-leak-new")
+        );
+        assert_eq!(
+            std::env::var(LEGACY_HOME_ENV).as_deref(),
+            Ok("/tmp/should-not-leak-legacy")
+        );
+        // SAFETY: serialized via #[serial]; cleanup.
+        unsafe {
+            std::env::remove_var(SCUV_HOME_ENV);
+            std::env::remove_var(LEGACY_HOME_ENV);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_guard_sets_and_restores() {
+        // SAFETY: serialized via #[serial]; env restored after test.
+        unsafe {
+            std::env::set_var("SCOOP_UV_TEST_ENV_GUARD_PRIOR", "prior-value");
+        }
+        {
+            let _g = env_guard(&[
+                ("SCOOP_UV_TEST_ENV_GUARD_PRIOR", Some("overridden")),
+                ("SCOOP_UV_TEST_ENV_GUARD_NEW", Some("fresh")),
+            ]);
+            assert_eq!(
+                std::env::var("SCOOP_UV_TEST_ENV_GUARD_PRIOR").as_deref(),
+                Ok("overridden")
+            );
+            assert_eq!(
+                std::env::var("SCOOP_UV_TEST_ENV_GUARD_NEW").as_deref(),
+                Ok("fresh")
+            );
+        }
+        assert_eq!(
+            std::env::var("SCOOP_UV_TEST_ENV_GUARD_PRIOR").as_deref(),
+            Ok("prior-value")
+        );
+        assert!(std::env::var("SCOOP_UV_TEST_ENV_GUARD_NEW").is_err());
+        // SAFETY: serialized via #[serial]; cleanup.
+        unsafe {
+            std::env::remove_var("SCOOP_UV_TEST_ENV_GUARD_PRIOR");
+        }
     }
 
     #[test]

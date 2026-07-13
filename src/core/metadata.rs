@@ -15,7 +15,8 @@ pub struct Metadata {
     /// Creation timestamp
     pub created_at: DateTime<Utc>,
 
-    /// Version of scoop that created this environment
+    /// Tool version that created this environment (`scuv <ver>`; envs
+    /// created before the 0.15.0 rename recorded `scoop <ver>`)
     pub created_by: String,
 
     /// Version of uv used
@@ -43,7 +44,7 @@ impl Metadata {
             name,
             python_version,
             created_at: Utc::now(),
-            created_by: format!("scoop {}", env!("CARGO_PKG_VERSION")),
+            created_by: format!("scuv {}", env!("CARGO_PKG_VERSION")),
             uv_version,
             python_path: None,
             last_used: None,
@@ -64,7 +65,11 @@ impl Metadata {
         self.last_used = Some(now);
     }
 
-    /// Metadata file name
+    /// Metadata file name.
+    ///
+    /// Deliberately keeps the legacy `scoop` name: this is on-disk storage
+    /// inside existing env directories, not a user-facing surface, so the
+    /// 0.15.0 command rename leaves it untouched for format compatibility.
     pub const FILE_NAME: &'static str = ".scoop-metadata.json";
 }
 
@@ -83,7 +88,7 @@ mod tests {
         assert_eq!(meta.name, "testenv");
         assert_eq!(meta.python_version, "3.12");
         assert_eq!(meta.uv_version, Some("0.5.0".to_string()));
-        assert!(meta.created_by.starts_with("scoop "));
+        assert!(meta.created_by.starts_with("scuv "));
     }
 
     #[test]

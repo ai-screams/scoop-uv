@@ -49,7 +49,7 @@ const UV_PYTHON_LIST_JSON: &str = r#"[
 
 fn bench_clap_parse_create(c: &mut Criterion) {
     c.bench_function("clap_parse_create", |b| {
-        b.iter(|| Cli::try_parse_from(black_box(["scoop", "create", "myenv", "3.12"])).ok())
+        b.iter(|| Cli::try_parse_from(black_box(["scuv", "create", "myenv", "3.12"])).ok())
     });
 }
 
@@ -58,7 +58,7 @@ fn bench_clap_parse_migrate_all(c: &mut Criterion) {
     c.bench_function("clap_parse_migrate_all", |b| {
         b.iter(|| {
             Cli::try_parse_from(black_box([
-                "scoop",
+                "scuv",
                 "migrate",
                 "all",
                 "--dry-run",

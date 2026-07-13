@@ -1,4 +1,4 @@
-//! Portable JSON schema for `scoop export` / `scoop import`.
+//! Portable JSON schema for `scuv export` / `scuv import`.
 //!
 //! Versioned on purpose: bumping the format requires bumping
 //! [`EXPORT_SCHEMA_VERSION`] and either keeping back-compat parsing or letting

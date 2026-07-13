@@ -1,6 +1,6 @@
 # Code Quality
 
-Comprehensive guide for maintaining code quality in scoop.
+Comprehensive guide for maintaining code quality in scuv.
 
 ## Quick Reference
 
@@ -379,7 +379,7 @@ cargo build --release
 
 # Use flamegraph
 cargo install flamegraph
-cargo flamegraph --bin scoop -- list
+cargo flamegraph --bin scuv -- list
 ```
 
 ### Benchmarks

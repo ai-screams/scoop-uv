@@ -1,4 +1,4 @@
-//! Handler for the `scoop status` command.
+//! Handler for the `scuv status` command.
 //!
 //! Summarises the current environment in one shot: which env is active, where
 //! it came from (shell-activated vs version file), and a few metadata fields.
@@ -15,28 +15,29 @@ use crate::paths::abbreviate_home;
 
 /// Sentinel state strings — kept as constants so the JSON discriminator and
 /// the source-comparison in `emit_env` can't drift apart.
-const SOURCE_ACTIVE: &str = "scoop_active_env";
+const SOURCE_ACTIVE: &str = "scuv_active_env";
 const SOURCE_VERSION_FILE: &str = "version_file";
 
 /// What the active-env resolver returned, split into the cases that matter
 /// for `status` output.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum State {
-    /// Shell-activated via `SCOOP_ACTIVE`.
+    /// Shell-activated via `SCUV_ACTIVE`.
     Active(String),
-    /// Resolved from a `.scoop-version` file (local or global).
+    /// Resolved from a version file (local or global; `.scuv-version`, with
+    /// legacy `.scoop-version` fallback).
     Configured(String),
     /// `system` sentinel (system Python is in use, no virtualenv active).
     System,
-    /// Neither `SCOOP_ACTIVE` nor any version file resolved.
+    /// Neither `SCUV_ACTIVE` nor any version file resolved.
     None,
 }
 
-/// Resolve the current state by combining `SCOOP_ACTIVE` with version-file
-/// resolution. `SCOOP_ACTIVE` wins when set because it represents what the
+/// Resolve the current state by combining `SCUV_ACTIVE` with version-file
+/// resolution. `SCUV_ACTIVE` wins when set because it represents what the
 /// shell actually activated, which can differ from what version files say.
 pub(crate) fn resolve_state() -> State {
-    // Empty `SCOOP_ACTIVE` (e.g. `SCOOP_ACTIVE=` in the parent shell) is broken
+    // Empty `SCUV_ACTIVE` (e.g. `SCUV_ACTIVE=` in the parent shell) is broken
     // state — treat it as unset so we fall through to version-file resolution.
     if let Some(name) = get_active_env().filter(|n| !n.is_empty()) {
         return if name == "system" {
@@ -182,7 +183,7 @@ mod tests {
     fn clear_env_vars() {
         // SAFETY: callers wrap this in `#[serial]`; no concurrent env access.
         unsafe {
-            std::env::remove_var("SCOOP_ACTIVE");
+            std::env::remove_var("SCUV_ACTIVE");
         }
     }
 
@@ -209,18 +210,18 @@ mod tests {
         with_temp_scoop_home(|_| {
             // SAFETY: serial test.
             unsafe {
-                std::env::set_var("SCOOP_ACTIVE", "shellenv");
+                std::env::set_var("SCUV_ACTIVE", "shellenv");
             }
 
             let workdir = TempDir::new().unwrap();
-            std::fs::write(workdir.path().join(".scoop-version"), "fileenv\n").unwrap();
+            std::fs::write(workdir.path().join(".scuv-version"), "fileenv\n").unwrap();
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
             assert_eq!(resolve_state(), State::Active("shellenv".to_string()));
 
             unsafe {
-                std::env::remove_var("SCOOP_ACTIVE");
+                std::env::remove_var("SCUV_ACTIVE");
             }
             if let Some(p) = prev {
                 std::env::set_current_dir(p).unwrap();
@@ -234,7 +235,7 @@ mod tests {
         with_temp_scoop_home(|_| {
             clear_env_vars();
             let workdir = TempDir::new().unwrap();
-            std::fs::write(workdir.path().join(".scoop-version"), "fileenv\n").unwrap();
+            std::fs::write(workdir.path().join(".scuv-version"), "fileenv\n").unwrap();
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
@@ -252,13 +253,13 @@ mod tests {
         with_temp_scoop_home(|_| {
             // SAFETY: serial test.
             unsafe {
-                std::env::set_var("SCOOP_ACTIVE", "system");
+                std::env::set_var("SCUV_ACTIVE", "system");
             }
 
             assert_eq!(resolve_state(), State::System);
 
             unsafe {
-                std::env::remove_var("SCOOP_ACTIVE");
+                std::env::remove_var("SCUV_ACTIVE");
             }
         });
     }
@@ -269,7 +270,7 @@ mod tests {
         with_temp_scoop_home(|_| {
             clear_env_vars();
             let workdir = TempDir::new().unwrap();
-            std::fs::write(workdir.path().join(".scoop-version"), "system\n").unwrap();
+            std::fs::write(workdir.path().join(".scuv-version"), "system\n").unwrap();
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
@@ -296,20 +297,20 @@ mod tests {
 
             // Active state with no on-disk env: must still succeed.
             unsafe {
-                std::env::set_var("SCOOP_ACTIVE", "ghost");
+                std::env::set_var("SCUV_ACTIVE", "ghost");
             }
             assert!(execute(&output).is_ok(), "Active state w/o disk env");
             unsafe {
-                std::env::remove_var("SCOOP_ACTIVE");
+                std::env::remove_var("SCUV_ACTIVE");
             }
 
             // System sentinel.
             unsafe {
-                std::env::set_var("SCOOP_ACTIVE", "system");
+                std::env::set_var("SCUV_ACTIVE", "system");
             }
             assert!(execute(&output).is_ok(), "System state");
             unsafe {
-                std::env::remove_var("SCOOP_ACTIVE");
+                std::env::remove_var("SCUV_ACTIVE");
             }
 
             if let Some(p) = prev {

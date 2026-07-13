@@ -1,6 +1,6 @@
-//! Handler for the `scoop gc` command.
+//! Handler for the `scuv gc` command.
 //!
-//! Detects orphan virtualenvs (directories under `~/.scoop/virtualenvs/`
+//! Detects orphan virtualenvs (directories under `~/.scuv/virtualenvs/`
 //! that no longer look like usable environments) and, when run with
 //! `--aggressive`, also flags uv-managed Python versions that are not
 //! referenced by any surviving env's metadata.
@@ -40,7 +40,7 @@ use super::duration::parse_duration;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 enum EnvGcReason {
-    /// `.scoop-metadata.json` is missing — the env wasn't created by scoop,
+    /// `.scoop-metadata.json` is missing — the env wasn't created by scuv,
     /// or its metadata file was deleted. Pre-Stale JSON value preserved.
     #[serde(rename = "missing_metadata")]
     OrphanMissingMetadata,
@@ -258,7 +258,7 @@ pub fn execute(
     Ok(())
 }
 
-/// Walk `~/.scoop/virtualenvs/` and flag any directory that fails the
+/// Walk `~/.scuv/virtualenvs/` and flag any directory that fails the
 /// "looks like a working env" sniff test.
 ///
 /// Symlinks are intentionally NOT considered. `is_dir()` follows
@@ -343,7 +343,7 @@ fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
 ///   (fresh env) *or* "predates the field" (legacy metadata). Either
 ///   way we have no positive evidence the env is unused, so we refuse
 ///   to flag it. Users who really want to nuke un-activated envs can
-///   `scoop verify` + manual removal.
+///   `scuv verify` + manual removal.
 /// * **Corrupt metadata never matches.** Same conservative rule via
 ///   a different code path: `VirtualenvService::list()` populates
 ///   `info.last_used` from the legacy `read_metadata`, which collapses
@@ -396,7 +396,7 @@ fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<OrphanEnv>> {
 /// guard can't accidentally reclassify a stale-but-healthy env as
 /// "not really stale" and skip removing it.
 fn classify(path: &Path) -> Option<EnvGcReason> {
-    // `.scoop-metadata.json` is the contract: every env scoop creates has
+    // `.scoop-metadata.json` is the contract: every env scuv creates has
     // one. Its absence means the directory was made by hand or its metadata
     // was deleted — either way we can't safely interpret it.
     if !path.join(".scoop-metadata.json").exists() {
@@ -642,8 +642,8 @@ fn remove_orphans(
 
         // TOCTOU guard for Pythons: re-scan unused versions right
         // before uninstall. The env-level reclassify above only
-        // protects venvs from `scoop create`-racing; without this
-        // Python-level recheck a concurrent `scoop create` could
+        // protects venvs from `scuv create`-racing; without this
+        // Python-level recheck a concurrent `scuv create` could
         // pull a venv onto a Python we're about to nuke, leaving
         // that env broken.
         let still_unused: std::collections::HashSet<String> = scan_unused_pythons(envs)

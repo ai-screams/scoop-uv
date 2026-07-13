@@ -559,7 +559,7 @@ mod tests {
 
     #[test]
     fn test_determine_status_eol_python() {
-        // Use a unique name that definitely won't exist in scoop
+        // Use a unique name that definitely won't exist in scuv
         let status = common::determine_status("nonexistent_eol_test_env_xyz", "3.7.0");
         assert!(matches!(status, EnvironmentStatus::PythonEol { .. }));
 

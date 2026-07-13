@@ -118,7 +118,7 @@ impl Drop for RollbackGuard {
     }
 }
 
-/// Orchestrates migration from source to scoop
+/// Orchestrates migration from source to scuv
 pub struct Migrator {
     uv: UvClient,
     extractor: PackageExtractor,
@@ -228,7 +228,7 @@ impl Migrator {
         self.extractor.extract(&source.path)
     }
 
-    /// Creates the target scoop environment.
+    /// Creates the target scuv environment.
     fn create_target_env(&self, name: &str, python_version: &str, force: bool) -> Result<PathBuf> {
         // Validate at the trust boundary: for `--rename` / `--auto-rename` the
         // target name comes straight from CLI args and would otherwise reach

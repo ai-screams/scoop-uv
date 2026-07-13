@@ -1,6 +1,6 @@
 //! Migration command implementation
 //!
-//! Migrates environments from pyenv, virtualenvwrapper, and conda to scoop.
+//! Migrates environments from pyenv, virtualenvwrapper, and conda to scuv.
 //!
 //! # Module Structure
 //!

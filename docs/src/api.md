@@ -1,9 +1,9 @@
 # API Reference
 
-This document provides a reference for scoop's public API, primarily intended for:
+This document provides a reference for scuv's public API, primarily intended for:
 - **AI/LLM tools** analyzing or modifying the codebase
-- **Contributors** extending scoop's functionality
-- **Advanced users** integrating scoop into custom tooling
+- **Contributors** extending scuv's functionality
+- **Advanced users** integrating scuv into custom tooling
 
 > **Note**: This is an internal API reference. For CLI usage, see [Commands](commands/README.md).
 
@@ -36,7 +36,7 @@ pub struct VirtualenvInfo {
 - `path` - Absolute path to virtualenv directory
 - `python_version` - Python version string if metadata exists (e.g., `Some("3.12.1")`)
 - `created_at` - Creation timestamp from metadata, if present (since 0.13.0)
-- `last_used` - Most recent `scoop activate`/`run`/`shell` touch
+- `last_used` - Most recent `scuv activate`/`run`/`shell` touch
   timestamp, if present (since 0.13.0). `None` for legacy envs that
   pre-date the field *and* fresh envs that have never been activated.
 
@@ -135,7 +135,7 @@ pub struct Metadata {
     pub name: String,
     pub python_version: String,
     pub created_at: DateTime<Utc>,   // Timestamp (ISO 8601 when serialized)
-    pub created_by: String,          // "scoop X.Y.Z" format
+    pub created_by: String,          // "scuv X.Y.Z" format
     pub uv_version: Option<String>,  // uv version used
     pub python_path: Option<String>, // Custom Python executable path (if --python-path was used)
     pub last_used: Option<DateTime<Utc>>, // Last activation timestamp (since 0.13.0)
@@ -147,7 +147,7 @@ impl Metadata {
 }
 ```
 
-**Storage Location:** `~/.scoop/virtualenvs/<name>/.scoop-metadata.json`
+**Storage Location:** `~/.scuv/virtualenvs/<name>/.scoop-metadata.json`
 
 **Example JSON:**
 ```json
@@ -155,7 +155,7 @@ impl Metadata {
   "name": "myproject",
   "python_version": "3.12.1",
   "created_at": "2024-01-15T10:30:00Z",
-  "created_by": "scoop <version>",
+  "created_by": "scuv <version>",
   "uv_version": "0.1.0"
 }
 ```
@@ -180,7 +180,7 @@ pub trait Check: Send + Sync {
 
 **Implementations:**
 - `UvCheck` - Verifies uv is installed
-- `HomeCheck` - Checks `SCOOP_HOME` directory
+- `HomeCheck` - Checks `SCUV_HOME` directory
 - `VirtualenvCheck` - Validates virtualenvs directory
 - `SymlinkCheck` - Checks for broken virtualenv Python symlinks (e.g., `<env>/bin/python`)
 - `ShellCheck` - Verifies shell integration
@@ -256,7 +256,7 @@ impl Check for MyCustomCheck {
             vec![CheckResult::ok(self.id(), self.name())]
         } else {
             vec![CheckResult::error(self.id(), self.name(), "Error message here")
-                .with_suggestion("Run: scoop fix-it")
+                .with_suggestion("Run: scuv fix-it")
                 .with_details("Expected X, found Y")]
         }
     }
@@ -307,7 +307,7 @@ for result in results {
 }
 
 // Auto-fix issues (requires Output for progress display)
-use scoop::output::Output;
+use scoop_uv::output::Output;
 let output = Output::new(0, false, false, false);
 let fixed_results = doctor.run_and_fix(&output);
 ```
@@ -318,7 +318,7 @@ let fixed_results = doctor.run_and_fix(&output);
 
 ### `ScoopError` (`error/` module)
 
-Primary error type for all scoop operations.
+Primary error type for all scuv operations.
 
 ```rust
 #[derive(Error, Debug)]
@@ -470,13 +470,13 @@ pub enum ShellType {
 ## Path Utilities (`paths.rs`)
 
 ```rust
-/// Returns scoop home directory (SCOOP_HOME or ~/.scoop)
+/// Returns scuv home directory (SCUV_HOME or ~/.scuv)
 pub fn scoop_home() -> Result<PathBuf>
 
 /// Returns virtualenvs directory
 pub fn virtualenvs_dir() -> Result<PathBuf>
 
-/// Returns global version file path (~/.scoop/version)
+/// Returns global version file path (~/.scuv/version)
 pub fn global_version_file() -> Result<PathBuf>
 
 /// Returns local version file path in the given directory
@@ -513,33 +513,33 @@ impl VersionService {
     /// Resolve from current directory
     pub fn resolve_current() -> Option<String>
 
-    /// Unset local version (removes .scoop-version)
+    /// Unset local version (removes .scuv-version)
     pub fn unset_local(dir: &Path) -> Result<()>
 
-    /// Unset global version (removes ~/.scoop/version)
+    /// Unset global version (removes ~/.scuv/version)
     pub fn unset_global() -> Result<()>
 }
 ```
 
 **CLI Equivalent (User Workflow):**
 
-`VersionService::set_global()` is exposed by the `scoop use <name> --global` command.
+`VersionService::set_global()` is exposed by the `scuv use <name> --global` command.
 To set Python 3.11.0 as the global default in practice:
 
 ```bash
-scoop install 3.11.0
-scoop create py311 3.11.0
-scoop use py311 --global
+scuv install 3.11.0
+scuv create py311 3.11.0
+scuv use py311 --global
 ```
 
-This writes `py311` to `~/.scoop/version`. The global value is used when no local
-`.scoop-version` or `SCOOP_VERSION` override is present.
+This writes `py311` to `~/.scuv/version`. The global value is used when no local
+`.scuv-version` or `SCUV_VERSION` override is present.
 
 **Resolution Priority Order:**
-1. `SCOOP_VERSION` environment variable (checked at shell hook level, not in VersionService)
-2. `.scoop-version` in current directory
-3. `.scoop-version` in parent directories (walks up)
-4. `~/.scoop/version` (global default)
+1. `SCUV_VERSION` environment variable (checked at shell hook level, not in VersionService)
+2. `.scuv-version` in current directory
+3. `.scuv-version` in parent directories (walks up)
+4. `~/.scuv/version` (global default)
 
 > **Note**: `.python-version` is not supported.
 
@@ -549,7 +549,7 @@ This writes `py311` to `~/.scoop/version`. The global value is used when no loca
 
 ### Property-Based Testing
 
-scoop uses `proptest` for property-based testing of critical logic:
+scuv uses `proptest` for property-based testing of critical logic:
 
 ```rust
 #[cfg(test)]
@@ -588,7 +588,7 @@ mod tests {
 
 ---
 
-## Extending scoop
+## Extending scuv
 
 ### Adding a New Command
 
@@ -692,7 +692,7 @@ When analyzing or modifying this codebase:
 
 ### Process exit codes
 
-scoop centralises exit-code policy in `src/error/exit.rs` via
+scuv centralises exit-code policy in `src/error/exit.rs` via
 `ScoopError::exit_code()`. Commands that already render their own
 report (e.g. `verify`) opt into `ErrorRenderPolicy::Quiet` so `main.rs`
 does not append a duplicate `error:` line.
@@ -723,4 +723,4 @@ Per-command exit code table:
 ---
 
 > **Last Updated:** 2026-06-16
-> **scoop Version:** 0.14.1
+> **scuv Version:** 0.15.0

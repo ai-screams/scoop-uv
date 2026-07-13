@@ -1,4 +1,4 @@
-//! Handler for the `scoop info` command
+//! Handler for the `scuv info` command
 
 use chrono::Utc;
 

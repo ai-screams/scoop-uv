@@ -10,7 +10,7 @@ use crate::output::{Output, UseData};
 
 use super::output::output_result;
 
-/// Handle `scoop use --unset` (remove version file)
+/// Handle `scuv use --unset` (remove version file)
 pub fn handle(output: &Output, cwd: &Path, global: bool) -> Result<()> {
     if global {
         VersionService::unset_global()?;

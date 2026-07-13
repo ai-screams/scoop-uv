@@ -15,7 +15,7 @@ pub use version::VersionService;
 pub use virtualenv::{VirtualenvInfo, VirtualenvService};
 
 /// Environment variable for currently active virtualenv
-pub const SCOOP_ACTIVE_ENV: &str = "SCOOP_ACTIVE";
+pub const SCUV_ACTIVE_ENV: &str = "SCUV_ACTIVE";
 
 /// Parse `pyvenv.cfg` to extract the resolved Python version.
 ///
@@ -75,7 +75,7 @@ fn normalize_pyvenv_version(raw: &str) -> String {
 /// the venv's own `pip list --format=json`.
 ///
 /// Best-effort: missing pip, non-zero exit, and unparseable JSON all collapse
-/// to an empty vector so callers (`scoop info`, `scoop status`) can degrade
+/// to an empty vector so callers (`scuv info`, `scuv status`) can degrade
 /// gracefully when the env is broken or pip simply isn't present.
 ///
 /// # Examples
@@ -113,19 +113,19 @@ pub fn list_installed_packages(venv_path: &std::path::Path) -> Vec<(String, Stri
     }
 }
 
-/// Get the currently active environment name from $SCOOP_ACTIVE
+/// Get the currently active environment name from $SCUV_ACTIVE
 ///
 /// # Examples
 ///
 /// ```
 /// use scoop_uv::core::get_active_env;
-/// // Returns None if SCOOP_ACTIVE is not set
+/// // Returns None if SCUV_ACTIVE is not set
 /// // SAFETY: This doctest runs in isolation
-/// unsafe { std::env::remove_var("SCOOP_ACTIVE") };
+/// unsafe { std::env::remove_var("SCUV_ACTIVE") };
 /// assert_eq!(get_active_env(), None);
 /// ```
 pub fn get_active_env() -> Option<String> {
-    std::env::var(SCOOP_ACTIVE_ENV).ok()
+    std::env::var(SCUV_ACTIVE_ENV).ok()
 }
 
 #[cfg(test)]

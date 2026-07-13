@@ -1,4 +1,4 @@
-//! Tests for the `scoop diff` command's orchestration layer.
+//! Tests for the `scuv diff` command's orchestration layer.
 //!
 //! These exercise `execute_with` with a mock [`PackageEnumerator`]
 //! so the full CLI path runs end-to-end without spawning `uv`. Pure

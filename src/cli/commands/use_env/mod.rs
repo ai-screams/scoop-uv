@@ -1,7 +1,7 @@
 //! Use command - set local/global environment
 //!
-//! This module handles the `scoop use` command which:
-//! - Sets environment version files (.scoop-version)
+//! This module handles the `scuv use` command which:
+//! - Sets environment version files (.scuv-version)
 //! - Handles the "system" special value
 //! - Supports --unset to remove version files
 //! - Optionally creates .venv symlinks

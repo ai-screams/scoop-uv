@@ -76,7 +76,7 @@ impl VirtualenvService {
             // Reject symlinks via file_type() (no traversal) instead of
             // path.is_dir() (which follows symlinks). A symlink under
             // virtualenvs/ would otherwise be enumerated as a normal env,
-            // and downstream commands like `scoop verify` would exec the
+            // and downstream commands like `scuv verify` would exec the
             // target's bin/python — arbitrary execution under the user's
             // UID. This is the same hardening gc::scan_orphan_envs does;
             // doing it here makes every caller of list() consistent.
@@ -323,7 +323,7 @@ impl VirtualenvService {
     /// best-effort.
     ///
     /// Production entry point. The timestamp is sampled inside this
-    /// function so two racing callers (e.g. `scoop activate myenv` from
+    /// function so two racing callers (e.g. `scuv activate myenv` from
     /// two shells) write *current* values instead of stale "now at
     /// caller-time" values. This narrows — but does not eliminate — the
     /// regression window between racing touches.
@@ -340,7 +340,7 @@ impl VirtualenvService {
     /// I/O failure. Three documented behaviors:
     ///
     /// 1. **Missing metadata** — skipped silently (legacy env that was
-    ///    never `scoop create`d via this binary). No file is created.
+    ///    never `scuv create`d via this binary). No file is created.
     /// 2. **Corrupt metadata** — `warn!` logged and the file left
     ///    untouched. Overwriting would destroy the user's only on-disk
     ///    evidence of the corruption. (Warning is observability sugar,

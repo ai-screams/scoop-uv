@@ -5,18 +5,18 @@ use crate::{file_resolution_check, scoop_version_check};
 /// Generate zsh initialization script
 pub fn init_script() -> &'static str {
     concat!(
-        r#"# scoop shell integration for zsh
+        r#"# scuv shell integration for zsh
 
-# Disable completion sorting for scoop (preserves command order)
-zstyle ':completion:*:scoop:*' sort false
+# Disable completion sorting for scuv (preserves command order)
+zstyle ':completion:*:scuv:*' sort false
 
-# Wrapper function for scoop
-scoop() {
+# Wrapper function for scuv
+scuv() {
     local command="${1:-}"
 
     case "$command" in
         use)
-            command scoop "$@"
+            command scuv "$@"
             local ret=$?
             if [[ $ret -eq 0 ]]; then
                 shift  # remove 'use'
@@ -28,7 +28,7 @@ scoop() {
                     esac
                 done
                 if [[ -n "$name" ]]; then
-                    eval "$(command scoop activate "$name")"
+                    eval "$(command scuv activate "$name")"
                 fi
             fi
             return $ret
@@ -36,19 +36,19 @@ scoop() {
         activate|deactivate|shell)
             # Pass through help/version flags without eval
             if [[ "$*" == *--help* ]] || [[ "$*" == *-h* ]] || [[ "$*" == *--version* ]] || [[ "$*" == *-V* ]]; then
-                command scoop "$@"
+                command scuv "$@"
             else
-                eval "$(command scoop "$@")"
+                eval "$(command scuv "$@")"
             fi
             ;;
         *)
-            command scoop "$@"
+            command scuv "$@"
             ;;
     esac
 }
 
 # Auto-activate hook
-_scoop_hook() {
+_scuv_hook() {
 "#,
         scoop_version_check!(zsh),
         file_resolution_check!(zsh),
@@ -56,16 +56,17 @@ _scoop_hook() {
 }
 
 # Set up chpwd hook for auto-activate
-if [[ -z "$SCOOP_NO_AUTO" ]]; then
+# DEPRECATION(0.16.0): drop the legacy SCOOP_NO_AUTO fallback check.
+if [[ -z "$SCUV_NO_AUTO" && -z "$SCOOP_NO_AUTO" ]]; then
     autoload -Uz add-zsh-hook
-    add-zsh-hook chpwd _scoop_hook
+    add-zsh-hook chpwd _scuv_hook
 fi
 
 # Run hook on startup
-_scoop_hook
+_scuv_hook
 
-# Zsh completion for scoop
-_scoop() {
+# Zsh completion for scuv
+_scuv() {
     local curcontext="$curcontext" state line
     typeset -A opt_args
     local cur="${words[$CURRENT]}"
@@ -124,7 +125,7 @@ _scoop() {
                             [[ $w != -* && -n $w ]] && has_env=true && break
                         done
                         if [[ $has_env == false ]]; then
-                            local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                            local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
                     fi
@@ -152,7 +153,7 @@ _scoop() {
                             [[ $w != -* && -n $w ]] && has_env=true && break
                         done
                         if [[ $has_env == false ]]; then
-                            local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                            local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
                     fi
@@ -184,7 +185,7 @@ _scoop() {
                             [[ $w != -* && -n $w ]] && has_env=true && break
                         done
                         if [[ $has_env == false ]]; then
-                            local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                            local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
                     fi
@@ -197,7 +198,7 @@ _scoop() {
                         [[ $w != -* && -n $w ]] && has_env=true && break
                     done
                     if [[ $has_env == false ]]; then
-                        local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                        local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                         compadd -a envs
                     fi
                     ;;
@@ -239,7 +240,7 @@ _scoop() {
                             [[ $w != -* && -n $w ]] && has_ver=true && break
                         done
                         if [[ $has_ver == false ]]; then
-                            local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
+                            local pythons=(${(uf)"$(command scuv list --pythons --bare 2>/dev/null)"})
                             compadd -a pythons
                         fi
                     fi
@@ -325,7 +326,7 @@ _scoop() {
                         done
                         if [[ $pos_count -eq 1 ]]; then
                             # Second positional arg: python version
-                            local pythons=(${(uf)"$(command scoop list --pythons --bare 2>/dev/null)"})
+                            local pythons=(${(uf)"$(command scuv list --pythons --bare 2>/dev/null)"})
                             compadd -a pythons
                         fi
                     fi
@@ -377,7 +378,7 @@ _scoop() {
                             [[ $w != -* && -n $w ]] && has_env=true && break
                         done
                         if [[ $has_env == false ]]; then
-                            local envs=(${(f)"$(command scoop list --bare 2>/dev/null)"})
+                            local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
                     fi
@@ -397,7 +398,15 @@ _scoop() {
 }
 
 # Register completion only if compdef is available (requires compinit)
-(( $+functions[compdef] )) && compdef _scoop scoop
+(( $+functions[compdef] )) && compdef _scuv scuv
+
+# DEPRECATION(0.16.0): transitional forwarder; never emitted for PowerShell.
+if ! command -v scoop >/dev/null 2>&1; then
+    scoop() {
+        echo "warning: 'scoop' has been renamed to 'scuv'; this alias will be removed in v0.16.0" >&2
+        scuv "$@"
+    }
+fi
 "#
     )
 }
@@ -455,7 +464,7 @@ mod tests {
         let script = init_script();
 
         // These functions MUST exist for the shell integration to work
-        let required_functions = ["scoop()", "_scoop_hook()", "_scoop()"];
+        let required_functions = ["scuv()", "_scuv_hook()", "_scuv()"];
 
         for func in required_functions {
             assert!(
@@ -472,7 +481,7 @@ mod tests {
 
         // zsh uses chpwd hook for directory change detection
         assert!(
-            script.contains("add-zsh-hook chpwd _scoop_hook"),
+            script.contains("add-zsh-hook chpwd _scuv_hook"),
             "Script must register chpwd hook for auto-activation"
         );
     }
@@ -483,9 +492,15 @@ mod tests {
 
         // Must register completion function with compdef
         assert!(
-            script.contains("compdef _scoop scoop"),
+            script.contains("compdef _scuv scuv"),
             "Script must register zsh completion"
         );
+    }
+
+    #[test]
+    fn init_script_defines_deprecated_scoop_forwarder() {
+        assert!(init_script().contains("scoop() {"));
+        assert!(init_script().contains("renamed to 'scuv'"));
     }
 
     #[test]

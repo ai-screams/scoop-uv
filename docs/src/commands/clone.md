@@ -6,7 +6,7 @@ without going through an export/import roundtrip.
 ## Usage
 
 ```bash
-scoop clone <SRC> <DST> [--no-packages] [--force] [--json]
+scuv clone <SRC> <DST> [--no-packages] [--force] [--json]
 ```
 
 ## Arguments
@@ -40,13 +40,13 @@ scoop clone <SRC> <DST> [--no-packages] [--force] [--json]
 
 ```bash
 # Full copy
-scoop clone myenv myenv-experiment
+scuv clone myenv myenv-experiment
 
 # Just the shell, no packages
-scoop clone myenv myenv-clean --no-packages
+scuv clone myenv myenv-clean --no-packages
 
 # Replace an existing clone
-scoop clone myenv myenv-experiment --force
+scuv clone myenv myenv-experiment --force
 ```
 
 ## JSON Output
@@ -59,7 +59,7 @@ scoop clone myenv myenv-experiment --force
     "src": "myenv",
     "dst": "myenv-experiment",
     "python": "3.12.7",
-    "path": "/Users/me/.scoop/virtualenvs/myenv-experiment",
+    "path": "/Users/me/.scuv/virtualenvs/myenv-experiment",
     "packages_copied": 12,
     "packages_skipped": false
   }
@@ -75,7 +75,7 @@ scoop clone myenv myenv-experiment --force
 
 ## See Also
 
-- [`scoop export`](export.md) / [`scoop import`](import.md) — portable JSON
+- [`scuv export`](export.md) / [`scuv import`](import.md) — portable JSON
   for cross-machine duplication
-- [`scoop create --force`](create.md) — recreate from scratch with a specific
+- [`scuv create --force`](create.md) — recreate from scratch with a specific
   Python version

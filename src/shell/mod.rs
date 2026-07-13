@@ -30,26 +30,26 @@ pub fn print_activate_script(shell: ShellType, venv_path: &Path, bin_path: &Path
         ShellType::Fish => {
             // Save original PATH only on first activation
             println!(
-                r#"if not set -q _SCOOP_OLD_PATH
-    set -gx _SCOOP_OLD_PATH $PATH
+                r#"if not set -q _SCUV_OLD_PATH
+    set -gx _SCUV_OLD_PATH $PATH
 end
 if set -q PYTHONHOME
-    set -gx _SCOOP_OLD_PYTHONHOME $PYTHONHOME
+    set -gx _SCUV_OLD_PYTHONHOME $PYTHONHOME
 end"#
             );
             println!("set -gx VIRTUAL_ENV '{}'", venv_path.display());
             println!("set -gx PATH '{}' $PATH", bin_path.display());
-            println!("set -gx SCOOP_ACTIVE '{}'", name);
+            println!("set -gx SCUV_ACTIVE '{}'", name);
             println!("set -e PYTHONHOME");
         }
         ShellType::Powershell => {
             // Save original PATH only on first activation
             println!(
-                r#"if (-not $env:_SCOOP_OLD_PATH) {{
-    $env:_SCOOP_OLD_PATH = $env:PATH
+                r#"if (-not $env:_SCUV_OLD_PATH) {{
+    $env:_SCUV_OLD_PATH = $env:PATH
 }}
 if ($env:PYTHONHOME) {{
-    $env:_SCOOP_OLD_PYTHONHOME = $env:PYTHONHOME
+    $env:_SCUV_OLD_PYTHONHOME = $env:PYTHONHOME
 }}"#
             );
             // Use [IO.Path]::PathSeparator for cross-platform
@@ -62,24 +62,24 @@ if ($env:PYTHONHOME) {{
                 "$env:PATH = '{}' + [IO.Path]::PathSeparator + $env:PATH",
                 bin_escaped
             );
-            println!("$env:SCOOP_ACTIVE = '{}'", name_escaped);
+            println!("$env:SCUV_ACTIVE = '{}'", name_escaped);
             println!("Remove-Item Env:\\PYTHONHOME -ErrorAction SilentlyContinue");
         }
         _ => {
             // Save original PATH only on first activation
             println!(
-                r#"if [ -z "$_SCOOP_OLD_PATH" ]; then
-    _SCOOP_OLD_PATH="$PATH"
-    export _SCOOP_OLD_PATH
+                r#"if [ -z "$_SCUV_OLD_PATH" ]; then
+    _SCUV_OLD_PATH="$PATH"
+    export _SCUV_OLD_PATH
 fi
 if [ -n "$PYTHONHOME" ]; then
-    _SCOOP_OLD_PYTHONHOME="$PYTHONHOME"
-    export _SCOOP_OLD_PYTHONHOME
+    _SCUV_OLD_PYTHONHOME="$PYTHONHOME"
+    export _SCUV_OLD_PYTHONHOME
 fi"#
             );
             println!("export VIRTUAL_ENV=\"{}\"", venv_path.display());
             println!("export PATH=\"{}:$PATH\"", bin_path.display());
-            println!("export SCOOP_ACTIVE=\"{}\"", name);
+            println!("export SCUV_ACTIVE=\"{}\"", name);
             println!("unset PYTHONHOME");
         }
     }
@@ -91,17 +91,17 @@ pub fn print_deactivate_script(shell: ShellType) {
             println!(
                 r#"if set -q VIRTUAL_ENV
     # Restore original PATH
-    if set -q _SCOOP_OLD_PATH
-        set PATH $_SCOOP_OLD_PATH
-        set -e _SCOOP_OLD_PATH
+    if set -q _SCUV_OLD_PATH
+        set PATH $_SCUV_OLD_PATH
+        set -e _SCUV_OLD_PATH
     end
     # Restore PYTHONHOME if it was saved
-    if set -q _SCOOP_OLD_PYTHONHOME
-        set -gx PYTHONHOME $_SCOOP_OLD_PYTHONHOME
-        set -e _SCOOP_OLD_PYTHONHOME
+    if set -q _SCUV_OLD_PYTHONHOME
+        set -gx PYTHONHOME $_SCUV_OLD_PYTHONHOME
+        set -e _SCUV_OLD_PYTHONHOME
     end
     set -e VIRTUAL_ENV
-    set -e SCOOP_ACTIVE
+    set -e SCUV_ACTIVE
 end"#
             );
         }
@@ -109,17 +109,17 @@ end"#
             println!(
                 r#"if ($env:VIRTUAL_ENV) {{
     # Restore original PATH
-    if ($env:_SCOOP_OLD_PATH) {{
-        $env:PATH = $env:_SCOOP_OLD_PATH
-        Remove-Item Env:\\_SCOOP_OLD_PATH -ErrorAction SilentlyContinue
+    if ($env:_SCUV_OLD_PATH) {{
+        $env:PATH = $env:_SCUV_OLD_PATH
+        Remove-Item Env:\\_SCUV_OLD_PATH -ErrorAction SilentlyContinue
     }}
     # Restore PYTHONHOME if it was saved
-    if ($env:_SCOOP_OLD_PYTHONHOME) {{
-        $env:PYTHONHOME = $env:_SCOOP_OLD_PYTHONHOME
-        Remove-Item Env:\\_SCOOP_OLD_PYTHONHOME -ErrorAction SilentlyContinue
+    if ($env:_SCUV_OLD_PYTHONHOME) {{
+        $env:PYTHONHOME = $env:_SCUV_OLD_PYTHONHOME
+        Remove-Item Env:\\_SCUV_OLD_PYTHONHOME -ErrorAction SilentlyContinue
     }}
     Remove-Item Env:\\VIRTUAL_ENV -ErrorAction SilentlyContinue
-    Remove-Item Env:\\SCOOP_ACTIVE -ErrorAction SilentlyContinue
+    Remove-Item Env:\\SCUV_ACTIVE -ErrorAction SilentlyContinue
 }}"#
             );
         }
@@ -127,49 +127,78 @@ end"#
             println!(
                 r#"if [ -n "$VIRTUAL_ENV" ]; then
     # Restore original PATH
-    if [ -n "$_SCOOP_OLD_PATH" ]; then
-        PATH="$_SCOOP_OLD_PATH"
+    if [ -n "$_SCUV_OLD_PATH" ]; then
+        PATH="$_SCUV_OLD_PATH"
         export PATH
-        unset _SCOOP_OLD_PATH
+        unset _SCUV_OLD_PATH
     fi
     # Restore PYTHONHOME if it was saved
-    if [ -n "$_SCOOP_OLD_PYTHONHOME" ]; then
-        PYTHONHOME="$_SCOOP_OLD_PYTHONHOME"
+    if [ -n "$_SCUV_OLD_PYTHONHOME" ]; then
+        PYTHONHOME="$_SCUV_OLD_PYTHONHOME"
         export PYTHONHOME
-        unset _SCOOP_OLD_PYTHONHOME
+        unset _SCUV_OLD_PYTHONHOME
     fi
     unset VIRTUAL_ENV
-    unset SCOOP_ACTIVE
+    unset SCUV_ACTIVE
 fi"#
             );
         }
     }
 }
 
-/// Print unset SCOOP_VERSION script for the given shell
+/// Print unset SCUV_VERSION script for the given shell.
+///
+/// Clears both the primary `SCUV_VERSION` and the legacy `SCOOP_VERSION` name
+/// it was exported alongside (see [`print_export_scoop_version`]) — leaving
+/// either behind would let it silently resurface on the next hook run.
+///
+/// DEPRECATION(0.16.0): stop clearing the legacy name.
 pub fn print_unset_scoop_version(shell: ShellType) {
     match shell {
-        ShellType::Fish => println!("set -e SCOOP_VERSION"),
-        ShellType::Powershell => {
-            println!("Remove-Item Env:\\SCOOP_VERSION -ErrorAction SilentlyContinue")
+        ShellType::Fish => {
+            println!("set -e SCUV_VERSION");
+            println!("set -e SCOOP_VERSION");
         }
-        _ => println!("unset SCOOP_VERSION"),
+        ShellType::Powershell => {
+            println!("Remove-Item Env:\\SCUV_VERSION -ErrorAction SilentlyContinue");
+            println!("Remove-Item Env:\\SCOOP_VERSION -ErrorAction SilentlyContinue");
+        }
+        _ => {
+            println!("unset SCUV_VERSION");
+            println!("unset SCOOP_VERSION");
+        }
     }
 }
 
-/// Print export SCOOP_VERSION script for the given shell
+/// Print export SCUV_VERSION script for the given shell.
+///
+/// Exports both the primary `SCUV_VERSION` and the legacy `SCOOP_VERSION`
+/// name, in that order. Both are needed during the transition: our own
+/// binary's readers (`VersionService::resolve_env_version`) check
+/// `SCUV_VERSION` first, so exporting it means `scuv status`/`which`/etc. run
+/// while this pin is active never fall into the legacy branch and never fire
+/// a one-shot deprecation warning on every invocation. Exporting the legacy
+/// name too keeps a still-loaded 0.14-era shell hook (which only reads
+/// `SCOOP_VERSION`) working across the upgrade.
+///
+/// DEPRECATION(0.16.0): stop emitting the legacy name.
 pub fn print_export_scoop_version(shell: ShellType, value: &str) {
     match shell {
         ShellType::Fish => {
             // Fish: escape single quotes by replacing ' with \'
             let escaped = value.replace('\'', "\\'");
+            println!("set -gx SCUV_VERSION '{}'", escaped);
             println!("set -gx SCOOP_VERSION '{}'", escaped);
         }
         ShellType::Powershell => {
             // PowerShell: escape single quotes by doubling them
             let escaped = value.replace('\'', "''");
+            println!("$env:SCUV_VERSION = '{}'", escaped);
             println!("$env:SCOOP_VERSION = '{}'", escaped);
         }
-        _ => println!("export SCOOP_VERSION=\"{}\"", value),
+        _ => {
+            println!("export SCUV_VERSION=\"{}\"", value);
+            println!("export SCOOP_VERSION=\"{}\"", value);
+        }
     }
 }

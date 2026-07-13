@@ -138,7 +138,7 @@ fn list_virtualenvs(
                 python: Some(version.clone()),
                 path: path.clone(),
                 active: system_active,
-                // System Python isn't a scoop-managed env, so there's
+                // System Python isn't a scuv-managed env, so there's
                 // no on-disk metadata to source these from.
                 created_at: None,
                 last_used: None,

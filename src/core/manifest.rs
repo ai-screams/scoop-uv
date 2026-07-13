@@ -1,5 +1,12 @@
-//! `.scoop.toml` project manifest — opt-in declarative env definition
-//! consumed by `scoop sync`.
+//! `.scuv.toml` project manifest — opt-in declarative env definition
+//! consumed by `scuv sync`.
+//!
+//! Resolution walks cwd → parents; within a single directory `.scuv.toml`
+//! wins over a legacy `.scoop.toml` (deprecated; emits a one-shot warning).
+//! A legacy file in a *nearer* directory still beats a new-named file in a
+//! parent directory — nearest-directory-first is unchanged by the rename.
+//!
+//! DEPRECATION(0.16.0): remove the legacy branch.
 //!
 //! The schema is intentionally minimal for v1:
 //!
@@ -23,10 +30,12 @@ use serde::Deserialize;
 
 use crate::error::{Result, ScoopError};
 
-/// Project manifest filename — searched cwd→parent like `.scoop-version`.
-pub const MANIFEST_FILE: &str = ".scoop.toml";
+/// Project manifest filename — searched cwd→parent like `.scuv-version`.
+pub const MANIFEST_FILE: &str = ".scuv.toml";
+/// DEPRECATION(0.16.0): remove the legacy manifest-filename fallback.
+pub const LEGACY_MANIFEST_FILE: &str = ".scoop.toml";
 
-/// Parsed `.scoop.toml`. Fields are validated at parse time so callers receive
+/// Parsed `.scuv.toml`. Fields are validated at parse time so callers receive
 /// a struct that's already meaningful (`name` passes `is_valid_env_name`,
 /// `python` is non-empty).
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
@@ -44,7 +53,7 @@ pub struct Environment {
     pub python: String,
 }
 
-/// Package groups. `default` is always installed by `scoop sync`; any extra
+/// Package groups. `default` is always installed by `scuv sync`; any extra
 /// keys become opt-in groups selected via `--with <group>`.
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq)]
 pub struct Packages {
@@ -57,11 +66,11 @@ pub struct Packages {
 }
 
 impl ScoopManifest {
-    /// Parse a `.scoop.toml` document from a string and validate.
+    /// Parse a `.scuv.toml` document from a string and validate.
     pub fn parse(content: &str) -> Result<Self> {
         let manifest: ScoopManifest =
             toml::from_str(content).map_err(|e| ScoopError::InvalidArgument {
-                message: format!(".scoop.toml: {}", e.message()),
+                message: format!("{MANIFEST_FILE}: {}", e.message()),
             })?;
         manifest.validate()?;
         Ok(manifest)
@@ -103,7 +112,7 @@ impl ScoopManifest {
         if !crate::validate::is_valid_env_name(&self.environment.name) {
             return Err(ScoopError::InvalidEnvName {
                 name: self.environment.name.clone(),
-                reason: "invalid name in .scoop.toml [environment]".to_string(),
+                reason: format!("invalid name in {MANIFEST_FILE} [environment]"),
             });
         }
         if self.environment.python.trim().is_empty() {
@@ -115,15 +124,23 @@ impl ScoopManifest {
     }
 }
 
-/// Walk from `start` up to filesystem root looking for `.scoop.toml`.
-/// Mirrors the version-file resolution model so users get the same mental
-/// model for "this directory is configured" detection.
+/// Walk from `start` up to filesystem root looking for `.scuv.toml`, falling
+/// back to the legacy `.scoop.toml` name per directory (deprecated; emits a
+/// one-shot warning). Mirrors the version-file resolution model so users get
+/// the same mental model for "this directory is configured" detection.
+///
+/// DEPRECATION(0.16.0): remove the legacy fallback branch.
 pub fn find_manifest(start: &Path) -> Option<PathBuf> {
     let mut current = start.to_path_buf();
     loop {
         let candidate = current.join(MANIFEST_FILE);
         if candidate.is_file() {
             return Some(candidate);
+        }
+        let legacy = current.join(LEGACY_MANIFEST_FILE);
+        if legacy.is_file() {
+            crate::output::deprecation::warn_once(&rust_i18n::t!("deprecation.manifest_file"));
+            return Some(legacy);
         }
         if !current.pop() {
             return None;
@@ -390,10 +407,38 @@ mod tests {
 
     #[test]
     fn find_manifest_walks_terminate_at_root() {
-        // Search a path that definitely has no .scoop.toml ancestor: the
+        // Search a path that definitely has no .scuv.toml ancestor: the
         // system root. find_manifest must terminate (not loop forever) and
         // return either Some (if root happens to have one — unusual but legal)
         // or None.
         let _ = find_manifest(Path::new("/"));
+    }
+
+    // ==========================================================================
+    // find_manifest — dual-name walk (.scuv.toml / legacy .scoop.toml)
+    // ==========================================================================
+
+    /// New name wins when both are present in the same directory.
+    #[test]
+    fn find_manifest_new_name_wins_over_legacy_in_same_dir() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join(MANIFEST_FILE), "").unwrap();
+        std::fs::write(dir.path().join(LEGACY_MANIFEST_FILE), "").unwrap();
+        assert_eq!(
+            find_manifest(dir.path()),
+            Some(dir.path().join(MANIFEST_FILE))
+        );
+    }
+
+    /// DEPRECATION(0.16.0): legacy-shim regression test — a directory with
+    /// only the legacy `.scoop.toml` name must still resolve.
+    #[test]
+    fn find_manifest_legacy_only_still_resolves() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join(LEGACY_MANIFEST_FILE), "").unwrap();
+        assert_eq!(
+            find_manifest(dir.path()),
+            Some(dir.path().join(LEGACY_MANIFEST_FILE))
+        );
     }
 }

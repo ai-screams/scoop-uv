@@ -1,8 +1,8 @@
-//! Handler for the `scoop import` command.
+//! Handler for the `scuv import` command.
 //!
-//! Reads a `scoop export` JSON file (or stdin via `-`), validates the schema,
+//! Reads a `scuv export` JSON file (or stdin via `-`), validates the schema,
 //! creates the env (with implicit lazy Python install — same ergonomic call as
-//! `scoop sync`), then installs every pinned package via uv pip.
+//! `scuv sync`), then installs every pinned package via uv pip.
 
 use std::io::Read;
 use std::path::{Path, PathBuf};

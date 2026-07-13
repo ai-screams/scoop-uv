@@ -1,10 +1,10 @@
-//! Handler for the `scoop man` command.
+//! Handler for the `scuv man` command.
 //!
 //! Generates groff-formatted man pages from the live `clap::Command` tree,
 //! so the man pages always reflect the actual `--help` text. Two modes:
 //!
-//! - No arg: render the top-level `scoop(1)` to stdout (pipe to `man -l -`).
-//! - `<dir>`: render `scoop.1` + one `scoop-<sub>.1` per subcommand into `<dir>`.
+//! - No arg: render the top-level `scuv(1)` to stdout (pipe to `man -l -`).
+//! - `<dir>`: render `scuv.1` + one `scuv-<sub>.1` per subcommand into `<dir>`.
 //!
 //! Distro packagers consume the directory form; `man -l` is the convenient
 //! local-preview path.
@@ -57,8 +57,8 @@ fn render_to_dir(output: &Output, cmd: &clap::Command, dir: &Path) -> Result<()>
 
     std::fs::create_dir_all(dir)?;
 
-    // Top-level `scoop.1`
-    write_page(dir, "scoop.1", cmd)?;
+    // Top-level `scuv.1`
+    write_page(dir, "scuv.1", cmd)?;
     let mut count = 1;
 
     // One file per immediate subcommand. Hidden subcommands (`activate`,
@@ -68,7 +68,7 @@ fn render_to_dir(output: &Output, cmd: &clap::Command, dir: &Path) -> Result<()>
         if sub.is_hide_set() {
             continue;
         }
-        let filename = format!("scoop-{}.1", sub.get_name());
+        let filename = format!("scuv-{}.1", sub.get_name());
         write_page(dir, &filename, sub)?;
         count += 1;
     }
@@ -97,9 +97,9 @@ fn write_page(dir: &Path, filename: &str, cmd: &clap::Command) -> Result<()> {
 
     // Reject symlinks at the file level too. The dir-level check upstream
     // refuses to descend into a symlinked DIR, but a packager script that
-    // pre-creates `scoop.1` or `scoop-*.1` as a symlink to some other
+    // pre-creates `scuv.1` or `scuv-*.1` as a symlink to some other
     // path would otherwise have `fs::write` follow the link — an arbitrary
-    // truncate/write under whatever UID is running `scoop man`. Use
+    // truncate/write under whatever UID is running `scuv man`. Use
     // `symlink_metadata` so we inspect the link itself, not its target.
     if let Ok(meta) = std::fs::symlink_metadata(&target) {
         if meta.file_type().is_symlink() {
@@ -132,15 +132,15 @@ mod tests {
 
         // Top-level page must exist
         assert!(
-            tmp.path().join("scoop.1").exists(),
-            "scoop.1 should be written"
+            tmp.path().join("scuv.1").exists(),
+            "scuv.1 should be written"
         );
 
         // At least one well-known subcommand page must exist. We don't
         // hardcode all of them — this guards against the renderer breaking
         // wholesale, not against subcommand renames (which clap_mangen will
         // pick up automatically anyway).
-        for sub in ["scoop-list.1", "scoop-create.1", "scoop-doctor.1"] {
+        for sub in ["scuv-list.1", "scuv-create.1", "scuv-doctor.1"] {
             assert!(
                 tmp.path().join(sub).exists(),
                 "expected man page {sub} to be written"
@@ -165,7 +165,7 @@ mod tests {
             if sub.is_hide_set() {
                 continue;
             }
-            let filename = format!("scoop-{}.1", sub.get_name());
+            let filename = format!("scuv-{}.1", sub.get_name());
             assert!(
                 tmp.path().join(&filename).exists(),
                 "expected man page {filename} for subcommand '{}'",
@@ -181,7 +181,7 @@ mod tests {
         execute(&output, Some(tmp.path())).unwrap();
 
         // `activate`, `deactivate`, `resolve` are hidden (shell-internal).
-        for hidden in ["scoop-activate.1", "scoop-deactivate.1", "scoop-resolve.1"] {
+        for hidden in ["scuv-activate.1", "scuv-deactivate.1", "scuv-resolve.1"] {
             assert!(
                 !tmp.path().join(hidden).exists(),
                 "hidden subcommand {hidden} should not get a man page"
@@ -191,7 +191,7 @@ mod tests {
 
     // ==========================================================================
     // C1 regression — file-level symlink hardening. A pre-existing
-    // `scoop.1` symlink inside a non-symlinked DIR must NOT be followed
+    // `scuv.1` symlink inside a non-symlinked DIR must NOT be followed
     // by fs::write; the dir-level check is not enough.
     // ==========================================================================
     #[cfg(unix)]
@@ -207,7 +207,7 @@ mod tests {
         // Plant a symlink inside the (non-symlinked) output dir pointing
         // at the canary. Then ask man to write. The symlink check should
         // fire and the canary content must stay intact.
-        std::os::unix::fs::symlink(&canary, tmp.path().join("scoop.1")).unwrap();
+        std::os::unix::fs::symlink(&canary, tmp.path().join("scuv.1")).unwrap();
 
         let output = Output::new(0, true, true, false);
         let result = execute(&output, Some(tmp.path()));

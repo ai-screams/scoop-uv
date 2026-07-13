@@ -22,15 +22,15 @@ struct TestFixture {
     /// Temporary directory - held to prevent cleanup until fixture is dropped
     #[allow(dead_code)]
     temp_dir: TempDir,
-    /// SCOOP_HOME path
+    /// SCUV_HOME path
     scoop_home: PathBuf,
 }
 
 impl TestFixture {
-    /// Create a new test fixture with isolated SCOOP_HOME
+    /// Create a new test fixture with isolated SCUV_HOME
     fn new() -> Self {
         let temp_dir = TempDir::new().expect("Failed to create temp dir");
-        let scoop_home = temp_dir.path().join(".scoop");
+        let scoop_home = temp_dir.path().join(".scuv");
         Self {
             temp_dir,
             scoop_home,
@@ -38,34 +38,55 @@ impl TestFixture {
     }
 }
 
-/// Helper to get a fresh command with SCOOP_HOME set
+/// Helper to get a fresh command with SCUV_HOME set
 fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
-    let mut cmd = Command::cargo_bin("scoop").unwrap();
-    cmd.env("SCOOP_HOME", scoop_home);
+    let mut cmd = Command::cargo_bin("scuv").unwrap();
+    cmd.env("SCUV_HOME", scoop_home);
+    // 부모 환경의 레거시 변수가 fallback 경로로 새어들지 않게 차단
+    cmd.env_remove("SCOOP_HOME");
     // Force English locale for consistent test assertions
-    cmd.env("SCOOP_LANG", "en");
+    cmd.env("SCUV_LANG", "en");
+    cmd.env_remove("SCOOP_LANG");
     cmd
 }
 
 #[test]
 fn test_help_flag() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("scoop"))
+        .stdout(predicate::str::contains("scuv"))
         .stdout(predicate::str::contains("COMMAND"));
 }
 
 #[test]
 fn test_version_flag() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .arg("--version")
         .assert()
         .success()
-        .stdout(predicate::str::contains("scoop"));
+        .stdout(predicate::str::contains("scuv"));
+}
+
+/// Legacy-shim integration regression (the ONE end-to-end legacy-env test):
+/// the deprecated SCOOP_HOME/SCOOP_LANG names must still work through the
+/// real binary, emitting the deprecation warning on stderr.
+/// DEPRECATION(0.16.0): remove together with the legacy env-var shims.
+#[test]
+fn test_legacy_scoop_env_vars_still_work() {
+    let fixture = TestFixture::new();
+    let mut cmd = Command::cargo_bin("scuv").unwrap();
+    cmd.env_remove("SCUV_HOME");
+    cmd.env_remove("SCUV_LANG");
+    cmd.env("SCOOP_HOME", &fixture.scoop_home);
+    cmd.env("SCOOP_LANG", "en");
+    cmd.arg("list")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("SCOOP_HOME is deprecated"));
 }
 
 #[test]
@@ -100,23 +121,23 @@ fn test_list_bare_format() {
 
 #[test]
 fn test_init_bash() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["init", "bash"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("scoop()"))
-        .stdout(predicate::str::contains("_scoop_hook"));
+        .stdout(predicate::str::contains("scuv()"))
+        .stdout(predicate::str::contains("_scuv_hook"));
 }
 
 #[test]
 fn test_init_zsh() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["init", "zsh"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("scoop()"))
+        .stdout(predicate::str::contains("scuv()"))
         .stdout(predicate::str::contains("add-zsh-hook"));
 }
 
@@ -124,7 +145,7 @@ fn test_init_zsh() {
 
 #[test]
 fn test_completions_bash() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["completions", "bash"])
         .assert()
@@ -133,7 +154,7 @@ fn test_completions_bash() {
 
 #[test]
 fn test_completions_zsh() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["completions", "zsh"])
         .assert()
@@ -226,11 +247,14 @@ fn test_deactivate_when_not_active() {
         .success();
 }
 
+/// DEPRECATION(0.16.0): legacy-shim regression test — verifies `scoop
+/// resolve` still honors a legacy `.scoop-version` file end-to-end. Remove
+/// alongside the legacy fallback itself.
 #[test]
 fn test_resolve_with_version_file() {
     let fixture = TestFixture::new();
 
-    // Create a version file in the temp directory
+    // Create a legacy-named version file in the temp directory
     std::fs::write(fixture.temp_dir.path().join(".scoop-version"), "testenv").unwrap();
 
     // resolve should succeed and output the env name
@@ -244,7 +268,7 @@ fn test_resolve_with_version_file() {
 
 #[test]
 fn test_unknown_subcommand() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .arg("unknowncommand")
         .assert()
@@ -379,7 +403,7 @@ mod error_cases {
 
     #[test]
     fn test_init_without_shell() {
-        Command::cargo_bin("scoop")
+        Command::cargo_bin("scuv")
             .unwrap()
             .arg("init")
             .assert()
@@ -388,7 +412,7 @@ mod error_cases {
 
     #[test]
     fn test_completions_without_shell() {
-        Command::cargo_bin("scoop")
+        Command::cargo_bin("scuv")
             .unwrap()
             .arg("completions")
             .assert()
@@ -408,7 +432,7 @@ mod error_cases {
     #[test]
     fn test_invalid_subcommand_suggestion() {
         // Test that invalid subcommand gives helpful error
-        Command::cargo_bin("scoop")
+        Command::cargo_bin("scuv")
             .unwrap()
             .arg("craete") // typo
             .assert()
@@ -419,7 +443,7 @@ mod error_cases {
     fn test_help_for_subcommand() {
         // Each subcommand should support --help
         for subcmd in ["list", "create", "remove", "use", "install"] {
-            Command::cargo_bin("scoop")
+            Command::cargo_bin("scuv")
                 .unwrap()
                 .args([subcmd, "--help"])
                 .assert()
@@ -437,7 +461,7 @@ mod output_format {
 
     #[test]
     fn test_version_output_format() {
-        let output = Command::cargo_bin("scoop")
+        let output = Command::cargo_bin("scuv")
             .unwrap()
             .arg("--version")
             .output()
@@ -445,14 +469,14 @@ mod output_format {
 
         let stdout = String::from_utf8_lossy(&output.stdout);
 
-        // Version format should be "scoop X.Y.Z"
+        // Version format should be "scuv X.Y.Z"
         assert!(
-            stdout.starts_with("scoop "),
-            "Version should start with 'scoop '"
+            stdout.starts_with("scuv "),
+            "Version should start with 'scuv '"
         );
 
         // Verify semver format (X.Y.Z)
-        let version_part = stdout.trim().strip_prefix("scoop ").unwrap();
+        let version_part = stdout.trim().strip_prefix("scuv ").unwrap();
         let parts: Vec<&str> = version_part.split('.').collect();
         assert_eq!(parts.len(), 3, "Version should be semver format X.Y.Z");
         for (i, part) in parts.iter().enumerate() {
@@ -467,7 +491,7 @@ mod output_format {
 
     #[test]
     fn test_help_has_required_sections() {
-        let output = Command::cargo_bin("scoop")
+        let output = Command::cargo_bin("scuv")
             .unwrap()
             .arg("--help")
             .output()
@@ -489,7 +513,7 @@ mod output_format {
 
     #[test]
     fn test_help_lists_all_subcommands() {
-        let output = Command::cargo_bin("scoop")
+        let output = Command::cargo_bin("scuv")
             .unwrap()
             .arg("--help")
             .output()
@@ -650,6 +674,7 @@ mod shell_commands {
             .args(["shell", "shelltest"])
             .assert()
             .success()
+            .stdout(predicate::str::contains("SCUV_VERSION"))
             .stdout(predicate::str::contains("SCOOP_VERSION"))
             .stdout(predicate::str::contains("VIRTUAL_ENV"));
     }
@@ -664,6 +689,7 @@ mod shell_commands {
             .assert()
             .success()
             // Security: verify quotes are present to prevent shell injection
+            .stdout(predicate::str::contains(r#"export SCUV_VERSION="system""#))
             .stdout(predicate::str::contains(r#"export SCOOP_VERSION="system""#))
             .stdout(predicate::str::contains("unset VIRTUAL_ENV"));
     }
@@ -678,6 +704,7 @@ mod shell_commands {
             .assert()
             .success()
             // Security: double quotes prevent shell injection
+            .stdout(predicate::str::contains(r#"export SCUV_VERSION="system""#))
             .stdout(predicate::str::contains(r#"export SCOOP_VERSION="system""#));
     }
 
@@ -685,12 +712,13 @@ mod shell_commands {
     fn test_shell_fish_uses_single_quotes() {
         let fixture = TestFixture::new();
 
-        // Fish shell should use single quotes for SCOOP_VERSION
+        // Fish shell should use single quotes for SCUV_VERSION/SCOOP_VERSION
         scoop_cmd(&fixture.scoop_home)
             .args(["shell", "--shell", "fish", "system"])
             .assert()
             .success()
             // Fish uses single quotes which also prevent injection
+            .stdout(predicate::str::contains("set -gx SCUV_VERSION 'system'"))
             .stdout(predicate::str::contains("set -gx SCOOP_VERSION 'system'"));
     }
 
@@ -703,6 +731,7 @@ mod shell_commands {
             .args(["shell", "--shell", "bash", "--unset"])
             .assert()
             .success()
+            .stdout(predicate::str::contains("unset SCUV_VERSION"))
             .stdout(predicate::str::contains("unset SCOOP_VERSION"));
     }
 
@@ -718,10 +747,10 @@ mod shell_commands {
             .assert()
             .success();
 
-        let version_file = project_dir.join(".scoop-version");
+        let version_file = project_dir.join(".scuv-version");
         assert!(
             version_file.exists(),
-            ".scoop-version file should be created"
+            ".scuv-version file should be created"
         );
         let content = std::fs::read_to_string(&version_file).unwrap();
         assert_eq!(content.trim(), "system");
@@ -743,6 +772,7 @@ mod shell_commands {
             .args(["shell", "--shell", "fish", "fishenv"])
             .assert()
             .success()
+            .stdout(predicate::str::contains("set -gx SCUV_VERSION"))
             .stdout(predicate::str::contains("set -gx SCOOP_VERSION"))
             .stdout(predicate::str::contains("set -gx VIRTUAL_ENV"));
     }

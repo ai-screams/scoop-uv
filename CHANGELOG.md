@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-07-13
+
+### Changed
+
+- **BREAKING**: command renamed `scoop` → `scuv` (binary, shell functions, completions, man pages)
+  to coexist with the Windows Scoop package manager. Repo/crate stay `scoop-uv`.
+- **BREAKING**: `SCOOP_HOME/VERSION/LANG/NO_AUTO/RESOLVE_MAX_DEPTH` → `SCUV_*`; `~/.scoop` → `~/.scuv`;
+  `.scoop-version` → `.scuv-version`; `.scoop.toml` → `.scuv.toml`. Legacy values/files are still READ
+  with a one-shot deprecation warning; support ends in v0.16.0. Migrate: rename the files and
+  `mv ~/.scoop ~/.scuv`. `scuv use --unset` removes both the old and new local version files;
+  `scuv shell` transitionally exports both `SCUV_VERSION` and `SCOOP_VERSION`.
+- **BREAKING**: session state variables (`SCUV_ACTIVE`, `_SCUV_OLD_PATH`, `_SCUV_OLD_PYTHONHOME`)
+  were renamed with **no** fallback. After upgrading, restart your shells and update rc files to
+  `eval "$(scuv init <shell>)"` (fish: `scuv init fish | source`).
+- bash/zsh/fish `scuv init` emits a deprecated `scoop` forwarding function that warns on use
+  (removed in v0.16.0). PowerShell never defines `scoop` (scoop.sh coexistence).
+- Upgrading from 0.14.x via `scoop self update` works, but the old binary's post-install
+  verification prints a "could not locate the freshly installed `scoop` binary" warning —
+  this is expected across the rename (the new binary is `scuv`) and safe to ignore; the
+  update itself has already succeeded.
+- Docker: uv pinned 0.11.16 → 0.11.28.
+
+### Added
+
+- **doctor:** New `legacy` check lists leftover scoop-era settings and flags rc files still
+  invoking `scoop init`.
+
+### Fixed
+
+- **docs:** fish shell docs now use `scuv init fish | source` and `scuv shell <name> | source` —
+  the previously documented `eval (...)` idiom never worked in fish (pre-existing bug since at
+  least 0.14.1).
+
+### Unchanged
+
+- Serialized-format compatibility, kept as-is on purpose: per-env metadata file
+  `.scoop-metadata.json`; export-schema JSON field `scoop_export_version` (renaming either would
+  break reading existing envs/export files for zero user value).
+
+[0.15.0]: https://github.com/ai-screams/scoop-uv/compare/0.14.2...0.15.0
+
 ## [0.14.2] - 2026-07-12
 
 ### Dependencies

@@ -57,7 +57,7 @@ pub struct MigrateFailure {
     pub error: String,
 }
 
-/// Preflight name conflict (env exists in scoop home and `--force` not set).
+/// Preflight name conflict (env exists in scuv home and `--force` not set).
 ///
 /// Distinct from `MigrateSkipped` so consumers can count conflicts
 /// separately and recommend `--force` programmatically. The same env

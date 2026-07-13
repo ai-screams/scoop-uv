@@ -8,11 +8,11 @@ something breaks.
 ## Usage
 
 ```bash
-scoop diff <env-a> <env-b>                   # human table, exit 0
-scoop diff <env-a> <env-b> --json            # machine-readable
-scoop diff <env-a> <env-b> --strict          # exit 1 if any diff
-scoop diff <env-a> <env-b> --packages-only   # skip metadata section
-scoop diff <env-a> <env-b> --metadata-only   # skip package enumeration
+scuv diff <env-a> <env-b>                   # human table, exit 0
+scuv diff <env-a> <env-b> --json            # machine-readable
+scuv diff <env-a> <env-b> --strict          # exit 1 if any diff
+scuv diff <env-a> <env-b> --packages-only   # skip metadata section
+scuv diff <env-a> <env-b> --metadata-only   # skip package enumeration
 ```
 
 ## What gets compared
@@ -46,7 +46,7 @@ Global flags (`--quiet`, `--no-color`) apply.
 
 ## Exit codes
 
-`scoop diff` follows the [layered exit-code contract](../api.md#process-exit-codes):
+`scuv diff` follows the [layered exit-code contract](../api.md#process-exit-codes):
 
 | Code | Returned when |
 |------|---------------|
@@ -62,14 +62,14 @@ catchall exit `1` path; `--strict` is not required for those.
 ### Identical envs
 
 ```bash
-$ scoop diff webapp webapp-mirror
+$ scuv diff webapp webapp-mirror
 Environments are identical
 ```
 
 ### Mixed differences
 
 ```bash
-$ scoop diff webapp webapp-mirror
+$ scuv diff webapp webapp-mirror
 
 Python
   ~ python           a: 3.12.0                   b: 3.11.9
@@ -92,7 +92,7 @@ packages; absent metadata values render as `-`.
 ### CI gate (fail the build on drift)
 
 ```bash
-scoop diff baseline production --strict
+scuv diff baseline production --strict
 # exits 1 if baseline and production diverge
 ```
 
@@ -167,7 +167,7 @@ sides as `Option<T>`:
 The `null` side means **the value is not observable on that side** —
 regardless of whether the metadata file was missing, the field was
 absent, or the field was present-as-null in the JSON. Diff intentionally
-does not surface the cause; if you need to know why, run `scoop info`
+does not surface the cause; if you need to know why, run `scuv info`
 on the env directly. (The `data.packages` shape uses non-nullable
 inner objects because pip never emits a "package present but no
 version" state.)

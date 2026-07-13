@@ -34,7 +34,7 @@ impl std::fmt::Display for SourceType {
 pub enum EnvironmentStatus {
     /// Ready to migrate
     Ready,
-    /// Name conflicts with existing scoop environment
+    /// Name conflicts with existing scuv environment
     NameConflict { existing: PathBuf },
     /// Python version is EOL
     PythonEol { version: String },

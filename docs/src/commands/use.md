@@ -5,9 +5,9 @@ Set a virtual environment for the current directory and activate it.
 ## Usage
 
 ```bash
-scoop use <name> [options]
-scoop use system [options]
-scoop use --unset [options]
+scuv use <name> [options]
+scuv use system [options]
+scuv use --unset [options]
 ```
 
 ## Arguments
@@ -28,18 +28,18 @@ scoop use --unset [options]
 
 ## Behavior
 
-- Creates `.scoop-version` file in current directory
+- Creates `.scuv-version` file in current directory
 - Immediately activates the environment (if shell hook installed)
-- With `--global`: writes to `~/.scoop/version`
-- With `--link`: creates `.venv -> ~/.scoop/virtualenvs/<name>`
+- With `--global`: writes to `~/.scuv/version`
+- With `--link`: creates `.venv -> ~/.scuv/virtualenvs/<name>`
 
 ### Special Value: `system`
 
-Using `system` as the name tells scoop to use the system Python:
+Using `system` as the name tells scuv to use the system Python:
 
 ```bash
-scoop use system           # Use system Python in this directory
-scoop use system --global  # Use system Python as global default
+scuv use system           # Use system Python in this directory
+scuv use system --global  # Use system Python as global default
 ```
 
 This writes the literal string `system` to the version file, which the shell hook interprets as "deactivate any virtual environment."
@@ -49,35 +49,35 @@ This writes the literal string `system` to the version file, which the shell hoo
 Removes the version file entirely:
 
 ```bash
-scoop use --unset           # Delete .scoop-version in current directory
-scoop use --unset --global  # Delete ~/.scoop/version
+scuv use --unset           # Delete .scuv-version in current directory
+scuv use --unset --global  # Delete ~/.scuv/version
 ```
 
-After unsetting, scoop falls back to the next priority level in version resolution.
+After unsetting, scuv falls back to the next priority level in version resolution.
 
 ## Examples
 
 ```bash
 # Use a virtual environment in this directory
-scoop use myproject
+scuv use myproject
 
 # Also create .venv symlink (for IDE support)
-scoop use myproject --link
+scuv use myproject --link
 
 # Set global default environment
-scoop use myproject --global
+scuv use myproject --global
 
 # Use system Python in this directory
-scoop use system
+scuv use system
 
 # Use system Python globally
-scoop use system --global
+scuv use system --global
 
 # Remove local version setting
-scoop use --unset
+scuv use --unset
 
 # Remove global version setting
-scoop use --unset --global
+scuv use --unset --global
 ```
 
 ### Set Python 3.11.0 as Global Default
@@ -86,24 +86,24 @@ scoop use --unset --global
 Create an environment with Python 3.11.0, then set that environment globally:
 
 ```bash
-scoop install 3.11.0
-scoop create py311 3.11.0
-scoop use py311 --global
+scuv install 3.11.0
+scuv create py311 3.11.0
+scuv use py311 --global
 ```
 
-This writes `py311` to `~/.scoop/version`, which is used in new shell sessions and
-directories that do not have a local `.scoop-version`.
+This writes `py311` to `~/.scuv/version`, which is used in new shell sessions and
+directories that do not have a local `.scuv-version`.
 
-If a local `.scoop-version` file or `SCOOP_VERSION` environment variable is present,
+If a local `.scuv-version` file or `SCUV_VERSION` environment variable is present,
 it takes precedence over the global setting.
 
 ## Version File Format
 
-The `.scoop-version` file contains a single line with either:
+The `.scuv-version` file contains a single line with either:
 - An environment name (e.g., `myproject`)
 - The literal string `system`
 
 ```bash
-$ cat .scoop-version
+$ cat .scuv-version
 myproject
 ```

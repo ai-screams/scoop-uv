@@ -1,6 +1,6 @@
 # Testing
 
-Comprehensive guide for testing scoop.
+Comprehensive guide for testing scuv.
 
 ## Quick Reference
 
@@ -267,7 +267,7 @@ use predicates::prelude::*;
 
 #[test]
 fn test_command_success() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["list"])
         .assert()
@@ -277,7 +277,7 @@ fn test_command_success() {
 
 #[test]
 fn test_command_failure() {
-    Command::cargo_bin("scoop")
+    Command::cargo_bin("scuv")
         .unwrap()
         .args(["use", "nonexistent"])
         .assert()
@@ -319,7 +319,7 @@ use scoop_uv::test_utils::*;
 #[test]
 fn test_with_temp_environment() {
     with_temp_scoop_home(|temp_dir| {
-        // SCOOP_HOME is set to temp_dir
+        // SCUV_HOME is set to temp_dir
         // Cleanup happens automatically
     });
 }
@@ -457,7 +457,7 @@ persistence.
 ## Multi-source Integration (Docker matrix)
 
 The Dockerfile builds three per-source leaf stages — `pyenv-test`,
-`conda-test`, `venvwrapper-test` — on top of a shared `scoop-test-base`.
+`conda-test`, `venvwrapper-test` — on top of a shared `scuv-test-base`.
 Each carries only the source-tool it migrates from, so CI can
 matrix-build just one variant.
 

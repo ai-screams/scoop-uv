@@ -6,9 +6,9 @@ use std::path::PathBuf;
 
 use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 
-/// scoop - Python virtual environment manager powered by uv
+/// scuv - Python virtual environment manager powered by uv
 #[derive(Parser, Debug)]
-#[command(name = "scoop")]
+#[command(name = "scuv")]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
 pub struct Cli {
@@ -99,7 +99,7 @@ pub enum MigrateCommand {
         #[arg(short = 'n', long)]
         dry_run: bool,
 
-        /// Overwrite if environment already exists in scoop
+        /// Overwrite if environment already exists in scuv
         #[arg(short, long)]
         force: bool,
 
@@ -133,12 +133,12 @@ pub enum MigrateCommand {
     },
 }
 
-/// Self-management subcommands (under `scoop self ...`).
+/// Self-management subcommands (under `scuv self ...`).
 #[derive(Subcommand, Debug)]
 pub enum SelfCommand {
-    /// Reinstall scoop from crates.io to the latest version
+    /// Reinstall scoop-uv from crates.io to the latest version
     // Disable clap's auto `--version` flag here so `--version <VER>` can be
-    // a real arg meaning "install this specific version". `scoop --version`
+    // a real arg meaning "install this specific version". `scuv --version`
     // and the auto flag on other subcommands are unaffected.
     #[command(disable_version_flag = true)]
     Update {
@@ -150,7 +150,7 @@ pub enum SelfCommand {
         #[arg(long, value_name = "VERSION")]
         version: Option<String>,
 
-        /// Skip the post-install environment verification (`scoop doctor`)
+        /// Skip the post-install environment verification (`scuv doctor`)
         #[arg(long)]
         no_verify: bool,
 
@@ -160,9 +160,9 @@ pub enum SelfCommand {
     },
 }
 
-/// Sort modes accepted by `scoop list --sort`.
+/// Sort modes accepted by `scuv list --sort`.
 ///
-/// Default is `name` so `scoop list` output stays alphabetically
+/// Default is `name` so `scuv list` output stays alphabetically
 /// stable for muscle-memory users. `created` and `last-used` are
 /// descending (newest first) because that's what "what did I touch
 /// recently?" wants without an extra flag. Envs whose timestamp is
@@ -429,7 +429,7 @@ pub enum Commands {
         json: bool,
     },
 
-    /// Manage scoop itself (update, etc.)
+    /// Manage scuv itself (update, etc.)
     #[command(name = "self")]
     Self_ {
         #[command(subcommand)]
@@ -474,7 +474,7 @@ pub enum Commands {
         output: Option<PathBuf>,
     },
 
-    /// Import an environment from a `scoop export` JSON file (use `-` for stdin)
+    /// Import an environment from a `scuv export` JSON file (use `-` for stdin)
     Import {
         /// Path to the export JSON, or `-` to read from stdin
         path: String,
@@ -492,7 +492,7 @@ pub enum Commands {
         json: bool,
     },
 
-    /// Sync an environment from `.scoop.toml`
+    /// Sync an environment from `.scuv.toml`
     Sync {
         /// Additional package group(s) to install on top of `default`
         #[arg(long = "with", value_name = "GROUP", action = clap::ArgAction::Append)]
@@ -512,7 +512,7 @@ pub enum Commands {
         /// Name of the virtual environment
         env: String,
 
-        /// Command and arguments to execute (use -- to separate, e.g. `scoop run myenv -- python x.py`)
+        /// Command and arguments to execute (use -- to separate, e.g. `scuv run myenv -- python x.py`)
         #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 1..)]
         command: Vec<String>,
     },
@@ -563,7 +563,7 @@ pub enum Commands {
 
     /// Generate man pages (top-level + one per subcommand)
     Man {
-        /// Write `scoop.1` + `scoop-<sub>.1` files into this directory.
+        /// Write `scuv.1` + `scuv-<sub>.1` files into this directory.
         /// Omit to print the top-level page to stdout.
         #[arg(value_name = "DIR")]
         output_dir: Option<PathBuf>,

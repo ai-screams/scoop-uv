@@ -1,11 +1,11 @@
 # self update
 
-Reinstall scoop from crates.io to update (or pin) the installed version.
+Reinstall scuv from crates.io to update (or pin) the installed version.
 
 ## Usage
 
 ```bash
-scoop self update [OPTIONS]
+scuv self update [OPTIONS]
 ```
 
 ## Options
@@ -14,14 +14,14 @@ scoop self update [OPTIONS]
 |--------|-------------|
 | `--force` | Reinstall even if already on the latest version |
 | `--version <VERSION>` | Install a specific version instead of the latest |
-| `--no-verify` | Skip the post-update `scoop doctor` verification |
+| `--no-verify` | Skip the post-update `scuv doctor` verification |
 | `--json` | Output result as JSON |
 
 ## Behavior
 
 1. Queries crates.io (via `cargo search`) for the latest `scoop-uv` version.
 2. Runs `cargo install --force --locked scoop-uv --version <target>`.
-3. Unless `--no-verify` is set, runs `scoop doctor` with the freshly installed binary and reports the outcome.
+3. Unless `--no-verify` is set, runs `scuv doctor` with the freshly installed binary and reports the outcome.
 
 Use `--force` to reinstall the current version (useful for repairing a broken install). Use `--version` to pin to a specific release.
 
@@ -29,16 +29,16 @@ Use `--force` to reinstall the current version (useful for repairing a broken in
 
 ```bash
 # Update to the latest release
-scoop self update
+scuv self update
 
 # Pin to a specific version
-scoop self update --version 0.14.0
+scuv self update --version 0.14.0
 
 # Force reinstall of the current version
-scoop self update --force
+scuv self update --force
 
 # Machine-readable output
-scoop self update --json
+scuv self update --json
 ```
 
 ### JSON Output
@@ -60,4 +60,4 @@ The `verify.status` field is one of `skipped`, `passed`, `warned`, `errored`, or
 
 ## See also
 
-- [`scoop doctor`](doctor.md) — diagnose the current installation
+- [`scuv doctor`](doctor.md) — diagnose the current installation

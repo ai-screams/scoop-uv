@@ -5,7 +5,7 @@ Output shell initialization script.
 ## Usage
 
 ```bash
-scoop init <shell>
+scuv init <shell>
 ```
 
 ## Arguments
@@ -20,33 +20,33 @@ Add to your shell configuration:
 
 ```bash
 # Bash (~/.bashrc)
-eval "$(scoop init bash)"
+eval "$(scuv init bash)"
 
 # Zsh (~/.zshrc)
-eval "$(scoop init zsh)"
+eval "$(scuv init zsh)"
 ```
 
 ```fish
 # Fish (~/.config/fish/config.fish)
-eval (scoop init fish)
+scuv init fish | source
 ```
 
 ```powershell
 # PowerShell ($PROFILE)
-Invoke-Expression (& scoop init powershell)
+Invoke-Expression (& scuv init powershell)
 ```
 
 ## Features Enabled
 
-- Auto-activation when entering directories with `.scoop-version`
+- Auto-activation when entering directories with `.scuv-version`
 - Tab completion for commands, environments, and options
 - Wrapper function for `activate`/`deactivate`/`use`
 
 ## Examples
 
 ```bash
-scoop init bash                  # Output bash init script
-scoop init zsh                   # Output zsh init script
-scoop init fish                  # Output fish init script
-scoop init powershell            # Output PowerShell init script
+scuv init bash                  # Output bash init script
+scuv init zsh                   # Output zsh init script
+scuv init fish                  # Output fish init script
+scuv init powershell            # Output PowerShell init script
 ```

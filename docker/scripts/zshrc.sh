@@ -1,6 +1,6 @@
-# scoop zsh config
+# scuv zsh config
 
-# Completion system (required for scoop)
+# Completion system (required for scuv)
 autoload -Uz compinit && compinit
 
 # ============================================================
@@ -37,13 +37,13 @@ export PATH="/usr/local/cargo/bin:/root/.cargo/bin:$PATH"
 export PATH="/root/.local/bin:$PATH"
 
 # ============================================================
-# scoop (workspace build takes precedence over /usr/local/bin)
+# scuv (workspace build takes precedence over /usr/local/bin)
 # ============================================================
 if [ -d "/workspace/target/release" ]; then
     export PATH="/workspace/target/release:$PATH"
     # Initialize shell integration if available
-    if [ -x "/workspace/target/release/scoop" ]; then
-        eval "$(/workspace/target/release/scoop init zsh)" 2>/dev/null || true
+    if [ -x "/workspace/target/release/scuv" ]; then
+        eval "$(/workspace/target/release/scuv init zsh)" 2>/dev/null || true
     fi
 fi
 
@@ -56,7 +56,7 @@ export RUST_BACKTRACE=1
 # ============================================================
 # Prompt
 # ============================================================
-PROMPT="%F{cyan}[scoop-test]%f %~ $ "
+PROMPT="%F{cyan}[scuv-test]%f %~ $ "
 
 # ============================================================
 # Aliases

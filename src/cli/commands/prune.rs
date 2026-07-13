@@ -1,4 +1,4 @@
-//! Handler for the `scoop prune` command.
+//! Handler for the `scuv prune` command.
 //!
 //! Thin wrapper around `uv cache prune` so users don't need to remember the
 //! exact uv invocation. The heavy lifting (size accounting, safe traversal)

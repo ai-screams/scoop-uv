@@ -1,4 +1,4 @@
-# Makefile for scoop development
+# Makefile for scuv development
 # Docker test environment management
 
 .PHONY: help \
@@ -12,13 +12,13 @@
 # Variables
 # ============================================================
 COMPOSE := docker compose -f docker/docker-compose.yml
-IMAGE := ghcr.io/ai-screams/scoop
+IMAGE := ghcr.io/ai-screams/scuv
 
 # ============================================================
 # Help
 # ============================================================
 help:
-	@echo "scoop Development Commands"
+	@echo "scuv Development Commands"
 	@echo ""
 	@echo "Build:"
 	@echo "  docker-build       Build full image (all tools)"

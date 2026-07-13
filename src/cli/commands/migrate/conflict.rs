@@ -1,6 +1,6 @@
 //! Conflict resolution for environment migration
 //!
-//! Handles name conflicts when a scoop environment with the same name already exists.
+//! Handles name conflicts when a scuv environment with the same name already exists.
 
 use dialoguer::{Input, Select};
 
@@ -29,7 +29,7 @@ pub enum ConflictResolution {
 /// # Examples
 ///
 /// ```text
-/// let existing = Path::new("/home/user/.scoop/virtualenvs/myenv");
+/// let existing = Path::new("/home/user/.scuv/virtualenvs/myenv");
 /// let resolution = prompt_conflict_resolution(&output, "myenv", existing)?;
 ///
 /// match resolution {

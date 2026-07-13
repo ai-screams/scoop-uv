@@ -11,7 +11,7 @@ use crate::validate;
 /// Outputs shell script to be eval'd
 pub fn execute(name: &str, shell: Option<ShellType>) -> Result<()> {
     // Security: Validate input before any processing
-    // This is defense-in-depth against command injection via malicious .scoop-version files
+    // This is defense-in-depth against command injection via malicious .scuv-version files
     validate::validate_env_name(name)?;
 
     let service = VirtualenvService::auto()?;
@@ -27,7 +27,7 @@ pub fn execute(name: &str, shell: Option<ShellType>) -> Result<()> {
     print_activate_script(shell_type, &venv_path, &bin_path, name);
 
     // Record activation timestamp. Universal touch site: `use`, auto-activation
-    // (cd hook), and explicit `scoop activate` all flow through here via the
+    // (cd hook), and explicit `scuv activate` all flow through here via the
     // shell wrapper. `run` and `shell` do NOT — they call touch explicitly.
     // Best-effort: never blocks activation on a metadata I/O failure.
     service.touch_metadata_best_effort(name);

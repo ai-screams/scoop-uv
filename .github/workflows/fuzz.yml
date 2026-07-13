@@ -21,6 +21,11 @@ jobs:
     name: Fuzz ${{ matrix.target }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # rust-toolchain.toml pins 1.85 (MSRV) and overrides the rustup default,
+      # so `cargo fuzz` was resolving to stable and dying on -Zsanitizer
+      # (every scheduled run since 2026-06-01). Force nightly for this job only.
+      RUSTUP_TOOLCHAIN: nightly
     strategy:
       fail-fast: false
       matrix:

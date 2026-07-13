@@ -1,11 +1,11 @@
 # doctor
 
-Check scoop installation health and diagnose issues.
+Check scuv installation health and diagnose issues.
 
 ## Usage
 
 ```bash
-scoop doctor [options]
+scuv doctor [options]
 ```
 
 ## Options
@@ -23,16 +23,16 @@ scoop doctor [options]
 | **uv installation** | uv is installed and accessible |
 | **Shell integration** | Shell hook is properly configured |
 | **Environment integrity** | Python symlinks are valid, `pyvenv.cfg` exists |
-| **Path configuration** | `~/.scoop/` directory structure is correct |
-| **Version file validity** | `.scoop-version` files reference existing environments |
+| **Path configuration** | `~/.scuv/` directory structure is correct |
+| **Version file validity** | `.scuv-version` files reference existing environments |
 
 ## Examples
 
 ```bash
-scoop doctor                     # Quick health check
-scoop doctor -v                  # Verbose diagnostics
-scoop doctor --fix               # Fix what can be fixed
-scoop doctor --json              # JSON output for scripting
+scuv doctor                     # Quick health check
+scuv doctor -v                  # Verbose diagnostics
+scuv doctor --fix               # Fix what can be fixed
+scuv doctor --json              # JSON output for scripting
 ```
 
 ## Environment Integrity
@@ -42,11 +42,11 @@ The doctor checks each virtual environment for:
 - **Python symlink** — Does the `python` binary in the environment point to a valid Python installation?
 - **pyvenv.cfg** — Does the environment's configuration file exist and reference a valid Python?
 
-Environments can become broken when their underlying Python version is uninstalled. Use `scoop doctor` to detect these issues:
+Environments can become broken when their underlying Python version is uninstalled. Use `scuv doctor` to detect these issues:
 
 ```bash
 # After accidentally uninstalling Python 3.12:
-scoop doctor -v
+scuv doctor -v
 # Output:
 #   ✓ uv: installed (0.5.x)
 #   ✓ Shell: zsh integration active
@@ -54,11 +54,11 @@ scoop doctor -v
 #   ⚠ Environment 'webapp': Python symlink broken
 
 # Auto-fix by recreating symlinks (requires Python to be reinstalled)
-scoop install 3.12
-scoop doctor --fix
+scuv install 3.12
+scuv doctor --fix
 # Output:
 #   ✓ Fixed 'myproject': Python symlink restored
 #   ✓ Fixed 'webapp': Python symlink restored
 ```
 
-> **Tip:** Run `scoop doctor` periodically or after uninstalling Python versions to catch broken environments early. See [uninstall command](uninstall.md) for the safe uninstall workflow.
+> **Tip:** Run `scuv doctor` periodically or after uninstalling Python versions to catch broken environments early. See [uninstall command](uninstall.md) for the safe uninstall workflow.

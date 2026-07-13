@@ -1,4 +1,4 @@
-//! scoop - Python virtual environment manager powered by uv
+//! scuv - Python virtual environment manager powered by uv
 //!
 //! Provides pyenv-style workflow for managing Python virtual environments
 //! using uv as the backend for blazing fast operations.

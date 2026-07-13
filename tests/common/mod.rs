@@ -9,11 +9,11 @@ use tempfile::TempDir;
 
 /// Test fixture for scoop tests
 ///
-/// 기존 테스트 호환성을 위해 유지. 단순한 SCOOP_HOME 설정만 필요할 때 사용.
+/// 기존 테스트 호환성을 위해 유지. 단순한 SCUV_HOME 설정만 필요할 때 사용.
 pub struct TestFixture {
     /// Temporary directory
     pub temp_dir: TempDir,
-    /// SCOOP_HOME path
+    /// SCUV_HOME path
     pub scoop_home: PathBuf,
 }
 
@@ -21,12 +21,12 @@ impl TestFixture {
     /// Create a new test fixture
     pub fn new() -> Self {
         let temp_dir = TempDir::new().expect("Failed to create temp dir");
-        let scoop_home = temp_dir.path().join(".scoop");
+        let scoop_home = temp_dir.path().join(".scuv");
 
-        // Set SCOOP_HOME for tests
+        // Set SCUV_HOME for tests
         // SAFETY: 테스트 환경에서 단일 스레드로 실행됨
         unsafe {
-            std::env::set_var("SCOOP_HOME", &scoop_home);
+            std::env::set_var("SCUV_HOME", &scoop_home);
         }
 
         Self {
@@ -41,7 +41,7 @@ impl Drop for TestFixture {
         // Clean up environment
         // SAFETY: 테스트 환경에서 단일 스레드로 실행됨
         unsafe {
-            std::env::remove_var("SCOOP_HOME");
+            std::env::remove_var("SCUV_HOME");
         }
     }
 }
@@ -75,7 +75,7 @@ impl Default for TestFixture {
 pub struct IsolatedTestEnv {
     /// 임시 홈 디렉토리 (테스트 종료 시 자동 삭제)
     pub home: TempDir,
-    /// SCOOP_HOME 경로
+    /// SCUV_HOME 경로
     pub scoop_home: PathBuf,
     /// PYENV_ROOT 경로
     pub pyenv_root: PathBuf,
@@ -90,6 +90,7 @@ pub struct IsolatedTestEnv {
 /// 백업할 환경 변수 목록
 const ENV_VARS_TO_BACKUP: &[&str] = &[
     "HOME",
+    "SCUV_HOME",
     "SCOOP_HOME",
     "PYENV_ROOT",
     "WORKON_HOME",
@@ -119,7 +120,7 @@ impl IsolatedTestEnv {
         let home = TempDir::new().expect("Failed to create temp home directory");
         let home_path = home.path();
 
-        let scoop_home = home_path.join(".scoop");
+        let scoop_home = home_path.join(".scuv");
         let pyenv_root = home_path.join(".pyenv");
         let workon_home = home_path.join(".virtualenvs");
         let conda_prefix = home_path.join(".conda");
@@ -134,7 +135,10 @@ impl IsolatedTestEnv {
         // SAFETY: 테스트 환경에서 단일 스레드로 실행되며, Drop에서 복원됨
         unsafe {
             std::env::set_var("HOME", home_path);
-            std::env::set_var("SCOOP_HOME", &scoop_home);
+            std::env::set_var("SCUV_HOME", &scoop_home);
+            // 레거시 변수가 부모 환경에서 새어 들어와 fallback 경로를
+            // 오염시키지 않도록 제거 (백업본으로 Drop 시 복원됨)
+            std::env::remove_var("SCOOP_HOME");
             std::env::set_var("PYENV_ROOT", &pyenv_root);
             std::env::set_var("WORKON_HOME", &workon_home);
             std::env::set_var("CONDA_PREFIX", &conda_prefix);
@@ -410,7 +414,7 @@ mod tests {
         let env = IsolatedTestEnv::new();
 
         assert_eq!(
-            std::env::var("SCOOP_HOME").ok(),
+            std::env::var("SCUV_HOME").ok(),
             Some(env.scoop_home.to_string_lossy().to_string())
         );
         assert_eq!(

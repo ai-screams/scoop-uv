@@ -17,7 +17,7 @@ pub fn execute(shell: ShellType) -> Result<()> {
         ShellType::Powershell => Shell::PowerShell,
     };
 
-    generate(shell, &mut cmd, "scoop", &mut std::io::stdout());
+    generate(shell, &mut cmd, "scuv", &mut std::io::stdout());
 
     Ok(())
 }
@@ -31,7 +31,7 @@ mod tests {
     fn generate_for(shell: Shell) -> String {
         let mut cmd = Cli::command();
         let mut buf: Vec<u8> = Vec::new();
-        generate(shell, &mut cmd, "scoop", &mut buf);
+        generate(shell, &mut cmd, "scuv", &mut buf);
         String::from_utf8(buf).expect("completion output must be valid UTF-8")
     }
 
@@ -88,7 +88,7 @@ mod tests {
     // Note: a "hidden subcommands don't appear in completions" probe
     // was considered and rejected. clap-complete embeds every
     // subcommand name (including hidden ones) in helper-function
-    // identifiers like `_scoop__subcmd__activate` — they participate
+    // identifiers like `_scuv__subcmd__activate` — they participate
     // in the dispatch table but aren't offered as interactive
     // suggestions. Asserting their *absence* in the body needs a
     // shell-specific parser, which is out of proportion to the

@@ -1,43 +1,70 @@
-//! Path utilities for scoop
+//! Path utilities for scuv
 
 use std::path::{Path, PathBuf};
 
 use once_cell::sync::Lazy;
 use regex::Regex;
+use rust_i18n::t;
 
 use crate::error::{Result, ScoopError};
 
-/// Environment variable for scoop home directory
-pub const SCOOP_HOME_ENV: &str = "SCOOP_HOME";
+/// Environment variable for the scuv home directory.
+pub const SCUV_HOME_ENV: &str = "SCUV_HOME";
+/// DEPRECATION(0.16.0): remove legacy env fallback.
+pub const LEGACY_HOME_ENV: &str = "SCOOP_HOME";
 
-/// Default scoop home directory name
-const SCOOP_HOME_DIR: &str = ".scoop";
+/// Default scuv home directory name.
+const SCUV_HOME_DIR: &str = ".scuv";
+/// DEPRECATION(0.16.0): remove legacy dir fallback.
+const LEGACY_HOME_DIR: &str = ".scoop";
 
-/// Version file name
-pub const VERSION_FILE: &str = ".scoop-version";
+/// Version file name.
+pub const VERSION_FILE: &str = ".scuv-version";
+/// DEPRECATION(0.16.0): remove legacy version-file fallback.
+pub const LEGACY_VERSION_FILE: &str = ".scoop-version";
 
-/// Get the scoop home directory (~/.scoop or $SCOOP_HOME)
+/// Get the scuv home directory.
+///
+/// Resolution order: `$SCUV_HOME` > legacy `$SCOOP_HOME` > `~/.scuv` >
+/// legacy `~/.scoop` (only when `~/.scuv` doesn't exist yet). Reading either
+/// legacy fallback emits a one-shot deprecation warning on stderr.
 pub fn scoop_home() -> Result<PathBuf> {
-    if let Ok(home) = std::env::var(SCOOP_HOME_ENV) {
+    if let Ok(home) = std::env::var(SCUV_HOME_ENV) {
         return Ok(PathBuf::from(home));
     }
 
-    dirs::home_dir()
-        .map(|h| h.join(SCOOP_HOME_DIR))
-        .ok_or(ScoopError::HomeNotFound)
+    // DEPRECATION(0.16.0): remove legacy env fallback.
+    if let Ok(home) = std::env::var(LEGACY_HOME_ENV) {
+        crate::output::deprecation::warn_once(&t!(
+            "deprecation.env_var",
+            old = LEGACY_HOME_ENV,
+            new = SCUV_HOME_ENV
+        ));
+        return Ok(PathBuf::from(home));
+    }
+
+    let base = dirs::home_dir().ok_or(ScoopError::HomeNotFound)?;
+    let new = base.join(SCUV_HOME_DIR);
+    // DEPRECATION(0.16.0): remove legacy dir fallback.
+    let legacy = base.join(LEGACY_HOME_DIR);
+    if !new.exists() && legacy.exists() {
+        crate::output::deprecation::warn_once(&t!("deprecation.home_dir"));
+        return Ok(legacy);
+    }
+    Ok(new)
 }
 
-/// Get the virtualenvs directory (~/.scoop/virtualenvs)
+/// Get the virtualenvs directory (~/.scuv/virtualenvs)
 pub fn virtualenvs_dir() -> Result<PathBuf> {
     Ok(scoop_home()?.join("virtualenvs"))
 }
 
-/// Get the pythons directory (~/.scoop/pythons)
+/// Get the pythons directory (~/.scuv/pythons)
 pub fn pythons_dir() -> Result<PathBuf> {
     Ok(scoop_home()?.join("pythons"))
 }
 
-/// Get the global version file path (~/.scoop/version)
+/// Get the global version file path (~/.scuv/version)
 pub fn global_version_file() -> Result<PathBuf> {
     Ok(scoop_home()?.join("version"))
 }
@@ -115,7 +142,7 @@ pub fn virtualenv_pip_exe(venv_root: &Path) -> PathBuf {
 ///
 /// Distinct from [`virtualenv_activate`], which returns the cmd.exe
 /// `.bat` variant on Windows. PowerShell users are surfaced through
-/// this helper (used by `scoop verify`).
+/// this helper (used by `scuv verify`).
 #[cfg(unix)]
 pub fn virtualenv_activate_script(venv_root: &Path) -> PathBuf {
     virtualenv_bin_dir(venv_root).join("activate")
@@ -234,12 +261,12 @@ pub fn virtualenv_site_packages(venv_root: &Path) -> Result<PathBuf> {
     })
 }
 
-/// Ensure all scoop directories exist
+/// Ensure all scuv directories exist
 ///
 /// Creates the following directory structure:
-/// - ~/.scoop/
-/// - ~/.scoop/virtualenvs/
-/// - ~/.scoop/pythons/
+/// - ~/.scuv/
+/// - ~/.scuv/virtualenvs/
+/// - ~/.scuv/pythons/
 pub fn ensure_scoop_dirs() -> Result<()> {
     let home = scoop_home()?;
     std::fs::create_dir_all(&home)?;
@@ -310,7 +337,7 @@ pub fn calculate_dir_size(path: &std::path::Path) -> std::io::Result<u64> {
 /// Locate `exe` inside `dir`, returning the full path if a matching file
 /// exists. On Windows the standard executable extensions are probed in turn.
 ///
-/// Shared by `scoop which` (display the resolved path) and `scoop run`
+/// Shared by `scuv which` (display the resolved path) and `scuv run`
 /// (preflight a program lookup against the env's `bin/` before spawning).
 ///
 /// # Examples
@@ -363,7 +390,7 @@ fn executable_candidates(exe: &str) -> Vec<String> {
 ///
 /// // Home directory paths get abbreviated
 /// let home = dirs::home_dir().unwrap();
-/// let path = home.join(".scoop/virtualenvs/myenv");
+/// let path = home.join(".scuv/virtualenvs/myenv");
 /// let abbreviated = abbreviate_home(&path);
 /// assert!(abbreviated.starts_with("~/"));
 /// ```
@@ -386,8 +413,85 @@ mod tests {
     fn test_scoop_home_default() {
         with_no_scoop_home(|| {
             let home = scoop_home().unwrap();
-            assert!(home.ends_with(".scoop"));
+            // .scoop only when a legacy dir already exists on the machine.
+            assert!(home.ends_with(".scuv") || home.ends_with(".scoop"));
         });
+    }
+
+    #[test]
+    #[serial]
+    fn scuv_home_env_wins_over_legacy() {
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, Some("/tmp/newhome")),
+            (LEGACY_HOME_ENV, Some("/tmp/oldhome")),
+        ]);
+        assert_eq!(scoop_home().unwrap(), PathBuf::from("/tmp/newhome"));
+    }
+
+    #[test]
+    #[serial]
+    fn legacy_home_env_still_read() {
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, None),
+            (LEGACY_HOME_ENV, Some("/tmp/oldhome")),
+        ]);
+        assert_eq!(scoop_home().unwrap(), PathBuf::from("/tmp/oldhome"));
+    }
+
+    #[test]
+    #[serial]
+    fn default_home_is_dot_scuv() {
+        let _g = crate::test_utils::env_guard(&[(SCUV_HOME_ENV, None), (LEGACY_HOME_ENV, None)]);
+        let home = scoop_home().unwrap();
+        assert!(home.ends_with(".scuv") || home.ends_with(".scoop")); // .scoop only when legacy dir exists on the machine
+    }
+
+    // Directory-existence fallback branch (no env vars set at all): with
+    // both SCUV_HOME/SCOOP_HOME unset, `scoop_home()` falls through to
+    // `~/.scuv` vs. legacy `~/.scoop` based on which actually exists on
+    // disk. `dirs::home_dir()` reads `$HOME` on Unix, so `env_guard` can
+    // steer it at a tempdir — matching the isolation approach
+    // `with_isolated_migrate_env` already uses elsewhere in this crate.
+    #[test]
+    #[serial]
+    fn dir_fallback_uses_legacy_scoop_when_only_legacy_dir_exists() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir(tmp.path().join(".scoop")).unwrap();
+        let home_str = tmp.path().to_str().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, None),
+            (LEGACY_HOME_ENV, None),
+            ("HOME", Some(home_str)),
+        ]);
+        assert_eq!(scoop_home().unwrap(), tmp.path().join(".scoop"));
+    }
+
+    #[test]
+    #[serial]
+    fn dir_fallback_prefers_scuv_when_both_dirs_exist() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir(tmp.path().join(".scuv")).unwrap();
+        std::fs::create_dir(tmp.path().join(".scoop")).unwrap();
+        let home_str = tmp.path().to_str().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, None),
+            (LEGACY_HOME_ENV, None),
+            ("HOME", Some(home_str)),
+        ]);
+        assert_eq!(scoop_home().unwrap(), tmp.path().join(".scuv"));
+    }
+
+    #[test]
+    #[serial]
+    fn dir_fallback_defaults_to_scuv_when_neither_dir_exists() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let home_str = tmp.path().to_str().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (SCUV_HOME_ENV, None),
+            (LEGACY_HOME_ENV, None),
+            ("HOME", Some(home_str)),
+        ]);
+        assert_eq!(scoop_home().unwrap(), tmp.path().join(".scuv"));
     }
 
     #[test]
@@ -487,7 +591,7 @@ mod tests {
         // This test doesn't use environment variables
         let dir = PathBuf::from("/some/project");
         let version_file = local_version_file(&dir);
-        assert_eq!(version_file, dir.join(".scoop-version"));
+        assert_eq!(version_file, dir.join(".scuv-version"));
     }
 
     #[test]
@@ -681,19 +785,26 @@ mod tests {
     // ==========================================================================
 
     #[test]
+    #[serial]
     fn test_abbreviate_home_with_home_path() {
-        // Path under home directory should be abbreviated
-        if let Some(home) = dirs::home_dir() {
-            let path = home.join(".scoop").join("virtualenvs").join("myenv");
-            let result = abbreviate_home(&path);
-            assert!(result.starts_with("~/"));
-            assert!(result.contains(".scoop/virtualenvs/myenv"));
-        }
+        // Pin HOME so parallel tests that mutate it can't race this one
+        // (dirs::home_dir() reads the process-wide env live).
+        let tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[("HOME", tmp.path().to_str())]);
+        let path = tmp.path().join(".scuv").join("virtualenvs").join("myenv");
+        let result = abbreviate_home(&path);
+        assert!(result.starts_with("~/"));
+        assert!(result.contains(".scuv/virtualenvs/myenv"));
     }
 
     #[test]
+    #[serial]
     fn test_abbreviate_home_outside_home() {
-        // Path outside home directory should remain unchanged
+        // Path outside home directory should remain unchanged. HOME is pinned
+        // away from /tmp because parallel tests point HOME at tempdirs (which
+        // live under /tmp on Linux) and would make this path abbreviable.
+        let home = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[("HOME", home.path().to_str())]);
         let path = PathBuf::from("/tmp/some/path");
         let result = abbreviate_home(&path);
         assert_eq!(result, "/tmp/some/path");

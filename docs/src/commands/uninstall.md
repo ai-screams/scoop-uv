@@ -5,7 +5,7 @@ Remove an installed Python version.
 ## Usage
 
 ```bash
-scoop uninstall <version>
+scuv uninstall <version>
 ```
 
 ## Arguments
@@ -25,14 +25,14 @@ scoop uninstall <version>
 ## Examples
 
 ```bash
-scoop uninstall 3.12             # Remove Python 3.12
-scoop uninstall 3.11.8           # Remove specific version
+scuv uninstall 3.12             # Remove Python 3.12
+scuv uninstall 3.11.8           # Remove specific version
 
 # Remove Python and all environments using it
-scoop uninstall 3.12 --cascade
+scuv uninstall 3.12 --cascade
 
 # Remove without confirmation prompt
-scoop uninstall 3.12 --cascade --force
+scuv uninstall 3.12 --cascade --force
 ```
 
 ### Uninstall a Python Version and All Associated Environments
@@ -41,26 +41,26 @@ Recommended workflow for a full cleanup:
 
 ```bash
 # 1) Optional: preview which environments would be removed
-scoop list --python-version 3.12
+scuv list --python-version 3.12
 
 # 2) Remove Python 3.12 and all environments using it
-scoop uninstall 3.12 --cascade
+scuv uninstall 3.12 --cascade
 
 # 3) Verify cleanup
-scoop list --pythons
-scoop doctor
+scuv list --pythons
+scuv doctor
 ```
 
 For non-interactive scripts, skip the confirmation prompt:
 
 ```bash
-scoop uninstall 3.12 --cascade --force
+scuv uninstall 3.12 --cascade --force
 ```
 
 If the target version is not installed, check available versions first:
 
 ```bash
-scoop list --pythons
+scuv list --pythons
 ```
 
 ## Cascade Removal
@@ -68,7 +68,7 @@ scoop list --pythons
 The `--cascade` flag automatically removes all virtual environments that use the target Python version before uninstalling it. This replaces the manual multi-step workflow.
 
 ```bash
-scoop uninstall 3.12 --cascade
+scuv uninstall 3.12 --cascade
 # Finding environments using Python 3.12...
 # Found 2 environments using Python 3.12:
 #   - myproject
@@ -83,13 +83,13 @@ scoop uninstall 3.12 --cascade
 With `--force`, the confirmation prompt is skipped:
 
 ```bash
-scoop uninstall 3.12 --cascade --force
+scuv uninstall 3.12 --cascade --force
 ```
 
 With `--json`, the output includes the list of removed environments:
 
 ```bash
-scoop uninstall 3.12 --cascade --json
+scuv uninstall 3.12 --cascade --json
 # {
 #   "status": "success",
 #   "command": "uninstall",
@@ -110,45 +110,45 @@ If you prefer manual control (without `--cascade`):
 
 ```bash
 # List environments filtered by Python version
-scoop list --python-version 3.12
+scuv list --python-version 3.12
 # Output:
 #   myproject      3.12.1
 #   webapp         3.12.1
 
 # Or use JSON for scripting
-scoop list --json
+scuv list --json
 ```
 
 ### Step 2: Handle affected environments
 
 ```bash
 # Option A: Remove the environment entirely
-scoop remove myproject --force
+scuv remove myproject --force
 
 # Option B: Recreate with a different Python version
-scoop remove myproject --force
-scoop create myproject 3.13
+scuv remove myproject --force
+scuv create myproject 3.13
 
 # Option C: Keep it (will be broken until you reinstall that Python)
-# Do nothing — scoop doctor can detect and help fix it later
+# Do nothing — scuv doctor can detect and help fix it later
 ```
 
 ### Step 3: Uninstall the Python version
 
 ```bash
-scoop uninstall 3.12
+scuv uninstall 3.12
 ```
 
 ### Step 4: Verify
 
 ```bash
 # Confirm Python is removed
-scoop list --pythons
+scuv list --pythons
 
 # Check for broken environments
-scoop doctor
+scuv doctor
 # If any issues found:
-scoop doctor --fix
+scuv doctor --fix
 ```
 
 ## Recovery
@@ -157,15 +157,15 @@ If you uninstalled a Python version without cleaning up environments first:
 
 ```bash
 # Detect broken environments
-scoop doctor -v
+scuv doctor -v
 # Output:
 #   ⚠ Environment 'myproject': Python symlink broken
 
 # Option 1: Reinstall the Python version
-scoop install 3.12
-scoop doctor --fix
+scuv install 3.12
+scuv doctor --fix
 
 # Option 2: Recreate affected environments with a new version
-scoop remove myproject --force
-scoop create myproject 3.13
+scuv remove myproject --force
+scuv create myproject 3.13
 ```

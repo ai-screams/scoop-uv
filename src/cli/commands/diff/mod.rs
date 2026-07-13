@@ -1,4 +1,4 @@
-//! `scoop diff <env-a> <env-b>` — compare two virtualenvs.
+//! `scuv diff <env-a> <env-b>` — compare two virtualenvs.
 //!
 //! Compares three observable surfaces: Python version, installed
 //! packages (via `uv pip list`), and metadata (`.scoop-metadata.json`).
@@ -37,7 +37,7 @@ use compute::compute_package_diff;
 use enumerator::{PackageEnumerator, UvPipEnumerator};
 use types::{DiffData, DiffSummary, MetadataDiff, PackageDiff, ScalarDiff};
 
-/// Orchestrate the `scoop diff` command.
+/// Orchestrate the `scuv diff` command.
 ///
 /// Build a [`UvClient`] + production [`UvPipEnumerator`], delegate
 /// to [`execute_with`] for the rest. The split keeps the trait

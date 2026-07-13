@@ -1,12 +1,12 @@
 # import
 
-Recreate an environment from a [`scoop export`](export.md) JSON file.
+Recreate an environment from a [`scuv export`](export.md) JSON file.
 
 ## Usage
 
 ```bash
-scoop import <PATH> [--name <NEW_NAME>] [--force] [--json]
-scoop import -    [--name <NEW_NAME>]                # read from stdin
+scuv import <PATH> [--name <NEW_NAME>] [--force] [--json]
+scuv import -    [--name <NEW_NAME>]                # read from stdin
 ```
 
 ## Arguments
@@ -19,7 +19,7 @@ scoop import -    [--name <NEW_NAME>]                # read from stdin
 
 | Option | Description |
 |--------|-------------|
-| `--name <NAME>` | Override the env name from the file (validated like `scoop create`) |
+| `--name <NAME>` | Override the env name from the file (validated like `scuv create`) |
 | `-f`, `--force` | Overwrite an existing environment with the same name |
 | `--json` | Output as JSON |
 
@@ -32,7 +32,7 @@ scoop import -    [--name <NEW_NAME>]                # read from stdin
 3. If the target env already exists: errors out unless `--force` is set, in
    which case the existing env is removed first.
 4. Auto-installs the requested Python if it isn't already available via uv
-   (matches the ergonomics of [`scoop sync`](sync.md)).
+   (matches the ergonomics of [`scuv sync`](sync.md)).
 5. Creates the env, then `uv pip install`s every pinned package
    (`name==version`) in one shot.
 
@@ -40,16 +40,16 @@ scoop import -    [--name <NEW_NAME>]                # read from stdin
 
 ```bash
 # Plain file -> recreates with the schema's original name
-scoop import myenv.json
+scuv import myenv.json
 
 # Pipe from a sibling machine
-ssh other 'scoop export myenv' | scoop import -
+ssh other 'scuv export myenv' | scuv import -
 
 # Rename on the fly + overwrite if it already exists
-scoop import myenv.json --name myenv-2 --force
+scuv import myenv.json --name myenv-2 --force
 
 # Machine-readable summary for CI
-scoop import myenv.json --json
+scuv import myenv.json --json
 ```
 
 ## JSON Output
@@ -76,5 +76,5 @@ scoop import myenv.json --json
 
 ## See Also
 
-- [`scoop export`](export.md) — produce the input file
-- [`scoop sync`](sync.md) — for declarative `.scoop.toml`-driven workflows
+- [`scuv export`](export.md) — produce the input file
+- [`scuv sync`](sync.md) — for declarative `.scuv.toml`-driven workflows
