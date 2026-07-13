@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `eval "$(scuv init <shell>)"` (fish: `scuv init fish | source`).
 - bash/zsh/fish `scuv init` emits a deprecated `scoop` forwarding function that warns on use
   (removed in v0.16.0). PowerShell never defines `scoop` (scoop.sh coexistence).
+- Upgrading from 0.14.x via `scoop self update` works, but the old binary's post-install
+  verification prints a "could not locate the freshly installed `scoop` binary" warning —
+  this is expected across the rename (the new binary is `scuv`) and safe to ignore; the
+  update itself has already succeeded.
 - Docker: uv pinned 0.11.16 → 0.11.28.
 
 ### Added
