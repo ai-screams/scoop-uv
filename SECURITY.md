@@ -82,21 +82,21 @@ public disclosure of security issues puts users at risk.
 
 ## Security Best Practices
 
-When using scoop:
+When using scuv:
 
 ```bash
 # ✅ Good - environment names are validated
-scoop create myproject 3.12
+scuv create myproject 3.12
 
-# ⚠️ Be cautious with untrusted .scoop-version files
-# scoop validates names, but always review before entering untrusted directories
+# ⚠️ Be cautious with untrusted .scuv-version files
+# scuv validates names, but always review before entering untrusted directories
 ```
 
 ---
 
 ## Acknowledgments
 
-We appreciate responsible disclosure. Security researchers who help keep scoop safe:
+We appreciate responsible disclosure. Security researchers who help keep scuv safe:
 
 | Name | Contribution | Date |
 |------|--------------|------|
@@ -104,6 +104,6 @@ We appreciate responsible disclosure. Security researchers who help keep scoop s
 
 ---
 
-> 🍨 **Thank you for helping keep scoop secure!**
+> 🍨 **Thank you for helping keep scuv secure!**
 >
 > *"A secure scoop is a happy scoop."*
