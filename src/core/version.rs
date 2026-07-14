@@ -300,6 +300,49 @@ mod tests {
         assert!(!dir.join(".scoop-version").exists());
     }
 
+    /// Partial-failure behavior is fail-fast: on an unwritable directory the
+    /// first removal errors and `unset_local` returns Err without silently
+    /// claiming success — both files stay in place.
+    #[cfg(unix)]
+    #[test]
+    fn test_unset_local_fails_fast_on_unwritable_dir() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        std::fs::write(dir.join(".scuv-version"), "newenv\n").unwrap();
+        std::fs::write(dir.join(".scoop-version"), "oldenv\n").unwrap();
+
+        // Restore permissions from a Drop guard so a panic between chmod and
+        // the assertions can't strand a read-only dir that TempDir then fails
+        // to clean up.
+        struct RestorePerms<'a>(&'a std::path::Path);
+        impl Drop for RestorePerms<'_> {
+            fn drop(&mut self) {
+                let _ = std::fs::set_permissions(self.0, std::fs::Permissions::from_mode(0o755));
+            }
+        }
+
+        std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o555)).unwrap();
+        let _restore = RestorePerms(dir);
+
+        // root (e.g. the Docker integration CI) bypasses the read-only bit, so
+        // the unwritable-dir scenario is unreproducible there. Probe with a
+        // real write and skip rather than false-fail when perms aren't enforced.
+        let probe = dir.join(".perm-probe");
+        let perms_enforced = std::fs::write(&probe, b"x").is_err();
+        let _ = std::fs::remove_file(&probe);
+        if !perms_enforced {
+            return;
+        }
+
+        let result = VersionService::unset_local(dir);
+
+        assert!(result.is_err(), "read-only dir must surface an error");
+        assert!(dir.join(".scuv-version").exists());
+        assert!(dir.join(".scoop-version").exists());
+    }
+
     #[test]
     fn test_read_version_file_normalizes_system_case() {
         let temp = TempDir::new().unwrap();

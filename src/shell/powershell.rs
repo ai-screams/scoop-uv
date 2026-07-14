@@ -56,7 +56,20 @@ function scuv {
             if ($LASTEXITCODE -eq 0) {
                 $name = $Arguments | Where-Object { $_ -notmatch '^-' } | Select-Object -Skip 1 -First 1
                 if ($name) {
-                    Invoke-Expression (& $script:ScuvBin activate $name)
+                    # 'use' above already warned about any legacy config; don't warn twice.
+                    # Save/restore so a user-set suppression value survives this call.
+                    $hadSuppress = Test-Path Env:SCUV_SUPPRESS_DEPRECATION
+                    $prevSuppress = if ($hadSuppress) { $env:SCUV_SUPPRESS_DEPRECATION } else { $null }
+                    $env:SCUV_SUPPRESS_DEPRECATION = '1'
+                    try {
+                        Invoke-Expression (& $script:ScuvBin activate $name)
+                    } finally {
+                        if ($hadSuppress) {
+                            $env:SCUV_SUPPRESS_DEPRECATION = $prevSuppress
+                        } else {
+                            Remove-Item Env:SCUV_SUPPRESS_DEPRECATION -ErrorAction SilentlyContinue
+                        }
+                    }
                 }
             }
         }
@@ -308,6 +321,23 @@ mod tests {
         assert!(
             script.contains("'use'"),
             "Script must handle 'use' command specially"
+        );
+    }
+
+    /// The chained use→activate call must suppress duplicate deprecation
+    /// warnings (each chained call is a fresh process), and must restore any
+    /// pre-existing user value rather than leak `1` into the session.
+    #[test]
+    fn init_script_suppresses_duplicate_deprecation_in_use_chain() {
+        let s = init_script();
+        assert!(s.contains("SCUV_SUPPRESS_DEPRECATION"));
+        assert!(
+            s.contains("$env:SCUV_SUPPRESS_DEPRECATION = $prevSuppress"),
+            "must restore a user-set suppression value"
+        );
+        assert!(
+            s.contains("Remove-Item Env:SCUV_SUPPRESS_DEPRECATION"),
+            "must clear the variable when the user had not set it"
         );
     }
 
