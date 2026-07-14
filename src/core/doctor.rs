@@ -988,7 +988,15 @@ impl Check for VersionCheck {
 fn check_legacy_remnants() -> CheckResult {
     let mut found: Vec<String> = Vec::new();
 
-    for var in [paths::LEGACY_HOME_ENV, "SCOOP_VERSION", "SCOOP_LANG"] {
+    for var in [
+        paths::LEGACY_HOME_ENV,
+        "SCOOP_VERSION",
+        "SCOOP_LANG",
+        // No runtime warning for this one (it's read per prompt by the shell
+        // hook, warning there would spam) — this doctor hint is the only
+        // place a user learns to rename it.
+        "SCOOP_NO_AUTO",
+    ] {
         if std::env::var_os(var).is_some() {
             found.push(format!("${var}"));
         }
@@ -1526,6 +1534,7 @@ mod tests {
             (paths::LEGACY_HOME_ENV, None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
+            ("SCOOP_NO_AUTO", None),
             (paths::SCUV_HOME_ENV, None),
             ("SCUV_VERSION", None),
             ("SCUV_LANG", None),
@@ -1551,6 +1560,7 @@ mod tests {
             ),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
+            ("SCOOP_NO_AUTO", None),
             (paths::SCUV_HOME_ENV, None),
             ("SCUV_VERSION", None),
             ("SCUV_LANG", None),
@@ -1582,6 +1592,7 @@ mod tests {
             (paths::LEGACY_HOME_ENV, None),
             ("SCOOP_VERSION", Some("myenv")),
             ("SCOOP_LANG", Some("ko")),
+            ("SCOOP_NO_AUTO", Some("1")),
             (paths::SCUV_HOME_ENV, None),
             ("SCUV_VERSION", None),
             ("SCUV_LANG", None),
@@ -1597,6 +1608,7 @@ mod tests {
         };
         assert!(msg.contains("SCOOP_VERSION"), "got: {msg}");
         assert!(msg.contains("SCOOP_LANG"), "got: {msg}");
+        assert!(msg.contains("SCOOP_NO_AUTO"), "got: {msg}");
     }
 
     #[test]
@@ -1608,6 +1620,7 @@ mod tests {
             (paths::LEGACY_HOME_ENV, None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
+            ("SCOOP_NO_AUTO", None),
             (paths::SCUV_HOME_ENV, None),
             ("SCUV_VERSION", None),
             ("SCUV_LANG", None),
@@ -1638,6 +1651,7 @@ mod tests {
             (paths::LEGACY_HOME_ENV, None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
+            ("SCOOP_NO_AUTO", None),
             (paths::SCUV_HOME_ENV, None),
             ("SCUV_VERSION", None),
             ("SCUV_LANG", None),
@@ -1657,6 +1671,7 @@ mod tests {
             (paths::LEGACY_HOME_ENV, None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
+            ("SCOOP_NO_AUTO", None),
             (paths::SCUV_HOME_ENV, None),
             ("SCUV_VERSION", None),
             ("SCUV_LANG", None),
@@ -1690,6 +1705,7 @@ mod tests {
             ),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
+            ("SCOOP_NO_AUTO", None),
             (paths::SCUV_HOME_ENV, None),
             ("SCUV_VERSION", None),
             ("SCUV_LANG", None),
@@ -1785,6 +1801,7 @@ mod tests {
             (paths::LEGACY_HOME_ENV, None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
+            ("SCOOP_NO_AUTO", None),
             (paths::SCUV_HOME_ENV, None),
             ("SCUV_VERSION", None),
             ("SCUV_LANG", None),
