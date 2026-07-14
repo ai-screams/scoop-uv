@@ -56,7 +56,13 @@ function scuv {
             if ($LASTEXITCODE -eq 0) {
                 $name = $Arguments | Where-Object { $_ -notmatch '^-' } | Select-Object -Skip 1 -First 1
                 if ($name) {
-                    Invoke-Expression (& $script:ScuvBin activate $name)
+                    # 'use' above already warned about any legacy config; don't warn twice
+                    $env:SCUV_SUPPRESS_DEPRECATION = '1'
+                    try {
+                        Invoke-Expression (& $script:ScuvBin activate $name)
+                    } finally {
+                        Remove-Item Env:SCUV_SUPPRESS_DEPRECATION -ErrorAction SilentlyContinue
+                    }
                 }
             }
         }
@@ -314,6 +320,18 @@ mod tests {
     /// Safety-critical: scoop.sh (the Windows package manager) coexistence.
     /// PowerShell must NEVER define a `scoop` function or alias, or it would
     /// shadow the real `scoop` command for scoop.sh users.
+    /// The chained use→activate call must suppress duplicate deprecation
+    /// warnings (each chained call is a fresh process).
+    #[test]
+    fn init_script_suppresses_duplicate_deprecation_in_use_chain() {
+        let s = init_script();
+        assert!(s.contains("SCUV_SUPPRESS_DEPRECATION"));
+        assert!(
+            s.contains("Remove-Item Env:SCUV_SUPPRESS_DEPRECATION"),
+            "suppression must not leak into the user's session"
+        );
+    }
+
     #[test]
     fn init_script_never_defines_scoop() {
         let s = init_script();

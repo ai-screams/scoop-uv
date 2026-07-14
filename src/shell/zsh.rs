@@ -28,7 +28,8 @@ scuv() {
                     esac
                 done
                 if [[ -n "$name" ]]; then
-                    eval "$(command scuv activate "$name")"
+                    # 'use' above already warned about any legacy config; don't warn twice
+                    eval "$(SCUV_SUPPRESS_DEPRECATION=1 command scuv activate "$name")"
                 fi
             fi
             return $ret
@@ -507,6 +508,13 @@ mod tests {
             script.contains(r#"[[ -z "$SCUV_NO_AUTO" && -z "$SCOOP_NO_AUTO" ]]"#),
             "auto-activate gate must check SCUV_NO_AUTO with legacy SCOOP_NO_AUTO fallback"
         );
+    }
+
+    /// The chained use→activate call must suppress duplicate deprecation
+    /// warnings (each chained call is a fresh process).
+    #[test]
+    fn init_script_suppresses_duplicate_deprecation_in_use_chain() {
+        assert!(init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
     #[test]

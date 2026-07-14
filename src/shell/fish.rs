@@ -49,7 +49,8 @@ function scuv
             if test $ret -eq 0
                 for arg in $argv[2..-1]
                     if not string match -q -- '-*' "$arg"
-                        eval (command scuv activate "$arg")
+                        # 'use' above already warned about any legacy config; don't warn twice
+                        eval (env SCUV_SUPPRESS_DEPRECATION=1 scuv activate "$arg")
                         break
                     end
                 end
@@ -346,6 +347,13 @@ mod tests {
             script.contains("scuv list --pythons --bare"),
             "Script must provide dynamic Python version completions"
         );
+    }
+
+    /// The chained use→activate call must suppress duplicate deprecation
+    /// warnings (each chained call is a fresh process).
+    #[test]
+    fn init_script_suppresses_duplicate_deprecation_in_use_chain() {
+        assert!(init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
     #[test]
