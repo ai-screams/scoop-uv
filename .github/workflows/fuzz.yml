@@ -53,7 +53,10 @@ jobs:
           restore-keys: fuzz-corpus-${{ matrix.target }}-
 
       - name: Run fuzzer (time-bounded)
-        run: cargo fuzz run ${{ matrix.target }} -- -max_total_time=120
+        # Explicit gnu target: install-action ships a musl-built cargo-fuzz,
+        # whose default target (its own host triple) is musl — and ASan is
+        # incompatible with statically linked libc.
+        run: cargo fuzz run ${{ matrix.target }} --target x86_64-unknown-linux-gnu -- -max_total_time=120
 
       - name: Upload crash artifacts
         if: failure()

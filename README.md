@@ -261,6 +261,36 @@ Or restart your terminal after installing Rust.
 
 </details>
 
+### Upgrading from scoop (≤ 0.14.x) 🔁
+
+The CLI command was renamed in v0.15.0 (`scoop` → `scuv`). One-time migration:
+
+```bash
+# 1. Update — installs the new `scuv` binary
+scoop self update        # or: cargo install scoop-uv
+# ("could not locate the freshly installed `scoop` binary" warning is
+#  expected across the rename — the update itself already succeeded)
+
+# 2. Remove the old binary if cargo left one behind
+rm -f ~/.cargo/bin/scoop
+
+# 3. Update your shell rc: scoop init → scuv init
+#    ~/.zshrc / ~/.bashrc:  eval "$(scuv init zsh)"      # or bash
+#    fish:                  scuv init fish | source
+
+# 4. Move your freezer
+mv ~/.scoop ~/.scuv
+
+# 5. Restart your shell, then verify
+scuv doctor              # flags anything left over
+```
+
+Legacy `SCOOP_*` env vars and `.scoop-version` / `.scoop.toml` files keep
+working (with a one-shot deprecation warning) until v0.16.0, and typing
+`scoop` in bash/zsh/fish still works through a deprecated forwarder that
+warns and calls `scuv`. Skipping step 2 is the one dangerous gap: a
+leftover old binary keeps running 0.14.x silently, without any warning.
+
 ### Shell Setup
 
 #### Step 1: Add to your shell config
