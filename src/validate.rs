@@ -279,13 +279,16 @@ impl PythonVersion {
             digits.parse().ok()
         });
 
-        // Extract suffix (e.g., "a1", "b2", "rc1")
-        let suffix = if let Some(minor_str) = trimmed.split('.').nth(1) {
-            let suffix_start = minor_str.chars().position(|c| c.is_ascii_alphabetic());
-            suffix_start.map(|pos| minor_str[pos..].to_string())
-        } else {
-            None
-        };
+        // Extract suffix (e.g., "a1", "b2", "rc1"). char_indices, not
+        // chars().position(): slicing needs a BYTE offset, and a char index
+        // diverges from it (and can panic) once any multi-byte character
+        // precedes the suffix.
+        let suffix = trimmed.split('.').nth(1).and_then(|minor_str| {
+            minor_str
+                .char_indices()
+                .find(|(_, c)| c.is_ascii_alphabetic())
+                .map(|(pos, _)| minor_str[pos..].to_string())
+        });
 
         Some(Self {
             major,
@@ -541,6 +544,26 @@ mod tests {
         assert!(validate_python_version("stable").is_ok());
         assert!(validate_python_version("STABLE").is_ok());
         assert!(validate_python_version("").is_err());
+    }
+
+    /// Fuzz regression (crash-dbaf50a5, found 2026-07-14): suffix extraction
+    /// took a CHAR index from `chars().position()` and sliced the string with
+    /// it as a BYTE index — any multi-byte character before the alphabetic
+    /// suffix panicked on a non-char-boundary slice.
+    #[test]
+    fn test_python_version_parse_multibyte_before_suffix_does_not_panic() {
+        // Exact fuzzer input: "0.\u{0678}la'0+"
+        let input = String::from_utf8(vec![48, 46, 217, 184, 108, 97, 39, 48, 43]).unwrap();
+        let v = PythonVersion::parse(&input).expect("major digit parses");
+        assert_eq!(v.major, 0);
+        assert_eq!(v.minor, None);
+        // suffix starts at the first ASCII-alphabetic char, at a byte boundary
+        assert_eq!(v.suffix.as_deref(), Some("la'0+"));
+
+        // Multi-byte char before a DIGIT then suffix: slicing by char index
+        // would silently return the wrong suffix here instead of panicking.
+        let v = PythonVersion::parse("3.β1a").expect("major digit parses");
+        assert_eq!(v.suffix.as_deref(), Some("a"));
     }
 
     #[test]
