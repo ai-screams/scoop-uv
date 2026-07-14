@@ -325,6 +325,17 @@ mod tests {
 
         std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o555)).unwrap();
         let _restore = RestorePerms(dir);
+
+        // root (e.g. the Docker integration CI) bypasses the read-only bit, so
+        // the unwritable-dir scenario is unreproducible there. Probe with a
+        // real write and skip rather than false-fail when perms aren't enforced.
+        let probe = dir.join(".perm-probe");
+        let perms_enforced = std::fs::write(&probe, b"x").is_err();
+        let _ = std::fs::remove_file(&probe);
+        if !perms_enforced {
+            return;
+        }
+
         let result = VersionService::unset_local(dir);
 
         assert!(result.is_err(), "read-only dir must surface an error");
