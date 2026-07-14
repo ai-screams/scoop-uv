@@ -313,10 +313,19 @@ mod tests {
         std::fs::write(dir.join(".scuv-version"), "newenv\n").unwrap();
         std::fs::write(dir.join(".scoop-version"), "oldenv\n").unwrap();
 
+        // Restore permissions from a Drop guard so a panic between chmod and
+        // the assertions can't strand a read-only dir that TempDir then fails
+        // to clean up.
+        struct RestorePerms<'a>(&'a std::path::Path);
+        impl Drop for RestorePerms<'_> {
+            fn drop(&mut self) {
+                let _ = std::fs::set_permissions(self.0, std::fs::Permissions::from_mode(0o755));
+            }
+        }
+
         std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o555)).unwrap();
+        let _restore = RestorePerms(dir);
         let result = VersionService::unset_local(dir);
-        // restore before asserting so TempDir cleanup works even on failure
-        std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o755)).unwrap();
 
         assert!(result.is_err(), "read-only dir must surface an error");
         assert!(dir.join(".scuv-version").exists());

@@ -56,12 +56,19 @@ function scuv {
             if ($LASTEXITCODE -eq 0) {
                 $name = $Arguments | Where-Object { $_ -notmatch '^-' } | Select-Object -Skip 1 -First 1
                 if ($name) {
-                    # 'use' above already warned about any legacy config; don't warn twice
+                    # 'use' above already warned about any legacy config; don't warn twice.
+                    # Save/restore so a user-set suppression value survives this call.
+                    $hadSuppress = Test-Path Env:SCUV_SUPPRESS_DEPRECATION
+                    $prevSuppress = if ($hadSuppress) { $env:SCUV_SUPPRESS_DEPRECATION } else { $null }
                     $env:SCUV_SUPPRESS_DEPRECATION = '1'
                     try {
                         Invoke-Expression (& $script:ScuvBin activate $name)
                     } finally {
-                        Remove-Item Env:SCUV_SUPPRESS_DEPRECATION -ErrorAction SilentlyContinue
+                        if ($hadSuppress) {
+                            $env:SCUV_SUPPRESS_DEPRECATION = $prevSuppress
+                        } else {
+                            Remove-Item Env:SCUV_SUPPRESS_DEPRECATION -ErrorAction SilentlyContinue
+                        }
                     }
                 }
             }
@@ -317,21 +324,26 @@ mod tests {
         );
     }
 
-    /// Safety-critical: scoop.sh (the Windows package manager) coexistence.
-    /// PowerShell must NEVER define a `scoop` function or alias, or it would
-    /// shadow the real `scoop` command for scoop.sh users.
     /// The chained use→activate call must suppress duplicate deprecation
-    /// warnings (each chained call is a fresh process).
+    /// warnings (each chained call is a fresh process), and must restore any
+    /// pre-existing user value rather than leak `1` into the session.
     #[test]
     fn init_script_suppresses_duplicate_deprecation_in_use_chain() {
         let s = init_script();
         assert!(s.contains("SCUV_SUPPRESS_DEPRECATION"));
         assert!(
+            s.contains("$env:SCUV_SUPPRESS_DEPRECATION = $prevSuppress"),
+            "must restore a user-set suppression value"
+        );
+        assert!(
             s.contains("Remove-Item Env:SCUV_SUPPRESS_DEPRECATION"),
-            "suppression must not leak into the user's session"
+            "must clear the variable when the user had not set it"
         );
     }
 
+    /// Safety-critical: scoop.sh (the Windows package manager) coexistence.
+    /// PowerShell must NEVER define a `scoop` function or alias, or it would
+    /// shadow the real `scoop` command for scoop.sh users.
     #[test]
     fn init_script_never_defines_scoop() {
         let s = init_script();

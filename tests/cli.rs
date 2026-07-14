@@ -47,6 +47,9 @@ fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
     // Force English locale for consistent test assertions
     cmd.env("SCUV_LANG", "en");
     cmd.env_remove("SCOOP_LANG");
+    // A developer running the suite with this exported would otherwise
+    // silence the deprecation warnings the legacy-shim tests assert on.
+    cmd.env_remove("SCUV_SUPPRESS_DEPRECATION");
     cmd
 }
 
@@ -81,6 +84,7 @@ fn test_legacy_scoop_env_vars_still_work() {
     let mut cmd = Command::cargo_bin("scuv").unwrap();
     cmd.env_remove("SCUV_HOME");
     cmd.env_remove("SCUV_LANG");
+    cmd.env_remove("SCUV_SUPPRESS_DEPRECATION");
     cmd.env("SCOOP_HOME", &fixture.scoop_home);
     cmd.env("SCOOP_LANG", "en");
     cmd.arg("list")

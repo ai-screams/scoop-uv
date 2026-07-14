@@ -51,7 +51,12 @@ mod tests {
     use serial_test::serial;
 
     #[test]
+    #[serial]
     fn warn_once_emits_then_suppresses() {
+        // Guard against an inherited SCUV_SUPPRESS_DEPRECATION (would make
+        // every warn_once return false) and serialize against the other
+        // env-mutating tests here.
+        let _g = crate::test_utils::env_guard(&[(SUPPRESS_ENV, None)]);
         assert!(warn_once("task1-test-msg-a"));
         assert!(!warn_once("task1-test-msg-a"));
         assert!(warn_once("task1-test-msg-b"));
