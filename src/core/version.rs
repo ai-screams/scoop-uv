@@ -300,6 +300,29 @@ mod tests {
         assert!(!dir.join(".scoop-version").exists());
     }
 
+    /// Partial-failure behavior is fail-fast: on an unwritable directory the
+    /// first removal errors and `unset_local` returns Err without silently
+    /// claiming success — both files stay in place.
+    #[cfg(unix)]
+    #[test]
+    fn test_unset_local_fails_fast_on_unwritable_dir() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        std::fs::write(dir.join(".scuv-version"), "newenv\n").unwrap();
+        std::fs::write(dir.join(".scoop-version"), "oldenv\n").unwrap();
+
+        std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o555)).unwrap();
+        let result = VersionService::unset_local(dir);
+        // restore before asserting so TempDir cleanup works even on failure
+        std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+        assert!(result.is_err(), "read-only dir must surface an error");
+        assert!(dir.join(".scuv-version").exists());
+        assert!(dir.join(".scoop-version").exists());
+    }
+
     #[test]
     fn test_read_version_file_normalizes_system_case() {
         let temp = TempDir::new().unwrap();

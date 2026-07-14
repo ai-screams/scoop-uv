@@ -257,13 +257,35 @@ fn test_resolve_with_version_file() {
     // Create a legacy-named version file in the temp directory
     std::fs::write(fixture.temp_dir.path().join(".scoop-version"), "testenv").unwrap();
 
-    // resolve should succeed and output the env name
+    // resolve should succeed, output the env name, and warn (once) that the
+    // legacy file name is deprecated
     scoop_cmd(&fixture.scoop_home)
         .arg("resolve")
         .current_dir(fixture.temp_dir.path())
         .assert()
         .success()
-        .stdout(predicate::str::contains("testenv"));
+        .stdout(predicate::str::contains("testenv"))
+        .stderr(predicate::str::contains(".scoop-version is deprecated"));
+}
+
+/// DEPRECATION(0.16.0): legacy-shim regression test — a legacy `.scoop.toml`
+/// manifest is still found by `scuv sync`, with a deprecation warning on
+/// stderr. No success assertion: the warning fires during manifest discovery,
+/// before any uv/env work that may fail in minimal environments.
+#[test]
+fn test_sync_warns_on_legacy_manifest() {
+    let fixture = TestFixture::new();
+    std::fs::write(
+        fixture.temp_dir.path().join(".scoop.toml"),
+        "[environment]\nname = \"synctest\"\npython = \"3.12\"\n",
+    )
+    .unwrap();
+
+    scoop_cmd(&fixture.scoop_home)
+        .args(["sync", "--dry-run"])
+        .current_dir(fixture.temp_dir.path())
+        .assert()
+        .stderr(predicate::str::contains(".scoop.toml is deprecated"));
 }
 
 #[test]

@@ -497,6 +497,18 @@ mod tests {
         );
     }
 
+    /// The auto-activate gate must honor the new variable AND the legacy one
+    /// (deprecated read, removed in 0.16.0) — fish/powershell have the same
+    /// test; this pins bash/zsh symmetrically.
+    #[test]
+    fn init_script_checks_both_no_auto_variables() {
+        let script = init_script();
+        assert!(
+            script.contains(r#"[[ -z "$SCUV_NO_AUTO" && -z "$SCOOP_NO_AUTO" ]]"#),
+            "auto-activate gate must check SCUV_NO_AUTO with legacy SCOOP_NO_AUTO fallback"
+        );
+    }
+
     #[test]
     fn init_script_defines_deprecated_scoop_forwarder() {
         assert!(init_script().contains("scoop() {"));
