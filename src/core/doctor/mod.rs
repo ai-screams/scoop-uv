@@ -3,6 +3,7 @@
 //! This module provides functionality to diagnose the scuv installation
 //! and report any issues with suggested fixes.
 
+mod engine;
 mod types;
 
 use std::process::Command;
@@ -12,84 +13,129 @@ use crate::paths;
 use crate::uv::UvClient;
 use crate::uv::version as uv_version;
 
+pub use engine::Doctor;
 pub use types::{Check, CheckResult, CheckStatus};
 
 // ============================================================================
-// Doctor Engine
+// Individual Checks
 // ============================================================================
 
-/// Doctor diagnostic engine.
-///
-/// Runs all registered checks and collects results.
-pub struct Doctor {
-    checks: Vec<Box<dyn Check>>,
-}
+/// Check for uv installation.
+struct UvCheck;
 
-impl Doctor {
-    /// Creates a new Doctor with default checks.
-    pub fn new() -> Self {
-        Self {
-            checks: vec![
-                Box::new(UvCheck),
-                Box::new(HomeCheck),
-                Box::new(VirtualenvCheck),
-                Box::new(SymlinkCheck),
-                Box::new(ShellCheck),
-                Box::new(VersionCheck),
-                Box::new(LegacyCheck),
-            ],
+impl UvCheck {
+    /// Platform-appropriate install or upgrade command for uv.
+    fn install_hint() -> &'static str {
+        if cfg!(target_os = "macos") {
+            "brew install uv  OR  curl -LsSf https://astral.sh/uv/install.sh | sh"
+        } else if cfg!(target_os = "windows") {
+            "powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\""
+        } else {
+            "curl -LsSf https://astral.sh/uv/install.sh | sh"
         }
     }
+}
 
-    /// Runs all checks and returns results.
-    pub fn run_all(&self) -> Vec<CheckResult> {
-        self.checks.iter().flat_map(|c| c.run()).collect()
+impl Check for UvCheck {
+    fn id(&self) -> &'static str {
+        "uv"
     }
 
-    /// Runs all checks and attempts to fix issues where possible.
-    ///
-    /// Returns the results after attempting fixes.
-    pub fn run_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult> {
-        let mut all_results = Vec::new();
+    fn name(&self) -> &'static str {
+        "uv installation"
+    }
 
-        for check in &self.checks {
-            let results = check.run();
+    fn run(&self) -> Vec<CheckResult> {
+        match Command::new("uv").arg("--version").output() {
+            Ok(output) if output.status.success() => {
+                let raw = String::from_utf8_lossy(&output.stdout);
+                let raw = raw.trim();
 
-            for result in results {
-                // Attempt auto-fix for specific error types
-                if result.is_error() {
-                    if let Some(fixed_result) = self.try_fix(&result, output) {
-                        output.doctor_check(&fixed_result);
-                        all_results.push(fixed_result);
-                        continue;
+                // Enforce the minimum supported uv version when parseable.
+                // Unparseable output (custom build, unknown format) is treated
+                // as a soft pass so we don't block users on a banner change.
+                if let Some(version) = uv_version::parse(raw) {
+                    if !uv_version::meets_minimum(version) {
+                        return vec![
+                            CheckResult::error(
+                                self.id(),
+                                self.name(),
+                                format!(
+                                    "uv {} is older than the supported minimum ({})",
+                                    uv_version::format_version(version),
+                                    uv_version::format_version(uv_version::MIN_VERSION),
+                                ),
+                            )
+                            .with_details(raw.to_string())
+                            .with_suggestion(format!("Upgrade uv: {}", Self::install_hint())),
+                        ];
                     }
                 }
 
-                output.doctor_check(&result);
-                all_results.push(result);
+                vec![CheckResult::ok(self.id(), self.name()).with_details(raw.to_string())]
+            }
+            _ => {
+                vec![
+                    CheckResult::error(self.id(), self.name(), "uv not found in PATH")
+                        .with_details("scuv requires uv to manage Python environments")
+                        .with_suggestion(format!("Install uv: {}", Self::install_hint())),
+                ]
             }
         }
+    }
+}
 
-        all_results
+/// Check for SCUV_HOME directory.
+struct HomeCheck;
+
+impl Check for HomeCheck {
+    fn id(&self) -> &'static str {
+        "home"
     }
 
-    /// Attempts to fix a specific issue.
-    ///
-    /// Returns Some(new_result) if fix was attempted, None if not fixable.
-    fn try_fix(&self, result: &CheckResult, output: &crate::output::Output) -> Option<CheckResult> {
-        match result.id {
-            "home" => self.fix_home(result, output),
-            "symlink" => self.fix_symlink(result, output),
-            _ => None,
+    fn name(&self) -> &'static str {
+        "SCUV_HOME directory"
+    }
+
+    fn run(&self) -> Vec<CheckResult> {
+        match paths::scoop_home() {
+            Ok(path) if path.exists() => {
+                // Check write permission
+                match path.metadata() {
+                    Ok(meta) if !meta.permissions().readonly() => {
+                        vec![
+                            CheckResult::ok(self.id(), self.name())
+                                .with_details(format!("{}", path.display())),
+                        ]
+                    }
+                    _ => {
+                        vec![
+                            CheckResult::error(self.id(), self.name(), "directory not writable")
+                                .with_suggestion(format!("chmod 755 {}", path.display())),
+                        ]
+                    }
+                }
+            }
+            Ok(path) => {
+                vec![
+                    CheckResult::error(self.id(), self.name(), "directory not found")
+                        .with_suggestion(format!("mkdir -p {}", path.display())),
+                ]
+            }
+            Err(_) => {
+                vec![
+                    CheckResult::error(
+                        self.id(),
+                        self.name(),
+                        "could not determine home directory",
+                    )
+                    .with_suggestion("Set SCUV_HOME environment variable"),
+                ]
+            }
         }
     }
 
-    /// Fix SCUV_HOME directory issues.
-    fn fix_home(
-        &self,
-        result: &CheckResult,
-        output: &crate::output::Output,
-    ) -> Option<CheckResult> {
+    fn fix(&self, result: &CheckResult, output: &crate::output::Output) -> Option<CheckResult> {
         // Only fix "directory not found" errors
         if let CheckStatus::Error(msg) = &result.status {
             if msg.contains("not found") {
@@ -123,13 +169,174 @@ impl Doctor {
         }
         None
     }
+}
 
-    /// Fix broken Python symlink issues.
-    fn fix_symlink(
-        &self,
-        result: &CheckResult,
-        output: &crate::output::Output,
-    ) -> Option<CheckResult> {
+/// Check for virtualenv integrity.
+struct VirtualenvCheck;
+
+impl Check for VirtualenvCheck {
+    fn id(&self) -> &'static str {
+        "venv"
+    }
+
+    fn name(&self) -> &'static str {
+        "virtual environments"
+    }
+
+    fn run(&self) -> Vec<CheckResult> {
+        let venvs_dir = match paths::virtualenvs_dir() {
+            Ok(dir) => dir,
+            Err(_) => {
+                return vec![CheckResult::error(
+                    self.id(),
+                    self.name(),
+                    "virtualenvs directory not found",
+                )];
+            }
+        };
+
+        if !venvs_dir.exists() {
+            return vec![
+                CheckResult::ok(self.id(), self.name()).with_details("no environments yet"),
+            ];
+        }
+
+        let mut results = Vec::new();
+        let mut healthy = 0;
+        let mut broken_names = Vec::new();
+
+        if let Ok(entries) = std::fs::read_dir(&venvs_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    let name = path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("unknown")
+                        .to_string();
+
+                    let python_path = crate::paths::virtualenv_python_exe(&path);
+                    let pyvenv_cfg = path.join("pyvenv.cfg");
+
+                    if python_path.exists() && pyvenv_cfg.exists() {
+                        healthy += 1;
+                    } else {
+                        broken_names.push(name);
+                    }
+                }
+            }
+        }
+
+        // Report broken environments
+        for name in &broken_names {
+            results.push(
+                CheckResult::error(
+                    "venv",
+                    "broken virtualenv",
+                    format!("'{}' is corrupted", name),
+                )
+                .with_suggestion(format!(
+                    "scuv remove {} && scuv create {} <python-version>",
+                    name, name
+                )),
+            );
+        }
+
+        // Summary
+        if broken_names.is_empty() {
+            if healthy > 0 {
+                results.push(
+                    CheckResult::ok(self.id(), self.name())
+                        .with_details(format!("{} environments, all healthy", healthy)),
+                );
+            } else {
+                results.push(
+                    CheckResult::ok(self.id(), self.name()).with_details("no environments yet"),
+                );
+            }
+        }
+
+        results
+    }
+}
+
+/// Check for symbolic link validity.
+struct SymlinkCheck;
+
+impl Check for SymlinkCheck {
+    fn id(&self) -> &'static str {
+        "symlink"
+    }
+
+    fn name(&self) -> &'static str {
+        "symbolic links"
+    }
+
+    fn run(&self) -> Vec<CheckResult> {
+        let venvs_dir = match paths::virtualenvs_dir() {
+            Ok(dir) if dir.exists() => dir,
+            _ => return vec![],
+        };
+
+        let mut results = Vec::new();
+        let mut valid = 0;
+        let mut broken_names = Vec::new();
+
+        if let Ok(entries) = std::fs::read_dir(&venvs_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    let python_path = crate::paths::virtualenv_python_exe(&path);
+
+                    if python_path.is_symlink() {
+                        match std::fs::read_link(&python_path) {
+                            Ok(target) if target.exists() => {
+                                valid += 1;
+                            }
+                            Ok(_) => {
+                                let name = path
+                                    .file_name()
+                                    .and_then(|n| n.to_str())
+                                    .unwrap_or("unknown")
+                                    .to_string();
+                                broken_names.push(name);
+                            }
+                            Err(_) => {
+                                // Not a symlink or error reading
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Report broken symlinks
+        for name in &broken_names {
+            results.push(
+                CheckResult::error(
+                    "symlink",
+                    "broken symlink",
+                    format!("Python symlink in '{}' is broken", name),
+                )
+                .with_suggestion(format!(
+                    "scuv remove {} && scuv create {} <python-version>",
+                    name, name
+                )),
+            );
+        }
+
+        // Summary
+        if broken_names.is_empty() && valid > 0 {
+            results.push(
+                CheckResult::ok(self.id(), self.name())
+                    .with_details(format!("{} symlinks valid", valid)),
+            );
+        }
+
+        results
+    }
+
+    fn fix(&self, result: &CheckResult, output: &crate::output::Output) -> Option<CheckResult> {
         // Extract environment name from error message: "Python symlink in 'name' is broken"
         let venv_name = if let CheckStatus::Error(msg) = &result.status {
             // Parse: "Python symlink in 'name' is broken"
@@ -301,298 +508,6 @@ impl Doctor {
             CheckResult::ok("symlink", "broken symlink")
                 .with_details(format!("fixed symlink for '{}'", venv_name)),
         )
-    }
-}
-
-impl Default for Doctor {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-// ============================================================================
-// Individual Checks
-// ============================================================================
-
-/// Check for uv installation.
-struct UvCheck;
-
-impl UvCheck {
-    /// Platform-appropriate install or upgrade command for uv.
-    fn install_hint() -> &'static str {
-        if cfg!(target_os = "macos") {
-            "brew install uv  OR  curl -LsSf https://astral.sh/uv/install.sh | sh"
-        } else if cfg!(target_os = "windows") {
-            "powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\""
-        } else {
-            "curl -LsSf https://astral.sh/uv/install.sh | sh"
-        }
-    }
-}
-
-impl Check for UvCheck {
-    fn id(&self) -> &'static str {
-        "uv"
-    }
-
-    fn name(&self) -> &'static str {
-        "uv installation"
-    }
-
-    fn run(&self) -> Vec<CheckResult> {
-        match Command::new("uv").arg("--version").output() {
-            Ok(output) if output.status.success() => {
-                let raw = String::from_utf8_lossy(&output.stdout);
-                let raw = raw.trim();
-
-                // Enforce the minimum supported uv version when parseable.
-                // Unparseable output (custom build, unknown format) is treated
-                // as a soft pass so we don't block users on a banner change.
-                if let Some(version) = uv_version::parse(raw) {
-                    if !uv_version::meets_minimum(version) {
-                        return vec![
-                            CheckResult::error(
-                                self.id(),
-                                self.name(),
-                                format!(
-                                    "uv {} is older than the supported minimum ({})",
-                                    uv_version::format_version(version),
-                                    uv_version::format_version(uv_version::MIN_VERSION),
-                                ),
-                            )
-                            .with_details(raw.to_string())
-                            .with_suggestion(format!("Upgrade uv: {}", Self::install_hint())),
-                        ];
-                    }
-                }
-
-                vec![CheckResult::ok(self.id(), self.name()).with_details(raw.to_string())]
-            }
-            _ => {
-                vec![
-                    CheckResult::error(self.id(), self.name(), "uv not found in PATH")
-                        .with_details("scuv requires uv to manage Python environments")
-                        .with_suggestion(format!("Install uv: {}", Self::install_hint())),
-                ]
-            }
-        }
-    }
-}
-
-/// Check for SCUV_HOME directory.
-struct HomeCheck;
-
-impl Check for HomeCheck {
-    fn id(&self) -> &'static str {
-        "home"
-    }
-
-    fn name(&self) -> &'static str {
-        "SCUV_HOME directory"
-    }
-
-    fn run(&self) -> Vec<CheckResult> {
-        match paths::scoop_home() {
-            Ok(path) if path.exists() => {
-                // Check write permission
-                match path.metadata() {
-                    Ok(meta) if !meta.permissions().readonly() => {
-                        vec![
-                            CheckResult::ok(self.id(), self.name())
-                                .with_details(format!("{}", path.display())),
-                        ]
-                    }
-                    _ => {
-                        vec![
-                            CheckResult::error(self.id(), self.name(), "directory not writable")
-                                .with_suggestion(format!("chmod 755 {}", path.display())),
-                        ]
-                    }
-                }
-            }
-            Ok(path) => {
-                vec![
-                    CheckResult::error(self.id(), self.name(), "directory not found")
-                        .with_suggestion(format!("mkdir -p {}", path.display())),
-                ]
-            }
-            Err(_) => {
-                vec![
-                    CheckResult::error(
-                        self.id(),
-                        self.name(),
-                        "could not determine home directory",
-                    )
-                    .with_suggestion("Set SCUV_HOME environment variable"),
-                ]
-            }
-        }
-    }
-}
-
-/// Check for virtualenv integrity.
-struct VirtualenvCheck;
-
-impl Check for VirtualenvCheck {
-    fn id(&self) -> &'static str {
-        "venv"
-    }
-
-    fn name(&self) -> &'static str {
-        "virtual environments"
-    }
-
-    fn run(&self) -> Vec<CheckResult> {
-        let venvs_dir = match paths::virtualenvs_dir() {
-            Ok(dir) => dir,
-            Err(_) => {
-                return vec![CheckResult::error(
-                    self.id(),
-                    self.name(),
-                    "virtualenvs directory not found",
-                )];
-            }
-        };
-
-        if !venvs_dir.exists() {
-            return vec![
-                CheckResult::ok(self.id(), self.name()).with_details("no environments yet"),
-            ];
-        }
-
-        let mut results = Vec::new();
-        let mut healthy = 0;
-        let mut broken_names = Vec::new();
-
-        if let Ok(entries) = std::fs::read_dir(&venvs_dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    let name = path
-                        .file_name()
-                        .and_then(|n| n.to_str())
-                        .unwrap_or("unknown")
-                        .to_string();
-
-                    let python_path = crate::paths::virtualenv_python_exe(&path);
-                    let pyvenv_cfg = path.join("pyvenv.cfg");
-
-                    if python_path.exists() && pyvenv_cfg.exists() {
-                        healthy += 1;
-                    } else {
-                        broken_names.push(name);
-                    }
-                }
-            }
-        }
-
-        // Report broken environments
-        for name in &broken_names {
-            results.push(
-                CheckResult::error(
-                    "venv",
-                    "broken virtualenv",
-                    format!("'{}' is corrupted", name),
-                )
-                .with_suggestion(format!(
-                    "scuv remove {} && scuv create {} <python-version>",
-                    name, name
-                )),
-            );
-        }
-
-        // Summary
-        if broken_names.is_empty() {
-            if healthy > 0 {
-                results.push(
-                    CheckResult::ok(self.id(), self.name())
-                        .with_details(format!("{} environments, all healthy", healthy)),
-                );
-            } else {
-                results.push(
-                    CheckResult::ok(self.id(), self.name()).with_details("no environments yet"),
-                );
-            }
-        }
-
-        results
-    }
-}
-
-/// Check for symbolic link validity.
-struct SymlinkCheck;
-
-impl Check for SymlinkCheck {
-    fn id(&self) -> &'static str {
-        "symlink"
-    }
-
-    fn name(&self) -> &'static str {
-        "symbolic links"
-    }
-
-    fn run(&self) -> Vec<CheckResult> {
-        let venvs_dir = match paths::virtualenvs_dir() {
-            Ok(dir) if dir.exists() => dir,
-            _ => return vec![],
-        };
-
-        let mut results = Vec::new();
-        let mut valid = 0;
-        let mut broken_names = Vec::new();
-
-        if let Ok(entries) = std::fs::read_dir(&venvs_dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    let python_path = crate::paths::virtualenv_python_exe(&path);
-
-                    if python_path.is_symlink() {
-                        match std::fs::read_link(&python_path) {
-                            Ok(target) if target.exists() => {
-                                valid += 1;
-                            }
-                            Ok(_) => {
-                                let name = path
-                                    .file_name()
-                                    .and_then(|n| n.to_str())
-                                    .unwrap_or("unknown")
-                                    .to_string();
-                                broken_names.push(name);
-                            }
-                            Err(_) => {
-                                // Not a symlink or error reading
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Report broken symlinks
-        for name in &broken_names {
-            results.push(
-                CheckResult::error(
-                    "symlink",
-                    "broken symlink",
-                    format!("Python symlink in '{}' is broken", name),
-                )
-                .with_suggestion(format!(
-                    "scuv remove {} && scuv create {} <python-version>",
-                    name, name
-                )),
-            );
-        }
-
-        // Summary
-        if broken_names.is_empty() && valid > 0 {
-            results.push(
-                CheckResult::ok(self.id(), self.name())
-                    .with_details(format!("{} symlinks valid", valid)),
-            );
-        }
-
-        results
     }
 }
 
@@ -1311,10 +1226,9 @@ mod tests {
                 "broken symlink",
                 "Python symlink in 'fix-target' is broken".to_string(),
             );
-            let doctor = Doctor::new();
             let output = crate::output::Output::new(0, true, true, false);
 
-            let fixed = doctor.fix_symlink(&probe, &output);
+            let fixed = SymlinkCheck.fix(&probe, &output);
             assert!(fixed.is_some(), "fix_symlink must return Some");
             let r = fixed.unwrap();
             assert!(r.is_error() || r.is_warning());
@@ -1806,11 +1720,10 @@ mod tests {
             Some(missing_home.to_str().unwrap()),
         )]);
 
-        let doctor = Doctor::new();
         let output = crate::output::Output::new(0, true, true, false);
         let broken = CheckResult::error("home", "SCUV_HOME directory", "directory not found");
 
-        let fixed = doctor.fix_home(&broken, &output);
+        let fixed = HomeCheck.fix(&broken, &output);
         let fixed = fixed.expect("a 'not found' home error must be fixable");
         assert!(fixed.is_ok(), "got {fixed:#?}");
         assert!(missing_home.is_dir(), "home dir must be created");
@@ -1829,14 +1742,13 @@ mod tests {
             Some(tmp.path().to_str().unwrap()),
         )]);
 
-        let doctor = Doctor::new();
         let output = crate::output::Output::new(0, true, true, false);
         let unrelated = CheckResult::error("home", "SCUV_HOME directory", "permission denied");
-        assert!(doctor.fix_home(&unrelated, &output).is_none());
+        assert!(HomeCheck.fix(&unrelated, &output).is_none());
 
         let warning = CheckResult::warn("home", "SCUV_HOME directory", "directory not found");
         assert!(
-            doctor.fix_home(&warning, &output).is_none(),
+            HomeCheck.fix(&warning, &output).is_none(),
             "only Error status is fixable, not Warning"
         );
     }
