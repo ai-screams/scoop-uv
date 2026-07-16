@@ -116,7 +116,7 @@ mod tests {
     }
 
     // ==========================================================================
-    // Doctor::fix_home — creates the missing home (+ virtualenvs) only for
+    // HomeCheck::fix — creates the missing home (+ virtualenvs) only for
     // "not found" errors, and leaves anything else alone.
     // ==========================================================================
 

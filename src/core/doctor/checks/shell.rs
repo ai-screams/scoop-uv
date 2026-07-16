@@ -172,6 +172,8 @@ mod tests {
         let results = ShellCheck.run();
         assert_eq!(results.len(), 1, "got {results:#?}");
         assert!(results[0].is_ok(), "expected Ok, got {:#?}", results[0]);
+        assert_eq!(results[0].id, "shell");
+        assert_eq!(results[0].name, "shell configuration");
     }
 
     /// Pins the exact branch order in `ShellCheck::run`: a `scuv init` match

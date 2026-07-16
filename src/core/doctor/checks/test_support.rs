@@ -5,14 +5,14 @@ use std::path::{Path, PathBuf};
 /// RAII guard that chdir's into a fresh tempdir and restores the original cwd
 /// on drop. Local `.scuv-version` resolution is relative to the process cwd,
 /// so tests must actually move there — env vars can't substitute.
-pub(crate) struct TempDirCwdGuard {
+pub(super) struct TempDirCwdGuard {
     _tmp: tempfile::TempDir,
     new_cwd: PathBuf,
     original: PathBuf,
 }
 
 impl TempDirCwdGuard {
-    pub(crate) fn new() -> Self {
+    pub(super) fn new() -> Self {
         let original = std::env::current_dir().expect("cwd readable");
         let tmp = tempfile::tempdir().unwrap();
         let new_cwd = tmp.path().to_path_buf();
@@ -23,7 +23,7 @@ impl TempDirCwdGuard {
             original,
         }
     }
-    pub(crate) fn path(&self) -> &Path {
+    pub(super) fn path(&self) -> &Path {
         &self.new_cwd
     }
 }

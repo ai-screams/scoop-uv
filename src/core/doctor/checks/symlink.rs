@@ -297,7 +297,7 @@ mod tests {
     #[serial]
     fn fix_symlink_returns_some_for_parseable_error_name() {
         with_temp_scoop_home(|temp| {
-            // fix_symlink parses the env name out of a "Python symlink
+            // SymlinkCheck::fix parses the env name out of a "Python symlink
             // in 'name' is broken" message. If the parse succeeds and
             // the env doesn't exist, it returns Some(error suggesting
             // scuv create). The cargo-mutants -> None replacement

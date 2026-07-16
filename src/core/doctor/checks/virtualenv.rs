@@ -146,6 +146,8 @@ mod tests {
                 results.iter().all(|r| r.is_ok()),
                 "all results should be Ok, got {results:#?}"
             );
+            assert_eq!(results[0].id, "venv");
+            assert_eq!(results[0].name, "virtual environments");
         });
     }
 }

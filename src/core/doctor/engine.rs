@@ -8,7 +8,7 @@ use super::*;
 ///
 /// Runs all registered checks and collects results.
 pub struct Doctor {
-    pub(super) checks: Vec<Box<dyn Check>>,
+    checks: Vec<Box<dyn Check>>,
 }
 
 impl Doctor {

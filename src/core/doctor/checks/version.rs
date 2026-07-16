@@ -234,8 +234,8 @@ mod tests {
 
     /// Mirror of the local-version test for the global path. Without
     /// this, deleting the `!` in the `if !env_name.is_empty()` guard
-    /// on the global branch (doctor.rs:867) silently dropped every
-    /// version:global result and went unkilled by mutation testing.
+    /// on the global branch silently dropped every version:global
+    /// result and went unkilled by mutation testing.
     #[test]
     #[serial]
     fn version_check_treats_global_system_sentinel_as_ok() {
