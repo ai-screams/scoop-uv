@@ -254,6 +254,35 @@ mod tests {
 
     #[test]
     #[serial]
+    fn shell_check_zsh_no_init_errors_with_zshrc_suggestion() {
+        // Empty `.zshrc` (no scuv/scoop init) reaches the "no init found" tail,
+        // which selects the config-file hint by shell name. A `== -> !=` mutant
+        // on the `shell_name == "zsh"` boundary would pick the bash file here.
+        let home_tmp = tempfile::tempdir().unwrap();
+        std::fs::write(home_tmp.path().join(".zshrc"), "").unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            ("SHELL", Some("/bin/zsh")),
+            ("HOME", Some(home_tmp.path().to_str().unwrap())),
+        ]);
+
+        let results = ShellCheck.run();
+        assert_eq!(results.len(), 1, "got {results:#?}");
+        // no init line present -> error path selects config file by shell name.
+        // A `== -> !=` mutant would pick the bash file for zsh.
+        assert!(results[0].is_error());
+        assert!(
+            results[0]
+                .suggestion
+                .as_deref()
+                .unwrap_or("")
+                .contains(".zshrc"),
+            "zsh no-init suggestion must name ~/.zshrc, got {:?}",
+            results[0].suggestion
+        );
+    }
+
+    #[test]
+    #[serial]
     fn shell_check_zsh_is_ok_with_current_scuv_init_line() {
         let home_tmp = tempfile::tempdir().unwrap();
         std::fs::write(

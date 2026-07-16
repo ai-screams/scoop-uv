@@ -111,6 +111,19 @@ mod tests {
     }
 
     #[test]
+    fn run_all_collects_every_check_result_without_fixing() {
+        // run_all must return the raw run() results (no fix pass). A `-> vec![]`
+        // mutant would drop them all.
+        let doctor = Doctor {
+            checks: vec![Box::new(FixableCheck), Box::new(UnfixableCheck)],
+        };
+        let results = doctor.run_all();
+        assert_eq!(results.len(), 2);
+        assert!(results.iter().any(|r| r.id == "fixable" && r.is_error()));
+        assert!(results.iter().any(|r| r.id == "unfixable" && r.is_error()));
+    }
+
+    #[test]
     fn run_and_fix_replaces_error_when_fix_returns_some() {
         let doctor = Doctor {
             checks: vec![Box::new(FixableCheck)],

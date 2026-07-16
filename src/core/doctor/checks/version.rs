@@ -367,4 +367,32 @@ mod tests {
             );
         });
     }
+
+    // ==========================================================================
+    // VersionCheck::run — the "no version files configured" summary is the
+    // only result carrying the check's own id/name ("version"/"version files");
+    // global/local results use the "version:*" ids. With no global and no local
+    // file, id/name mutants (`-> ""`/`-> "xyzzy"`) would flip the summary.
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn version_run_summary_reports_id_and_name_when_no_files() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _cwd = TempDirCwdGuard::new(); // empty cwd -> no local version file
+        let _g = crate::test_utils::env_guard(&[
+            (paths::SCUV_HOME_ENV, Some(tmp.path().to_str().unwrap())),
+            ("SCUV_VERSION", None),
+            ("SCOOP_VERSION", None),
+        ]);
+        let results = VersionCheck.run();
+        // The "no version files configured" summary is the last result and uses
+        // self.id()/self.name(); id/name mutants to ""/"xyzzy" would flip these.
+        let summary = results.iter().find(|r| r.id == "version");
+        assert!(
+            summary.is_some(),
+            "expected a 'version' summary result: {results:#?}"
+        );
+        assert_eq!(summary.unwrap().name, "version files");
+    }
 }

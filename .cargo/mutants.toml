@@ -112,6 +112,21 @@ exclude_re = [
     # run_python_list. Without uv on the CI runner, mutating
     # `Ok(...)` to `Ok(vec![])` can't be killed by unit tests.
     "UvClient::pip_list",
+    # DoctorCheck::run functions that shell out or inspect real state where a
+    # mutant is an acceptable gap, mirroring the UvClient::* exclusions above.
+    # UvCheck::run gates on `uv --version` output; forcing uv to fail or report
+    # an older-than-minimum version isn't possible hermetically (the CI runner's
+    # uv is a single fixed version). install_hint / id / name ARE unit-tested.
+    "<impl Check for UvCheck>::run",
+    # SymlinkCheck::run's venvs-dir existence guard is an EQUIVALENT mutation: a
+    # missing dir and an existing-empty dir both yield vec![]. The valid/broken
+    # counting and summary are covered by the symlink_check_* tests via cargo test.
+    "<impl Check for SymlinkCheck>::run",
+    # SymlinkCheck::fix recreates a venv's python symlink: the deep branches
+    # (metadata parse, uv.find_python, remove/recreate) need a real installed
+    # Python + uv to reach. The early error branches are covered by
+    # fix_symlink_returns_some_for_parseable_error_name.
+    "<impl Check for SymlinkCheck>::fix",
 ]
 
 # `cargo test` runs in well under a second; give each mutant generous headroom

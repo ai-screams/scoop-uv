@@ -150,4 +150,100 @@ mod tests {
             assert_eq!(results[0].name, "virtual environments");
         });
     }
+
+    // ==========================================================================
+    // VirtualenvCheck::run — healthy/broken counting and summary selection.
+    // A venv is healthy iff `virtualenv_python_exe(dir)` and `pyvenv.cfg` both
+    // exist. Fake venvs with empty files suffice (no real python needed).
+    // `virtualenvs_dir()` derives from `SCUV_HOME`.
+    // ==========================================================================
+
+    fn make_venv(venvs_dir: &std::path::Path, name: &str, python: bool, cfg: bool) {
+        let dir = venvs_dir.join(name);
+        std::fs::create_dir_all(&dir).unwrap();
+        if python {
+            let py = crate::paths::virtualenv_python_exe(&dir);
+            std::fs::create_dir_all(py.parent().unwrap()).unwrap();
+            std::fs::write(&py, b"").unwrap();
+        }
+        if cfg {
+            std::fs::write(dir.join("pyvenv.cfg"), b"home = /x\n").unwrap();
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn venv_run_reports_all_healthy_with_count() {
+        // Kills `+= -> -=/*=` (count must equal 2) and `healthy > 0` -> `==`/`<`
+        // (must take the all-healthy branch).
+        let tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(tmp.path().to_str().unwrap()),
+        )]);
+        let venvs = crate::paths::virtualenvs_dir().unwrap();
+        make_venv(&venvs, "a", true, true);
+        make_venv(&venvs, "b", true, true);
+        let results = VirtualenvCheck.run();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].is_ok());
+        assert!(
+            results[0]
+                .details
+                .as_deref()
+                .unwrap_or("")
+                .contains("2 environments, all healthy"),
+            "got {:?}",
+            results[0].details
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn venv_run_reports_broken_when_cfg_missing() {
+        // Kills `&& -> ||`: with python present but pyvenv.cfg absent the env is
+        // broken; an `||` mutant would count it healthy.
+        let tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(tmp.path().to_str().unwrap()),
+        )]);
+        let venvs = crate::paths::virtualenvs_dir().unwrap();
+        make_venv(&venvs, "half", true, false); // python but no cfg -> broken
+        let results = VirtualenvCheck.run();
+        assert!(
+            results.iter().any(|r| r.is_error() && r.id == "venv"),
+            "half-built env must be reported broken: {results:#?}"
+        );
+        assert!(
+            !results.iter().any(|r| r.is_ok()),
+            "no all-healthy summary when a broken env exists: {results:#?}"
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn venv_run_says_no_environments_when_dir_empty() {
+        // Kills `healthy > 0` -> `>=`: with zero healthy envs the summary must be
+        // "no environments yet", not "0 environments, all healthy".
+        let tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(tmp.path().to_str().unwrap()),
+        )]);
+        let venvs = crate::paths::virtualenvs_dir().unwrap();
+        std::fs::create_dir_all(&venvs).unwrap(); // exists but empty
+        let results = VirtualenvCheck.run();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].is_ok());
+        assert!(
+            results[0]
+                .details
+                .as_deref()
+                .unwrap_or("")
+                .contains("no environments yet"),
+            "got {:?}",
+            results[0].details
+        );
+    }
 }

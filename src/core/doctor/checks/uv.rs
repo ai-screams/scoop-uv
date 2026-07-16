@@ -90,4 +90,18 @@ mod tests {
             "all results must carry the uv id, got {results:#?}"
         );
     }
+
+    #[test]
+    fn install_hint_names_uv() {
+        // A `-> ""` / `-> "xyzzy"` mutant would drop the real install command.
+        let hint = UvCheck::install_hint();
+        assert!(
+            hint.contains("uv"),
+            "install hint must mention uv, got {hint:?}"
+        );
+        assert!(
+            hint.contains("astral") || hint.contains("brew"),
+            "install hint must reference a real installer, got {hint:?}"
+        );
+    }
 }

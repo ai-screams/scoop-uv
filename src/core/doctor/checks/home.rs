@@ -116,6 +116,100 @@ mod tests {
     }
 
     // ==========================================================================
+    // HomeCheck::run — permission/existence branches. `paths::scoop_home()`
+    // reads `SCUV_HOME`, so point it at fixtures via env_guard + #[serial].
+    // ==========================================================================
+
+    #[test]
+    #[serial]
+    fn home_run_ok_when_dir_exists_and_writable() {
+        let tmp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(tmp.path().to_str().unwrap()),
+        )]);
+        let results = HomeCheck.run();
+        assert_eq!(results.len(), 1);
+        assert!(
+            results[0].is_ok(),
+            "existing writable home must be ok: {:#?}",
+            results[0]
+        );
+        assert_eq!(results[0].id, "home");
+    }
+
+    #[test]
+    #[serial]
+    fn home_run_errors_directory_not_found_when_missing() {
+        // Kills the `path.exists()` guard mutant: if the guard is forced true,
+        // run() falls into the metadata branch and reports "directory not
+        // writable" instead of "directory not found".
+        let tmp = tempfile::tempdir().unwrap();
+        let missing = tmp.path().join("does-not-exist");
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(missing.to_str().unwrap()),
+        )]);
+        let results = HomeCheck.run();
+        assert_eq!(results.len(), 1);
+        assert!(results[0].is_error());
+        // The suggestion for a missing dir is `mkdir -p ...`; for unwritable it is
+        // `chmod 755 ...`. Assert on the missing-dir suggestion to distinguish.
+        assert!(
+            results[0]
+                .suggestion
+                .as_deref()
+                .unwrap_or("")
+                .contains("mkdir"),
+            "missing home must suggest mkdir, got {:?}",
+            results[0].suggestion
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    #[serial]
+    fn home_run_errors_not_writable_when_readonly() {
+        // Kills the `!meta.permissions().readonly()` guard mutant. chmod 0o555 is
+        // ignored by root (Docker CI), so probe first and skip if perms aren't
+        // enforced — same pattern as version.rs's unwritable-dir test.
+        use std::os::unix::fs::PermissionsExt;
+        let tmp = tempfile::tempdir().unwrap();
+        let home = tmp.path().join("ro-home");
+        std::fs::create_dir_all(&home).unwrap();
+        std::fs::set_permissions(&home, std::fs::Permissions::from_mode(0o555)).unwrap();
+        // root-skip probe: if we can still create inside, perms aren't enforced.
+        let probe = home.join(".perm-probe");
+        let perms_enforced = std::fs::write(&probe, b"x").is_err();
+        let _ = std::fs::remove_file(&probe);
+        if !perms_enforced {
+            // restore + skip
+            let _ = std::fs::set_permissions(&home, std::fs::Permissions::from_mode(0o755));
+            return;
+        }
+        let _g =
+            crate::test_utils::env_guard(&[(paths::SCUV_HOME_ENV, Some(home.to_str().unwrap()))]);
+        let results = HomeCheck.run();
+        // restore perms so tempdir cleanup works
+        let _ = std::fs::set_permissions(&home, std::fs::Permissions::from_mode(0o755));
+        assert_eq!(results.len(), 1);
+        assert!(
+            results[0].is_error(),
+            "readonly home must error: {:#?}",
+            results[0]
+        );
+        assert!(
+            results[0]
+                .suggestion
+                .as_deref()
+                .unwrap_or("")
+                .contains("chmod"),
+            "readonly home must suggest chmod, got {:?}",
+            results[0].suggestion
+        );
+    }
+
+    // ==========================================================================
     // HomeCheck::fix — creates the missing home (+ virtualenvs) only for
     // "not found" errors, and leaves anything else alone.
     // ==========================================================================
