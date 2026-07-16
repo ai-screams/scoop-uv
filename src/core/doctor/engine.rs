@@ -15,15 +15,7 @@ impl Doctor {
     /// Creates a new Doctor with default checks.
     pub fn new() -> Self {
         Self {
-            checks: vec![
-                Box::new(UvCheck),
-                Box::new(HomeCheck),
-                Box::new(VirtualenvCheck),
-                Box::new(SymlinkCheck),
-                Box::new(ShellCheck),
-                Box::new(VersionCheck),
-                Box::new(LegacyCheck),
-            ],
+            checks: super::checks::default_checks(),
         }
     }
 
