@@ -155,4 +155,19 @@ mod tests {
             "unfixable check's error should remain"
         );
     }
+
+    #[test]
+    fn test_doctor_has_default_checks() {
+        let doctor = Doctor::new();
+        assert!(!doctor.checks.is_empty());
+    }
+
+    #[test]
+    fn doctor_registers_legacy_check() {
+        let doctor = Doctor::new();
+        assert!(
+            doctor.checks.iter().any(|c| c.id() == "legacy"),
+            "Doctor::new() must register the legacy check"
+        );
+    }
 }

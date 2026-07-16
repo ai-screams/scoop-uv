@@ -121,3 +121,73 @@ pub trait Check: Send + Sync {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_check_result_ok() {
+        let result = CheckResult::ok("test", "Test Check");
+        assert_eq!(result.id, "test");
+        assert_eq!(result.name, "Test Check");
+        assert!(result.is_ok());
+        assert!(!result.is_warning());
+        assert!(!result.is_error());
+    }
+
+    #[test]
+    fn test_check_result_warn() {
+        let result = CheckResult::warn("test", "Test Check", "warning message");
+        assert!(result.is_warning());
+        assert!(!result.is_ok());
+        assert!(!result.is_error());
+    }
+
+    #[test]
+    fn test_check_result_error() {
+        let result = CheckResult::error("test", "Test Check", "error message");
+        assert!(result.is_error());
+        assert!(!result.is_ok());
+        assert!(!result.is_warning());
+    }
+
+    #[test]
+    fn test_check_result_with_suggestion() {
+        let result =
+            CheckResult::error("test", "Test Check", "error").with_suggestion("fix it like this");
+        assert!(result.suggestion.is_some());
+        assert_eq!(result.suggestion.unwrap(), "fix it like this");
+    }
+
+    #[test]
+    fn test_check_result_with_details() {
+        let result = CheckResult::ok("test", "Test Check").with_details("version 1.0.0");
+        assert!(result.details.is_some());
+        assert_eq!(result.details.unwrap(), "version 1.0.0");
+    }
+
+    #[test]
+    fn test_check_result_builder_chain() {
+        let result = CheckResult::warn("test", "Test Check", "warning")
+            .with_suggestion("do this")
+            .with_details("more info");
+
+        assert!(result.is_warning());
+        assert!(result.suggestion.is_some());
+        assert!(result.details.is_some());
+    }
+
+    #[test]
+    fn test_check_status_equality() {
+        assert_eq!(CheckStatus::Ok, CheckStatus::Ok);
+        assert_eq!(
+            CheckStatus::Warning("a".to_string()),
+            CheckStatus::Warning("a".to_string())
+        );
+        assert_ne!(
+            CheckStatus::Warning("a".to_string()),
+            CheckStatus::Warning("b".to_string())
+        );
+    }
+}
