@@ -264,6 +264,16 @@ mod tests {
     use crate::test_utils::with_temp_scoop_home;
     use serial_test::serial;
 
+    #[test]
+    fn symlink_check_reports_identity() {
+        // Pins id()/name() directly; run()'s healthy summary (which also uses
+        // them) is excluded from mutants for its equivalent dir-guard mutation,
+        // so this is the killing test for the id/name mutants.
+        let check = SymlinkCheck;
+        assert_eq!(check.id(), "symlink");
+        assert_eq!(check.name(), "symbolic links");
+    }
+
     /// On Unix we can deterministically create a symlink whose target
     /// doesn't exist, which is exactly the failure SymlinkCheck::run
     /// surfaces. cfg-gated to Unix because the symlink primitive
