@@ -1,4 +1,4 @@
-use super::*;
+use super::types::{Check, CheckResult};
 
 // ============================================================================
 // Doctor Engine

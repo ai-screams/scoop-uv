@@ -108,34 +108,8 @@ impl Check for SymlinkCheck {
             );
         }
 
-        // Read metadata to get Python version
-        let metadata_path = venv_path.join(Metadata::FILE_NAME);
-        let python_version = if metadata_path.exists() {
-            match std::fs::read_to_string(&metadata_path) {
-                Ok(content) => match serde_json::from_str::<Metadata>(&content) {
-                    Ok(meta) => Some(meta.python_version),
-                    Err(_) => None,
-                },
-                Err(_) => None,
-            }
-        } else {
-            // Try to extract from pyvenv.cfg as fallback
-            let pyvenv_cfg = venv_path.join("pyvenv.cfg");
-            if pyvenv_cfg.exists() {
-                std::fs::read_to_string(&pyvenv_cfg)
-                    .ok()
-                    .and_then(|content| {
-                        for line in content.lines() {
-                            if line.starts_with("version") {
-                                return line.split('=').nth(1).map(|v| v.trim().to_string());
-                            }
-                        }
-                        None
-                    })
-            } else {
-                None
-            }
-        };
+        // Read the venv's Python version (scuv metadata, then pyvenv.cfg fallback).
+        let python_version = read_python_version(&venv_path);
 
         let python_version = match python_version {
             Some(v) => v,
@@ -257,6 +231,38 @@ impl Check for SymlinkCheck {
     }
 }
 
+/// Reads the venv's Python version from its scuv metadata, falling back to
+/// parsing `pyvenv.cfg`. Returns `None` if neither source yields a version.
+fn read_python_version(venv_path: &std::path::Path) -> Option<String> {
+    let metadata_path = venv_path.join(Metadata::FILE_NAME);
+    if metadata_path.exists() {
+        match std::fs::read_to_string(&metadata_path) {
+            Ok(content) => match serde_json::from_str::<Metadata>(&content) {
+                Ok(meta) => Some(meta.python_version),
+                Err(_) => None,
+            },
+            Err(_) => None,
+        }
+    } else {
+        // Try to extract from pyvenv.cfg as fallback.
+        let pyvenv_cfg = venv_path.join("pyvenv.cfg");
+        if pyvenv_cfg.exists() {
+            std::fs::read_to_string(&pyvenv_cfg)
+                .ok()
+                .and_then(|content| {
+                    for line in content.lines() {
+                        if line.starts_with("version") {
+                            return line.split('=').nth(1).map(|v| v.trim().to_string());
+                        }
+                    }
+                    None
+                })
+        } else {
+            None
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -272,6 +278,46 @@ mod tests {
         let check = SymlinkCheck;
         assert_eq!(check.id(), "symlink");
         assert_eq!(check.name(), "symbolic links");
+    }
+
+    #[test]
+    fn read_python_version_prefers_scuv_metadata() {
+        // Metadata present -> the version comes from it.
+        let tmp = tempfile::tempdir().unwrap();
+        let meta = Metadata::new("env".to_string(), "3.12.5".to_string(), None);
+        std::fs::write(
+            tmp.path().join(Metadata::FILE_NAME),
+            serde_json::to_string(&meta).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(read_python_version(tmp.path()).as_deref(), Some("3.12.5"));
+    }
+
+    #[test]
+    fn read_python_version_falls_back_to_pyvenv_cfg() {
+        // No metadata -> parse the `version = X` line from pyvenv.cfg.
+        let tmp = tempfile::tempdir().unwrap();
+        std::fs::write(
+            tmp.path().join("pyvenv.cfg"),
+            "home = /usr\nversion = 3.11.9\n",
+        )
+        .unwrap();
+        assert_eq!(read_python_version(tmp.path()).as_deref(), Some("3.11.9"));
+    }
+
+    #[test]
+    fn read_python_version_none_when_no_sources() {
+        let tmp = tempfile::tempdir().unwrap();
+        assert_eq!(read_python_version(tmp.path()), None);
+    }
+
+    #[test]
+    fn read_python_version_none_on_corrupt_metadata() {
+        // Corrupt metadata does NOT fall through to pyvenv.cfg (original behavior).
+        let tmp = tempfile::tempdir().unwrap();
+        std::fs::write(tmp.path().join(Metadata::FILE_NAME), "{ not json").unwrap();
+        std::fs::write(tmp.path().join("pyvenv.cfg"), "version = 9.9.9\n").unwrap();
+        assert_eq!(read_python_version(tmp.path()), None);
     }
 
     /// On Unix we can deterministically create a symlink whose target
