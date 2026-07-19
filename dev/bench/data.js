@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784093979404,
+  "lastUpdate": 1784464504254,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -2878,6 +2878,102 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/max_length",
             "value": 192,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "80beb4e0c157c3a70ce31427d369ed16a2fd0362",
+          "message": "Merge pull request #149 from ai-screams/refactor/split-doctor\n\nrefactor(doctor): split doctor.rs into a focused doctor/ module",
+          "timestamp": "2026-07-19T21:30:43+09:00",
+          "tree_id": "14bf06b2c863d20abe686a7a68de197e84e8d67d",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/80beb4e0c157c3a70ce31427d369ed16a2fd0362"
+        },
+        "date": 1784464503756,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 75570,
+            "range": "± 1963",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 87397,
+            "range": "± 395",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3148,
+            "range": "± 100",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 807,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_hit",
+            "value": 1888,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1268,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 103,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 105,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 93,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 89,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 22,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 209,
             "range": "± 0",
             "unit": "ns/iter"
           }
