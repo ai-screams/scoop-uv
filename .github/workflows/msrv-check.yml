@@ -63,7 +63,7 @@ jobs:
       # Step 4: Install cargo-msrv only if not cached
       # --locked ensures Cargo.lock is respected (security)
       # Version pinned to ^0.18 because cargo-msrv 0.19+ requires rustc 1.91+,
-      # which conflicts with our MSRV (1.85). Keep in sync with the cache key above.
+      # which conflicts with our MSRV (1.88). Keep in sync with the cache key above.
       - name: Install cargo-msrv
         if: steps.cache-cargo-msrv.outputs.cache-hit != 'true'
         run: cargo install cargo-msrv --version "^0.18" --locked

@@ -14,7 +14,7 @@ libfuzzer-sys = "0.4"
 path = ".."
 
 # Independent workspace: keeps the nightly-only fuzz crate out of the main
-# (MSRV 1.85) workspace so it never affects the project's build or CI matrix.
+# (MSRV 1.88) workspace so it never affects the project's build or CI matrix.
 [workspace]
 
 [profile.release]

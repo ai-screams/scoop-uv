@@ -40,7 +40,7 @@
 
 <!-- Project Identity -->
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos-blue?style=flat-square)](https://github.com/ai-screams/scoop-uv)
-[![Rust](https://img.shields.io/badge/rust-1.85+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.88+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![Powered by uv](https://img.shields.io/badge/powered%20by-uv-blueviolet?style=flat-square&logo=python)](https://github.com/astral-sh/uv)
 [![Maintained](https://img.shields.io/badge/maintained-yes-green?style=flat-square)](https://github.com/ai-screams/scoop-uv)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/ai-screams/scoop-uv/pulls)
@@ -535,15 +535,15 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 
 ## Minimum Supported Rust Version (MSRV) 🦀
 
-**Current MSRV:** 1.85 (required by Rust Edition 2024)
+**Current MSRV:** 1.88 (required by Rust Edition 2024)
 
 scuv follows an **N-1 MSRV policy** — we support the current stable Rust and one previous version (~6 week lag).
 
 | User Type | MSRV Impact | Action |
 |-----------|-------------|--------|
 | **Binary users** | ✅ None | Download from [releases](https://github.com/ai-screams/scoop-uv/releases) or `cargo install` |
-| **Source builders** | ⚠️ Rust >= 1.85 required | Run `rustup update` if needed |
-| **Contributors** | 🔧 Test on MSRV before PR | `cargo +1.85 test --all-features` |
+| **Source builders** | ⚠️ Rust >= 1.88 required | Run `rustup update` if needed |
+| **Contributors** | 🔧 Test on MSRV before PR | `cargo +1.88 test --all-features` |
 
 <details>
 <summary>📋 Full MSRV policy (click to expand)</summary>
@@ -575,10 +575,10 @@ scuv uses **Rust Edition 2024**, which requires:
 
 ### Automation
 
-- **CI**: Tests on both MSRV (1.85) and stable automatically
+- **CI**: Tests on both MSRV (1.88) and stable automatically
 - **cargo-msrv**: Verifies MSRV on Cargo.toml changes in CI
 - **Badge**: README badge auto-updates from Cargo.toml via shields.io
-- **Local**: rust-toolchain.toml auto-selects 1.85 in project directory
+- **Local**: rust-toolchain.toml auto-selects 1.88 in project directory
 
 For more details, see our [MSRV bump guide in CONTRIBUTING.md](CONTRIBUTING.md#bumping-msrv-step-by-step-guide).
 

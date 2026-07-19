@@ -3,6 +3,6 @@
 # See: https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file
 
 [toolchain]
-channel = "1.85"          # MSRV from Cargo.toml
+channel = "1.88"          # MSRV from Cargo.toml
 components = ["rustfmt", "clippy"]
 profile = "minimal"

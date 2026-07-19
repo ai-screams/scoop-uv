@@ -46,7 +46,7 @@ jobs:
 
       # mdbook-i18n-helpers 0.4.0 (depends on mdbook-core 0.5) needs
       # rustc 1.88+ to build. The project's rust-toolchain.toml pins
-      # 1.85 (MSRV); we install stable explicitly here and run the
+      # 1.88 (MSRV); we install stable explicitly here and run the
       # `cargo install` from a directory outside the repo so the
       # project's toolchain pin doesn't override it.
       - name: Install Rust stable toolchain

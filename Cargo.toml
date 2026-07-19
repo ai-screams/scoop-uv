@@ -2,7 +2,7 @@
 name = "scoop-uv"
 version = "0.15.1"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 authors = ["Hanyul <pignuante@gmail.com>"]
 description = "Scoop up your Python envs with uv — the command is scuv"
 license = "MIT OR Apache-2.0"
@@ -105,6 +105,13 @@ harness = false
 [[bench]]
 name = "path_lookup"
 harness = false
+
+[lints.clippy]
+# The MSRV 1.88 clippy promotes `uninlined_format_args` to a default warning.
+# The codebase uses the explicit `format!("{}", x)` style in ~270 places; that
+# is a cosmetic preference, not a defect, so allow it rather than churn every
+# call site inside an infrastructure bump. Revisit as a standalone cleanup.
+uninlined_format_args = "allow"
 
 [profile.release]
 lto = true

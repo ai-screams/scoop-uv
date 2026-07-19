@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **MSRV**: Bumped to 1.88 (reason: the ecosystem adopted `let`-chains, stabilized in Rust 1.88; transitive dependencies — `ignore` 0.4.30 and `serde-saphyr` via `rust-i18n` 4.2.1 — now require it, so a `cargo update` broke the 1.85 build). Edition 2024's own floor remains 1.85; 1.88 is still well below current stable.
+- Allow `clippy::uninlined_format_args` crate-wide (newly a default warning under 1.88 clippy); the explicit `format!("{}", x)` style is kept as-is rather than churned during the MSRV bump.
+
 ## [0.15.1] - 2026-07-14
 
 ### Documentation

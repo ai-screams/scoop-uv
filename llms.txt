@@ -10,7 +10,7 @@ combining pyenv-virtualenv's familiar workflow with uv's speed. Written in Rust.
 
 ## Installation
 
-Prerequisites: [uv](https://github.com/astral-sh/uv) and Rust 1.85+
+Prerequisites: [uv](https://github.com/astral-sh/uv) and Rust 1.88+
 
 ```bash
 cargo install scoop-uv

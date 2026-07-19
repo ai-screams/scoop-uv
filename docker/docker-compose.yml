@@ -22,7 +22,7 @@ x-common-svc: &common-svc
     - cargo-registry:/usr/local/cargo/registry
     - cargo-git:/usr/local/cargo/git
     # rustup toolchain — persist so `make docker-shell` doesn't re-DL
-    # the 1.85 toolchain on every container restart
+    # the 1.88 toolchain on every container restart
     - rustup-home:/usr/local/rustup
     # Target dir cache (incremental builds)
     - target-cache:/workspace/target

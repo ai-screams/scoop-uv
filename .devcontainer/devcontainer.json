@@ -5,7 +5,7 @@
   // Bookworm (Debian 12) is supported until June 2028. The 1-bookworm tag
   // tracks the latest stable Rust shipped by Microsoft; the actual toolchain
   // used by every contributor is pinned by rust-toolchain.toml at the repo
-  // root (MSRV 1.85), so this image tag is just a fast starting point.
+  // root (MSRV 1.88), so this image tag is just a fast starting point.
   "image": "mcr.microsoft.com/devcontainers/rust:1-bookworm",
 
   "features": {
