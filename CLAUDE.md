@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Minimum uv version**: 0.5.14 (enforced by `scuv doctor`; the single source of truth is `MIN_VERSION` in `src/uv/version.rs`).
 
-- **Language**: Rust (Edition 2024, MSRV 1.85)
+- **Language**: Rust (Edition 2024, MSRV 1.88)
 - **License**: MIT OR Apache-2.0
 - **Version**: 0.15.0 (command renamed `scoop` → `scuv`; crate/repo stay `scoop-uv`)
 - **Tests**: 959 passed (888 unit + 44 integration + 2 i18n + 25 doctest), 0 clippy warnings
@@ -70,7 +70,7 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 ## MSRV Policy
 
 **Policy**: N-1 (Moderate)
-**Current MSRV**: 1.85 (required by Edition 2024)
+**Current MSRV**: 1.88 (ecosystem adopted `let`-chains; deps like `ignore` 0.4.30 and `serde-saphyr` require it. Edition 2024's own floor is 1.85.)
 **Test Matrix**: `[msrv, stable]`
 
 ### Guidelines for AI Agents & Contributors
@@ -112,11 +112,11 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 
 #### When Writing Code
 
-- Assume Rust 1.85 as baseline
+- Assume Rust 1.88 as baseline
 - Use Edition 2024 syntax freely (`gen` keyword reservation, unsafe extern blocks)
-- All Rust 1.85+ features available (async-await, const generics, let-else, RPIT in traits, etc.)
+- All Rust 1.88+ features available (async-await, const generics, let-else, let-chains, RPIT in traits, etc.)
 - Check feature stability: https://doc.rust-lang.org/stable/releases.html
-- If unsure about feature MSRV, test with `cargo +1.85 check`
+- If unsure about feature MSRV, test with `cargo +1.88 check`
 
 #### Testing Commands
 
@@ -143,10 +143,10 @@ scuv uses **Rust Edition 2024**, which requires:
 
 ### Automation
 
-- **CI**: Tests on both MSRV (1.85) and stable automatically
+- **CI**: Tests on both MSRV (1.88) and stable automatically
 - **cargo-msrv**: Verifies MSRV on Cargo.toml changes in CI
 - **Badge**: README badge auto-updates from Cargo.toml via shields.io
-- **Local**: rust-toolchain.toml auto-selects 1.85 in project directory
+- **Local**: rust-toolchain.toml auto-selects 1.88 in project directory
 
 ### References
 

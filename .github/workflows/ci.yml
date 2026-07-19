@@ -106,7 +106,7 @@ jobs:
   # ====================
   # Tests that code compiles and runs on our minimum supported Rust version.
   # Part of N-1 policy: we support current stable + 1 previous version.
-  # Current MSRV: 1.85 (required by Rust Edition 2024)
+  # Current MSRV: 1.88 (ecosystem adopted let-chains; Edition 2024 floor is 1.85)
   #
   # This job is MORE thorough than the test job:
   # - Runs clippy to catch MSRV-specific lint warnings
@@ -115,7 +115,7 @@ jobs:
   #
   # Complements msrv-check.yml which verifies MSRV accuracy with cargo-msrv
   msrv:
-    name: MSRV (1.85)
+    name: MSRV (1.88)
     runs-on: ubuntu-latest
     timeout-minutes: 25  # MSRV can be slower than stable
     steps:
@@ -125,7 +125,7 @@ jobs:
       # Install MSRV toolchain with clippy component
       # Must match rust-version in Cargo.toml
       - name: Install Rust toolchain (MSRV)
-        uses: dtolnay/rust-toolchain@1.85
+        uses: dtolnay/rust-toolchain@1.88
         with:
           components: clippy  # Needed for MSRV-specific lint checks
 
@@ -136,7 +136,7 @@ jobs:
         with:
           enable-cache: false
 
-      # Separate cache for MSRV toolchain (1.85)
+      # Separate cache for MSRV toolchain (1.88)
       # Different compiler version = incompatible build artifacts
       # Must NOT share cache with stable-toolchain jobs
       - name: Cache Rust dependencies

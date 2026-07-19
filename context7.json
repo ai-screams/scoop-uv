@@ -48,7 +48,7 @@
     ".python-version is NOT supported. Use .scoop-version for version pinning.",
     "Environment names must match ^[a-zA-Z][a-zA-Z0-9_-]*$ (max 64 chars, must start with letter).",
     "Most commands support --json for machine-readable output.",
-    "MSRV is 1.85 (Rust Edition 2024). N-1 MSRV policy.",
+    "MSRV is 1.88 (Rust Edition 2024). N-1 MSRV policy.",
     "Project manifest file is .scoop.toml (parent-walk discovery from cwd). Defines [environment].python and [packages].default + named groups; reconcile the active env with the manifest via `scoop sync`.",
     "To run a one-off command in an env without activating it, use `scoop run <env> -- <cmd>` (e.g. `scoop run myproject -- pytest tests/`). The `--` separator is required before the command.",
     "To inspect current state use `scoop status` (Active/Configured/System/None) and `scoop which <exe>` (resolves an executable inside the active env).",

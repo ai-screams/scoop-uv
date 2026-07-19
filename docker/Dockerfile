@@ -21,7 +21,7 @@
 # ============================================================
 # Build Arguments — single source of truth
 # ============================================================
-ARG RUST_VERSION=1.85
+ARG RUST_VERSION=1.88
 ARG PYTHON_311_VERSION=3.11.14
 ARG PYTHON_312_VERSION=3.12.12
 ARG UV_VERSION=0.11.28
