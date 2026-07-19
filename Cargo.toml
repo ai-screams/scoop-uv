@@ -90,7 +90,7 @@ rstest = "0.26"
 serde_yaml = "0.9"
 # Benchmark runner. html_reports gives a `target/criterion/report/index.html`
 # overview that's useful when comparing baselines locally.
-criterion = { version = "0.7", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 
 # Benchmarks live in benches/. Each [[bench]] entry compiles to its own
 # binary, so a broken bench only fails one target — useful during regressions.
