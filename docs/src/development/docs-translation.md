@@ -15,8 +15,8 @@ deployable.
 
 ## URL layout
 
-- English (canonical): `https://ai-screams.github.io/scoop-uv/`
-- Korean: `https://ai-screams.github.io/scoop-uv/ko/`
+- English (canonical): `https://ai-scream.ai/scoop-uv/`
+- Korean: `https://ai-scream.ai/scoop-uv/ko/`
 
 The locale switcher in the top-right of every page jumps between
 the same page on each side.

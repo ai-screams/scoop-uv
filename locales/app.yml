@@ -216,10 +216,10 @@ error.manifest_not_found:
   ja: "'%{path}' またはその上位ディレクトリに .scuv.toml が見つかりません"
 
 suggestion.manifest_not_found:
-  en: "→ Create one at the project root (see https://ai-screams.github.io/scoop-uv/commands/sync.html)"
-  ko: "→ 프로젝트 루트에 만들어 주세요 (https://ai-screams.github.io/scoop-uv/commands/sync.html 참고)"
-  pt-BR: "→ Crie um na raiz do projeto (veja https://ai-screams.github.io/scoop-uv/commands/sync.html)"
-  ja: "→ プロジェクトルートに作成してください (https://ai-screams.github.io/scoop-uv/commands/sync.html 参照)"
+  en: "→ Create one at the project root (see https://ai-scream.ai/scoop-uv/commands/sync.html)"
+  ko: "→ 프로젝트 루트에 만들어 주세요 (https://ai-scream.ai/scoop-uv/commands/sync.html 참고)"
+  pt-BR: "→ Crie um na raiz do projeto (veja https://ai-scream.ai/scoop-uv/commands/sync.html)"
+  ja: "→ プロジェクトルートに作成してください (https://ai-scream.ai/scoop-uv/commands/sync.html 参照)"
 
 # ============================================================================
 # Run command
