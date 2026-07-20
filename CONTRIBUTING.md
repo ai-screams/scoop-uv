@@ -63,7 +63,7 @@ Help make scuv accessible to developers worldwide!
 
 **Philosophy:** We trust translators. Casual tone, creative expressions welcome — clarity is the only rule.
 
-📖 **[Full Translation Guide](https://ai-screams.github.io/scoop-uv/development/translation.html)**
+📖 **[Full Translation Guide](https://ai-scream.ai/scoop-uv/development/translation.html)**
 
 ---
 

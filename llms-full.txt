@@ -9,7 +9,7 @@
 - Language: Rust, Edition 2024, MSRV 1.88
 - License: MIT OR Apache-2.0
 - Repository: https://github.com/ai-screams/scoop-uv
-- Documentation: https://ai-screams.github.io/scoop-uv/
+- Documentation: https://ai-scream.ai/scoop-uv/
 
 ---
 
@@ -799,7 +799,7 @@ Current MSRV: 1.88 (required by Edition 2024, cannot go lower).
 ## Links
 
 - Repository: https://github.com/ai-screams/scoop-uv
-- Documentation: https://ai-screams.github.io/scoop-uv/
+- Documentation: https://ai-scream.ai/scoop-uv/
 - Crates.io: https://crates.io/crates/scoop-uv
 - API Reference: https://docs.rs/scoop-uv
 - Concise LLM Reference: See llms.txt in this repository

@@ -90,7 +90,7 @@ scuv use myproject
 (myproject) $ pip install -r requirements.txt
 ```
 
-**That's it!** 🎉 Your environment is ready. For detailed docs, see **[Full Documentation →](https://ai-screams.github.io/scoop-uv/)**
+**That's it!** 🎉 Your environment is ready. For detailed docs, see **[Full Documentation →](https://ai-scream.ai/scoop-uv/)**
 
 ### Set Python 3.11.0 as Global Default
 
@@ -413,7 +413,7 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 | `scuv doctor` | Health check your setup |
 | `scuv self update` | Update scuv itself to the latest version |
 
-**For the complete command reference**, see **[Commands Documentation →](https://ai-screams.github.io/scoop-uv/commands/)**
+**For the complete command reference**, see **[Commands Documentation →](https://ai-scream.ai/scoop-uv/commands/)**
 
 <details>
 <summary>📖 Full command reference (click to expand)</summary>
@@ -520,16 +520,16 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 
 ## Documentation 📚
 
-📖 **[Read the Full Documentation →](https://ai-screams.github.io/scoop-uv/)**
+📖 **[Read the Full Documentation →](https://ai-scream.ai/scoop-uv/)**
 
 | Guide | Description |
 |-------|-------------|
-| **[Installation Guide](https://ai-screams.github.io/scoop-uv/installation.html)** | Prerequisites, shell setup, and troubleshooting |
-| **[Quick Start](https://ai-screams.github.io/scoop-uv/quick-start.html)** | Get productive in 5 minutes |
-| **[Command Reference](https://ai-screams.github.io/scoop-uv/commands/)** | Detailed documentation for every command |
-| **[Shell Integration](https://ai-screams.github.io/scoop-uv/shell-integration.html)** | Auto-activation, version files, and configuration |
-| **[Migration Guide](https://ai-screams.github.io/scoop-uv/migration.html)** | Move from pyenv, conda, or virtualenvwrapper |
-| **[Contributing](https://ai-screams.github.io/scoop-uv/development/contributing.html)** | Development setup and contribution guidelines |
+| **[Installation Guide](https://ai-scream.ai/scoop-uv/installation.html)** | Prerequisites, shell setup, and troubleshooting |
+| **[Quick Start](https://ai-scream.ai/scoop-uv/quick-start.html)** | Get productive in 5 minutes |
+| **[Command Reference](https://ai-scream.ai/scoop-uv/commands/)** | Detailed documentation for every command |
+| **[Shell Integration](https://ai-scream.ai/scoop-uv/shell-integration.html)** | Auto-activation, version files, and configuration |
+| **[Migration Guide](https://ai-scream.ai/scoop-uv/migration.html)** | Move from pyenv, conda, or virtualenvwrapper |
+| **[Contributing](https://ai-scream.ai/scoop-uv/development/contributing.html)** | Development setup and contribution guidelines |
 
 ---
 

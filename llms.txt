@@ -223,7 +223,7 @@ Priority: `SCUV_LANG` env > `~/.scuv/config.json` > system locale > `en`
 ## Links
 
 - Repository: https://github.com/ai-screams/scoop-uv
-- Documentation: https://ai-screams.github.io/scoop-uv/
+- Documentation: https://ai-scream.ai/scoop-uv/
 - Crates.io: https://crates.io/crates/scoop-uv
 - API Reference: https://docs.rs/scoop-uv
 - Full LLM Reference: See llms-full.txt in this repository
