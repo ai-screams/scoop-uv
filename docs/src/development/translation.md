@@ -34,9 +34,15 @@ create.success:
 
 **Important:**
 
-- Add translations to all ~220 keys
+- Add translations to all 226 keys
 - Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc.
 - Preserve special characters: `→`, quotes, backticks
+
+The key count grows between releases. For the current number:
+
+```bash
+grep -c '^[a-z_][a-zA-Z0-9_.]*:$' locales/app.yml
+```
 
 ### Step 3: Register Language
 
@@ -58,10 +64,42 @@ pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
 - Simple languages: `ja`, `fr`, `es`, `de`, `it`
 - Regional variants: `pt-BR`, `zh-CN`, `zh-TW`, `es-MX`
 
+**Three more places list the supported locales.** The first one matters most.
+
+**1. `tests/i18n_completeness.rs`** — add your code to the `LOCALES` const:
+
+```rust
+const LOCALES: &[&str] = &["en", "ko", "ja", "pt-BR", "{lang}"];
+```
+
+This is the CI gate that checks every key exists in every locale. If your
+language is missing from this list, CI passes while your translation goes
+completely unverified. It is the only step in this guide that fails silently
+— everything else tells you what is wrong.
+
+**2. Shell completions** — the `scuv lang` candidate lists are hand-written
+in two shells:
+
+- `src/shell/fish.rs` — the `complete -c scuv ... from lang` lines
+- `src/shell/zsh.rs` — the `langs=(...)` array
+
+bash and PowerShell do not enumerate locales, so there is nothing to change
+there.
+
+**3. Locale loops in tests (optional)** — `src/error/mod.rs` and
+`src/error/suggestion.rs` iterate the supported locales. Adding yours gives
+your translation unit-level coverage. Skip it if you would rather not touch
+Rust, and a maintainer can add it during review.
+
 ### Step 4: Test Locally
 
+`rust-i18n`'s proc macro is not tracked by cargo, so editing `locales/app.yml`
+on its own does not trigger a rebuild. `cargo test` reuses the stale binary and
+reports a false pass. Always `touch src/lib.rs` first.
+
 ```bash
-# Build and test
+# Build and test (the touch is required — see the note above)
+touch src/lib.rs
 cargo build
 cargo test
 
@@ -74,8 +112,10 @@ SCUV_LANG={lang} ./target/debug/scuv lang
 
 **Required files in PR:**
 
-- [ ] `locales/app.yml` - All 220 keys translated
+- [ ] `locales/app.yml` - All 226 keys translated
 - [ ] `src/i18n.rs` - Language registered in SUPPORTED_LANGS
+- [ ] `tests/i18n_completeness.rs` - Language added to LOCALES
+- [ ] `src/shell/fish.rs`, `src/shell/zsh.rs` - Completion lists updated
 
 **PR Title Format:**
 
@@ -283,17 +323,31 @@ hint: "→ {Translated Label}: scuv list"
 
 All languages must have ALL keys. Missing keys fall back to English.
 
+### 5. Missing `LOCALES` Registration
+
+**Symptom:** CI is green, but nothing ever checked your locale
+
+**Fix:** Add your code to the `LOCALES` const in `tests/i18n_completeness.rs`
+
+### 6. Stale i18n Cache
+
+**Symptom:** `cargo test` passes, but your new strings never show up
+
+**Fix:** Run `touch src/lib.rs` before `cargo test`
+
 ---
 
 ## Testing Checklist
 
 Before submitting PR:
 
-- [ ] All 220 keys translated
+- [ ] All 226 keys translated
 - [ ] All placeholders preserved (`%{name}`, `%{version}`, etc.)
 - [ ] Language registered in SUPPORTED_LANGS
+- [ ] Language added to LOCALES in `tests/i18n_completeness.rs`
+- [ ] Shell completion lists updated (fish, zsh)
 - [ ] `cargo build` succeeds
-- [ ] `cargo test` passes
+- [ ] `touch src/lib.rs` run, then `cargo test` passes
 - [ ] `SCUV_LANG={code} scuv lang` shows your language
 - [ ] Messages display correctly in terminal
 

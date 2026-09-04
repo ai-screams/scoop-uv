@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: scuv Documentation\n"
-"POT-Creation-Date: 2026-07-20T22:45:10+09:00\n"
+"POT-Creation-Date: 2026-09-04T13:45:23+09:00\n"
 "PO-Revision-Date: 2026-06-04T17:32:29+09:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -58,7 +58,7 @@ msgid "list"
 msgstr "list"
 
 #: src/SUMMARY.md:21 src/commands/create.md:1
-#: src/development/translation.md:190
+#: src/development/translation.md:230
 msgid "create"
 msgstr "create"
 
@@ -71,12 +71,12 @@ msgid "remove"
 msgstr "remove"
 
 #: src/SUMMARY.md:24 src/commands/install.md:1
-#: src/development/translation.md:192
+#: src/development/translation.md:232
 msgid "install"
 msgstr "install"
 
 #: src/SUMMARY.md:25 src/commands/uninstall.md:1
-#: src/development/translation.md:193
+#: src/development/translation.md:233
 msgid "uninstall"
 msgstr "uninstall"
 
@@ -120,7 +120,7 @@ msgid "clone"
 msgstr "clone"
 
 #: src/SUMMARY.md:35 src/commands/migrate.md:1
-#: src/development/translation.md:196
+#: src/development/translation.md:236
 msgid "migrate"
 msgstr "migrate"
 
@@ -1922,7 +1922,7 @@ msgstr ""
 msgid "uv `centralized-project-envs`"
 msgstr ""
 
-#: src/faq.md:32 src/development/translation.md:210
+#: src/faq.md:32 src/development/translation.md:250
 msgid "scuv"
 msgstr ""
 
@@ -4673,7 +4673,7 @@ msgstr "코드"
 
 #: src/commands/which.md:46 src/commands/sync.md:113 src/commands/export.md:69
 #: src/commands/import.md:72 src/commands/clone.md:71
-#: src/development/translation.md:208 src/api.md:700
+#: src/development/translation.md:248 src/api.md:700
 msgid "Meaning"
 msgstr "의미"
 
@@ -4739,7 +4739,7 @@ msgstr "환경의 절대 경로"
 msgid "`<env>`"
 msgstr "`<env>`"
 
-#: src/commands/run.md:30 src/development/translation.md:168
+#: src/commands/run.md:30 src/development/translation.md:208
 msgid "`PATH`"
 msgstr "`PATH`"
 
@@ -7590,11 +7590,11 @@ msgid "\"current\""
 msgstr "\"current\""
 
 #: src/commands/lang.md:93 src/commands/lang.md:109
-#: src/development/translation.md:48
+#: src/development/translation.md:54 src/development/translation.md:72
 msgid "\"ko\""
 msgstr "\"ko\""
 
-#: src/commands/lang.md:94 src/development/translation.md:48
+#: src/commands/lang.md:94 src/development/translation.md:54
 msgid "\"한국어\""
 msgstr "\"한국어\""
 
@@ -7746,7 +7746,7 @@ msgid "Output shell initialization script."
 msgstr "shell 초기화 스크립트를 출력합니다."
 
 #: src/commands/init.md:15 src/commands/completions.md:15
-#: src/development/translation.md:166
+#: src/development/translation.md:206
 msgid "`shell`"
 msgstr "`shell`"
 
@@ -8431,8 +8431,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:37
-msgid "Add translations to all ~220 keys"
-msgstr "모든 ~220개 키에 번역을 추가합니다"
+msgid "Add translations to all 226 keys"
+msgstr "모든 226개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:38
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -8443,124 +8443,209 @@ msgid "Preserve special characters: `→`, quotes, backticks"
 msgstr "특수 문자를 그대로 유지합니다: `→`, 따옴표, 백틱"
 
 #: src/development/translation.md:41
+msgid "The key count grows between releases. For the current number:"
+msgstr "키 개수는 릴리스마다 늘어납니다. 현재 개수는 다음으로 확인합니다:"
+
+#: src/development/translation.md:44
+msgid "'^[a-z_][a-zA-Z0-9_.]*:$'"
+msgstr "'^[a-z_][a-zA-Z0-9_.]*:$'"
+
+#: src/development/translation.md:47
 msgid "Step 3: Register Language"
 msgstr "3단계: 언어 등록"
 
-#: src/development/translation.md:43
+#: src/development/translation.md:49
 msgid "Edit `src/i18n.rs` and add your language to `SUPPORTED_LANGS`:"
 msgstr "`src/i18n.rs`를 편집하여 `SUPPORTED_LANGS`에 언어를 추가합니다:"
 
-#: src/development/translation.md:47 src/development/translation.md:246
+#: src/development/translation.md:53 src/development/translation.md:72
+#: src/development/translation.md:286
 msgid "\"en\""
 msgstr "\"en\""
 
-#: src/development/translation.md:47 src/development/translation.md:246
+#: src/development/translation.md:53 src/development/translation.md:286
 msgid "\"English\""
 msgstr "\"English\""
 
-#: src/development/translation.md:49
+#: src/development/translation.md:55 src/development/translation.md:72
 msgid "\"ja\""
 msgstr "\"ja\""
 
-#: src/development/translation.md:49
+#: src/development/translation.md:55
 msgid "\"日本語\""
 msgstr "\"日本語\""
 
-#: src/development/translation.md:50
+#: src/development/translation.md:56 src/development/translation.md:72
 msgid "\"pt-BR\""
 msgstr "\"pt-BR\""
 
-#: src/development/translation.md:50
+#: src/development/translation.md:56
 msgid "\"Português (Brasil)\""
 msgstr "\"Português (Brasil)\""
 
-#: src/development/translation.md:51
+#: src/development/translation.md:57 src/development/translation.md:72
 msgid "\"{lang}\""
 msgstr "\"{lang}\""
 
-#: src/development/translation.md:51
+#: src/development/translation.md:57
 msgid "\"Your Language Name\""
 msgstr "\"Your Language Name\""
 
-#: src/development/translation.md:51
+#: src/development/translation.md:57
 msgid "// Add your language\n"
 msgstr "// Add your language\n"
 
-#: src/development/translation.md:55
+#: src/development/translation.md:61
 msgid "**Language Code Format:**"
 msgstr "**언어 코드 형식:**"
 
-#: src/development/translation.md:57
+#: src/development/translation.md:63
 msgid "Use [BCP 47](https://en.wikipedia.org/wiki/IETF_language_tag) format"
 msgstr ""
 "[BCP 47](https://en.wikipedia.org/wiki/IETF_language_tag) 형식을 사용합니다"
 
-#: src/development/translation.md:58
+#: src/development/translation.md:64
 msgid "Simple languages: `ja`, `fr`, `es`, `de`, `it`"
 msgstr "단순 언어: `ja`, `fr`, `es`, `de`, `it`"
 
-#: src/development/translation.md:59
+#: src/development/translation.md:65
 msgid "Regional variants: `pt-BR`, `zh-CN`, `zh-TW`, `es-MX`"
 msgstr "지역 변형: `pt-BR`, `zh-CN`, `zh-TW`, `es-MX`"
 
-#: src/development/translation.md:61
+#: src/development/translation.md:67
+msgid ""
+"**Three more places list the supported locales.** The first one matters most."
+msgstr ""
+"**지원 로케일 목록은 세 곳에 더 있습니다.** 그중 첫 번째가 가장 중요합니다."
+
+#: src/development/translation.md:69
+msgid ""
+"**1. `tests/i18n_completeness.rs`** — add your code to the `LOCALES` const:"
+msgstr ""
+"**1. `tests/i18n_completeness.rs`** — `LOCALES` 상수에 언어 코드를 추가합니"
+"다:"
+
+#: src/development/translation.md:75
+msgid ""
+"This is the CI gate that checks every key exists in every locale. If your "
+"language is missing from this list, CI passes while your translation goes "
+"completely unverified. It is the only step in this guide that fails silently "
+"— everything else tells you what is wrong."
+msgstr ""
+"모든 키가 모든 로케일에 존재하는지 확인하는 CI 게이트입니다. 이 목록에 언어"
+"가 빠져 있으면 CI는 통과하지만 번역은 전혀 검증되지 않습니다. 이 가이드에서 "
+"조용히 실패하는 유일한 단계이며 — 나머지는 모두 무엇이 잘못됐는지 알려줍니다."
+
+#: src/development/translation.md:80
+msgid ""
+"**2. Shell completions** — the `scuv lang` candidate lists are hand-written "
+"in two shells:"
+msgstr ""
+"**2. 셸 자동완성** — `scuv lang`의 후보 목록은 두 셸에 직접 작성되어 있습니"
+"다:"
+
+#: src/development/translation.md:83
+msgid "`src/shell/fish.rs` — the `complete -c scuv ... from lang` lines"
+msgstr "`src/shell/fish.rs` — `complete -c scuv ... from lang` 줄"
+
+#: src/development/translation.md:84
+msgid "`src/shell/zsh.rs` — the `langs=(...)` array"
+msgstr "`src/shell/zsh.rs` — `langs=(...)` 배열"
+
+#: src/development/translation.md:86
+msgid ""
+"bash and PowerShell do not enumerate locales, so there is nothing to change "
+"there."
+msgstr "bash와 PowerShell은 로케일을 나열하지 않으므로 손댈 것이 없습니다."
+
+#: src/development/translation.md:89
+msgid ""
+"**3. Locale loops in tests (optional)** — `src/error/mod.rs` and `src/error/"
+"suggestion.rs` iterate the supported locales. Adding yours gives your "
+"translation unit-level coverage. Skip it if you would rather not touch Rust, "
+"and a maintainer can add it during review."
+msgstr ""
+"**3. 테스트의 로케일 루프 (선택)** — `src/error/mod.rs`와 `src/error/"
+"suggestion.rs`는 지원 로케일을 순회합니다. 여기에 언어를 추가하면 번역이 유"
+"닛 레벨 커버리지까지 확보합니다. Rust를 건드리고 싶지 않다면 건너뛰어도 되"
+"며, 리뷰 과정에서 메인테이너가 추가할 수 있습니다."
+
+#: src/development/translation.md:94
 msgid "Step 4: Test Locally"
 msgstr "4단계: 로컬 테스트"
 
-#: src/development/translation.md:64
-msgid "# Build and test\n"
-msgstr "# 빌드 및 테스트\n"
+#: src/development/translation.md:96
+msgid ""
+"`rust-i18n`'s proc macro is not tracked by cargo, so editing `locales/"
+"app.yml` on its own does not trigger a rebuild. `cargo test` reuses the "
+"stale binary and reports a false pass. Always `touch src/lib.rs` first."
+msgstr ""
+"`rust-i18n`의 proc 매크로는 cargo가 추적하지 않으므로 `locales/app.yml`만 고"
+"쳐서는 재빌드가 일어나지 않습니다. `cargo test`가 예전 바이너리를 그대로 재사"
+"용해 거짓 통과를 보고합니다. 항상 `touch src/lib.rs`를 먼저 실행하세요."
 
-#: src/development/translation.md:67
+#: src/development/translation.md:101
+msgid "# Build and test (the touch is required — see the note above)\n"
+msgstr "# 빌드 및 테스트 (touch는 필수입니다 — 위 설명 참고)\n"
+
+#: src/development/translation.md:105
 msgid "# Test your language (replace {lang} with your language code)\n"
 msgstr "# 언어 테스트 ({lang}을 언어 코드로 교체)\n"
 
-#: src/development/translation.md:70
+#: src/development/translation.md:108
 msgid "{lang}"
 msgstr "{lang}"
 
-#: src/development/translation.md:73
+#: src/development/translation.md:111
 msgid "Step 5: Create Pull Request"
 msgstr "5단계: Pull Request 생성"
 
-#: src/development/translation.md:75
+#: src/development/translation.md:113
 msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
-#: src/development/translation.md:77
-msgid "`locales/app.yml` - All 220 keys translated"
-msgstr "`locales/app.yml` - 220개 키 모두 번역"
+#: src/development/translation.md:115
+msgid "`locales/app.yml` - All 226 keys translated"
+msgstr "`locales/app.yml` - 226개 키 모두 번역"
 
-#: src/development/translation.md:78
+#: src/development/translation.md:116
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
 msgstr "`src/i18n.rs` - SUPPORTED_LANGS에 언어 등록"
 
-#: src/development/translation.md:80
+#: src/development/translation.md:117
+msgid "`tests/i18n_completeness.rs` - Language added to LOCALES"
+msgstr "`tests/i18n_completeness.rs` - LOCALES에 언어 추가"
+
+#: src/development/translation.md:118
+msgid "`src/shell/fish.rs`, `src/shell/zsh.rs` - Completion lists updated"
+msgstr "`src/shell/fish.rs`, `src/shell/zsh.rs` - 자동완성 목록 갱신"
+
+#: src/development/translation.md:120
 msgid "**PR Title Format:**"
 msgstr "**PR 제목 형식:**"
 
-#: src/development/translation.md:88
+#: src/development/translation.md:128
 msgid "Style Guidelines"
 msgstr "스타일 가이드라인"
 
-#: src/development/translation.md:90
+#: src/development/translation.md:130
 msgid "Philosophy: Your Language, Your Style"
 msgstr "철학: 내 언어, 내 스타일"
 
-#: src/development/translation.md:92
+#: src/development/translation.md:132
 msgid "**We trust translators.** You know your language and community best."
 msgstr ""
 "**번역자를 신뢰합니다.** 본인의 언어와 커뮤니티를 가장 잘 아는 분은 번역자 자"
 "신입니다."
 
-#: src/development/translation.md:94
+#: src/development/translation.md:134
 msgid ""
 "**Word choice is yours** — Pick terms that feel natural to native speakers"
 msgstr ""
 "**단어 선택은 번역자의 몫입니다** — 원어민에게 자연스럽게 느껴지는 표현을 선"
 "택하세요"
 
-#: src/development/translation.md:95
+#: src/development/translation.md:135
 msgid ""
 "**Creativity welcome** — Witty expressions are fine if they're clear and "
 "widely understood"
@@ -8568,38 +8653,38 @@ msgstr ""
 "**창의성을 환영합니다** — 의미가 명확하고 널리 이해되는 재치 있는 표현도 좋습"
 "니다"
 
-#: src/development/translation.md:96
+#: src/development/translation.md:136
 msgid ""
 "**Casual over formal** — scuv is a friendly CLI tool, not enterprise software"
 msgstr ""
 "**격식보다 친근함** — scuv는 친근한 CLI 도구이지, 기업용 소프트웨어가 아닙니"
 "다"
 
-#: src/development/translation.md:98
+#: src/development/translation.md:138
 msgid "General Principles"
 msgstr "기본 원칙"
 
-#: src/development/translation.md:100
+#: src/development/translation.md:140
 msgid "**Concise**: CLI messages should be short and clear"
 msgstr "**간결함**: CLI 메시지는 짧고 명확해야 합니다"
 
-#: src/development/translation.md:101
+#: src/development/translation.md:141
 msgid "**Natural**: Use natural phrasing, not word-for-word translation"
 msgstr "**자연스러움**: 단어 대 단어 번역이 아닌 자연스러운 표현을 사용합니다"
 
-#: src/development/translation.md:102
+#: src/development/translation.md:142
 msgid "**Casual**: Friendly, approachable tone — like talking to a colleague"
 msgstr "**친근함**: 동료에게 말하듯 친근하고 편안한 어조"
 
-#: src/development/translation.md:103
+#: src/development/translation.md:143
 msgid "**Clear**: Wit is great, but clarity comes first"
 msgstr "**명확함**: 재치도 좋지만 명확함이 우선입니다"
 
-#: src/development/translation.md:105
+#: src/development/translation.md:145
 msgid "Tone Examples"
 msgstr "어조 예시"
 
-#: src/development/translation.md:107
+#: src/development/translation.md:147
 msgid ""
 "```\n"
 "# Too formal (avoid)\n"
@@ -8625,122 +8710,122 @@ msgstr ""
 "\"'myenv' is ready\"\n"
 "```"
 
-#: src/development/translation.md:119
+#: src/development/translation.md:159
 msgid "Message Types"
 msgstr "메시지 유형"
 
-#: src/development/translation.md:121
+#: src/development/translation.md:161
 msgid "Type"
 msgstr "유형"
 
-#: src/development/translation.md:121
+#: src/development/translation.md:161
 msgid "English Example"
 msgstr "영어 예시"
 
-#: src/development/translation.md:121 src/development/translation.md:208
+#: src/development/translation.md:161 src/development/translation.md:248
 msgid "Guidance"
 msgstr "안내"
 
-#: src/development/translation.md:123
+#: src/development/translation.md:163
 msgid "Progress"
 msgstr "진행 중"
 
-#: src/development/translation.md:123
+#: src/development/translation.md:163
 msgid "\"Installing...\""
 msgstr "\"Installing...\""
 
-#: src/development/translation.md:123
+#: src/development/translation.md:163
 msgid "Use progressive/ongoing form"
 msgstr "진행형을 사용합니다"
 
-#: src/development/translation.md:124 src/api.md:702
+#: src/development/translation.md:164 src/api.md:702
 msgid "Success"
 msgstr "완료"
 
-#: src/development/translation.md:124
+#: src/development/translation.md:164
 msgid "\"Created 'myenv'\""
 msgstr "\"Created 'myenv'\""
 
-#: src/development/translation.md:124
+#: src/development/translation.md:164
 msgid "Completion — feel free to add flair"
 msgstr "완료 — 자유롭게 개성을 더해도 좋습니다"
 
-#: src/development/translation.md:125
+#: src/development/translation.md:165
 msgid "Error"
 msgstr "오류"
 
-#: src/development/translation.md:125
+#: src/development/translation.md:165
 msgid "\"Can't find 'myenv'\""
 msgstr "\"Can't find 'myenv'\""
 
-#: src/development/translation.md:125
+#: src/development/translation.md:165
 msgid "Clear and actionable"
 msgstr "명확하고 조치 가능해야 합니다"
 
-#: src/development/translation.md:126
+#: src/development/translation.md:166
 msgid "Hint"
 msgstr "힌트"
 
-#: src/development/translation.md:126
+#: src/development/translation.md:166
 msgid "\"→ Create: scuv create...\""
 msgstr "\"→ Create: scuv create...\""
 
-#: src/development/translation.md:126
+#: src/development/translation.md:166
 msgid "Helpful, not lecturing"
 msgstr "도움이 되되 설교하지 않습니다"
 
-#: src/development/translation.md:128
+#: src/development/translation.md:168
 msgid "Translator's Discretion"
 msgstr "번역자의 재량"
 
-#: src/development/translation.md:130
+#: src/development/translation.md:170
 msgid "These decisions are **up to you**:"
 msgstr "다음 사항들은 **번역자에게 달려 있습니다**:"
 
-#: src/development/translation.md:132
+#: src/development/translation.md:172
 msgid "**Vocabulary**: Choose words that resonate with your community"
 msgstr "**어휘**: 커뮤니티에 잘 맞는 단어를 선택합니다"
 
-#: src/development/translation.md:133
+#: src/development/translation.md:173
 msgid "**Idioms**: Use local expressions if they fit naturally"
 msgstr "**관용구**: 자연스럽게 맞는 경우 현지 표현을 사용합니다"
 
-#: src/development/translation.md:134
+#: src/development/translation.md:174
 msgid "**Humor**: Light wit is welcome (e.g., ice cream puns if appropriate)"
 msgstr ""
 "**유머**: 가벼운 재치는 환영합니다 (예: 적절하다면 아이스크림 말장난도 좋습니"
 "다)"
 
-#: src/development/translation.md:135
+#: src/development/translation.md:175
 msgid "**Formality level**: Lean casual, but match your culture's CLI norms"
 msgstr ""
 "**격식 수준**: 친근한 어조를 유지하되, 언어/문화권의 CLI 관행에 맞게 조정합니"
 "다"
 
-#: src/development/translation.md:137
+#: src/development/translation.md:177
 msgid "**Only requirement**: The meaning must be clear to users."
 msgstr "**유일한 필수 요건**: 사용자에게 의미가 명확해야 합니다."
 
-#: src/development/translation.md:139
+#: src/development/translation.md:179
 msgid "Technical Terms"
 msgstr "기술 용어"
 
-#: src/development/translation.md:141
+#: src/development/translation.md:181
 msgid "For technical vocabulary:"
 msgstr "기술 용어에 대해:"
 
-#: src/development/translation.md:143
+#: src/development/translation.md:183
 msgid ""
 "**Check your community** — What do Python developers in your language use?"
 msgstr ""
 "**커뮤니티를 확인하세요** — 해당 언어권의 Python 개발자들이 어떤 용어를 사용"
 "하나요?"
 
-#: src/development/translation.md:144
+#: src/development/translation.md:184
 msgid "**Consistency** — Pick one term and stick with it throughout"
 msgstr "**일관성** — 한 가지 용어를 선택하고 일관되게 사용합니다"
 
-#: src/development/translation.md:145
+#: src/development/translation.md:185
 msgid ""
 "**Loanwords OK** — If your community uses English terms (e.g., \"install\"), "
 "that's fine"
@@ -8748,7 +8833,7 @@ msgstr ""
 "**외래어 허용** — 커뮤니티에서 영어 용어를 사용한다면 (예: \"install\"), 그대"
 "로 사용해도 됩니다"
 
-#: src/development/translation.md:147
+#: src/development/translation.md:187
 msgid ""
 "**Tip:** Study existing translations in `locales/app.yml` for reference, but "
 "don't feel bound by them."
@@ -8756,101 +8841,101 @@ msgstr ""
 "**팁:** `locales/app.yml`의 기존 번역을 참고로 살펴보되, 그대로 따를 필요는 "
 "없습니다."
 
-#: src/development/translation.md:151
+#: src/development/translation.md:191
 msgid "Glossary"
 msgstr "용어 설명"
 
-#: src/development/translation.md:153
+#: src/development/translation.md:193
 msgid "Do NOT Translate"
 msgstr "번역하지 않는 항목"
 
-#: src/development/translation.md:155
+#: src/development/translation.md:195
 msgid "These terms should remain in English in all languages:"
 msgstr "다음 용어는 모든 언어에서 영어 그대로 유지합니다:"
 
-#: src/development/translation.md:157 src/development/translation.md:208
+#: src/development/translation.md:197 src/development/translation.md:248
 msgid "Term"
 msgstr "용어"
 
-#: src/development/translation.md:157
+#: src/development/translation.md:197
 msgid "Reason"
 msgstr "이유"
 
-#: src/development/translation.md:159
+#: src/development/translation.md:199
 msgid "`scuv`"
 msgstr ""
 
-#: src/development/translation.md:159
+#: src/development/translation.md:199
 msgid "Brand name"
 msgstr "브랜드 이름"
 
-#: src/development/translation.md:160
+#: src/development/translation.md:200
 msgid "`uv`"
 msgstr "`uv`"
 
-#: src/development/translation.md:160 src/development/translation.md:161
-#: src/development/translation.md:162 src/development/translation.md:164
-#: src/development/translation.md:169
+#: src/development/translation.md:200 src/development/translation.md:201
+#: src/development/translation.md:202 src/development/translation.md:204
+#: src/development/translation.md:209
 msgid "Tool name"
 msgstr "도구 이름"
 
-#: src/development/translation.md:161
+#: src/development/translation.md:201
 msgid "`pyenv`"
 msgstr "`pyenv`"
 
-#: src/development/translation.md:162
+#: src/development/translation.md:202
 msgid "`conda`"
 msgstr "`conda`"
 
-#: src/development/translation.md:163 src/development/architecture.md:90
+#: src/development/translation.md:203 src/development/architecture.md:90
 msgid "`virtualenv`"
 msgstr "`virtualenv`"
 
-#: src/development/translation.md:163
+#: src/development/translation.md:203
 msgid "Technical term"
 msgstr "기술 용어"
 
-#: src/development/translation.md:164
+#: src/development/translation.md:204
 msgid "`virtualenvwrapper`"
 msgstr "`virtualenvwrapper`"
 
-#: src/development/translation.md:165
+#: src/development/translation.md:205
 msgid "`Python`"
 msgstr "`Python`"
 
-#: src/development/translation.md:165
+#: src/development/translation.md:205
 msgid "Language name"
 msgstr "언어 이름"
 
-#: src/development/translation.md:166
+#: src/development/translation.md:206
 msgid "Technical term (bash, zsh, fish)"
 msgstr "기술 용어 (bash, zsh, fish)"
 
-#: src/development/translation.md:167
+#: src/development/translation.md:207
 msgid "`JSON`"
 msgstr "`JSON`"
 
-#: src/development/translation.md:167
+#: src/development/translation.md:207
 msgid "Format name"
 msgstr "형식 이름"
 
-#: src/development/translation.md:168
+#: src/development/translation.md:208
 msgid "Environment variable"
 msgstr "환경 변수"
 
-#: src/development/translation.md:169
+#: src/development/translation.md:209
 msgid "`pip`"
 msgstr "`pip`"
 
-#: src/development/translation.md:171
+#: src/development/translation.md:211
 msgid "Commands - Never Translate"
 msgstr "명령어 - 절대 번역하지 않음"
 
-#: src/development/translation.md:173
+#: src/development/translation.md:213
 msgid "All commands and code examples must stay in English:"
 msgstr "모든 명령어와 코드 예시는 반드시 영어로 유지합니다:"
 
-#: src/development/translation.md:176 src/development/translation.md:275
+#: src/development/translation.md:216 src/development/translation.md:315
 msgid ""
 "# WRONG - Command translated\n"
 "hint"
@@ -8858,170 +8943,170 @@ msgstr ""
 "# 잘못된 예 - 명령어가 번역된 경우\n"
 "hint"
 
-#: src/development/translation.md:177
+#: src/development/translation.md:217
 msgid "\"→ Create: {translated_command} myenv 3.12\""
 msgstr "\"→ Create: {translated_command} myenv 3.12\""
 
-#: src/development/translation.md:179
+#: src/development/translation.md:219
 msgid "CORRECT - Only description translated"
 msgstr "올바른 예 - 설명 부분만 번역"
 
-#: src/development/translation.md:179 src/development/translation.md:278
+#: src/development/translation.md:219 src/development/translation.md:318
 msgid "hint"
 msgstr "hint"
 
-#: src/development/translation.md:180
+#: src/development/translation.md:220
 msgid "\"→ {translated_word}: scuv create myenv 3.12\""
 msgstr "\"→ {translated_word}: scuv create myenv 3.12\""
 
-#: src/development/translation.md:183
+#: src/development/translation.md:223
 msgid "Common Terms to Translate"
 msgstr "번역해야 할 일반 용어"
 
-#: src/development/translation.md:185
+#: src/development/translation.md:225
 msgid ""
 "These are core concepts you'll need to translate. Reference existing "
 "translations for consistency:"
 msgstr ""
 "다음은 번역이 필요한 핵심 개념들입니다. 일관성을 위해 기존 번역을 참고하세요:"
 
-#: src/development/translation.md:187
+#: src/development/translation.md:227
 msgid "English"
 msgstr "영어"
 
-#: src/development/translation.md:187
+#: src/development/translation.md:227
 msgid "What to look for"
 msgstr "찾아야 할 표현"
 
-#: src/development/translation.md:189
+#: src/development/translation.md:229
 msgid "environment"
 msgstr "environment"
 
-#: src/development/translation.md:189
+#: src/development/translation.md:229
 msgid "Your language's term for \"environment\""
 msgstr "해당 언어에서 \"environment\"에 해당하는 표현"
 
-#: src/development/translation.md:190
+#: src/development/translation.md:230
 msgid "Common verb for \"make/create\""
 msgstr "\"만들다/생성하다\"에 해당하는 일반적인 동사"
 
-#: src/development/translation.md:191
+#: src/development/translation.md:231
 msgid "remove/delete"
 msgstr "remove/delete"
 
-#: src/development/translation.md:191
+#: src/development/translation.md:231
 msgid "Common verb for \"delete/remove\""
 msgstr "\"삭제/제거\"에 해당하는 일반적인 동사"
 
-#: src/development/translation.md:192
+#: src/development/translation.md:232
 msgid "Standard software installation term"
 msgstr "소프트웨어 설치를 나타내는 표준 용어"
 
-#: src/development/translation.md:193
+#: src/development/translation.md:233
 msgid "Standard software removal term"
 msgstr "소프트웨어 제거를 나타내는 표준 용어"
 
-#: src/development/translation.md:194
+#: src/development/translation.md:234
 msgid "activate"
 msgstr "activate"
 
-#: src/development/translation.md:194
+#: src/development/translation.md:234
 msgid "Term for \"enable/turn on\""
 msgstr "\"활성화/켜다\"에 해당하는 표현"
 
-#: src/development/translation.md:195
+#: src/development/translation.md:235
 msgid "deactivate"
 msgstr "deactivate"
 
-#: src/development/translation.md:195
+#: src/development/translation.md:235
 msgid "Term for \"disable/turn off\""
 msgstr "\"비활성화/끄다\"에 해당하는 표현"
 
-#: src/development/translation.md:196
+#: src/development/translation.md:236
 msgid "IT term for migration (often kept as loanword)"
 msgstr "마이그레이션을 나타내는 IT 용어 (외래어로 그대로 사용하는 경우가 많음)"
 
-#: src/development/translation.md:197
+#: src/development/translation.md:237
 msgid "version"
 msgstr "version"
 
-#: src/development/translation.md:197
+#: src/development/translation.md:237
 msgid "Your language's term for \"version\""
 msgstr "해당 언어에서 \"version\"에 해당하는 표현"
 
-#: src/development/translation.md:198
+#: src/development/translation.md:238
 msgid "path"
 msgstr "path"
 
-#: src/development/translation.md:198
+#: src/development/translation.md:238
 msgid "Your language's term for file path"
 msgstr "해당 언어에서 파일 경로에 해당하는 표현"
 
-#: src/development/translation.md:199 src/development/translation.md:268
+#: src/development/translation.md:239 src/development/translation.md:308
 #: src/api.md:714
 msgid "error"
 msgstr "error"
 
-#: src/development/translation.md:199
+#: src/development/translation.md:239
 msgid "Your language's term for \"error\""
 msgstr "해당 언어에서 \"error\"에 해당하는 표현"
 
-#: src/development/translation.md:200 src/api.md:713 src/api.md:715
+#: src/development/translation.md:240 src/api.md:713 src/api.md:715
 msgid "success"
 msgstr "success"
 
-#: src/development/translation.md:200
+#: src/development/translation.md:240
 msgid "Your language's term for \"success\""
 msgstr "해당 언어에서 \"success\"에 해당하는 표현"
 
-#: src/development/translation.md:202
+#: src/development/translation.md:242
 msgid ""
 "**Tip:** Check how these terms are translated in existing translations for "
 "reference."
 msgstr ""
 "**팁:** 참고로 기존 번역에서 이 용어들이 어떻게 번역되어 있는지 확인하세요."
 
-#: src/development/translation.md:204
+#: src/development/translation.md:244
 msgid "Ice Cream Metaphor (README only)"
 msgstr "아이스크림 은유 (README 전용)"
 
-#: src/development/translation.md:206
+#: src/development/translation.md:246
 msgid "scuv uses ice cream metaphors in documentation:"
 msgstr "scuv는 문서에서 아이스크림 은유를 사용합니다:"
 
-#: src/development/translation.md:210
+#: src/development/translation.md:250
 msgid "The tool"
 msgstr "도구"
 
-#: src/development/translation.md:210
+#: src/development/translation.md:250
 msgid "Always keep as \"scuv\""
 msgstr "항상 \"scuv\"으로 유지합니다"
 
-#: src/development/translation.md:211
+#: src/development/translation.md:251
 msgid "flavor"
 msgstr "flavor"
 
-#: src/development/translation.md:211
+#: src/development/translation.md:251
 msgid "virtualenv"
 msgstr "virtualenv"
 
-#: src/development/translation.md:211
+#: src/development/translation.md:251
 msgid "Translate if the metaphor works in your language"
 msgstr "해당 언어에서 은유가 자연스럽게 통한다면 번역해도 됩니다"
 
-#: src/development/translation.md:212
+#: src/development/translation.md:252
 msgid "freezer"
 msgstr "freezer"
 
-#: src/development/translation.md:212
+#: src/development/translation.md:252
 msgid "~/.scuv/ directory"
 msgstr "~/.scuv/ 디렉터리"
 
-#: src/development/translation.md:212
+#: src/development/translation.md:252
 msgid "Translate if the metaphor works"
 msgstr "은유가 자연스럽게 통한다면 번역해도 됩니다"
 
-#: src/development/translation.md:214
+#: src/development/translation.md:254
 msgid ""
 "**Note:** The metaphor is mainly in README.md, not in CLI messages (`locales/"
 "app.yml`)."
@@ -9029,63 +9114,63 @@ msgstr ""
 "**참고:** 이 은유는 주로 README.md에 사용되며, CLI 메시지(`locales/app.yml`)"
 "에는 사용되지 않습니다."
 
-#: src/development/translation.md:218
+#: src/development/translation.md:258
 msgid "File Structure"
 msgstr "파일 구조"
 
-#: src/development/translation.md:220
+#: src/development/translation.md:260
 msgid "locales/app.yml"
 msgstr "locales/app.yml"
 
-#: src/development/translation.md:223
+#: src/development/translation.md:263
 msgid "# Categories in order:\n"
 msgstr "# 카테고리 순서:\n"
 
-#: src/development/translation.md:224
+#: src/development/translation.md:264
 msgid "1. lang.*        - Language command messages"
 msgstr "1. lang.*        - 언어 명령 메시지"
 
-#: src/development/translation.md:225
+#: src/development/translation.md:265
 msgid "2. create.*      - Create command messages"
 msgstr "2. create.*      - create 명령 메시지"
 
-#: src/development/translation.md:226
+#: src/development/translation.md:266
 msgid "3. remove.*      - Remove command messages"
 msgstr "3. remove.*      - remove 명령 메시지"
 
-#: src/development/translation.md:227
+#: src/development/translation.md:267
 msgid "4. list.*        - List command messages"
 msgstr "4. list.*        - list 명령 메시지"
 
-#: src/development/translation.md:228
+#: src/development/translation.md:268
 msgid "5. use.*         - Use command messages"
 msgstr "5. use.*         - use 명령 메시지"
 
-#: src/development/translation.md:229
+#: src/development/translation.md:269
 msgid "6. install.*     - Install command messages"
 msgstr "6. install.*     - install 명령 메시지"
 
-#: src/development/translation.md:230
+#: src/development/translation.md:270
 msgid "7. uninstall.*   - Uninstall command messages"
 msgstr "7. uninstall.*   - uninstall 명령 메시지"
 
-#: src/development/translation.md:231
+#: src/development/translation.md:271
 msgid "8. migrate.*     - Migrate command messages"
 msgstr "8. migrate.*     - migrate 명령 메시지"
 
-#: src/development/translation.md:232
+#: src/development/translation.md:272
 msgid "9. error.*       - Error messages"
 msgstr "9. error.*       - 오류 메시지"
 
-#: src/development/translation.md:233
+#: src/development/translation.md:273
 msgid "10. suggestion.* - Suggestion/hint messages"
 msgstr "10. suggestion.* - 제안/힌트 메시지"
 
-#: src/development/translation.md:236
+#: src/development/translation.md:276
 msgid "src/i18n.rs"
 msgstr "src/i18n.rs"
 
-#: src/development/translation.md:239
+#: src/development/translation.md:279
 msgid ""
 "// Language detection priority:\n"
 "// 1. SCUV_LANG environment variable\n"
@@ -9099,7 +9184,7 @@ msgstr ""
 "// 3. 시스템 로케일\n"
 "// 4. 기본값: \"en\"\n"
 
-#: src/development/translation.md:247
+#: src/development/translation.md:287
 msgid ""
 "// ... existing languages\n"
 "    // Add new languages here\n"
@@ -9107,27 +9192,27 @@ msgstr ""
 "// ... 기존 언어\n"
 "    // 여기에 새 언어를 추가하세요\n"
 
-#: src/development/translation.md:254
+#: src/development/translation.md:294
 msgid "Common Mistakes"
 msgstr "자주 하는 실수"
 
-#: src/development/translation.md:256
+#: src/development/translation.md:296
 msgid "1. Missing `SUPPORTED_LANGS` Registration"
 msgstr "1. `SUPPORTED_LANGS` 등록 누락"
 
-#: src/development/translation.md:258
+#: src/development/translation.md:298
 msgid "**Symptom:** Translation exists but `scuv lang {code}` doesn't work"
 msgstr "**증상:** 번역은 존재하지만 `scuv lang {code}`가 동작하지 않음"
 
-#: src/development/translation.md:260
+#: src/development/translation.md:300
 msgid "**Fix:** Add language to `src/i18n.rs` SUPPORTED_LANGS"
 msgstr "**수정 방법:** `src/i18n.rs`의 SUPPORTED_LANGS에 언어를 추가하세요"
 
-#: src/development/translation.md:262
+#: src/development/translation.md:302
 msgid "2. Broken Placeholders"
 msgstr "2. 깨진 플레이스홀더"
 
-#: src/development/translation.md:265
+#: src/development/translation.md:305
 msgid ""
 "# WRONG - Missing placeholder\n"
 "error"
@@ -9135,90 +9220,125 @@ msgstr ""
 "# 잘못된 예 - 플레이스홀더 누락\n"
 "error"
 
-#: src/development/translation.md:266
+#: src/development/translation.md:306
 msgid "\"Cannot find environment\""
 msgstr "\"Cannot find environment\""
 
-#: src/development/translation.md:268
+#: src/development/translation.md:308
 msgid "CORRECT - Placeholder preserved"
 msgstr "올바른 예 - 플레이스홀더 유지"
 
-#: src/development/translation.md:269
+#: src/development/translation.md:309
 msgid "\"Cannot find '%{name}' environment\""
 msgstr "\"Cannot find '%{name}' environment\""
 
-#: src/development/translation.md:272
+#: src/development/translation.md:312
 msgid "3. Translating Commands"
 msgstr "3. 커맨드 번역 시 주의사항"
 
-#: src/development/translation.md:276
+#: src/development/translation.md:316
 msgid "\"→ List: {translated} list\""
 msgstr "\"→ List: {translated} list\""
 
-#: src/development/translation.md:278
+#: src/development/translation.md:318
 msgid "CORRECT - Only label translated"
 msgstr "올바른 예 - 레이블만 번역"
 
-#: src/development/translation.md:279
+#: src/development/translation.md:319
 msgid "\"→ {Translated Label}: scuv list\""
 msgstr "\"→ {Translated Label}: scuv list\""
 
-#: src/development/translation.md:282
+#: src/development/translation.md:322
 msgid "4. Inconsistent Key Coverage"
 msgstr "4. 일관성 없는 키 범위"
 
-#: src/development/translation.md:284
+#: src/development/translation.md:324
 msgid "All languages must have ALL keys. Missing keys fall back to English."
 msgstr "모든 언어는 모든 키를 가져야 합니다. 누락된 키는 영어로 대체됩니다."
 
-#: src/development/translation.md:288
+#: src/development/translation.md:326
+msgid "5. Missing `LOCALES` Registration"
+msgstr "5. `LOCALES` 등록 누락"
+
+#: src/development/translation.md:328
+msgid "**Symptom:** CI is green, but nothing ever checked your locale"
+msgstr "**증상:** CI는 초록불이지만 해당 로케일은 한 번도 검사되지 않음"
+
+#: src/development/translation.md:330
+msgid ""
+"**Fix:** Add your code to the `LOCALES` const in `tests/i18n_completeness.rs`"
+msgstr ""
+"**수정 방법:** `tests/i18n_completeness.rs`의 `LOCALES` 상수에 언어 코드를 추"
+"가하세요"
+
+#: src/development/translation.md:332
+msgid "6. Stale i18n Cache"
+msgstr "6. i18n 캐시 미갱신"
+
+#: src/development/translation.md:334
+msgid "**Symptom:** `cargo test` passes, but your new strings never show up"
+msgstr "**증상:** `cargo test`는 통과하지만 새로 넣은 문자열이 나타나지 않음"
+
+#: src/development/translation.md:336
+msgid "**Fix:** Run `touch src/lib.rs` before `cargo test`"
+msgstr "**수정 방법:** `cargo test` 전에 `touch src/lib.rs`를 실행하세요"
+
+#: src/development/translation.md:340
 msgid "Testing Checklist"
 msgstr "테스트 체크리스트"
 
-#: src/development/translation.md:290
+#: src/development/translation.md:342
 msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
-#: src/development/translation.md:292
-msgid "All 220 keys translated"
-msgstr "220개 키 전체 번역 완료"
+#: src/development/translation.md:344
+msgid "All 226 keys translated"
+msgstr "226개 키 전체 번역 완료"
 
-#: src/development/translation.md:293
+#: src/development/translation.md:345
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
 msgstr "모든 플레이스홀더 유지 (`%{name}`, `%{version}` 등)"
 
-#: src/development/translation.md:294
+#: src/development/translation.md:346
 msgid "Language registered in SUPPORTED_LANGS"
 msgstr "SUPPORTED_LANGS에 언어 등록 완료"
 
-#: src/development/translation.md:295
+#: src/development/translation.md:347
+msgid "Language added to LOCALES in `tests/i18n_completeness.rs`"
+msgstr "`tests/i18n_completeness.rs`의 LOCALES에 언어 추가 완료"
+
+#: src/development/translation.md:348
+msgid "Shell completion lists updated (fish, zsh)"
+msgstr "셸 자동완성 목록 갱신 완료 (fish, zsh)"
+
+#: src/development/translation.md:349
 msgid "`cargo build` succeeds"
 msgstr "`cargo build` 성공"
 
-#: src/development/translation.md:296
-msgid "`cargo test` passes"
-msgstr "`cargo test` 통과"
+#: src/development/translation.md:350
+msgid "`touch src/lib.rs` run, then `cargo test` passes"
+msgstr "`touch src/lib.rs` 실행 후 `cargo test` 통과"
 
-#: src/development/translation.md:297
+#: src/development/translation.md:351
 msgid "`SCUV_LANG={code} scuv lang` shows your language"
 msgstr "`SCUV_LANG={code} scuv lang` 실행 시 해당 언어가 표시됨"
 
-#: src/development/translation.md:298
+#: src/development/translation.md:352
 msgid "Messages display correctly in terminal"
 msgstr "터미널에서 메시지가 올바르게 표시됨"
 
-#: src/development/translation.md:302
+#: src/development/translation.md:356
 msgid "Questions?"
 msgstr "질문이 있으신가요?"
 
-#: src/development/translation.md:304
+#: src/development/translation.md:358
 msgid ""
 "Open an issue: [GitHub Issues](https://github.com/ai-screams/scoop-uv/issues)"
 msgstr ""
 "이슈를 열어보세요: [GitHub Issues](https://github.com/ai-screams/scoop-uv/"
 "issues)"
 
-#: src/development/translation.md:305
+#: src/development/translation.md:359
 msgid "See existing translations for reference: `locales/app.yml`"
 msgstr "참고용 기존 번역 파일: `locales/app.yml`"
 
@@ -13423,6 +13543,12 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "# Build and test\n"
+#~ msgstr "# 빌드 및 테스트\n"
+
+#~ msgid "`cargo test` passes"
+#~ msgstr "`cargo test` 통과"
 
 #~ msgid "'eval (scoop init fish)'"
 #~ msgstr "'eval (scoop init fish)'"
