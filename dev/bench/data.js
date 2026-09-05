@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788585484328,
+  "lastUpdate": 1788585485908,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -3827,6 +3827,44 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 186,
             "range": "± 6",
+            "unit": "ns/iter"
+          }
+        ]
+      }
+    ],
+    "scoop-uv filesystem benchmarks": [
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3fd7fa28e6548c38d2472433dd8d7491ef00a2d7",
+          "message": "Merge pull request #162 from ai-screams/ci/split-io-benchmarks\n\nci(bench): track the filesystem benchmarks instead of gating on them",
+          "timestamp": "2026-09-05T14:14:09+09:00",
+          "tree_id": "7de380b4a8223e6c5959d83ddde6ab94bd2f2511",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/3fd7fa28e6548c38d2472433dd8d7491ef00a2d7"
+        },
+        "date": 1788585485804,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1696,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1114,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
