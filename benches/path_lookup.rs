@@ -1,7 +1,9 @@
 //! `paths::find_executable_in` — shared by `scoop which` and `scoop run`.
 //! Touches the filesystem (single stat per candidate), so variance is
-//! higher than pure-CPU benches; use a generous regression threshold for
-//! this group.
+//! higher than pure-CPU benches: 38 runs of the same code on GitHub
+//! runners span 574-1931 ns, a 3.4x spread. `.github/workflows/bench.yml`
+//! therefore tracks this group on gh-pages without gating on it — see the
+//! "Run filesystem benchmarks" step.
 
 use std::hint::black_box;
 
