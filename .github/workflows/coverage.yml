@@ -48,8 +48,21 @@ jobs:
       - name: Generate coverage
         run: cargo llvm-cov --all-features --workspace --codecov --output-path codecov.json
 
+      # The upload had been failing since roughly February with
+      # `Token required because branch is protected`, while the job still
+      # reported success — `fail_ci_if_error: false` hid it, and the README
+      # badge quietly read `unknown` for months.
+      #
+      # The org allows tokenless uploads, but that only covers fork PRs;
+      # pushing a report for the default branch still needs a token. Verified
+      # by re-running the workflow with no token present: `Token length: 0`,
+      # same rejection.
+      #
+      # With the token wired in, a rejected upload should be loud. A coverage
+      # gate that cannot fail is not a gate.
       - name: Upload to Codecov
         uses: codecov/codecov-action@v7
         with:
           files: codecov.json
-          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
