@@ -37,14 +37,18 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: false
 
+      # Own key for the same reason as coverage.yml: this workflow's `env`
+      # differs from ci.yml's, so `stable-ci` was never actually shared with
+      # it. This job runs on every PR, so it is the one that keeps the entry
+      # fresh — the weekly full job below only reads it.
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "stable-ci"
+          shared-key: "mutants"
 
       - name: Install cargo-mutants
         uses: taiki-e/install-action@v2
@@ -93,14 +97,18 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: false
 
+      # Read-only consumer of the key the incremental job maintains: this runs
+      # weekly, so writing from here would mostly serve to evict a fresher
+      # entry.
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "stable-ci"
+          shared-key: "mutants"
+          save-if: "false"
 
       - name: Install cargo-mutants
         uses: taiki-e/install-action@v2
