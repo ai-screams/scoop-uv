@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788579603477,
+  "lastUpdate": 1788584120995,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -3647,6 +3647,102 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 168,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "28328b3f7d1a4282b1a76e5baccbcd311b820c3d",
+          "message": "Merge pull request #161 from ai-screams/docs/refresh-stale-references\n\ndocs: finish the scuv rename in examples/ and guard reference drift in CI",
+          "timestamp": "2026-09-05T13:51:38+09:00",
+          "tree_id": "8cc1091994145c551a6d1458ad15123510b760ad",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/28328b3f7d1a4282b1a76e5baccbcd311b820c3d"
+        },
+        "date": 1788584120130,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 72735,
+            "range": "± 618",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 87215,
+            "range": "± 330",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 2762,
+            "range": "± 32",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 718,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_hit",
+            "value": 718,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 530,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 63,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 69,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 82,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 67,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 19,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 164,
+            "range": "± 0",
             "unit": "ns/iter"
           }
         ]
