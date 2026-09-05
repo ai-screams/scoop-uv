@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788628726753,
+  "lastUpdate": 1788628728514,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -4189,6 +4189,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1326,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a0ced1aff7d3585e56bc8bb4b2d66a7a08f0a43f",
+          "message": "Merge pull request #163 from ai-screams/docs/ci-cd-design\n\ndocs: document the CI/CD design",
+          "timestamp": "2026-09-06T02:14:46+09:00",
+          "tree_id": "967b192d627c8457daaf76345805d3b2e412ccbb",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/a0ced1aff7d3585e56bc8bb4b2d66a7a08f0a43f"
+        },
+        "date": 1788628728406,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1689,
+            "range": "± 67",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1123,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
