@@ -135,3 +135,9 @@ jobs:
           fail-on-alert: false
           comment-on-alert: false
           summary-always: true
+          # The CPU step above already fetched gh-pages into a local
+          # branch and committed its entry onto it, so that branch is now
+          # ahead of the remote. Fetching again here is a non-fast-forward
+          # update and git rejects it, failing the step before any
+          # comparison happens. Reuse what the first step fetched.
+          skip-fetch-gh-pages: true
