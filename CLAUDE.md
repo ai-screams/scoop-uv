@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Version**: 0.15.2 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
 - **Tests**: 988 passed (916 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings — these drift; `cargo test` is the source of truth
 - **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
+- **CI/CD design**: `docs/src/development/ci-cd.md` documents what each of the 11 workflows guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
 - **Test tooling**: rstest (table tests), proptest, cargo-mutants (mutation), cargo-fuzz (nightly `fuzz/` workspace); see `.docs/dev/testing-strategy.md`
 - **i18n**: English, Korean, Japanese, Portuguese-BR (rust-i18n)
 - **Shells**: bash, zsh, fish, PowerShell

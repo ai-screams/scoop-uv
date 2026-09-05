@@ -55,6 +55,7 @@
 - [API Reference](api.md)
 - [Testing](development/testing.md)
 - [Code Quality](development/code-quality.md)
+- [CI/CD](development/ci-cd.md)
 
 ---
 
