@@ -50,8 +50,25 @@ jobs:
       # Plain text output is what benchmark-action's tool: cargo parser
       # expects. Don't pipe through `tee` interactively — the action reads
       # the file directly.
+      #
+      # `rm -rf target/criterion`: rust-cache restores target/ with the
+      # criterion tree present but the baseline sample.json files pruned
+      # out of it. Criterion then fails to load the baseline and writes
+      # that error to stdout mid-line, splitting the single
+      # `test NAME ... bench: N ns/iter` line the parser depends on — the
+      # run then reads as "no benchmark result" even though every bench
+      # completed. A cold cache passes precisely because there is no tree
+      # to half-load. This gate compares against the gh-pages history and
+      # never against criterion's local baseline, so dropping it costs
+      # nothing and removes the corruption at its source.
+      #
+      # `set -o pipefail`: without it the step exits with tee's status, so
+      # a genuinely failing `cargo bench` would be reported as success and
+      # resurface as a confusing parse error one step later.
       - name: Run benchmarks
         run: |
+          set -o pipefail
+          rm -rf target/criterion
           cargo bench --bench parsing --bench validation --bench path_lookup \
             -- --output-format bencher \
             | tee bench_output.txt
