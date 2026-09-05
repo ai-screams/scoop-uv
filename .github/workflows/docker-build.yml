@@ -133,8 +133,12 @@ jobs:
       - name: Pull image for scanning
         run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}
 
+      # Pinned to a release tag, not `@master`. A branch ref means whatever
+      # lands upstream runs here on the next scan, with access to the
+      # checkout and GITHUB_TOKEN — and Dependabot cannot bump a branch, so
+      # it was the one third-party action nothing was watching.
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}
           format: 'sarif'
