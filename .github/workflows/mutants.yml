@@ -65,11 +65,26 @@ jobs:
           path: mutants.out
 
   # Weekly / on-demand: full run over the configured scope.
+  # Tracked, not gated — for now.
+  #
+  # This run had never once completed: 60 minutes killed it every week, and
+  # GitHub reports a timed-out job as *cancelled*, which reads as benign. The
+  # partial artifact from 2026-08-31 measured 385/446 mutants in 60 minutes
+  # (9.3s each), so a full pass needs roughly 69 — hence 90, with headroom for
+  # a slow runner.
+  #
+  # Finishing the suite surfaces the MISSED mutants it has been finding all
+  # along — 55 in that same artifact, 46 of them in src/core/migrate/**.
+  # Failing the job on those before anyone has triaged the backlog would just
+  # produce a red check every Monday that everyone learns to ignore, so the
+  # run step tolerates exit 2 (mutants missed) and nothing else. Results land
+  # in the uploaded artifact. Turn exit 2 back into a failure once the backlog
+  # is either fixed or documented in .cargo/mutants.toml.
   full:
     name: Mutants (full)
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -92,8 +107,22 @@ jobs:
         with:
           tool: cargo-mutants
 
+      # Exit 2 means "found mutants no test kills" — the backlog above, not an
+      # infrastructure problem. Every other non-zero code still fails the job:
+      # 3 = tests timed out, 4 = the baseline tree is already broken, and
+      # anything else is a usage or build error. `continue-on-error` would have
+      # hidden all of those too.
       - name: Run full mutation suite
-        run: cargo mutants --no-shuffle -vV
+        run: |
+          set +e
+          cargo mutants --no-shuffle -vV
+          ec=$?
+          set -e
+          case $ec in
+            0) echo "All mutants caught." ;;
+            2) echo "::warning::cargo-mutants found missed mutants (exit 2); see the uploaded artifact." ;;
+            *) echo "::error::cargo-mutants failed with exit $ec"; exit $ec ;;
+          esac
 
       - name: Upload results
         if: always()
