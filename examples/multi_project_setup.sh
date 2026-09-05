@@ -8,7 +8,7 @@
 
 set -e
 
-echo "=== Multi-Project Setup with scoop ==="
+echo "=== Multi-Project Setup with scuv ==="
 echo
 
 # 1. Setup project directories
@@ -23,10 +23,10 @@ echo
 # 2. Install required Python versions
 echo "2. Installing Python versions..."
 for version in 3.10 3.11 3.12; do
-    if scoop list --pythons --json | grep -q "$version"; then
+    if scuv list --pythons --json | grep -q "$version"; then
         echo "   ✅ Python $version already installed"
     else
-        scoop install $version
+        scuv install $version
         echo "   ✅ Python $version installed"
     fi
 done
@@ -37,9 +37,9 @@ echo "3. Creating virtual environments..."
 
 # Legacy API - Python 3.10
 cd ~/Projects/legacy-api
-if [ ! -f .scoop-version ]; then
-    scoop create legacy-api 3.10
-    scoop use legacy-api
+if [ ! -f .scuv-version ]; then
+    scuv create legacy-api 3.10
+    scuv use legacy-api
     echo "   ✅ legacy-api → Python 3.10"
 
     # Install dependencies
@@ -48,15 +48,15 @@ flask==2.0.3
 sqlalchemy==1.4.46
 requests==2.28.2
 EOF
-    eval "$(scoop shell legacy-api)"
+    eval "$(scuv shell legacy-api)"
     pip install -r requirements.txt --quiet
 fi
 
 # Current WebApp - Python 3.11
 cd ~/Projects/current-webapp
-if [ ! -f .scoop-version ]; then
-    scoop create current-webapp 3.11
-    scoop use current-webapp
+if [ ! -f .scuv-version ]; then
+    scuv create current-webapp 3.11
+    scuv use current-webapp
     echo "   ✅ current-webapp → Python 3.11"
 
     # Install dependencies
@@ -65,15 +65,15 @@ fastapi==0.104.1
 uvicorn==0.24.0
 pydantic==2.5.0
 EOF
-    eval "$(scoop shell current-webapp)"
+    eval "$(scuv shell current-webapp)"
     pip install -r requirements.txt --quiet
 fi
 
 # Next-Gen - Python 3.12
 cd ~/Projects/next-gen
-if [ ! -f .scoop-version ]; then
-    scoop create next-gen 3.12
-    scoop use next-gen
+if [ ! -f .scuv-version ]; then
+    scuv create next-gen 3.12
+    scuv use next-gen
     echo "   ✅ next-gen → Python 3.12"
 
     # Install dependencies
@@ -82,7 +82,7 @@ django==5.0
 psycopg==3.1.16
 celery==5.3.4
 EOF
-    eval "$(scoop shell next-gen)"
+    eval "$(scuv shell next-gen)"
     pip install -r requirements.txt --quiet
 fi
 echo
@@ -93,10 +93,10 @@ echo
 
 echo "   Switching to legacy-api:"
 cd ~/Projects/legacy-api
-eval "$(scoop init bash)"  # Re-init to trigger auto-activation
-echo "   Active: $(cat .scoop-version)"
+eval "$(scuv init bash)"  # Re-init to trigger auto-activation
+echo "   Active: $(cat .scuv-version)"
 (
-    eval "$(scoop shell legacy-api)"
+    eval "$(scuv shell legacy-api)"
     echo "   Python: $(python --version)"
     echo "   Flask: $(python -c 'import flask; print(flask.__version__)')"
 )
@@ -104,9 +104,9 @@ echo
 
 echo "   Switching to current-webapp:"
 cd ~/Projects/current-webapp
-echo "   Active: $(cat .scoop-version)"
+echo "   Active: $(cat .scuv-version)"
 (
-    eval "$(scoop shell current-webapp)"
+    eval "$(scuv shell current-webapp)"
     echo "   Python: $(python --version)"
     echo "   FastAPI: $(python -c 'import fastapi; print(fastapi.__version__)')"
 )
@@ -114,9 +114,9 @@ echo
 
 echo "   Switching to next-gen:"
 cd ~/Projects/next-gen
-echo "   Active: $(cat .scoop-version)"
+echo "   Active: $(cat .scuv-version)"
 (
-    eval "$(scoop shell next-gen)"
+    eval "$(scuv shell next-gen)"
     echo "   Python: $(python --version)"
     echo "   Django: $(python -c 'import django; print(django.__version__)')"
 )
@@ -124,7 +124,7 @@ echo
 
 # 5. List all project environments
 echo "5. All project environments:"
-scoop list
+scuv list
 echo
 
 # 6. IDE integration (symlink for each project)
@@ -132,16 +132,16 @@ echo "6. IDE integration (optional)..."
 echo "   Creating .venv symlinks for IDE recognition:"
 
 cd ~/Projects/legacy-api
-scoop use legacy-api --link
-echo "   ✅ legacy-api/.venv → ~/.scoop/virtualenvs/legacy-api"
+scuv use legacy-api --link
+echo "   ✅ legacy-api/.venv → ~/.scuv/virtualenvs/legacy-api"
 
 cd ~/Projects/current-webapp
-scoop use current-webapp --link
-echo "   ✅ current-webapp/.venv → ~/.scoop/virtualenvs/current-webapp"
+scuv use current-webapp --link
+echo "   ✅ current-webapp/.venv → ~/.scuv/virtualenvs/current-webapp"
 
 cd ~/Projects/next-gen
-scoop use next-gen --link
-echo "   ✅ next-gen/.venv → ~/.scoop/virtualenvs/next-gen"
+scuv use next-gen --link
+echo "   ✅ next-gen/.venv → ~/.scuv/virtualenvs/next-gen"
 echo
 
 # 7. Workspace switcher function (add to ~/.bashrc)
@@ -167,7 +167,7 @@ echo
 
 # 8. Health check all environments
 echo "8. Running health check..."
-scoop doctor
+scuv doctor
 echo
 
 # 9. Usage summary

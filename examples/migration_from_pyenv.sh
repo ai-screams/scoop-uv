@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Migrating from pyenv-virtualenv to scoop
+# Migrating from pyenv-virtualenv to scuv
 #
 # This example demonstrates:
 # - Detecting pyenv-virtualenv environments
@@ -9,7 +9,7 @@
 
 set -e
 
-echo "=== pyenv-virtualenv to scoop Migration ==="
+echo "=== pyenv-virtualenv to scuv Migration ==="
 echo
 
 # 1. Check if pyenv-virtualenv is available
@@ -26,51 +26,51 @@ echo
 
 # 2. List available migrations
 echo "2. Environments available for migration:"
-scoop migrate list
+scuv migrate list
 echo
 
 # 3. Migrate a single environment
 echo "3. Migrating a single environment..."
-echo "   Example: scoop migrate @env myproject"
+echo "   Example: scuv migrate @env myproject"
 echo
 echo "   This will:"
 echo "   - Detect Python version from pyenv"
-echo "   - Create equivalent environment in scoop"
+echo "   - Create equivalent environment in scuv"
 echo "   - Preserve installed packages"
 echo "   - Keep original pyenv env (safe operation)"
 echo
 
 # Uncomment to actually migrate (example environment name)
-# scoop migrate @env myproject
+# scuv migrate @env myproject
 
 # 4. Migrate all environments
 echo "4. Batch migration (all environments):"
-echo "   Command: scoop migrate all"
+echo "   Command: scuv migrate all"
 echo
 echo "   This will:"
 echo "   - Migrate all pyenv-virtualenv environments"
-echo "   - Skip environments that already exist in scoop"
+echo "   - Skip environments that already exist in scuv"
 echo "   - Report success/failure for each"
 echo
 
 # Uncomment to migrate all
-# scoop migrate all
+# scuv migrate all
 
 # 5. Handle naming conflicts
 echo "5. Handling naming conflicts:"
-echo "   If an environment already exists in scoop:"
+echo "   If an environment already exists in scuv:"
 echo "   - Migration will fail for that environment"
 echo "   - Other environments will still be migrated"
 echo "   - You can manually rename and retry"
 echo
 echo "   Example:"
-echo "     scoop create myproject-new 3.12"
+echo "     scuv create myproject-new 3.12"
 echo "     # Then migrate with a different source name if supported"
 echo
 
 # 6. Verify migrated environments
 echo "6. Verify migration:"
-scoop list
+scuv list
 echo
 
 # 7. Compare with pyenv
@@ -84,14 +84,14 @@ echo
 
 # 8. Test a migrated environment
 echo "8. Testing migrated environment..."
-echo "   scoop use myproject"
+echo "   scuv use myproject"
 echo "   python --version"
 echo "   pip list"
 echo
 
 # 9. Clean up old pyenv environments (manual step)
 echo "9. Cleanup old pyenv environments (optional):"
-echo "   ⚠️  Only after verifying scoop environments work!"
+echo "   ⚠️  Only after verifying scuv environments work!"
 echo
 echo "   pyenv uninstall <env-name>"
 echo "   or"
@@ -104,8 +104,8 @@ echo "    Remove or comment out pyenv initialization:"
 echo "    # eval \"\$(pyenv init -)\"              # ← Comment this out"
 echo "    # eval \"\$(pyenv virtualenv-init -)\"   # ← Comment this out"
 echo
-echo "    Keep scoop initialization:"
-echo "    eval \"\$(scoop init bash)\"            # ← Keep this"
+echo "    Keep scuv initialization:"
+echo "    eval \"\$(scuv init bash)\"            # ← Keep this"
 echo
 
 echo "=== Migration Guide Complete ==="
@@ -114,4 +114,4 @@ echo "Pro tips:"
 echo "  - Start with a single environment to test"
 echo "  - Verify packages are preserved"
 echo "  - Keep pyenv environments until confident"
-echo "  - scoop is 100x+ faster than pyenv 🚀"
+echo "  - scuv is 100x+ faster than pyenv 🚀"
