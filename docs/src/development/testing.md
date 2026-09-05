@@ -18,7 +18,7 @@ tests/
 └── cli.rs                    # CLI integration tests
 
 src/
-├── error.rs                  # Unit tests for error types
+├── error/                    # Unit tests for error types
 ├── validate.rs               # Unit tests for validation
 ├── paths.rs                  # Unit tests for path utilities
 ├── output/
@@ -27,7 +27,7 @@ src/
 │   ├── virtualenv/           # virtualenv service (mod.rs + tests.rs)
 │   ├── version.rs            # Unit tests for version service
 │   ├── metadata.rs           # Unit tests for metadata
-│   └── doctor.rs             # Unit tests for doctor
+│   └── doctor/               # Unit tests for doctor
 ├── shell/
 │   ├── bash.rs               # Shell script tests
 │   └── zsh.rs                # Shell script tests
