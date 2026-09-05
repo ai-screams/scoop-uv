@@ -11,6 +11,16 @@ permissions:
   contents: write
   pull-requests: write
 
+# a7ecf98 deliberately left release-plz out of the concurrency rollout, on the
+# grounds that it "must always complete". Omitting the block achieves half of
+# that: nothing cancels a run, but nothing serialises them either, so two
+# pushes to main can have two releases in flight at once — in the workflow that
+# publishes to crates.io. A group with `cancel-in-progress: false` keeps the
+# no-cancel guarantee and adds queueing, which is what that intent needs.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   release-plz:
     name: Release-plz

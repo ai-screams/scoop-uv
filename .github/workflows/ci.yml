@@ -91,7 +91,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: false
 
@@ -140,7 +140,7 @@ jobs:
       # Install uv for integration tests that require it
       # Cache disabled to ensure latest uv version
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: false
 
