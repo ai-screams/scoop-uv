@@ -72,6 +72,33 @@ for rel in ("llms-full.txt", "CONTRIBUTING.md", "docs/src/development/translatio
         f"stale counts: {', '.join(sorted(set(wrong)))} -- app.yml has {keys}",
     )
 
+# --- 5. uv floor: src/uv/version.rs is the source of truth ----------------
+# The floor named 0.5.14 for months while the code required 0.5.19, so
+# `scuv doctor` passed installations that then failed on the first command
+# that lists Python versions. Keep every copy pointing at the constant.
+#
+# Scan whole lines, not a regex window around "uv": the qualifying word
+# ("Minimum", ">=", "or newer") often sits before the version, and an
+# earlier version of this check matched too narrowly to notice.
+floor = ".".join(
+    re.search(
+        r"MIN_VERSION: \(u32, u32, u32\) = \((\d+), (\d+), (\d+)\)", read("src/uv/version.rs")
+    ).groups()
+)
+FLOOR_LINE = re.compile(r"\buv\b", re.I)
+QUALIFIER = re.compile(r"minimum|>=|or newer", re.I)
+for rel in ("README.md", "CLAUDE.md", "docs/src/installation.md"):
+    stale = []
+    for line in read(rel).splitlines():
+        if not (FLOOR_LINE.search(line) and QUALIFIER.search(line)):
+            continue
+        stale += [v for v in re.findall(r"\b(\d+\.\d+\.\d+)\b", line) if v != floor]
+    check(
+        f"{rel} states uv floor {floor}",
+        not stale,
+        f"stale: {', '.join(sorted(set(stale)))} -- MIN_VERSION is {floor}",
+    )
+
 if failures:
     print("\n".join(["", "Stale references found:"] + [f" - {f}" for f in failures]))
     sys.exit(1)
