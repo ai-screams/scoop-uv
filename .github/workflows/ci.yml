@@ -173,6 +173,77 @@ jobs:
         run: cargo test --all-features --workspace -- --ignored
 
   # ====================
+  # uv floor (MIN_VERSION)
+  # ====================
+  # scuv declares a minimum uv version and `scuv doctor` enforces it, but
+  # nothing verified the claim: this workflow installs whatever uv is latest,
+  # and the Docker image pins a different version again. The floor was wrong
+  # for months as a result — it named 0.5.14, which does not have
+  # `uv python list --output-format=json` at all, so doctor passed and the
+  # next command failed.
+  #
+  # This job runs the uv-facing commands against exactly MIN_VERSION. It is
+  # the uv analogue of the `msrv` job above: declaring a floor and testing it
+  # are different things.
+  uv-floor:
+    name: uv floor (MIN_VERSION)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      # Read the floor from the code rather than repeating it here — one more
+      # copy is one more thing to drift.
+      - name: Read MIN_VERSION from src/uv/version.rs
+        id: floor
+        run: |
+          set -e
+          V=$(grep -oE 'MIN_VERSION: \(u32, u32, u32\) = \(([0-9]+), ([0-9]+), ([0-9]+)\)' src/uv/version.rs \
+                | grep -oE '\(([0-9]+), ([0-9]+), ([0-9]+)\)$' | tr -d '() ' | tr ',' '.')
+          test -n "$V" || { echo "::error::could not parse MIN_VERSION"; exit 1; }
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "MIN_VERSION = $V"
+
+      - name: Install uv at the declared floor
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          version: ${{ steps.floor.outputs.version }}
+          enable-cache: false
+
+      - name: Confirm uv is actually the floor version
+        run: |
+          set -e
+          uv --version
+          uv --version | grep -qF "uv ${{ steps.floor.outputs.version }}" \
+            || { echo "::error::setup-uv installed a different version"; exit 1; }
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "stable-ci"
+          save-if: "false"
+
+      - name: Build scuv
+        run: cargo build
+
+      # The commands that touch uv. `doctor` must pass — if it rejects the
+      # floor, the floor and the check disagree. `list --pythons` is the one
+      # that exercises `uv python list --output-format=json`, the flag that
+      # made the old floor wrong.
+      - name: scuv doctor accepts the floor
+        run: ./target/debug/scuv doctor
+
+      - name: scuv list --pythons parses uv output
+        run: |
+          set -e
+          ./target/debug/scuv list --pythons --json > pythons.json
+          python3 -c "import json;d=json.load(open('pythons.json'));print(f'parsed {len(d) if isinstance(d,list) else 1} entries')"
+
+  # ====================
   # ShellCheck (embedded shell script linting)
   # ====================
   shellcheck:

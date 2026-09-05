@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **scuv** is a centralized Python virtual environment manager using [uv](https://github.com/astral-sh/uv) as backend. It combines pyenv-virtualenv's workflow with uv's speed.
 
-**Minimum uv version**: 0.5.14 (enforced by `scuv doctor`; the single source of truth is `MIN_VERSION` in `src/uv/version.rs`).
+**Minimum uv version**: 0.5.19 (first release with `uv python list --output-format=json`; enforced by `scuv doctor`, pinned in a CI smoke job, single source of truth is `MIN_VERSION` in `src/uv/version.rs`).
 
 - **Language**: Rust (Edition 2024, MSRV 1.88)
 - **License**: MIT OR Apache-2.0

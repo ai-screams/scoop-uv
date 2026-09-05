@@ -22,6 +22,30 @@ scuv install [version] [options]
 | `--stable` | Install oldest fully-supported Python (3.10) |
 | `--json` | Output result as JSON |
 
+## What gets installed where
+
+The interpreter itself lands in uv's own directory
+(`~/.local/share/uv/python/...`); scuv records nothing about it beyond what
+`uv python list` reports.
+
+Since uv 0.8.0 there is a second effect worth knowing about: `uv python
+install` also links a **versioned executable onto your `PATH`** — typically
+`~/.local/bin/python3.13` — so the interpreter is reachable without going
+through a virtual environment at all.
+
+```console
+$ ls -l ~/.local/bin/python3.14
+~/.local/bin/python3.14 -> ~/.local/share/uv/python/cpython-3.14.../bin/python3.14
+```
+
+That executable points at the bare interpreter: standard library only, and you
+cannot install packages into it. Use a scuv environment for anything past a
+quick `python3.14 -c '...'`.
+
+uv itself accepts `--no-bin` to skip the link, but `scuv install` does not
+currently forward flags to uv, so there is no way to opt out through scuv. Run
+`uv python install --no-bin <version>` directly if you need that.
+
 ## Version Resolution
 
 - No argument or `--latest`: installs latest Python 3.x
