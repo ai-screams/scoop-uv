@@ -230,12 +230,24 @@ jobs:
       - name: Build scuv
         run: cargo build
 
-      # The commands that touch uv. `doctor` must pass — if it rejects the
-      # floor, the floor and the check disagree. `list --pythons` is the one
-      # that exercises `uv python list --output-format=json`, the flag that
-      # made the old floor wrong.
+      # Assert on doctor's uv check specifically, not its exit code. `scuv
+      # doctor` inspects six things and exits non-zero if any fails, and a
+      # bare runner has neither ~/.scuv nor shell integration — both real
+      # findings on a user's machine, both irrelevant to whether the uv
+      # version is accepted.
       - name: scuv doctor accepts the floor
-        run: ./target/debug/scuv doctor
+        run: |
+          ./target/debug/scuv doctor --json > doctor.json || true
+          python3 - <<'EOF'
+          import json, sys
+          checks = json.load(open("doctor.json"))["checks"]
+          uv = next((c for c in checks if c["id"] == "uv"), None)
+          if uv is None:
+              sys.exit("::error::doctor emitted no uv check")
+          print(f"uv check: {uv['status']} - {uv.get('details')}")
+          if uv["status"] != "ok":
+              sys.exit(f"::error::doctor rejects MIN_VERSION: {uv.get('message')}")
+          EOF
 
       - name: scuv list --pythons parses uv output
         run: |
