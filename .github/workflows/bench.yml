@@ -65,13 +65,30 @@ jobs:
       # `set -o pipefail`: without it the step exits with tee's status, so
       # a genuinely failing `cargo bench` would be reported as success and
       # resurface as a confusing parse error one step later.
-      - name: Run benchmarks
+      #
+      # The benches are split by what they measure. `parsing` and
+      # `validation` are pure CPU and hold a ~1.4x spread across runs, so
+      # a 1.5x threshold is a meaningful gate for them. `path_lookup`
+      # stats the filesystem; its own module doc asks for "a generous
+      # regression threshold for this group", and 38 runs of history bear
+      # that out — 574-1931 ns for the same code, a 3.4x spread driven by
+      # whichever runner the job lands on. No threshold both tolerates
+      # that and catches anything, so it is tracked rather than gated.
+      - name: Run CPU benchmarks
         run: |
           set -o pipefail
           rm -rf target/criterion
-          cargo bench --bench parsing --bench validation --bench path_lookup \
+          cargo bench --bench parsing --bench validation \
             -- --output-format bencher \
-            | tee bench_output.txt
+            | tee bench_cpu.txt
+
+      - name: Run filesystem benchmarks
+        run: |
+          set -o pipefail
+          rm -rf target/criterion
+          cargo bench --bench path_lookup \
+            -- --output-format bencher \
+            | tee bench_io.txt
 
       # First run on main requires the gh-pages branch to exist. If it
       # doesn't, bootstrap it before the action tries to push baselines:
@@ -79,25 +96,42 @@ jobs:
       #   echo "scoop-uv bench history" > README.md
       #   git add README.md && git commit -m "bootstrap bench gh-pages"
       #   git push origin gh-pages
-      - name: Store / compare benchmark results
+      - name: Store / compare CPU benchmark results
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: scoop-uv benchmarks
           tool: cargo
-          output-file-path: bench_output.txt
+          output-file-path: bench_cpu.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # On main: write the new baseline to gh-pages.
           # On PRs: compare only — do NOT push.
           auto-push: ${{ github.ref == 'refs/heads/main' }}
-          # Single threshold semantics: with `fail-on-alert: true`, the
-          # workflow fails the moment a bench crosses `alert-threshold`.
-          # Set generously (150%) to absorb the 10-30% per-bench noise
-          # normal on GitHub-hosted runners while still catching a real
-          # 1.5x regression.
+          # With `fail-on-alert: true` the workflow fails the moment a
+          # bench crosses `alert-threshold`. 150% absorbs the ~1.4x spread
+          # these CPU benches actually show on GitHub-hosted runners while
+          # still catching a real 1.5x regression.
           alert-threshold: "150%"
           fail-on-alert: true
           comment-on-alert: true
           # Always leave a PR comment summarising the comparison, even
           # when nothing regresses — gives reviewers a visible perf
           # checkpoint without needing to click into the run.
+          summary-always: true
+
+      # Tracked, never gated. History still lands on gh-pages so a real
+      # trend stays visible, but a runner-driven swing cannot fail a PR
+      # that changed no code. `alert-threshold` is set past the observed
+      # 3.4x spread so the alert path stays quiet in normal operation;
+      # `fail-on-alert: false` is what actually makes this non-blocking.
+      - name: Store filesystem benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: scoop-uv filesystem benchmarks
+          tool: cargo
+          output-file-path: bench_io.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: ${{ github.ref == 'refs/heads/main' }}
+          alert-threshold: "500%"
+          fail-on-alert: false
+          comment-on-alert: false
           summary-always: true
