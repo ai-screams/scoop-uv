@@ -1,7 +1,7 @@
-# GitHub Actions CI with scoop
+# GitHub Actions CI with scuv
 #
 # This workflow demonstrates:
-# - Installing scoop in CI
+# - Installing scuv in CI
 # - Creating test environments
 # - Running tests across multiple Python versions
 # - Caching for faster builds
@@ -30,7 +30,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Install Rust (required for scoop)
+      # 2. Install Rust (required for scuv)
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -51,33 +51,33 @@ jobs:
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-      # 5. Install scoop
-      - name: Install scoop
+      # 5. Install scuv
+      - name: Install scuv
         run: cargo install scoop-uv
 
       # 6. Verify installation
-      - name: Verify scoop installation
+      - name: Verify scuv installation
         run: |
-          scoop --version
-          scoop doctor
+          scuv --version
+          scuv doctor
 
       # 7. Create test environment
       - name: Create test environment
         run: |
-          scoop create test-env ${{ matrix.python-version }}
-          scoop info test-env
+          scuv create test-env ${{ matrix.python-version }}
+          scuv info test-env
 
       # 8. Activate environment and install dependencies
       - name: Install dependencies
         run: |
-          eval "$(scoop shell test-env)"
+          eval "$(scuv shell test-env)"
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
       # 9. Run tests
       - name: Run tests
         run: |
-          eval "$(scoop shell test-env)"
+          eval "$(scuv shell test-env)"
           pytest tests/ -v --cov=src --cov-report=xml
 
       # 10. Upload coverage
@@ -91,7 +91,7 @@ jobs:
       # 11. Clean up (optional, runner is ephemeral anyway)
       - name: Clean up
         if: always()
-        run: scoop remove test-env
+        run: scuv remove test-env
 
   lint:
     name: Lint and format check
@@ -100,32 +100,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv and scoop
+      - name: Install uv and scuv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           cargo install scoop-uv
 
       - name: Create lint environment
-        run: scoop create lint-env 3.12
+        run: scuv create lint-env 3.12
 
       - name: Install linting tools
         run: |
-          eval "$(scoop shell lint-env)"
+          eval "$(scuv shell lint-env)"
           pip install ruff black mypy
 
       - name: Run ruff
         run: |
-          eval "$(scoop shell lint-env)"
+          eval "$(scuv shell lint-env)"
           ruff check .
 
       - name: Run black
         run: |
-          eval "$(scoop shell lint-env)"
+          eval "$(scuv shell lint-env)"
           black --check .
 
       - name: Run mypy
         run: |
-          eval "$(scoop shell lint-env)"
+          eval "$(scuv shell lint-env)"
           mypy src/
 
   build:
@@ -135,23 +135,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv and scoop
+      - name: Install uv and scuv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           cargo install scoop-uv
 
       - name: Create build environment
-        run: scoop create build-env 3.12
+        run: scuv create build-env 3.12
 
       - name: Build package
         run: |
-          eval "$(scoop shell build-env)"
+          eval "$(scuv shell build-env)"
           pip install build
           python -m build
 
       - name: Test installation
         run: |
-          eval "$(scoop shell build-env)"
+          eval "$(scuv shell build-env)"
           pip install dist/*.whl
           # Verify package works
           python -c "import mypackage; print(mypackage.__version__)"
@@ -174,7 +174,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv and scoop
+      - name: Install uv and scuv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           cargo install scoop-uv
@@ -188,9 +188,9 @@ jobs:
       - name: Test shell integration
         shell: ${{ matrix.shell }}
         run: |
-          eval "$(scoop init ${{ matrix.shell }})"
-          scoop create test-${{ matrix.shell }} 3.12
-          scoop use test-${{ matrix.shell }}
+          eval "$(scuv init ${{ matrix.shell }})"
+          scuv create test-${{ matrix.shell }} 3.12
+          scuv use test-${{ matrix.shell }}
           # Verify auto-activation works
           cd $(pwd)  # Trigger auto-activation
           echo "VIRTUAL_ENV=$VIRTUAL_ENV"

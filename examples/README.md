@@ -1,6 +1,6 @@
-# scoop Examples
+# scuv Examples
 
-Real-world usage scenarios for scoop, the Python virtual environment manager.
+Real-world usage scenarios for scuv, the Python virtual environment manager.
 
 ## Quick Reference
 
@@ -14,8 +14,8 @@ Real-world usage scenarios for scoop, the Python virtual environment manager.
 ## Prerequisites
 
 All examples assume you have:
-1. scoop installed (`cargo install scoop-uv`)
-2. Shell integration enabled (`eval "$(scoop init bash)"`)
+1. scuv installed (`cargo install scoop-uv`)
+2. Shell integration enabled (`eval "$(scuv init bash)"`)
 3. uv installed (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
 
 ## Running Examples
@@ -30,7 +30,7 @@ chmod +x examples/*.sh
 
 ## Contributing Examples
 
-Have a useful scoop workflow? Contribute an example!
+Have a useful scuv workflow? Contribute an example!
 
 1. Create a new file in `examples/`
 2. Add clear comments explaining each step

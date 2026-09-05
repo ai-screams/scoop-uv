@@ -55,7 +55,7 @@ working with a one-shot deprecation warning until v0.16.0. Don't skip the
 
 ```bash
 scuv --version
-# scuv 0.15.0
+# scuv 0.15.2
 ```
 
 ## Troubleshooting

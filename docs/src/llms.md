@@ -179,7 +179,7 @@ Disable auto-activation: `export SCUV_NO_AUTO=1`
 
 - Pattern: `^[a-zA-Z][a-zA-Z0-9_-]*$` (max 64 chars)
 - Must start with a letter
-- Reserved words: activate, base, completions, create, deactivate, default, delete, global, help, init, install, list, local, remove, resolve, root, system, uninstall, use, version, versions
+- Reserved words: activate, base, clone, completions, create, deactivate, default, delete, export, global, help, import, init, install, list, local, remove, resolve, root, run, status, sync, system, uninstall, use, version, versions, which
 
 ### Migration Sources
 
