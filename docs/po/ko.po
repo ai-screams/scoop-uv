@@ -483,7 +483,7 @@ msgstr ""
 
 #: src/installation.md:43
 msgid "# move your environments\n"
-msgstr "환경 삭제"
+msgstr "# 환경 디렉터리 이동\n"
 
 #: src/installation.md:46
 msgid ""

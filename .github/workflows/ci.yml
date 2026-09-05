@@ -68,6 +68,25 @@ jobs:
             exit 1
           fi
 
+      # docs/po/*.po are hand-edited translation memory. msgfmt --check
+      # catches the class of damage that renders silently: a msgstr whose
+      # trailing newline or `%{placeholder}` no longer matches its msgid.
+      # Untranslated entries are not errors -- they fall back to English by
+      # design, and msgfmt reports them as a statistic.
+      #
+      # The docs workflow's own translation guards only run on release
+      # tags, so without this a malformed .po sits on main until a release
+      # trips over it. That is exactly how `# move your environments` came
+      # to carry a msgstr with no trailing newline.
+      - name: Check .po files are well-formed
+        run: |
+          set -e
+          sudo apt-get install -y gettext
+          for po in docs/po/*.po; do
+            echo "Checking $po"
+            msgfmt --check --statistics -o /dev/null "$po"
+          done
+
   # ====================
   # Tests
   # ====================
