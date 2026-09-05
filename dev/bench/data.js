@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788628420416,
+  "lastUpdate": 1788628421847,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -4069,6 +4069,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1118,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ac604c2a13ebfde2919fbf9fcb1ccf0826f7c80f",
+          "message": "Merge pull request #166 from ai-screams/ci/cache-and-action-pins\n\nci: give each workflow its real cache key, and pin the two loose actions",
+          "timestamp": "2026-09-06T02:05:42+09:00",
+          "tree_id": "90e016f0116fe04b590b0a19337a36f1509bbb6c",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/ac604c2a13ebfde2919fbf9fcb1ccf0826f7c80f"
+        },
+        "date": 1788628421738,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1880,
+            "range": "± 26",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1326,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
