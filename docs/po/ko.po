@@ -511,8 +511,8 @@ msgid "Verify Installation"
 msgstr "설치 확인"
 
 #: src/installation.md:57
-msgid "# scuv 0.15.0\n"
-msgstr "# scuv 0.15.0\n"
+msgid "# scuv 0.15.2\n"
+msgstr "# scuv 0.15.2\n"
 
 #: src/installation.md:61 src/python-management.md:175
 #: src/development/testing.md:384 src/development/code-quality.md:420
@@ -11236,8 +11236,8 @@ msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
 #: src/api.md:725
-msgid "**Last Updated:** 2026-06-16 **scuv Version:** 0.15.0"
-msgstr "**최종 업데이트:** 2026-06-16 **scuv 버전:** 0.15.0"
+msgid "**Last Updated:** 2026-09-05 **scuv Version:** 0.15.2"
+msgstr "**최종 업데이트:** 2026-09-05 **scuv 버전:** 0.15.2"
 
 #: src/development/testing.md:3
 msgid "Comprehensive guide for testing scuv."
@@ -11365,10 +11365,10 @@ msgstr "테스트 카테고리"
 
 #: src/development/testing.md:101
 msgid ""
-"The bulk of the suite (844 tests, ~92% of the total 913) lives within source "
+"The bulk of the suite (916 tests, ~93% of the total 988) lives within source "
 "files using `#[cfg(test)]`:"
 msgstr ""
-"테스트 스위트의 대부분(844개 테스트, 전체 913개의 약 92%)은 `#[cfg(test)]`를 "
+"테스트 스위트의 대부분(916개 테스트, 전체 988개의 약 93%)은 `#[cfg(test)]`를 "
 "사용하여 소스 파일 내에 위치합니다:"
 
 #: src/development/testing.md:115
@@ -13440,13 +13440,15 @@ msgstr "영문자로 시작해야 합니다"
 
 #: src/llms.md:182
 msgid ""
-"Reserved words: activate, base, completions, create, deactivate, default, "
-"delete, global, help, init, install, list, local, remove, resolve, root, "
-"system, uninstall, use, version, versions"
+"Reserved words: activate, base, clone, completions, create, deactivate, "
+"default, delete, export, global, help, import, init, install, list, local, "
+"remove, resolve, root, run, status, sync, system, uninstall, use, version, "
+"versions, which"
 msgstr ""
-"예약어: activate, base, completions, create, deactivate, default, delete, "
-"global, help, init, install, list, local, remove, resolve, root, system, "
-"uninstall, use, version, versions"
+"예약어: activate, base, clone, completions, create, deactivate, default, "
+"delete, export, global, help, import, init, install, list, local, remove, "
+"resolve, root, run, status, sync, system, uninstall, use, version, versions, "
+"which"
 
 #: src/llms.md:184
 msgid "Migration Sources"

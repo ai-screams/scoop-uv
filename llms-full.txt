@@ -2,8 +2,11 @@
 
 > Centralized Python virtual environment manager — pyenv-style workflow powered by uv
 
-<!-- MAINTENANCE NOTE: When updating version or MSRV in Cargo.toml, also update references in this file.
-     CI will verify MSRV consistency between Cargo.toml and llms-full.txt. -->
+<!-- MAINTENANCE NOTE: this file, llms-full.txt and docs/src/llms.md are three hand-kept
+     copies of the same material — a fact corrected in one goes stale in the others.
+     `scripts/check-doc-references.py` (CI Lint job) compares MSRV, version samples,
+     the reserved-name list and the translation-key count against the code. Run it
+     locally after editing any of the three. -->
 
 - Package: scoop-uv (binary name: `scuv`)
 - Language: Rust, Edition 2024, MSRV 1.88
@@ -60,10 +63,10 @@ Verify: `scuv --version`
 | `scuv list` | List virtualenvs (aliases: `ls`) |
 | `scuv list --pythons` | List installed Python versions |
 | `scuv list --python-version <VER>` | Filter environments by Python version |
-| `scuv list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (Unreleased) |
+| `scuv list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (0.13.0) |
 | `scuv list --bare` | List names only (for scripting) |
-| `scuv info <name>` | Show virtualenv details (includes `Last used:` row since Unreleased) |
-| `scuv status` | Summarise current state — Active/Configured/System/None (v0.11.0); includes `Last used:` row since Unreleased |
+| `scuv info <name>` | Show virtualenv details (includes `Last used:` row since 0.13.0) |
+| `scuv status` | Summarise current state — Active/Configured/System/None (v0.11.0); includes `Last used:` row since 0.13.0 |
 | `scuv which <exe>` | Resolve an executable inside the active env (v0.11.0) |
 | `scuv run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
 | `scuv remove <name>` | Delete virtualenv (aliases: `rm`, `delete`) |
@@ -81,7 +84,7 @@ Verify: `scuv --version`
 
 | Command | Description |
 |---------|-------------|
-| `scuv gc` | Garbage-collect orphan virtualenvs (missing metadata or broken Python). Default is dry-run; pass `-y`/`--yes` to actually remove. `--aggressive` also flags uv-managed Pythons that no env references. `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (Unreleased; envs with no `last_used` are never matched, corrupt metadata never matches, max 200y). |
+| `scuv gc` | Garbage-collect orphan virtualenvs (missing metadata or broken Python). Default is dry-run; pass `-y`/`--yes` to actually remove. `--aggressive` also flags uv-managed Pythons that no env references. `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (0.13.0; envs with no `last_used` are never matched, corrupt metadata never matches, max 200y). |
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) — delete unused download/wheel cache entries. |
 | `scuv verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scuv.toml` Python matches (skipped if no manifest). Default always exits 0; `--strict` exits 1 on any issue. Pass `NAME` to check a single env. Complements `doctor` (system-level) and `gc` (orphan removal). |
 | `scuv man [DIR]` | Generate man pages from the live `clap::Command` tree. Without `DIR`: print top-level `scuv.1` to stdout (pipe to `man -l -`). With `DIR`: write `scuv.1` + one `scuv-<sub>.1` per visible subcommand for distro packagers. |
@@ -155,7 +158,7 @@ src/
 │   ├── version.rs     # Version file resolution (.scuv-version)
 │   ├── metadata.rs    # Virtualenv metadata (JSON)
 │   ├── virtualenv.rs  # VirtualenvService (CRUD operations)
-│   ├── doctor.rs      # Health check (Doctor, Check trait)
+│   ├── doctor/        # Health check (mod.rs, engine.rs, types.rs, checks/)
 │   └── migrate/       # Migration from pyenv/conda/virtualenvwrapper
 ├── shell/         # Shell integration (bash, zsh, fish, powershell)
 │   ├── bash.rs, zsh.rs, fish.rs, powershell.rs
@@ -165,17 +168,19 @@ src/
 ├── output/        # Terminal UI & JSON output
 │   ├── mod.rs     # Output struct
 │   ├── json.rs    # JSON response types
-│   └── spinner.rs # Progress indicator
+│   ├── spinner.rs # Progress indicator
+│   ├── time.rs    # Fuzzy-age formatter (last_used display)
+│   └── deprecation.rs # One-shot legacy-name warnings
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
 ├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
-├── error.rs       # ScoopError enum (33 variants, i18n Display)
+├── error/         # ScoopError enum (38 variants, i18n Display; code/display/exit/migrate/suggestion)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR) — 168 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR) — 226 keys
 ```
 
 ### Design Principles
@@ -756,7 +761,7 @@ Error response:
 
 ### Adding a New Health Check
 
-1. Implement the `Check` trait in `core/doctor.rs`
+1. Implement the `Check` trait in `core/doctor/checks/`
 2. Register in `Doctor::new()` checks vector
 
 ### Adding a New Migration Source
@@ -774,7 +779,7 @@ Error response:
 
 ## Testing
 
-- 751 tests (685 unit + 45 integration + 21 doctest), 0 clippy warnings
+- 988 tests (916 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings
 - Unit tests: inline `mod tests` blocks in each source file
 - Integration tests: `tests/cli.rs` with `assert_cmd` + `predicates`
 - Test isolation: `tests/common::TestFixture` for `SCUV_HOME` isolation

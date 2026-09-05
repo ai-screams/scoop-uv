@@ -12,8 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Language**: Rust (Edition 2024, MSRV 1.88)
 - **License**: MIT OR Apache-2.0
-- **Version**: 0.15.0 (command renamed `scoop` → `scuv`; crate/repo stay `scoop-uv`)
-- **Tests**: 959 passed (888 unit + 44 integration + 2 i18n + 25 doctest), 0 clippy warnings
+- **Version**: 0.15.2 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
+- **Tests**: 988 passed (916 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings — these drift; `cargo test` is the source of truth
+- **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
 - **Test tooling**: rstest (table tests), proptest, cargo-mutants (mutation), cargo-fuzz (nightly `fuzz/` workspace); see `.docs/dev/testing-strategy.md`
 - **i18n**: English, Korean, Japanese, Portuguese-BR (rust-i18n)
 - **Shells**: bash, zsh, fish, PowerShell
@@ -172,7 +173,7 @@ src/
 │   ├── manifest.rs      # .scuv.toml manifest parsing (scuv sync)
 │   ├── export_schema.rs # Portable env export/import schema (scuv export/import)
 │   ├── virtualenv/      # Virtualenv entity (mod.rs + tests.rs)
-│   ├── doctor.rs        # Health check (Doctor, Check trait)
+│   ├── doctor/          # Health check (engine.rs, types.rs, checks/)
 │   └── migrate/         # Migration from pyenv/conda/virtualenvwrapper
 ├── shell/         # Shell integration (bash, zsh, fish, powershell)
 │   ├── bash.rs, zsh.rs, fish.rs, powershell.rs  # Shell-specific scripts
@@ -208,7 +209,7 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 
 ## CLI Commands
 
-> **Tip:** Most commands support `--json` for machine-readable output (list, create, use, remove, install, uninstall, doctor, info, status, which, lang, migrate).
+> **Tip:** 19 subcommands take `--json`; `grep -B12 'json: bool' src/cli/mod.rs` lists them. Not on: activate, completions, deactivate, export (already emits JSON), init, migrate (its subcommands have it, the parent doesn't), resolve, run, shell.
 
 | Command | Aliases | Description |
 |---------|---------|-------------|
@@ -272,7 +273,7 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 
 - Regex: `^[a-zA-Z][a-zA-Z0-9_-]*$`
 - Must start with letter (not number, to distinguish from version strings like "3.12")
-- Reserved words: `activate`, `base`, `completions`, `create`, `deactivate`, `default`, `delete`, `global`, `help`, `init`, `install`, `list`, `local`, `remove`, `resolve`, `root`, `system`, `uninstall`, `use`, `version`, `versions`
+- Reserved words: 28 entries in `RESERVED_NAMES` (src/validate.rs) — read it rather than trusting a copy here; it grows with every new subcommand
 
 ## Documentation Style
 
@@ -392,8 +393,11 @@ t!("error.virtualenv_not_found", name = name)
 
 **Translation file**: `locales/app.yml`
 - 226 keys total (error.* 41, suggestion.* 16); parity across all 4 locales enforced by tests/i18n_completeness.rs
+- Adding a locale touches 5 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the `scuv lang` completion lists in `src/shell/fish.rs` + `src/shell/zsh.rs`. Missing `LOCALES` is the only one that fails silently — CI passes with that locale unverified. Contributor guide: `docs/src/development/translation.md`.
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
 - `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical.
+  - Reproducing that guard locally also needs: restore `POT-Creation-Date`/`PO-Revision-Date` from the pre-merge copy (msgmerge rewrites both to "now" → phantom diff), and `msgcat --width=79` any hand-written msgstr (unwrapped lines are gettext-version-sensitive; CI's gettext may differ from Homebrew's). Done when two consecutive runs leave the file byte-identical with 0 fuzzy.
+- `.github/workflows/docs.yml` (mdbook build + ko.po staleness guard) runs only on `v*` tags, so docs/po breakage isn't caught on PRs — only `msgfmt --check` in the CI Lint job is.
 
 ## Docker Development
 

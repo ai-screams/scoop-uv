@@ -2,8 +2,11 @@
 
 > Centralized Python virtual environment manager — pyenv-style workflow powered by uv
 
-<!-- MAINTENANCE NOTE: When updating version or MSRV in Cargo.toml, also update references in this file.
-     CI will verify MSRV consistency between Cargo.toml and llms-full.txt. -->
+<!-- MAINTENANCE NOTE: this file, llms-full.txt and docs/src/llms.md are three hand-kept
+     copies of the same material — a fact corrected in one goes stale in the others.
+     `scripts/check-doc-references.py` (CI Lint job) compares MSRV, version samples,
+     the reserved-name list and the translation-key count against the code. Run it
+     locally after editing any of the three. -->
 
 scuv manages Python virtual environments from a single central location (`~/.scuv/`),
 combining pyenv-virtualenv's familiar workflow with uv's speed. Written in Rust.
@@ -51,7 +54,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv list` | List virtualenvs (aliases: `ls`) |
 | `scuv list --pythons` | List installed Python versions |
 | `scuv list --python-version <VER>` | Filter environments by Python version |
-| `scuv list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (Unreleased) |
+| `scuv list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (0.13.0) |
 | `scuv create <name> [version]` | Create virtualenv (default: latest Python) |
 | `scuv create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
 | `scuv create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
@@ -65,8 +68,8 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv install [version]` | Install Python version |
 | `scuv uninstall <version>` | Remove Python version |
 | `scuv uninstall <version> --cascade` | Remove Python version + all environments using it |
-| `scuv info <name>` | Show virtualenv details (includes `Last used:` row since Unreleased) |
-| `scuv status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since Unreleased |
+| `scuv info <name>` | Show virtualenv details (includes `Last used:` row since 0.13.0) |
+| `scuv status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since 0.13.0 |
 | `scuv which <exe>` | Resolve an executable path inside the active env (v0.11.0) |
 | `scuv run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
 | `scuv sync` | Reconcile the active env with `.scuv.toml` manifest (v0.11.0) |
@@ -82,7 +85,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scuv migrate @env <name>` | Migrate single environment |
 | `scuv migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
-| `scuv gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons; `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (Unreleased) |
+| `scuv gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons; `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (0.13.0) |
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
 | `scuv verify [NAME]` | Per-env health diagnosis (6 checks). Default always exits 0; `--strict` exits 1 on any issue |
 | `scuv man [DIR]` | Generate man pages — stdout for top-level, or write `scuv.1` + `scuv-<sub>.1` per subcommand into DIR |
@@ -198,7 +201,7 @@ Disable auto-activation: `export SCUV_NO_AUTO=1`
 
 - Pattern: `^[a-zA-Z][a-zA-Z0-9_-]*$` (max 64 chars)
 - Must start with a letter
-- Reserved words: activate, base, completions, create, deactivate, default, delete, global, help, init, install, list, local, remove, resolve, root, system, uninstall, use, version, versions
+- Reserved words: activate, base, clone, completions, create, deactivate, default, delete, export, global, help, import, init, install, list, local, remove, resolve, root, run, status, sync, system, uninstall, use, version, versions, which
 
 ### Supported Shells
 

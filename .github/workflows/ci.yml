@@ -50,23 +50,12 @@ jobs:
       - name: Run Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Check llms.txt consistency
-        run: |
-          set -e
-
-          # Extract MSRV from Cargo.toml
-          CARGO_MSRV=$(grep '^rust-version = ' Cargo.toml | head -1 | sed 's/rust-version = "\(.*\)"/\1/')
-          echo "Cargo.toml MSRV: $CARGO_MSRV"
-
-          # Check llms-full.txt MSRV
-          if grep -q "MSRV $CARGO_MSRV" llms-full.txt; then
-            echo "✅ llms-full.txt MSRV is in sync with Cargo.toml"
-          else
-            echo "❌ llms-full.txt MSRV mismatch"
-            echo "Expected: MSRV $CARGO_MSRV"
-            grep 'MSRV' llms-full.txt || echo "No MSRV found in llms-full.txt"
-            exit 1
-          fi
+      # llms.txt, llms-full.txt and docs/src/llms.md are three hand-kept
+      # copies of the same reference material, so a fact corrected in one
+      # routinely goes stale in the others. Each check compares a doc
+      # against the code that owns the fact — never doc against doc.
+      - name: Check reference docs match the code
+        run: python3 scripts/check-doc-references.py
 
       # docs/po/*.po are hand-edited translation memory. msgfmt --check
       # catches the class of damage that renders silently: a msgstr whose
