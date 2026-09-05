@@ -38,7 +38,9 @@ it produces state that later runs depend on. `bench.yml` writes the
 benchmark baseline to `gh-pages`, and a cancelled main run leaves the
 next PR comparing against a stale baseline.
 
-`release-plz.yml` has no concurrency block today. See [Known gaps](#known-gaps).
+`release-plz.yml` uses the same block with `cancel-in-progress: false`: a
+release must never be cancelled, but two releases must never run at once
+either, and a group delivers both.
 
 ### The MSRV is verified twice, deliberately
 
@@ -85,7 +87,10 @@ any that the suite fails to catch.
 
 - **On PRs** (`--in-diff`): only the lines this PR changed. Fast enough
   to gate on.
-- **Weekly** (full): every candidate in scope.
+- **Weekly** (full): every candidate in scope. Tracked rather than gated
+  for now — the step tolerates exit 2 (mutants missed) and nothing else,
+  so a broken baseline or a timeout still fails loudly while the backlog
+  in [Known gaps](#known-gaps) is worked through.
 
 `.cargo/mutants.toml` carries the exclusions, each with a written
 rationale. Most exclude code whose mutations can only be killed by
@@ -111,11 +116,10 @@ MSRV artifacts are kept separate on purpose: a different compiler
 produces incompatible output, and sharing would mean both jobs
 permanently invalidating each other.
 
-Within a shared key the intent is one writer. `ci.yml` marks lint and
+Within a shared key there is one writer. `ci.yml` marks lint and
 shellcheck `save-if: false` so only the test job — which produces the
-richest artifacts, including test binaries — populates the cache. That
-invariant is not currently enforced everywhere; see
-[Known gaps](#known-gaps).
+richest artifacts, including test binaries — populates the cache; in
+`mutants.yml` the incremental job writes and the weekly full job reads.
 
 Note that `rust-cache` folds workflow-level `env` into its key hash. Two
 jobs can declare the same `shared-key` and still land on different
@@ -214,27 +218,45 @@ the documentation site.
 Accurate as of the last revision of this page. Verify before relying on
 any of these being fixed.
 
-- **Coverage uploads fail.** Codecov rejects the upload with
-  `Token required because branch is protected` and no `CODECOV_TOKEN`
-  secret exists. `fail_ci_if_error: false` means the job still reports
-  success, so the failure is invisible; the README badge reads `unknown`.
-  There is also no `codecov.yml`, so even a working upload would set no
-  threshold.
-- **The weekly full mutation run has never completed.** It hits the
-  60-minute timeout every week — 446 mutation candidates, each needing a
-  rebuild and test run. GitHub reports a timed-out job as *cancelled*,
-  which is easy to mistake for something benign. The PR-scoped `--in-diff`
-  run is unaffected, so untouched code is what goes unchecked.
-- **`aquasecurity/trivy-action@master`** is the one third-party action
-  pinned to a mutable branch. (`dtolnay/rust-toolchain@stable` and
-  `taiki-e/install-action@cargo-audit` look similar but are those
-  actions' documented interfaces.)
-- **`astral-sh/setup-uv@v7`** is three majors behind. From v8 the action
-  stopped publishing moving tags, so `@v7` is frozen at its last release.
-- **Three jobs write the `stable-ci` cache**, not one: `coverage.yml` and
-  both `mutants.yml` jobs omit `save-if`. They also land on a different
-  cache entry than `ci.yml` because of the `env` hashing described above,
-  so the shared key is not actually shared.
-- **`release-plz.yml` has no concurrency block**, so two rapid pushes to
-  `main` can race — in the workflow with the most externally visible
-  side effects.
+- **No coverage threshold.** Uploads work again, but there is no
+  `codecov.yml`, so nothing sets a target percentage or a PR status
+  policy. Coverage is reported and never enforced.
+- **55 unreviewed mutation escapes.** The weekly full run now finishes,
+  and the run it has been failing to complete already found 55 mutants no
+  test kills — 46 of them under `src/core/migrate/**`. Roughly 23 are pure
+  logic mutations (`&&` to `||`, `delete !`) that unit tests ought to
+  catch; the rest are return-value mutations that may need a real `uv` or
+  `conda` to observe, in which case they belong in `.cargo/mutants.toml`
+  with a rationale. Until that triage happens the job tolerates exit 2.
+- **Docs are only verified on release tags.** `docs.yml` still runs
+  nowhere else, so an mdBook build failure or a stale `ko.po` surfaces at
+  release time. The two cheapest checks were moved into the Lint job; the
+  build itself was not.
+- **The cache sits near its limit.** 8.34 GB of the 10 GB allowance, of
+  which `v0-rust-*` is only about 1 GB — the bulk is BuildKit blobs from
+  the Docker workflows. Nothing is failing yet; eviction is LRU.
+
+### Recently closed
+
+Left here because the reasoning is worth keeping, not because anything is
+outstanding.
+
+- Coverage uploads were rejected for months with
+  `Token required because branch is protected` while the job reported
+  success, because `fail_ci_if_error: false` hid it. The org allows
+  tokenless uploads, but that path only covers fork PRs. Fixed by wiring
+  `CODECOV_TOKEN` and letting a rejected upload fail the job.
+- The weekly full mutation run had never once completed — 60 minutes
+  killed it every time, and GitHub reports a timed-out job as *cancelled*,
+  which reads as benign. Measured at 385/446 mutants in 60 minutes, so the
+  timeout is now 90.
+- `aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now
+  pinned to release tags. Dependabot could not follow either: it cannot
+  bump a branch ref, and setup-uv stopped publishing moving major tags at
+  v8.
+- `stable-ci` had four writers and, because `rust-cache` hashes
+  workflow-level `env`, was never actually shared with `coverage.yml` or
+  `mutants.yml` at all. Each now names the key it really uses.
+- `release-plz.yml` had no concurrency group. It has one now, with
+  `cancel-in-progress: false` — which delivers the "must always complete"
+  intent that omitting the block only half-achieved.
