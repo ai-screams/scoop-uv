@@ -213,7 +213,7 @@ msgstr "LLM 레퍼런스"
 #: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:45
 #: src/commands/create.md:27 src/commands/use.md:58 src/commands/remove.md:26
 #: src/commands/install.md:32 src/commands/uninstall.md:25
-#: src/commands/doctor.md:29 src/commands/info.md:75 src/commands/status.md:82
+#: src/commands/doctor.md:29 src/commands/info.md:75 src/commands/status.md:97
 #: src/commands/which.md:36 src/commands/run.md:42 src/commands/sync.md:65
 #: src/commands/import.md:39 src/commands/clone.md:39
 #: src/commands/migrate.md:117 src/commands/gc.md:84 src/commands/prune.md:25
@@ -874,7 +874,8 @@ msgstr ""
 msgid "Priority"
 msgstr "우선순위"
 
-#: src/shell-integration.md:105 src/commands/migrate.md:28
+#: src/shell-integration.md:105 src/commands/status.md:27
+#: src/commands/migrate.md:28
 msgid "Source"
 msgstr "소스"
 
@@ -3958,7 +3959,7 @@ msgid "# {\n"
 msgstr "# {\n"
 
 #: src/commands/uninstall.md:94 src/commands/info.md:56
-#: src/commands/status.md:54 src/commands/status.md:55 src/commands/sync.md:97
+#: src/commands/status.md:69 src/commands/status.md:70 src/commands/sync.md:97
 #: src/commands/import.md:59 src/commands/clone.md:56
 #: src/commands/migrate.md:175 src/commands/migrate.md:186
 #: src/commands/migrate.md:194 src/commands/migrate.md:220
@@ -3972,7 +3973,7 @@ msgid "\"status\""
 msgstr "\"status\""
 
 #: src/commands/uninstall.md:94 src/commands/info.md:56
-#: src/commands/status.md:54 src/commands/sync.md:97 src/commands/import.md:59
+#: src/commands/status.md:69 src/commands/sync.md:97 src/commands/import.md:59
 #: src/commands/clone.md:56 src/commands/migrate.md:175
 #: src/commands/migrate.md:220 src/commands/migrate.md:238
 #: src/commands/migrate.md:286 src/commands/gc.md:109 src/commands/verify.md:67
@@ -3985,7 +3986,7 @@ msgid "#   \"command\": \"uninstall\",\n"
 msgstr "#   \"command\": \"uninstall\",\n"
 
 #: src/commands/uninstall.md:96 src/commands/info.md:58
-#: src/commands/status.md:56 src/commands/sync.md:99 src/commands/import.md:61
+#: src/commands/status.md:71 src/commands/sync.md:99 src/commands/import.md:61
 #: src/commands/clone.md:58 src/commands/migrate.md:177
 #: src/commands/migrate.md:222 src/commands/migrate.md:266
 #: src/commands/gc.md:111 src/commands/verify.md:69 src/commands/diff.md:110
@@ -4285,7 +4286,7 @@ msgstr "`--no-size`"
 msgid "Skip the directory-size walk"
 msgstr "디렉터리 크기 탐색을 건너뜁니다"
 
-#: src/commands/info.md:28 src/commands/status.md:27
+#: src/commands/info.md:28 src/commands/status.md:42
 msgid "Human Output"
 msgstr "사람이 읽는 출력"
 
@@ -4300,13 +4301,13 @@ msgstr ""
 "activate` / `scuv run` / `scuv shell`이 이 값을 갱신합니다)에 대해 `never`로 "
 "표시되며, 디스크에 메타데이터가 전혀 없는 경우에는 행 자체가 생략됩니다."
 
-#: src/commands/info.md:48 src/commands/status.md:50 src/commands/import.md:55
+#: src/commands/info.md:48 src/commands/status.md:65 src/commands/import.md:55
 #: src/commands/clone.md:52 src/commands/migrate.md:160 src/commands/lang.md:85
 #: src/commands/self.md:44
 msgid "JSON Output"
 msgstr "JSON 출력"
 
-#: src/commands/info.md:57 src/commands/status.md:55 src/commands/sync.md:98
+#: src/commands/info.md:57 src/commands/status.md:70 src/commands/sync.md:98
 #: src/commands/import.md:60 src/commands/clone.md:57
 #: src/commands/migrate.md:176 src/commands/migrate.md:221
 #: src/commands/migrate.md:259 src/commands/gc.md:110 src/commands/verify.md:68
@@ -4319,7 +4320,7 @@ msgstr "\"command\""
 msgid "\"info\""
 msgstr "\"info\""
 
-#: src/commands/info.md:59 src/commands/info.md:67 src/commands/status.md:58
+#: src/commands/info.md:59 src/commands/info.md:67 src/commands/status.md:73
 #: src/commands/export.md:41 src/commands/export.md:46
 #: src/commands/export.md:47 src/commands/import.md:62
 #: src/commands/migrate.md:181 src/commands/migrate.md:189
@@ -4334,17 +4335,17 @@ msgstr "\"info\""
 msgid "\"name\""
 msgstr "\"name\""
 
-#: src/commands/info.md:60 src/commands/status.md:61 src/commands/sync.md:102
+#: src/commands/info.md:60 src/commands/status.md:76 src/commands/sync.md:102
 #: src/commands/export.md:42 src/commands/import.md:63 src/commands/clone.md:61
 #: src/commands/verify.md:74 src/commands/diff.md:114
 msgid "\"python\""
 msgstr "\"python\""
 
-#: src/commands/info.md:60 src/commands/status.md:61 src/api.md:156
+#: src/commands/info.md:60 src/commands/status.md:76 src/api.md:156
 msgid "\"3.12.1\""
 msgstr "\"3.12.1\""
 
-#: src/commands/info.md:61 src/commands/status.md:60 src/commands/clone.md:62
+#: src/commands/info.md:61 src/commands/status.md:75 src/commands/clone.md:62
 #: src/commands/migrate.md:183 src/commands/migrate.md:191
 #: src/commands/migrate.md:230 src/commands/gc.md:114 src/commands/gc.md:115
 #: src/commands/gc.md:116
@@ -4355,24 +4356,24 @@ msgstr "\"path\""
 msgid "\"/Users/me/.scuv/virtualenvs/myproject\""
 msgstr "\"/Users/me/.scuv/virtualenvs/myproject\""
 
-#: src/commands/info.md:62 src/commands/status.md:57
+#: src/commands/info.md:62 src/commands/status.md:72
 msgid "\"active\""
 msgstr "\"active\""
 
-#: src/commands/info.md:63 src/commands/status.md:62 src/commands/export.md:43
+#: src/commands/info.md:63 src/commands/status.md:77 src/commands/export.md:43
 #: src/commands/diff.md:122 src/api.md:157
 msgid "\"created_at\""
 msgstr "\"created_at\""
 
-#: src/commands/info.md:63 src/commands/status.md:62 src/commands/export.md:43
+#: src/commands/info.md:63 src/commands/status.md:77 src/commands/export.md:43
 msgid "\"2026-05-29T12:34:56+00:00\""
 msgstr "\"2026-05-29T12:34:56+00:00\""
 
-#: src/commands/info.md:64 src/commands/status.md:63 src/commands/diff.md:123
+#: src/commands/info.md:64 src/commands/status.md:78 src/commands/diff.md:123
 msgid "\"last_used\""
 msgstr "\"last_used\""
 
-#: src/commands/info.md:64 src/commands/status.md:63
+#: src/commands/info.md:64 src/commands/status.md:78
 msgid "\"2026-06-02T09:00:00+00:00\""
 msgstr "\"2026-06-02T09:00:00+00:00\""
 
@@ -4506,10 +4507,62 @@ msgstr ""
 "합니다."
 
 #: src/commands/status.md:29
+msgid ""
+"`source` names where the environment came from, which is not always a file:"
+msgstr ""
+"`source`는 환경이 어디에서 왔는지를 나타내며, 항상 파일인 것은 아닙니다:"
+
+#: src/commands/status.md:31 src/commands/run.md:26
+msgid "Value"
+msgstr "값"
+
+#: src/commands/status.md:31 src/commands/which.md:46 src/commands/sync.md:113
+#: src/commands/export.md:69 src/commands/import.md:72 src/commands/clone.md:71
+#: src/development/translation.md:248 src/api.md:700
+msgid "Meaning"
+msgstr "의미"
+
+#: src/commands/status.md:33
+msgid "`scuv_active_env`"
+msgstr "`scuv_active_env`"
+
+#: src/commands/status.md:33
+msgid "`$SCUV_ACTIVE` — what the shell activated"
+msgstr "`$SCUV_ACTIVE` — 셸이 활성화한 것"
+
+#: src/commands/status.md:34
+msgid "`env_var`"
+msgstr "`env_var`"
+
+#: src/commands/status.md:34
+msgid "`SCUV_VERSION` (or the legacy `SCOOP_VERSION`)"
+msgstr "`SCUV_VERSION` (또는 레거시 `SCOOP_VERSION`)"
+
+#: src/commands/status.md:35 src/development/code-quality.md:259
+msgid "`version_file`"
+msgstr "`version_file`"
+
+#: src/commands/status.md:35
+msgid "`.scuv-version` (local or a parent) or `~/.scuv/version`"
+msgstr "`.scuv-version` (로컬 또는 상위 디렉터리) 또는 `~/.scuv/version`"
+
+#: src/commands/status.md:37
+msgid ""
+"Resolution order is `$SCUV_ACTIVE` → `SCUV_VERSION` → version files, so "
+"`env_var` outranks every file. Before 0.15.3 an environment selected by "
+"`SCUV_VERSION` was also reported as `version_file`, which could mislead a "
+"script trying to work out what to change."
+msgstr ""
+"해석 순서는 `$SCUV_ACTIVE` → `SCUV_VERSION` → 버전 파일이므로 `env_var`가 모"
+"든 파일보다 우선합니다. 0.15.3 이전에는 `SCUV_VERSION`으로 선택된 환경도 "
+"`version_file`로 보고되어, 무엇을 바꿔야 할지 판단하려는 스크립트를 오도할 "
+"수 있었습니다."
+
+#: src/commands/status.md:44
 msgid "For a real env (`active` / `configured`):"
 msgstr "실제 환경(`active` / `configured`)의 경우:"
 
-#: src/commands/status.md:40
+#: src/commands/status.md:55
 msgid ""
 "The `Last used:` row reads `never` for envs that have metadata but have not "
 "yet been activated (fresh `scuv create`, or envs whose metadata predates the "
@@ -4522,40 +4575,40 @@ msgstr ""
 "다 — 이렇게 하면 \"알 수 없음\"이 \"사용한 적 없음\"으로 잘못 해석되는 것을 "
 "방지할 수 있습니다."
 
-#: src/commands/status.md:46
+#: src/commands/status.md:61
 msgid "For `system`: a single line indicating system Python is in use."
 msgstr ""
 "`system`의 경우: 시스템 Python이 사용 중임을 나타내는 한 줄이 표시됩니다."
 
-#: src/commands/status.md:48
+#: src/commands/status.md:63
 msgid "For `none`: a hint pointing to `scuv use <name>`."
 msgstr "`none`의 경우: `scuv use <name>`을 안내하는 힌트가 표시됩니다."
 
-#: src/commands/status.md:57
+#: src/commands/status.md:72
 msgid "\"state\""
 msgstr "\"state\""
 
-#: src/commands/status.md:58 src/commands/import.md:62 src/commands/clone.md:59
+#: src/commands/status.md:73 src/commands/import.md:62 src/commands/clone.md:59
 #: src/commands/verify.md:72 src/development/architecture.md:130 src/api.md:111
 #: src/api.md:113 src/api.md:117 src/development/testing.md:197
 #: src/development/testing.md:330
 msgid "\"myenv\""
 msgstr "\"myenv\""
 
-#: src/commands/status.md:59 src/commands/import.md:65
+#: src/commands/status.md:74 src/commands/import.md:65
 #: src/commands/migrate.md:178 src/commands/lang.md:95
 msgid "\"source\""
 msgstr "\"source\""
 
-#: src/commands/status.md:59
+#: src/commands/status.md:74
 msgid "\"scuv_active_env\""
 msgstr "\"scuv_active_env\""
 
-#: src/commands/status.md:60
+#: src/commands/status.md:75
 msgid "\"/Users/me/.scuv/virtualenvs/myenv\""
 msgstr "\"/Users/me/.scuv/virtualenvs/myenv\""
 
-#: src/commands/status.md:68
+#: src/commands/status.md:83
 msgid ""
 "Fields are omitted (`skip_serializing_if`) when not applicable to the state. "
 "`last_used` is RFC 3339 and absent in two distinct cases:"
@@ -4563,7 +4616,7 @@ msgstr ""
 "해당 상태에 적용되지 않는 필드는 (`skip_serializing_if`) 생략됩니다. "
 "`last_used`는 RFC 3339 형식이며 다음 두 가지 경우에 생략됩니다:"
 
-#: src/commands/status.md:71
+#: src/commands/status.md:86
 msgid ""
 "**No metadata at all** (legacy env / metadata file removed) — the timestamp "
 "is _unknown_. Human output omits the `Last used:` row entirely."
@@ -4572,7 +4625,7 @@ msgstr ""
 "프를 _알 수 없습니다_. 사람이 읽는 출력에서는 `Last used:` 행이 완전히 생략됩"
 "니다."
 
-#: src/commands/status.md:74
+#: src/commands/status.md:89
 msgid ""
 "**Metadata present but never activated** since the field landed — the "
 "timestamp is _known to be never_. Human output renders `Last used: never`."
@@ -4581,7 +4634,7 @@ msgstr ""
 "탬프가 _한 번도 없었음을 알 수 있습니다_. 사람이 읽는 출력에서는 `Last used: "
 "never`로 표시됩니다."
 
-#: src/commands/status.md:78
+#: src/commands/status.md:93
 msgid ""
 "JSON consumers therefore should NOT collapse \"missing\" to \"never\"; "
 "combine the absence of `last_used` with the presence of `created_at` to tell "
@@ -4591,11 +4644,11 @@ msgstr ""
 "두 경우를 구분하려면 `last_used`의 부재와 `created_at`의 존재를 조합하여 판단"
 "하세요."
 
-#: src/commands/status.md:85
+#: src/commands/status.md:100
 msgid "# human-readable\n"
 msgstr "# 사람이 읽는 형식\n"
 
-#: src/commands/status.md:86 src/commands/diff.md:12
+#: src/commands/status.md:101 src/commands/diff.md:12
 msgid "# machine-readable\n"
 msgstr "# 기계가 읽는 형식\n"
 
@@ -4676,12 +4729,6 @@ msgstr "종료 코드"
 msgid "Code"
 msgstr "코드"
 
-#: src/commands/which.md:46 src/commands/sync.md:113 src/commands/export.md:69
-#: src/commands/import.md:72 src/commands/clone.md:71
-#: src/development/translation.md:248 src/api.md:700
-msgid "Meaning"
-msgstr "의미"
-
 #: src/commands/which.md:48
 msgid "Path printed to stdout"
 msgstr "경로가 stdout에 출력됨"
@@ -4727,10 +4774,6 @@ msgid "The spawned child sees the same vars that `scuv activate` would set:"
 msgstr ""
 "생성된 자식 프로세스는 `scuv activate`가 설정하는 것과 동일한 환경 변수를 사"
 "용합니다:"
-
-#: src/commands/run.md:26
-msgid "Value"
-msgstr "값"
 
 #: src/commands/run.md:28
 msgid "`VIRTUAL_ENV`"
@@ -12619,10 +12662,6 @@ msgstr "모듈"
 #: src/development/code-quality.md:259 src/development/code-quality.md:260
 msgid "`snake_case`"
 msgstr "`snake_case`"
-
-#: src/development/code-quality.md:259
-msgid "`version_file`"
-msgstr "`version_file`"
 
 #: src/development/code-quality.md:260
 msgid "Functions"

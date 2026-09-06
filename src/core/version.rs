@@ -25,6 +25,19 @@ use crate::paths;
 /// Service for managing version files
 pub struct VersionService;
 
+/// Which input supplied the resolved environment name.
+///
+/// Only the distinction `status` needs: an environment variable is not a
+/// version file, and reporting it as one misleads anything consuming
+/// `status --json`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VersionSource {
+    /// `SCUV_VERSION` (or the legacy `SCOOP_VERSION`).
+    EnvVar,
+    /// `.scuv-version` (local or parent) or `~/.scuv/version`.
+    VersionFile,
+}
+
 impl VersionService {
     /// Set the local version for a directory
     pub fn set_local(dir: &Path, env_name: &str) -> Result<()> {
@@ -143,6 +156,23 @@ impl VersionService {
     pub fn resolve_current() -> Option<String> {
         let cwd = std::env::current_dir().ok()?;
         Self::resolve(&cwd)
+    }
+
+    /// Resolve from the current directory, reporting which source supplied
+    /// the answer.
+    ///
+    /// `status --json` reports a `source` field, and reconstructing the
+    /// priority order at the call site would let the two drift apart. The
+    /// order lives in [`Self::resolve`]; this only labels the result, so the
+    /// env-var branch is consulted exactly once here and nowhere else.
+    pub fn resolve_current_with_source() -> Option<(String, VersionSource)> {
+        if let Some(name) = Self::resolve_env_version() {
+            return Some((name, VersionSource::EnvVar));
+        }
+        let cwd = std::env::current_dir().ok()?;
+        // `resolve` re-checks the env var first, but that branch cannot fire
+        // here — it just returned None above.
+        Self::resolve(&cwd).map(|name| (name, VersionSource::VersionFile))
     }
 
     /// Read a version file

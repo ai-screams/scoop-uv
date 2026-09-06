@@ -2,6 +2,7 @@
 //!
 //! Handles migration of multiple environments with progress tracking.
 
+use std::collections::HashMap;
 use std::sync::Mutex;
 
 use dialoguer::Confirm;
@@ -11,10 +12,11 @@ use rust_i18n::t;
 use serde::Serialize;
 
 use crate::core::migrate::{
-    EnvironmentStatus, MigrateOptions, MigrationResult, Migrator, SourceEnvironment,
+    EnvironmentStatus, MigrateOptions, MigrationResult, Migrator, SourceEnvironment, SourceType,
 };
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
+use crate::paths;
 
 use super::scan::{any_source_tool_available, scan_all_environments};
 use super::types::{
@@ -373,6 +375,27 @@ fn partition_envs(environments: &[SourceEnvironment], force: bool) -> Partitione
     let mut migratable: Vec<&SourceEnvironment> = Vec::new();
     let mut conflicts: Vec<MigrationConflictDetail> = Vec::new();
     let mut skipped: Vec<MigrateSkipped> = Vec::new();
+    // Target names already claimed by an earlier entry in this same batch.
+    //
+    // `EnvironmentStatus::NameConflict` only reports collisions with an
+    // environment that already exists on disk (see
+    // `core::migrate::common::check_name_conflict`), so two sources offering
+    // the same name — pyenv `web` and conda `web`, say — both arrive here as
+    // `Ready`. They then migrate in parallel (`par_iter` below) to the same
+    // path, and `create_target_env` decides what happens by whichever thread
+    // wins the race: without `--force` the loser reports `VirtualenvExists`;
+    // with it, the loser calls `remove_dir_all` on the winner's environment
+    // mid-install, and the winner's `RollbackGuard` can then delete the
+    // replacement. Combined with `--delete-source` that destroys one of the
+    // two source environments for good, while the summary reports both as
+    // migrated.
+    //
+    // `force` deliberately does not override this. `--force` means "overwrite
+    // the environment that is already there", and for a collision inside one
+    // batch there is no such environment — both are new. Letting them through
+    // is the bug, not the fix. The user picks a winner by migrating one
+    // explicitly with `scuv migrate @env <name> --rename <other>`.
+    let mut claimed: HashMap<&str, SourceType> = HashMap::new();
 
     for env in environments {
         let is_ready = matches!(env.status, EnvironmentStatus::Ready);
@@ -383,6 +406,23 @@ fn partition_envs(environments: &[SourceEnvironment], force: bool) -> Partitione
             );
 
         if is_ready || force_eligible {
+            if let Some(winner) = claimed.get(env.name.as_str()) {
+                let target = paths::virtualenv_path(&env.name).unwrap_or_default();
+                conflicts.push(MigrationConflictDetail {
+                    name: env.name.clone(),
+                    source_type: env.source_type,
+                    existing: target,
+                });
+                skipped.push(MigrateSkipped {
+                    name: env.name.clone(),
+                    reason: format!(
+                        "name already claimed by {} in this batch (migrate it separately with --rename)",
+                        winner
+                    ),
+                });
+                continue;
+            }
+            claimed.insert(env.name.as_str(), env.source_type);
             migratable.push(env);
             continue;
         }
@@ -674,6 +714,78 @@ mod tests {
     // =========================================================================
     // partition_envs Tests (replaces filter_migratable + collect_skipped)
     // =========================================================================
+
+    /// Build a Ready env attributed to a specific source tool, so a test can
+    /// stage the same name arriving from two different tools.
+    fn create_test_env_from(name: &str, source_type: SourceType) -> SourceEnvironment {
+        SourceEnvironment {
+            name: name.to_string(),
+            python_version: "3.12.0".to_string(),
+            path: PathBuf::from(format!("/test/{source_type}/{name}")),
+            source_type,
+            size_bytes: None,
+            status: EnvironmentStatus::Ready,
+        }
+    }
+
+    /// Two sources offering the same name must not both be migratable.
+    ///
+    /// `check_name_conflict` only sees environments already on disk, so both
+    /// arrive as `Ready`; without the batch-level guard they would race
+    /// `par_iter` to the same target path.
+    #[test]
+    fn partition_rejects_duplicate_name_within_batch() {
+        let envs = vec![
+            create_test_env_from("web", SourceType::Pyenv),
+            create_test_env_from("web", SourceType::Conda),
+        ];
+
+        let p = partition_envs(&envs, false);
+
+        assert_eq!(p.migratable.len(), 1, "only the first claim may migrate");
+        assert_eq!(p.migratable[0].source_type, SourceType::Pyenv);
+        assert_eq!(p.conflicts.len(), 1);
+        assert_eq!(p.conflicts[0].name, "web");
+        assert_eq!(p.conflicts[0].source_type, SourceType::Conda);
+        assert_eq!(p.skipped.len(), 1);
+        assert!(
+            p.skipped[0].reason.contains("already claimed"),
+            "reason should say the name was taken in this batch, got: {}",
+            p.skipped[0].reason
+        );
+    }
+
+    /// `--force` means "overwrite what is already installed". Inside one batch
+    /// there is nothing installed yet to overwrite, and letting both through
+    /// is precisely the destructive race the guard exists to prevent — so
+    /// force must not bypass it.
+    #[test]
+    fn partition_duplicate_name_not_bypassed_by_force() {
+        let envs = vec![
+            create_test_env_from("web", SourceType::Pyenv),
+            create_test_env_from("web", SourceType::VirtualenvWrapper),
+        ];
+
+        let p = partition_envs(&envs, true);
+
+        assert_eq!(p.migratable.len(), 1);
+        assert_eq!(p.conflicts.len(), 1);
+    }
+
+    /// Distinct names from distinct sources stay unaffected.
+    #[test]
+    fn partition_same_source_distinct_names_all_migratable() {
+        let envs = vec![
+            create_test_env_from("web", SourceType::Pyenv),
+            create_test_env_from("api", SourceType::Conda),
+        ];
+
+        let p = partition_envs(&envs, false);
+
+        assert_eq!(p.migratable.len(), 2);
+        assert!(p.conflicts.is_empty());
+        assert!(p.skipped.is_empty());
+    }
 
     #[test]
     fn partition_ready_always_migratable() {
