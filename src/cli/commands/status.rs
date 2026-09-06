@@ -8,7 +8,9 @@ use rust_i18n::t;
 
 use chrono::Utc;
 
-use crate::core::{VersionService, VirtualenvService, get_active_env, list_installed_packages};
+use crate::core::{
+    VersionService, VersionSource, VirtualenvService, get_active_env, list_installed_packages,
+};
 use crate::error::Result;
 use crate::output::{Output, StatusData, format_last_used_value};
 use crate::paths::abbreviate_home;
@@ -17,6 +19,9 @@ use crate::paths::abbreviate_home;
 /// the source-comparison in `emit_env` can't drift apart.
 const SOURCE_ACTIVE: &str = "scuv_active_env";
 const SOURCE_VERSION_FILE: &str = "version_file";
+/// `SCUV_VERSION` outranks every version file, and calling that a
+/// `version_file` misleads anything reading `status --json`.
+const SOURCE_ENV_VAR: &str = "env_var";
 
 /// What the active-env resolver returned, split into the cases that matter
 /// for `status` output.
@@ -27,6 +32,8 @@ pub(crate) enum State {
     /// Resolved from a version file (local or global; `.scuv-version`, with
     /// legacy `.scoop-version` fallback).
     Configured(String),
+    /// Resolved from `SCUV_VERSION` (or the legacy `SCOOP_VERSION`).
+    ConfiguredByEnv(String),
     /// `system` sentinel (system Python is in use, no virtualenv active).
     System,
     /// Neither `SCUV_ACTIVE` nor any version file resolved.
@@ -46,9 +53,10 @@ pub(crate) fn resolve_state() -> State {
             State::Active(name)
         };
     }
-    match VersionService::resolve_current() {
-        Some(name) if name == "system" => State::System,
-        Some(name) => State::Configured(name),
+    match VersionService::resolve_current_with_source() {
+        Some((name, _)) if name == "system" => State::System,
+        Some((name, VersionSource::EnvVar)) => State::ConfiguredByEnv(name),
+        Some((name, VersionSource::VersionFile)) => State::Configured(name),
         None => State::None,
     }
 }
@@ -63,6 +71,7 @@ pub fn execute(output: &Output) -> Result<()> {
         State::System => emit_system(output, json),
         State::Active(name) => emit_env(output, json, &name, SOURCE_ACTIVE),
         State::Configured(name) => emit_env(output, json, &name, SOURCE_VERSION_FILE),
+        State::ConfiguredByEnv(name) => emit_env(output, json, &name, SOURCE_ENV_VAR),
     }
     Ok(())
 }

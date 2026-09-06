@@ -24,6 +24,21 @@ scuv status [--json]
 `$SCUV_ACTIVE` wins over version files because it reflects what the shell
 actually activated.
 
+## Source
+
+`source` names where the environment came from, which is not always a file:
+
+| Value | Meaning |
+|-------|---------|
+| `scuv_active_env` | `$SCUV_ACTIVE` — what the shell activated |
+| `env_var` | `SCUV_VERSION` (or the legacy `SCOOP_VERSION`) |
+| `version_file` | `.scuv-version` (local or a parent) or `~/.scuv/version` |
+
+Resolution order is `$SCUV_ACTIVE` → `SCUV_VERSION` → version files, so
+`env_var` outranks every file. Before 0.15.3 an environment selected by
+`SCUV_VERSION` was also reported as `version_file`, which could mislead a
+script trying to work out what to change.
+
 ## Human Output
 
 For a real env (`active` / `configured`):

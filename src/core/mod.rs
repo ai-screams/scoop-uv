@@ -11,7 +11,7 @@ mod virtualenv;
 pub use export_schema::{EXPORT_SCHEMA_VERSION, ExportSchema};
 pub use manifest::ScoopManifest;
 pub use metadata::Metadata;
-pub use version::VersionService;
+pub use version::{VersionService, VersionSource};
 pub use virtualenv::{VirtualenvInfo, VirtualenvService};
 
 /// Environment variable for currently active virtualenv
