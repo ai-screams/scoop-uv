@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788659448967,
+  "lastUpdate": 1788659450748,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -4308,6 +4308,42 @@ window.BENCHMARK_DATA = {
           {
             "name": "find_executable_in_miss",
             "value": 1123,
+            "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8140def69dbe22652ff4d17140f348f86bac2067",
+          "message": "Merge pull request #167 from ai-screams/fix/uv-min-version\n\nfix(uv): correct MIN_VERSION to 0.5.19 and verify the floor in CI",
+          "timestamp": "2026-09-06T10:46:41+09:00",
+          "tree_id": "5f1ba6ce9353b309197900d31e358aa2307c27cc",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/8140def69dbe22652ff4d17140f348f86bac2067"
+        },
+        "date": 1788659450655,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 671,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 491,
             "range": "± 2",
             "unit": "ns/iter"
           }
