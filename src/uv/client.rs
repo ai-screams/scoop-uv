@@ -127,9 +127,9 @@ impl UvClient {
 
     /// Run `uv python list --output-format=json` and parse the result.
     ///
-    /// uv stabilized the JSON output in 0.5.14 (our [`MIN_VERSION`] floor), so
-    /// we rely on the structured schema instead of scraping the human-readable
-    /// table, which changes format between releases.
+    /// uv added this flag in 0.5.19 (our [`MIN_VERSION`] floor), so we rely on
+    /// the structured schema instead of scraping the human-readable table,
+    /// which changes format between releases.
     ///
     /// [`MIN_VERSION`]: crate::uv::version::MIN_VERSION
     fn run_python_list(&self, only_installed: bool) -> Result<Vec<PythonInfo>> {
