@@ -34,16 +34,19 @@ check(
 
 # --- 2. Version samples: Cargo.toml is the source of truth ---------------
 version = re.search(r'^version = "(.+?)"', read("Cargo.toml"), re.M).group(1)
+# `scuv 0.15.3` covers `--version` output samples; `scuv Version: 0.15.3`
+# covers api.md's footer stamp, which the narrower pattern silently skipped —
+# the file was checked, matched nothing, and passed while stale.
+SAMPLE = re.compile(r"scuv (?:Version:\**\s*)?(\d+\.\d+\.\d+)")
 for rel in ("README.md", "docs/src/installation.md", "docs/src/api.md"):
-    stale = [
-        m.group(0)
-        for m in re.finditer(r"scuv (\d+\.\d+\.\d+)", read(rel))
-        if m.group(1) != version
-    ]
+    found = [m.group(1) for m in SAMPLE.finditer(read(rel))]
+    stale = sorted({v for v in found if v != version})
     check(
         f"{rel} version samples say {version}",
-        not stale,
-        f"stale: {', '.join(sorted(set(stale)))} -- Cargo.toml is {version}",
+        found and not stale,
+        f"stale: {', '.join(stale)} -- Cargo.toml is {version}"
+        if stale
+        else "no version sample found; the pattern no longer matches this file",
     )
 
 # --- 3. Reserved names: src/validate.rs is the source of truth -----------
