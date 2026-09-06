@@ -233,6 +233,69 @@ impl PackageExtractor {
 mod tests {
     use super::*;
 
+    fn spec(name: &str, editable: bool) -> PackageSpec {
+        PackageSpec {
+            name: name.to_string(),
+            version: "1.0.0".to_string(),
+            editable,
+            editable_path: None,
+        }
+    }
+
+    /// `regular_packages` filters on `!editable` and `editable_packages` on
+    /// `editable`. Dropping the `!` silently swaps them, and every existing
+    /// test looked at parsing rather than at this split.
+    #[test]
+    fn regular_and_editable_packages_partition_the_list() {
+        let result = ExtractionResult {
+            packages: vec![spec("requests", false), spec("mylib", true)],
+            failed: Vec::new(),
+            total_found: 2,
+        };
+
+        let regular: Vec<_> = result.regular_packages().iter().map(|p| &p.name).collect();
+        let editable: Vec<_> = result.editable_packages().iter().map(|p| &p.name).collect();
+
+        assert_eq!(regular, vec!["requests"]);
+        assert_eq!(editable, vec!["mylib"]);
+    }
+
+    /// `extract` refuses an environment with no `bin/pip`; inverting that
+    /// guard makes it attempt extraction exactly when it cannot work.
+    #[test]
+    fn extract_errors_when_pip_is_missing() {
+        let temp = tempfile::tempdir().unwrap();
+        let err = PackageExtractor::new()
+            .extract(temp.path())
+            .expect_err("no bin/pip, so extraction must fail");
+        // "pip" alone is too loose: with the guard inverted, execution falls
+        // through to `pip freeze`, which also fails with a message containing
+        // "pip". Assert on the guard's own wording.
+        assert!(
+            err.to_string().contains("not found at"),
+            "must be the missing-pip guard, not the failed exec: {err}"
+        );
+    }
+
+    /// `include_editable` is a builder setter; replacing it with
+    /// `Default::default()` silently discards the flag.
+    #[test]
+    fn include_editable_toggles_parsing_of_editable_entries() {
+        let freeze = "-e /src/mylib\nrequests==2.31.0\n";
+
+        let with = PackageExtractor::new()
+            .include_editable(true)
+            .parse_freeze_output(freeze)
+            .unwrap();
+        let without = PackageExtractor::new()
+            .include_editable(false)
+            .parse_freeze_output(freeze)
+            .unwrap();
+
+        assert_eq!(with.packages.len(), 2, "editable kept when requested");
+        assert_eq!(without.packages.len(), 1, "editable dropped otherwise");
+    }
+
     #[test]
     fn test_parse_standard_package() {
         let extractor = PackageExtractor::new();

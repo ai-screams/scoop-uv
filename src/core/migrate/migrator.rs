@@ -469,6 +469,119 @@ mod tests {
         }
     }
 
+    /// `RollbackGuard` deletes a half-built environment when a migration
+    /// fails, and `disarm` is what stops it after success. Both halves were
+    /// untested, which matters more than usual here: this guard is one of the
+    /// pieces in the `--force` batch race fixed in #168 — an armed guard
+    /// dropping late can delete an environment another migration just built.
+    #[test]
+    fn rollback_guard_removes_the_directory_when_not_disarmed() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("half-built");
+        fs::create_dir_all(path.join("bin")).unwrap();
+
+        {
+            let _guard = RollbackGuard::new(path.clone());
+        } // dropped here, still armed
+
+        assert!(!path.exists(), "an armed guard must clean up on drop");
+    }
+
+    #[test]
+    fn rollback_guard_leaves_the_directory_once_disarmed() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("finished");
+        fs::create_dir_all(path.join("bin")).unwrap();
+
+        {
+            let mut guard = RollbackGuard::new(path.clone());
+            guard.disarm();
+        }
+
+        assert!(
+            path.exists(),
+            "a disarmed guard must leave the finished environment alone"
+        );
+    }
+
+    /// `write_metadata` is what makes a migrated directory recognisable to
+    /// the rest of scuv; replaced with a bare `Ok(())` the environment ends up
+    /// without `.scoop-metadata.json` and `scuv list` cannot see it. The uv
+    /// version lookup inside is `.ok()`, so an unusable UvClient is fine here.
+    #[test]
+    fn write_metadata_creates_a_readable_metadata_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let target = temp.path().join("web");
+        fs::create_dir_all(&target).unwrap();
+
+        offline_migrator()
+            .write_metadata(&target, "web", "3.12.0")
+            .unwrap();
+
+        let raw = fs::read_to_string(target.join(".scoop-metadata.json")).unwrap();
+        assert!(raw.contains("\"web\""), "name should be recorded: {raw}");
+        assert!(
+            raw.contains("3.12.0"),
+            "python version should be recorded: {raw}"
+        );
+    }
+
+    /// Version strings arrive as `3.12.1`, `3.12`, or something unparseable;
+    /// each arm has to survive on its own.
+    #[test]
+    fn extract_major_minor_handles_each_shape() {
+        assert_eq!(extract_major_minor("3.12.1"), "3.12");
+        assert_eq!(extract_major_minor("3.12"), "3.12");
+        assert_eq!(extract_major_minor("3"), "3");
+        assert_eq!(extract_major_minor("pypy"), "pypy");
+    }
+
+    /// A migrator with a UvClient that is never invoked — enough to reach
+    /// the filesystem-only paths below without needing uv on PATH.
+    fn offline_migrator() -> Migrator {
+        Migrator::with_uv(crate::uv::UvClient::with_path(PathBuf::from(
+            "/nonexistent/uv",
+        )))
+    }
+
+    /// `delete_source` guards with `!source.path.exists()` and returns early
+    /// when the directory is already gone. Dropping the `!` inverts it: a
+    /// live source is left in place and a missing one is handed to
+    /// `remove_dir_all`. Both halves are asserted here.
+    #[test]
+    fn delete_source_removes_existing_directory() {
+        let temp = tempfile::tempdir().unwrap();
+        let env_path = temp.path().join("web");
+        fs::create_dir_all(env_path.join("bin")).unwrap();
+
+        let source = SourceEnvironment {
+            name: "web".to_string(),
+            python_version: "3.12.0".to_string(),
+            path: env_path.clone(),
+            source_type: SourceType::Pyenv,
+            size_bytes: None,
+            status: EnvironmentStatus::Ready,
+        };
+
+        offline_migrator().delete_source(&source).unwrap();
+        assert!(!env_path.exists(), "source directory should be gone");
+    }
+
+    #[test]
+    fn delete_source_is_ok_when_already_gone() {
+        let temp = tempfile::tempdir().unwrap();
+        let source = SourceEnvironment {
+            name: "web".to_string(),
+            python_version: "3.12.0".to_string(),
+            path: temp.path().join("never-created"),
+            source_type: SourceType::Pyenv,
+            size_bytes: None,
+            status: EnvironmentStatus::Ready,
+        };
+
+        assert!(offline_migrator().delete_source(&source).is_ok());
+    }
+
     #[test]
     fn create_target_env_rejects_path_traversal_name() {
         let migrator = Migrator {

@@ -183,6 +183,196 @@ mod tests {
         assert_eq!(version, Some("3.11.0".to_string()));
     }
 
+    /// `parse_pyvenv_cfg` falls back to reading the version out of the `home`
+    /// path when no `version` key is present. The existing test only covers
+    /// the `version` key, so the two offset arithmetic sites below
+    /// (`at_idx + 7` past `python@`, `versions_idx + 9` past `Versions/`)
+    /// were never executed.
+    #[test]
+    fn parse_pyvenv_cfg_reads_version_from_homebrew_style_home() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(
+            temp.path().join("pyvenv.cfg"),
+            "home = /usr/local/opt/python@3.11/bin\n",
+        )
+        .unwrap();
+
+        assert_eq!(
+            VenvWrapperDiscovery::parse_pyvenv_cfg(temp.path()),
+            Some("3.11".to_string())
+        );
+    }
+
+    /// Same fallback, framework layout: the offset must land exactly past
+    /// `Versions/`.
+    #[test]
+    fn parse_pyvenv_cfg_reads_version_from_framework_home() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(
+            temp.path().join("pyvenv.cfg"),
+            "home = /Library/Frameworks/Python.framework/Versions/3.12/bin\n",
+        )
+        .unwrap();
+
+        assert_eq!(
+            VenvWrapperDiscovery::parse_pyvenv_cfg(temp.path()),
+            Some("3.12".to_string())
+        );
+    }
+
+    /// `python@` with nothing after it still has to produce the trailing
+    /// segment rather than slicing out of bounds.
+    #[test]
+    fn parse_pyvenv_cfg_handles_home_ending_at_version() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(
+            temp.path().join("pyvenv.cfg"),
+            "home = /usr/local/opt/python@3.13\n",
+        )
+        .unwrap();
+
+        assert_eq!(
+            VenvWrapperDiscovery::parse_pyvenv_cfg(temp.path()),
+            Some("3.13".to_string())
+        );
+    }
+
+    /// `default_root` prefers `$WORKON_HOME` and falls back to
+    /// `~/.virtualenvs`, in both cases only when the directory exists.
+    #[test]
+    #[serial_test::serial]
+    fn default_root_prefers_workon_home_when_it_exists() {
+        let temp = tempfile::tempdir().unwrap();
+        let workon = temp.path().join("envs");
+        fs::create_dir_all(&workon).unwrap();
+
+        let _g = crate::test_utils::env_guard(&[
+            ("WORKON_HOME", Some(workon.to_str().unwrap())),
+            ("HOME", Some(temp.path().to_str().unwrap())),
+        ]);
+
+        let found = VenvWrapperDiscovery::default_root().expect("WORKON_HOME exists");
+        assert_eq!(found.root, workon);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn default_root_falls_back_to_dot_virtualenvs() {
+        let temp = tempfile::tempdir().unwrap();
+        let fallback = temp.path().join(".virtualenvs");
+        fs::create_dir_all(&fallback).unwrap();
+
+        let _g = crate::test_utils::env_guard(&[
+            ("WORKON_HOME", None),
+            ("HOME", Some(temp.path().to_str().unwrap())),
+        ]);
+
+        let found = VenvWrapperDiscovery::default_root().expect("~/.virtualenvs exists");
+        assert_eq!(found.root, fallback);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn default_root_none_when_nothing_exists() {
+        let temp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            ("WORKON_HOME", None),
+            ("HOME", Some(temp.path().to_str().unwrap())),
+        ]);
+
+        assert!(VenvWrapperDiscovery::default_root().is_none());
+    }
+
+    /// A directory virtualenvwrapper would accept: `bin/python` present.
+    fn make_venv(root: &Path, name: &str) -> PathBuf {
+        let env = root.join(name);
+        fs::create_dir_all(env.join("bin")).unwrap();
+        fs::write(env.join("bin").join("python"), b"").unwrap();
+        env
+    }
+
+    /// `parse_environment` requires `bin/python`; inverting that guard makes
+    /// every non-virtualenv directory look like one.
+    #[test]
+    fn parse_environment_requires_python_binary() {
+        let temp = tempfile::tempdir().unwrap();
+        let bare = temp.path().join("web");
+        fs::create_dir(&bare).unwrap();
+
+        let d = VenvWrapperDiscovery::new(temp.path().to_path_buf());
+        assert!(d.parse_environment(&bare).is_none());
+
+        let real = make_venv(temp.path(), "api");
+        assert_eq!(d.parse_environment(&real).unwrap().name, "api");
+    }
+
+    /// Hidden directories are skipped.
+    #[test]
+    fn parse_environment_skips_hidden_directories() {
+        let temp = tempfile::tempdir().unwrap();
+        let hidden = make_venv(temp.path(), ".cache");
+
+        let d = VenvWrapperDiscovery::new(temp.path().to_path_buf());
+        assert!(d.parse_environment(&hidden).is_none());
+    }
+
+    /// Scanning a missing root yields nothing rather than erroring, and a
+    /// present root is actually read — inverting the guard swaps both.
+    #[test]
+    fn scan_environments_handles_present_and_missing_root() {
+        let temp = tempfile::tempdir().unwrap();
+        make_venv(temp.path(), "web");
+
+        let present = VenvWrapperDiscovery::new(temp.path().to_path_buf());
+        let envs = present.scan_environments().unwrap();
+        assert_eq!(envs.len(), 1);
+        assert_eq!(envs[0].name, "web");
+
+        let missing = VenvWrapperDiscovery::new(temp.path().join("nope"));
+        assert!(missing.scan_environments().unwrap().is_empty());
+    }
+
+    /// The scan guard is `is_symlink() || !is_dir()`. Weakened to `&&`, a
+    /// symlink pointing at a real virtualenv outside the root gets scanned.
+    #[cfg(unix)]
+    #[test]
+    fn scan_environments_skips_symlinked_entries() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("root");
+        fs::create_dir(&root).unwrap();
+        let outside = make_venv(temp.path(), "outside");
+        std::os::unix::fs::symlink(&outside, root.join("linked")).unwrap();
+
+        let d = VenvWrapperDiscovery::new(root);
+        assert!(d.scan_environments().unwrap().is_empty());
+    }
+
+    #[test]
+    fn scan_environments_skips_plain_files() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(temp.path().join("stray"), b"").unwrap();
+
+        let d = VenvWrapperDiscovery::new(temp.path().to_path_buf());
+        assert!(d.scan_environments().unwrap().is_empty());
+    }
+
+    /// `find_environment` rejects a missing path and a same-named file; the
+    /// guard is `!exists() || !is_dir()`, and every weakening of it lets one
+    /// of those through.
+    #[test]
+    fn find_environment_rejects_missing_and_non_directory() {
+        let temp = tempfile::tempdir().unwrap();
+        let d = VenvWrapperDiscovery::new(temp.path().to_path_buf());
+
+        assert!(d.find_environment("absent").is_err());
+
+        fs::write(temp.path().join("afile"), b"").unwrap();
+        assert!(d.find_environment("afile").is_err());
+
+        make_venv(temp.path(), "web");
+        assert_eq!(d.find_environment("web").unwrap().name, "web");
+    }
+
     #[test]
     fn test_determine_status_ready() {
         let status = common::determine_status("nonexistent_venv_wrapper_test", "3.12.0");

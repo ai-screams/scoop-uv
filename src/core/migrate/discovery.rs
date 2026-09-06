@@ -299,6 +299,73 @@ mod tests {
     // Unit Tests: PyenvDiscovery::new()
     // =========================================================================
 
+    /// A pyenv virtualenv lives at `<root>/versions/<py>/envs/<name>`.
+    fn make_pyenv_env(root: &Path, py: &str, name: &str) -> PathBuf {
+        let env = root.join("versions").join(py).join("envs").join(name);
+        fs::create_dir_all(env.join("bin")).unwrap();
+        fs::write(env.join("bin").join("python"), b"").unwrap();
+        env
+    }
+
+    /// The `envs` subdirectory guard is `!exists() || !is_dir()`. A Python
+    /// version directory with a *file* named `envs` must be skipped, not
+    /// walked.
+    #[test]
+    fn scan_skips_version_dir_whose_envs_is_a_file() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path();
+        make_pyenv_env(root, "3.12.0", "web");
+        // A second version dir where `envs` is a regular file.
+        let broken = root.join("versions").join("3.11.0");
+        fs::create_dir_all(&broken).unwrap();
+        fs::write(broken.join("envs"), b"").unwrap();
+
+        let d = PyenvDiscovery::new(root.to_path_buf());
+        let envs = d.scan_environments().unwrap();
+        assert_eq!(envs.len(), 1);
+        assert_eq!(envs[0].name, "web");
+    }
+
+    /// Entries under `envs/` that are symlinks are skipped whatever they
+    /// point at — the guard is `is_symlink() || !is_dir()`.
+    #[cfg(unix)]
+    #[test]
+    fn scan_skips_symlinked_env_entries() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path();
+        let real = make_pyenv_env(root, "3.12.0", "web");
+        let envs_dir = root.join("versions").join("3.12.0").join("envs");
+        std::os::unix::fs::symlink(&real, envs_dir.join("alias")).unwrap();
+
+        let d = PyenvDiscovery::new(root.to_path_buf());
+        let names: Vec<_> = d
+            .scan_environments()
+            .unwrap()
+            .into_iter()
+            .map(|e| e.name)
+            .collect();
+        assert_eq!(names, vec!["web"], "the symlinked alias must not appear");
+    }
+
+    /// Plain files under `envs/` are not environments.
+    #[test]
+    fn scan_skips_plain_files_under_envs() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path();
+        make_pyenv_env(root, "3.12.0", "web");
+        fs::write(
+            root.join("versions")
+                .join("3.12.0")
+                .join("envs")
+                .join("stray"),
+            b"",
+        )
+        .unwrap();
+
+        let d = PyenvDiscovery::new(root.to_path_buf());
+        assert_eq!(d.scan_environments().unwrap().len(), 1);
+    }
+
     #[test]
     fn test_new_creates_instance_with_given_root() {
         let path = PathBuf::from("/some/path/.pyenv");
