@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788675163303,
+  "lastUpdate": 1788675165011,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -4429,6 +4429,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 491,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1186a36f70269f6d6c3536c567c5bf7cc8481a39",
+          "message": "Merge pull request #168 from ai-screams/fix/migrate-batch-name-collision\n\nfix(migrate): reject duplicate names within one batch; label env-var source",
+          "timestamp": "2026-09-06T15:08:42+09:00",
+          "tree_id": "a5b84b04061fbc772fc287e8350a321adf08ecb8",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/1186a36f70269f6d6c3536c567c5bf7cc8481a39"
+        },
+        "date": 1788675164901,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1674,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1112,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
