@@ -194,10 +194,12 @@ scuv shell --unset
 
 | Dependency | Install | Why |
 |------------|---------|-----|
-| **uv** (>= 0.5.14) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | The secret ingredient 🔮 |
+| **uv** (>= 0.5.19) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | The secret ingredient 🔮 |
 | **Rust** | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` | Build from source |
 
-> Minimum supported `uv` is **0.5.14**. Run `scuv doctor` to verify your installation.
+> Minimum supported `uv` is **0.5.19** — the release that added
+> `uv python list --output-format=json`, which scuv relies on. Run
+> `scuv doctor` to verify your installation.
 
 <details>
 <summary>❓ <b>FAQ:</b> How is scuv different from uv, and is it related to Scoop (Windows)?</summary>

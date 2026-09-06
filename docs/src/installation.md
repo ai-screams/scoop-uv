@@ -4,7 +4,7 @@
 
 | Dependency | Version | Install Command |
 |------------|---------|-----------------|
-| **uv** | 0.5.14 or newer | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| **uv** | 0.5.19 or newer | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | **Rust** | 1.85+ | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
 
 ## Install via Cargo
