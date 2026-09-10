@@ -164,7 +164,7 @@ impl Metadata {
 
 ---
 
-### Doctor Module (`core/doctor.rs`)
+### Doctor Module (`core/doctor/`)
 
 #### `Check` Trait
 
@@ -185,6 +185,7 @@ pub trait Check: Send + Sync {
 - `SymlinkCheck` - Checks for broken virtualenv Python symlinks (e.g., `<env>/bin/python`)
 - `ShellCheck` - Verifies shell integration
 - `VersionCheck` - Validates version files
+- `LegacyCheck` - Warns about leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or legacy `.scoop-version` / `.scoop.toml` from the rename
 
 ---
 
@@ -367,6 +368,12 @@ pub enum ScoopError {
 
     // Cascade errors
     CascadeAborted,
+
+    // Abridged: 38 variants in total. See src/error/mod.rs for the full set,
+    // including SelfUpdateFailed, NoActiveEnvironment, ExecutableNotFound,
+    // ManifestNotFound, InvalidExportFile, UnsupportedExportVersion,
+    // VerifyFailed, SitePackagesNotFound, MigrationSourcesNotFound,
+    // MigrationBatchFailed and DiffMismatch.
 }
 
 impl ScoopError {
@@ -404,6 +411,8 @@ impl ScoopError {
 - `SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)
 - `MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)
 - `UNINSTALL_*` - Uninstall errors (e.g., `UNINSTALL_CASCADE_ABORTED`)
+- Plus `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`, `VERIFY_*`
+  and `DIFF_*` — see `src/error/code.rs` for the authoritative list
 
 **Example Error Handling:**
 ```rust
@@ -627,7 +636,7 @@ Commands::MyCommand { arg } => {
 ### Adding a New Health Check
 
 ```rust
-// In core/doctor.rs
+// In core/doctor/checks/
 struct MyCheck;
 
 impl Check for MyCheck {

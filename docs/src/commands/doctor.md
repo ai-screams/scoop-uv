@@ -20,11 +20,13 @@ scuv doctor [options]
 
 | Check | What it verifies |
 |-------|------------------|
-| **uv installation** | uv is installed and accessible |
-| **Shell integration** | Shell hook is properly configured |
-| **Environment integrity** | Python symlinks are valid, `pyvenv.cfg` exists |
-| **Path configuration** | `~/.scuv/` directory structure is correct |
-| **Version file validity** | `.scuv-version` files reference existing environments |
+| **uv installation** | uv is installed and meets the minimum version (0.5.19) |
+| **SCUV_HOME directory** | `~/.scuv/` exists and is writable |
+| **virtual environments** | Every environment has a `bin/python` and a `pyvenv.cfg` |
+| **symbolic links** | Python symlinks inside each environment still resolve |
+| **shell configuration** | The shell hook is present in your rc file |
+| **version files** | `.scuv-version` entries reference environments that exist |
+| **legacy scoop remnants** | Leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or legacy `.scoop-version` / `.scoop.toml` from the rename |
 
 ## Examples
 

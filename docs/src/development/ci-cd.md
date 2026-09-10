@@ -97,6 +97,24 @@ rationale. Most exclude code whose mutations can only be killed by
 spawning a real `uv` or `python` — a gap we accept rather than a test
 hole. Add exclusions there with the reason, not silently.
 
+`exclude_re` matches the whole mutant description, not the function name.
+A bare `"foo"` therefore drops every mutant in `foo`, including the ones
+existing tests already kill — the exclusion outlives the reason given for
+it, and `--in-diff` never gates that code again. Exclude the specific
+description instead (`"delete match arm \[major\] in foo"`), and confirm
+what actually left the gate by listing both configs and diffing them:
+
+```bash
+cargo mutants --config <before>.toml --list --file '<glob>' | sort > before.txt
+cargo mutants --list --file '<glob>' | sort > after.txt
+comm -23 before.txt after.txt
+```
+
+Some mutants cannot be separated that way. Two `delete !` in one function
+produce a byte-identical description, so a whole-function exclusion is the
+only option available — say so in the comment when that is the reason,
+instead of letting it read as an equivalence claim.
+
 New `Check` trait implementations and thin wrappers need direct dispatch
 tests, or the PR gate reports them as `MISSED`.
 
@@ -221,13 +239,15 @@ any of these being fixed.
 - **No coverage threshold.** Uploads work again, but there is no
   `codecov.yml`, so nothing sets a target percentage or a PR status
   policy. Coverage is reported and never enforced.
-- **55 unreviewed mutation escapes.** The weekly full run now finishes,
-  and the run it has been failing to complete already found 55 mutants no
-  test kills — 46 of them under `src/core/migrate/**`. Roughly 23 are pure
-  logic mutations (`&&` to `||`, `delete !`) that unit tests ought to
-  catch; the rest are return-value mutations that may need a real `uv` or
-  `conda` to observe, in which case they belong in `.cargo/mutants.toml`
-  with a rationale. Until that triage happens the job tolerates exit 2.
+- **Unreviewed mutation escapes outside `migrate/`.** The last full-run
+  artifact listed 55 mutants no test kills, 46 of them under
+  `src/core/migrate/**`. That module is now closed — 111 mutants, 0
+  missed — so what remains is the return-value backlog elsewhere
+  (`UvClient::list_pythons -> Ok(vec![])` and similar). Those may need a
+  real `uv` or `conda` to observe, in which case they belong in
+  `.cargo/mutants.toml` with a rationale, but each needs checking rather
+  than assuming. The next completed weekly run supersedes that artifact;
+  until the triage happens the job tolerates exit 2.
 - **Docs are only verified on release tags.** `docs.yml` still runs
   nowhere else, so an mdBook build failure or a stale `ko.po` surfaces at
   release time. The two cheapest checks were moved into the Lint job; the

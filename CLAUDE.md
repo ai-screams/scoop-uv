@@ -12,8 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Language**: Rust (Edition 2024, MSRV 1.88)
 - **License**: MIT OR Apache-2.0
-- **Version**: 0.15.2 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
-- **Tests**: 988 passed (916 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings — these drift; `cargo test` is the source of truth
+- **Version**: scuv 0.15.3 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
+- **Tests**: 1029 passed (957 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings — these drift; `cargo test` is the source of truth
 - **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
 - **CI/CD design**: `docs/src/development/ci-cd.md` documents what each of the 11 workflows guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
 - **Test tooling**: rstest (table tests), proptest, cargo-mutants (mutation), cargo-fuzz (nightly `fuzz/` workspace); see `.docs/dev/testing-strategy.md`
@@ -68,94 +68,31 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 - **After editing `locales/app.yml`, run `touch src/lib.rs` before `cargo test`** — rust_i18n's proc-macro isn't cargo-tracked; a yml-only edit reuses the stale binary and reports false-green.
 - Env-var tests MUST use `env_guard` (src/test_utils.rs) + `#[serial]`, controlling both `SCUV_*` and legacy `SCOOP_*` (and `HOME` when dirs are inspected) — the dev machine has a real `~/.scoop`.
 - PR CI runs `cargo-mutants --in-diff`: new `Check`-trait impls and thin wrappers need direct dispatch tests or the Mutants gate fails.
+- `.cargo/mutants.toml` `exclude_re` matches the full mutant description, not the function name — a bare `"foo"` silently drops every mutant in `foo`, including ones the tests kill. Exclude the exact description (`"delete match arm \\[major\\] in foo"`); verify the delta with `cargo mutants --config <alt>.toml --list --file '<glob>'` + `comm`.
+- A green `Mutants (diff)` proves little on a test-only PR — no production lines changed — and `Mutants (full)` is skipped on PRs. Verify mutation claims locally with `cargo mutants --file '<glob>'`.
 
 ## MSRV Policy
 
-**Policy**: N-1 (Moderate)
-**Current MSRV**: 1.88 (ecosystem adopted `let`-chains; deps like `ignore` 0.4.30 and `serde-saphyr` require it. Edition 2024's own floor is 1.85.)
-**Test Matrix**: `[msrv, stable]`
+**Policy**: N-1 (Moderate) · **Current MSRV**: 1.88 · **Test Matrix**: `[msrv, stable]`
 
-### Guidelines for AI Agents & Contributors
+1.88 because the ecosystem adopted `let`-chains and deps like `ignore` 0.4.30 and
+`serde-saphyr` require it. Edition 2024's own hard floor is 1.85 — going below that
+means changing the edition, not just the MSRV. `rust-toolchain.toml` auto-selects
+1.88 here, so `cargo test` already runs on MSRV; `rustup override set stable` checks
+the other half of the matrix.
 
-#### Before Bumping MSRV
+### Bumping it
 
-1. **Verify benefit justifies change**:
-   - ✅ New language features that significantly improve user experience
-   - ✅ Critical dependency requires newer Rust
-   - ✅ Security fix only available in newer version
-   - ❌ Time-based updates without clear benefit
-   - ❌ Minor syntax sugar or personal preference
+Verify first (`cargo msrv verify`, `cargo tree --duplicates`), then update all five:
 
-2. **Check dependency constraints**:
-   ```bash
-   cargo tree --duplicates
-   cargo msrv verify
-   ```
+- [ ] `Cargo.toml`: `rust-version`
+- [ ] `rust-toolchain.toml`: `channel`
+- [ ] `.github/workflows/ci.yml`: MSRV job toolchain
+- [ ] `CHANGELOG.md`: entry with the reason
+- [ ] README badge auto-updates from `Cargo.toml` — nothing to do
 
-3. **Test locally on new MSRV**:
-   ```bash
-   rustup install 1.86  # Example: bumping to 1.86
-   cargo +1.86 test --all-features
-   cargo +1.86 clippy --all-targets -- -D warnings
-   ```
-
-4. **Update all references**:
-   - [ ] `Cargo.toml`: `rust-version = "1.86"`
-   - [ ] `rust-toolchain.toml`: `channel = "1.86"`
-   - [ ] `.github/workflows/ci.yml`: MSRV job toolchain version
-   - [ ] `CHANGELOG.md`: Add entry with rationale
-   - [ ] README.md badge will auto-update (dynamic)
-
-5. **CHANGELOG entry format**:
-   ```markdown
-   ### Changed
-   - **MSRV**: Bumped to 1.86 (reason: async trait improvements in std)
-   ```
-
-#### When Writing Code
-
-- Assume Rust 1.88 as baseline
-- Use Edition 2024 syntax freely (`gen` keyword reservation, unsafe extern blocks)
-- All Rust 1.88+ features available (async-await, const generics, let-else, let-chains, RPIT in traits, etc.)
-- Check feature stability: https://doc.rust-lang.org/stable/releases.html
-- If unsure about feature MSRV, test with `cargo +1.88 check`
-
-#### Testing Commands
-
-```bash
-# Test on MSRV (automatic via rust-toolchain.toml)
-cargo test --all-features
-cargo clippy --all-targets -- -D warnings
-
-# Verify MSRV accuracy
-cargo msrv verify
-
-# Test on stable (override)
-rustup override set stable
-cargo test --all-features
-rustup override unset
-```
-
-### Edition 2024 Constraints
-
-scuv uses **Rust Edition 2024**, which requires:
-- Minimum Rust 1.85 (hard floor)
-- MSRV-aware resolver enabled by default
-- Cannot downgrade below 1.85 without changing edition to 2021
-
-### Automation
-
-- **CI**: Tests on both MSRV (1.88) and stable automatically
-- **cargo-msrv**: Verifies MSRV on Cargo.toml changes in CI
-- **Badge**: README badge auto-updates from Cargo.toml via shields.io
-- **Local**: rust-toolchain.toml auto-selects 1.88 in project directory
-
-### References
-
-- [RFC 3537: MSRV-aware Resolver](https://rust-lang.github.io/rfcs/3537-msrv-resolver.html)
-- [MSRV Best Practices](https://github.com/rust-lang/api-guidelines/discussions/231)
-- [Cargo CI Guide](https://doc.rust-lang.org/cargo/guide/continuous-integration.html)
-- [rust-toolchain.toml Spec](https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file)
+CI enforces it: `ci.yml` tests both toolchains, and `msrv-check.yml` runs
+`cargo-msrv` whenever `Cargo.toml`/`Cargo.lock` changes.
 
 ## Architecture
 
@@ -245,6 +182,11 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 | `scuv use --unset` | - | Remove local/global version file |
 | `scuv shell <NAME>` | - | Set shell-specific env (eval required) |
 | `scuv shell --unset` | - | Clear shell-specific setting |
+| `scuv resolve` | - | *(hidden)* Print the current environment name |
+| `scuv activate <NAME>` | - | *(hidden)* Output activation script (eval required) |
+| `scuv deactivate` | - | *(hidden)* Output deactivation script (eval required) |
+
+The last three carry `#[command(hide = true)]` — the shell wrappers call them via `eval`, they are absent from `--help`, and they deliberately have no page under `docs/src/commands/`.
 
 ### Global Options
 

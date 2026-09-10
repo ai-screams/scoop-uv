@@ -86,6 +86,8 @@ Verify: `scuv --version`
 |---------|-------------|
 | `scuv gc` | Garbage-collect orphan virtualenvs (missing metadata or broken Python). Default is dry-run; pass `-y`/`--yes` to actually remove. `--aggressive` also flags uv-managed Pythons that no env references. `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (0.13.0; envs with no `last_used` are never matched, corrupt metadata never matches, max 200y). |
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) — delete unused download/wheel cache entries. |
+| `scuv diff <a> <b>` | Compare two envs (Python version, packages, metadata); `--strict` exits 1 on any difference |
+| `scuv self update` | Update scuv itself from crates.io |
 | `scuv verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scuv.toml` Python matches (skipped if no manifest). Default always exits 0; `--strict` exits 1 on any issue. Pass `NAME` to check a single env. Complements `doctor` (system-level) and `gc` (orphan removal). |
 | `scuv man [DIR]` | Generate man pages from the live `clap::Command` tree. Without `DIR`: print top-level `scuv.1` to stdout (pipe to `man -l -`). With `DIR`: write `scuv.1` + one `scuv-<sub>.1` per visible subcommand for distro packagers. |
 
@@ -157,7 +159,7 @@ src/
 ├── core/          # Domain logic
 │   ├── version.rs     # Version file resolution (.scuv-version)
 │   ├── metadata.rs    # Virtualenv metadata (JSON)
-│   ├── virtualenv.rs  # VirtualenvService (CRUD operations)
+│   ├── virtualenv/    # VirtualenvService (CRUD operations); mod.rs + tests.rs
 │   ├── doctor/        # Health check (mod.rs, engine.rs, types.rs, checks/)
 │   └── migrate/       # Migration from pyenv/conda/virtualenvwrapper
 ├── shell/         # Shell integration (bash, zsh, fish, powershell)
@@ -315,7 +317,8 @@ The custom interpreter path is persisted in
 3. `ZSH_VERSION` env → Zsh
 4. Default → Bash
 
-Override with `--shell` option on `init` and `completions` commands.
+`init` and `completions` take the shell as a positional argument (`scuv init zsh`).
+A `--shell` long flag exists only on the hidden `activate` / `deactivate` commands.
 
 **Project Manifest (`.scuv.toml`, v0.11.0)**:
 
@@ -459,7 +462,7 @@ impl Doctor {
 }
 ```
 
-Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck
+Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck, LegacyCheck
 
 #### UvClient
 
@@ -482,12 +485,14 @@ impl UvClient {
     pub fn create_venv(&self, path: &Path, python_version: &str) -> Result<()>;
     pub fn install_python(&self, version: &str) -> Result<()>;
     pub fn uninstall_python(&self, version: &str) -> Result<()>;
-    pub fn list_pythons(&self) -> Result<Vec<String>>;
+    pub fn list_pythons(&self) -> Result<Vec<PythonInfo>>;
     pub fn list_installed_pythons(&self) -> Result<Vec<PythonInfo>>;
-    pub fn find_python(&self, version: &str) -> Result<PythonInfo>;
-    pub fn pip_install(&self, venv_path: &Path, packages: &[&str]) -> Result<()>;
+    pub fn find_python(&self, version_pattern: &str) -> Result<Option<PythonInfo>>;
+    pub fn pip_install(&self, venv_path: &Path, packages: &[String]) -> Result<()>;
     pub fn pip_install_requirements(&self, venv_path: &Path, req_file: &Path) -> Result<()>;
-    pub fn latest_installed_python(&self) -> Result<PythonInfo>;
+    pub fn latest_installed_python(&self) -> Result<Option<PythonInfo>>;
+    pub fn pip_list(&self, venv_path: &Path) -> Result<Vec<UvPipListEntry>>;  // scuv diff
+    pub fn cache_prune(&self) -> Result<String>;                              // scuv prune
 }
 ```
 
@@ -540,7 +545,7 @@ pub fn is_valid_env_name(name: &str) -> bool;
 pub fn validate_env_name(name: &str) -> Result<()>;
 pub fn is_valid_python_version(version: &str) -> bool;
 pub fn validate_python_version(version: &str) -> Result<()>;
-pub fn parse_python_version(version: &str) -> Result<PythonVersion>;
+impl PythonVersion { pub fn parse(version: &str) -> Option<Self>; }
 pub fn normalize_python_version(version: &str) -> String;
 pub fn validate_python_path(path: &Path) -> Result<()>;       // Validate Python executable path
 pub fn detect_python_version(path: &Path) -> Option<String>;  // Detect version from Python binary
@@ -683,6 +688,11 @@ pub enum ScoopError {
     ManifestNotFound { start_dir: PathBuf },                   // scuv sync: no .scuv.toml in cwd or ancestors
     InvalidExportFile { path: PathBuf, reason: String },       // scuv import: malformed JSON
     UnsupportedExportVersion { version: String, supported: String }, // scuv import: schema version mismatch
+    VerifyFailed { name: String, failures: usize },                  // scuv verify --strict
+    SitePackagesNotFound { path: PathBuf },
+    MigrationSourcesNotFound,
+    MigrationBatchFailed { failed: usize, total: usize },            // scuv migrate all
+    DiffMismatch,                                                    // scuv diff --strict
 }
 
 impl ScoopError {
@@ -779,7 +789,7 @@ Error response:
 
 ## Testing
 
-- 988 tests (916 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings
+- 1029 tests (957 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings
 - Unit tests: inline `mod tests` blocks in each source file
 - Integration tests: `tests/cli.rs` with `assert_cmd` + `predicates`
 - Test isolation: `tests/common::TestFixture` for `SCUV_HOME` isolation

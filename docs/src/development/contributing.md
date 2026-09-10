@@ -4,7 +4,7 @@ Guide for contributing to scuv development.
 
 ## Prerequisites
 
-- **Rust 1.85+** (Edition 2024)
+- **Rust 1.88+** (Edition 2024)
 - **uv** - Python package manager ([install](https://github.com/astral-sh/uv))
 - **prek** - Pre-commit hooks ([install](https://github.com/j178/prek))
 
@@ -51,7 +51,7 @@ src/
 │   ├── metadata.rs      # Metadata structs
 │   ├── manifest.rs      # Sync manifest (.scuv.toml)
 │   ├── export_schema.rs # Export/import schema
-│   └── doctor.rs        # Health diagnostics
+│   └── doctor/          # Health diagnostics (engine, types, checks/)
 
 ├── cli/                 # CLI layer
 │   ├── mod.rs           # Cli struct, Commands enum
@@ -122,7 +122,7 @@ For detailed guides, see:
 - Manages `.scuv-version` files
 - Resolves current directory to active environment
 
-**Doctor** (`src/core/doctor.rs`)
+**Doctor** (`src/core/doctor/`)
 
 - Health diagnostics for scuv setup
 - Checks uv, shell integration, paths, environments
@@ -223,9 +223,11 @@ Releases are automated via [release-plz](https://release-plz.dev/):
 
 See `.docs/` for internal technical references:
 
-- `TECHNICAL_REFERENCE.md` - Implementation details
-- `SHELL_GOTCHAS.md` - Shell integration pitfalls
-- `IMPLEMENTATION_PLAN.md` - Development roadmap
+- `adr/` - Architecture decision records
+- `spec/` - Naming and CLI option specs
+- `dev/` - Code quality, documentation and testing strategy notes
+- `plan/` - Feature scope and roadmap
+- `ref/`, `design/`, `research/`, `wip/` - Working notes
 - `brand/brand.md` - Brand guidelines
 
 ## Code Style
