@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789025772957,
+  "lastUpdate": 1789025774936,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -4789,6 +4789,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1323,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "18a9ecee6d56bb4448d0888bf05fd3bbfa30c7ee",
+          "message": "Merge pull request #171 from ai-screams/test/kill-migrate-mutants\n\ntest(migrate): close the mutation gaps the weekly run had been finding",
+          "timestamp": "2026-09-10T16:31:01+09:00",
+          "tree_id": "2ceb8c522dcc2ad96b6ff6537bb9ce8fe4516a44",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/18a9ecee6d56bb4448d0888bf05fd3bbfa30c7ee"
+        },
+        "date": 1789025774824,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1868,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1324,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
