@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789050814684,
+  "lastUpdate": 1789050816806,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -4909,6 +4909,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1324,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "88befe7cb72a9106c48b09cba1188efd40c8ca51",
+          "message": "Merge pull request #172 from ai-screams/docs/refresh-drift-2026-09\n\ndocs: refresh every doc surface against the code",
+          "timestamp": "2026-09-10T23:29:28+09:00",
+          "tree_id": "87ed7c7245a16ca9249abce3b33d566025a8d2cf",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/88befe7cb72a9106c48b09cba1188efd40c8ca51"
+        },
+        "date": 1789050816691,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1884,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1338,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
