@@ -237,6 +237,201 @@ mod tests {
         assert!(matches!(status, EnvironmentStatus::Ready));
     }
 
+    /// Build a directory that `is_conda_env` should accept: `conda-meta/`
+    /// plus a `bin/python`.
+    fn make_conda_env(root: &Path, name: &str) -> PathBuf {
+        let env = root.join(name);
+        fs::create_dir_all(env.join("conda-meta")).unwrap();
+        fs::create_dir_all(env.join("bin")).unwrap();
+        fs::write(env.join("bin").join("python"), b"").unwrap();
+        env
+    }
+
+    /// `default_roots` walks `$HOME` for the four well-known conda layouts
+    /// and de-duplicates against `$CONDA_PREFIX/envs`. Both the discovery and
+    /// the dedup guard need a controlled `$HOME` to exercise, which is why
+    /// nothing covered them before.
+    #[test]
+    #[serial_test::serial]
+    fn default_roots_finds_every_known_layout() {
+        let temp = tempfile::tempdir().unwrap();
+        let home = temp.path();
+        for layout in [".conda", "anaconda3", "miniconda3", "miniforge3"] {
+            fs::create_dir_all(home.join(layout).join("envs")).unwrap();
+        }
+
+        let _g = crate::test_utils::env_guard(&[
+            ("HOME", Some(home.to_str().unwrap())),
+            ("CONDA_PREFIX", None),
+        ]);
+
+        let found = CondaDiscovery::default_roots().expect("layouts exist, so Some");
+        assert_eq!(
+            found.roots.len(),
+            4,
+            "every known layout should be picked up"
+        );
+    }
+
+    /// `$CONDA_PREFIX/envs` is added first, and the candidate loop must not
+    /// add it a second time. Dropping the `!` on that guard stops the loop
+    /// adding anything at all, which this length check catches.
+    #[test]
+    #[serial_test::serial]
+    fn default_roots_dedups_conda_prefix_against_layouts() {
+        let temp = tempfile::tempdir().unwrap();
+        let home = temp.path();
+        fs::create_dir_all(home.join(".conda").join("envs")).unwrap();
+        fs::create_dir_all(home.join("miniconda3").join("envs")).unwrap();
+
+        let _g = crate::test_utils::env_guard(&[
+            ("HOME", Some(home.to_str().unwrap())),
+            // Points at the same directory as the `.conda` candidate.
+            ("CONDA_PREFIX", Some(home.join(".conda").to_str().unwrap())),
+        ]);
+
+        let found = CondaDiscovery::default_roots().expect("layouts exist, so Some");
+        assert_eq!(
+            found.roots.len(),
+            2,
+            "CONDA_PREFIX and .conda are the same path and must appear once, \
+             alongside miniconda3: {:?}",
+            found.roots
+        );
+    }
+
+    /// No conda layout anywhere means no discovery at all.
+    #[test]
+    #[serial_test::serial]
+    fn default_roots_none_when_nothing_installed() {
+        let temp = tempfile::tempdir().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            ("HOME", Some(temp.path().to_str().unwrap())),
+            ("CONDA_PREFIX", None),
+        ]);
+
+        assert!(CondaDiscovery::default_roots().is_none());
+    }
+
+    /// The existing negative test passes even when the `conda-meta` guard is
+    /// inverted, because a bare tempdir has no `bin/python` either and both
+    /// branches end up false. Pin the positive case so the guard is actually
+    /// exercised.
+    #[test]
+    fn is_conda_env_true_for_conda_layout() {
+        let temp = tempfile::tempdir().unwrap();
+        let env = make_conda_env(temp.path(), "web");
+        assert!(CondaDiscovery::is_conda_env(&env));
+    }
+
+    /// `conda-meta` alone is not enough — we only migrate Python envs.
+    #[test]
+    fn is_conda_env_false_without_python_binary() {
+        let temp = tempfile::tempdir().unwrap();
+        let env = temp.path().join("web");
+        fs::create_dir_all(env.join("conda-meta")).unwrap();
+        assert!(!CondaDiscovery::is_conda_env(&env));
+    }
+
+    /// The filename filter is `starts_with("python-") && ends_with(".json")`.
+    /// Weakened to `||`, a short name like `a.json` reaches `&name_str[7..]`
+    /// and panics on the byte slice, so this covers more than a wrong answer.
+    #[test]
+    fn get_python_version_ignores_unrelated_conda_meta_files() {
+        let temp = tempfile::tempdir().unwrap();
+        let meta = temp.path().join("conda-meta");
+        fs::create_dir(&meta).unwrap();
+        fs::write(meta.join("a.json"), b"{}").unwrap();
+        fs::write(meta.join("python-notes.txt"), b"").unwrap();
+
+        assert_eq!(CondaDiscovery::get_python_version(temp.path()), None);
+    }
+
+    /// A directory that is not a conda env must not become a SourceEnvironment.
+    #[test]
+    fn parse_environment_rejects_non_conda_directory() {
+        let temp = tempfile::tempdir().unwrap();
+        let plain = temp.path().join("notconda");
+        fs::create_dir(&plain).unwrap();
+
+        let d = CondaDiscovery::new(vec![temp.path().to_path_buf()]);
+        assert!(d.parse_environment(&plain).is_none());
+    }
+
+    #[test]
+    fn parse_environment_accepts_conda_directory() {
+        let temp = tempfile::tempdir().unwrap();
+        let env = make_conda_env(temp.path(), "web");
+
+        let d = CondaDiscovery::new(vec![temp.path().to_path_buf()]);
+        let parsed = d.parse_environment(&env).expect("conda env should parse");
+        assert_eq!(parsed.name, "web");
+        assert_eq!(parsed.source_type, SourceType::Conda);
+    }
+
+    /// Scanning must read roots that exist and skip those that do not —
+    /// inverting that guard silently yields nothing.
+    #[test]
+    fn scan_environments_reads_existing_root_and_skips_missing() {
+        let temp = tempfile::tempdir().unwrap();
+        make_conda_env(temp.path(), "web");
+
+        let d = CondaDiscovery::new(vec![
+            temp.path().to_path_buf(),
+            temp.path().join("does-not-exist"),
+        ]);
+        let envs = d.scan_environments().unwrap();
+        assert_eq!(envs.len(), 1);
+        assert_eq!(envs[0].name, "web");
+    }
+
+    /// A symlink under a conda root is skipped whatever it points at. The
+    /// guard is `is_symlink() || !is_dir()`; with `&&` a symlink to a real
+    /// conda env would be scanned, which is how a link outside the root
+    /// gets pulled in.
+    #[cfg(unix)]
+    #[test]
+    fn scan_environments_skips_symlinked_entries() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("root");
+        fs::create_dir(&root).unwrap();
+        let outside = make_conda_env(temp.path(), "outside");
+        std::os::unix::fs::symlink(&outside, root.join("linked")).unwrap();
+
+        let d = CondaDiscovery::new(vec![root]);
+        assert!(d.scan_environments().unwrap().is_empty());
+    }
+
+    /// Plain files in a root are not environments either.
+    #[test]
+    fn scan_environments_skips_plain_files() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(temp.path().join("stray.txt"), b"").unwrap();
+
+        let d = CondaDiscovery::new(vec![temp.path().to_path_buf()]);
+        assert!(d.scan_environments().unwrap().is_empty());
+    }
+
+    /// `find_environment` requires the path to exist *and* be a directory;
+    /// weakened to `||` a same-named file would be parsed.
+    #[test]
+    fn find_environment_ignores_file_with_matching_name() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(temp.path().join("web"), b"").unwrap();
+
+        let d = CondaDiscovery::new(vec![temp.path().to_path_buf()]);
+        assert!(d.find_environment("web").is_err());
+    }
+
+    #[test]
+    fn find_environment_returns_conda_env() {
+        let temp = tempfile::tempdir().unwrap();
+        make_conda_env(temp.path(), "web");
+
+        let d = CondaDiscovery::new(vec![temp.path().to_path_buf()]);
+        assert_eq!(d.find_environment("web").unwrap().name, "web");
+    }
+
     #[test]
     fn test_get_python_version_from_conda_meta() {
         use std::io::Write;

@@ -74,3 +74,20 @@ pub trait EnvironmentSource: Send + Sync {
     /// Find a specific environment by name
     fn find_environment(&self, name: &str) -> Result<SourceEnvironment>;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `Display` feeds user-facing messages (the batch conflict reason names
+    /// the source tool), so a blanket `Ok(())` would silently blank them.
+    #[test]
+    fn source_type_display_names_each_tool() {
+        assert_eq!(SourceType::Pyenv.to_string(), "pyenv");
+        assert_eq!(
+            SourceType::VirtualenvWrapper.to_string(),
+            "virtualenvwrapper"
+        );
+        assert_eq!(SourceType::Conda.to_string(), "conda");
+    }
+}
