@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789025774936,
+  "lastUpdate": 1789050814684,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -4498,6 +4498,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/max_length",
             "value": 203,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "88befe7cb72a9106c48b09cba1188efd40c8ca51",
+          "message": "Merge pull request #172 from ai-screams/docs/refresh-drift-2026-09\n\ndocs: refresh every doc surface against the code",
+          "timestamp": "2026-09-10T23:29:28+09:00",
+          "tree_id": "87ed7c7245a16ca9249abce3b33d566025a8d2cf",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/88befe7cb72a9106c48b09cba1188efd40c8ca51"
+        },
+        "date": 1789050813700,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 76234,
+            "range": "± 1163",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 87886,
+            "range": "± 823",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3267,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 789,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 95,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 98,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 91,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 81,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 22,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 202,
             "range": "± 0",
             "unit": "ns/iter"
           }
