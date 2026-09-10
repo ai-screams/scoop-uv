@@ -543,7 +543,8 @@ src/
 │   └── #[cfg(test)] mod tests { ... }  # Unit tests
 │
 tests/
-├── integration_test.rs                  # Integration tests
+├── cli.rs                               # Integration tests (CLI black box)
+├── i18n_completeness.rs                 # Locale parity
 └── common/mod.rs                        # Shared test utilities
 ```
 
@@ -583,7 +584,7 @@ mod tests {
 Located in `tests/` directory:
 
 ```rust
-// tests/cli_test.rs
+// tests/cli.rs
 
 use assert_cmd::Command;
 use predicates::prelude::*;
@@ -655,7 +656,7 @@ scoop-uv/
 ├── src/
 │   ├── main.rs              # Entry point
 │   ├── lib.rs               # Library root
-│   ├── error.rs             # ScoopError enum
+│   ├── error/               # ScoopError enum (mod/code/display/exit/migrate/suggestion)
 │   ├── paths.rs             # Path utilities
 │   ├── validate.rs          # Validation logic
 │   │
@@ -664,7 +665,7 @@ scoop-uv/
 │   │   └── commands/        # Subcommand handlers
 │   │
 │   ├── core/                # Business logic
-│   │   ├── virtualenv.rs    # VirtualenvService
+│   │   ├── virtualenv/      # VirtualenvService (mod.rs + tests.rs)
 │   │   ├── version.rs       # VersionService
 │   │   └── metadata.rs      # Metadata structs
 │   │

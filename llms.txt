@@ -87,6 +87,8 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
 | `scuv gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons; `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (0.13.0) |
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
+| `scuv diff <a> <b>` | Compare two envs (Python version, packages, metadata); `--strict` exits 1 on any difference |
+| `scuv self update` | Update scuv itself from crates.io |
 | `scuv verify [NAME]` | Per-env health diagnosis (6 checks). Default always exits 0; `--strict` exits 1 on any issue |
 | `scuv man [DIR]` | Generate man pages — stdout for top-level, or write `scuv.1` + `scuv-<sub>.1` per subcommand into DIR |
 
