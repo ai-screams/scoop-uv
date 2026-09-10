@@ -38,7 +38,7 @@ version = re.search(r'^version = "(.+?)"', read("Cargo.toml"), re.M).group(1)
 # covers api.md's footer stamp, which the narrower pattern silently skipped —
 # the file was checked, matched nothing, and passed while stale.
 SAMPLE = re.compile(r"scuv (?:Version:\**\s*)?(\d+\.\d+\.\d+)")
-for rel in ("README.md", "docs/src/installation.md", "docs/src/api.md"):
+for rel in ("README.md", "CLAUDE.md", "docs/src/installation.md", "docs/src/api.md"):
     found = [m.group(1) for m in SAMPLE.finditer(read(rel))]
     stale = sorted({v for v in found if v != version})
     check(
