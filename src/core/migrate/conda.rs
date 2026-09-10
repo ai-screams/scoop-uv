@@ -247,10 +247,6 @@ mod tests {
         env
     }
 
-    /// The existing negative test passes even when the `conda-meta` guard is
-    /// inverted, because a bare tempdir has no `bin/python` either and both
-    /// branches end up false. Pin the positive case so the guard is actually
-    /// exercised.
     /// `default_roots` walks `$HOME` for the four well-known conda layouts
     /// and de-duplicates against `$CONDA_PREFIX/envs`. Both the discovery and
     /// the dedup guard need a controlled `$HOME` to exercise, which is why
@@ -317,6 +313,10 @@ mod tests {
         assert!(CondaDiscovery::default_roots().is_none());
     }
 
+    /// The existing negative test passes even when the `conda-meta` guard is
+    /// inverted, because a bare tempdir has no `bin/python` either and both
+    /// branches end up false. Pin the positive case so the guard is actually
+    /// exercised.
     #[test]
     fn is_conda_env_true_for_conda_layout() {
         let temp = tempfile::tempdir().unwrap();

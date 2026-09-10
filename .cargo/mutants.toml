@@ -68,39 +68,51 @@ exclude_re = [
     # return-value mutations are still covered by the find_manifest_*
     # tests via the call sites in ScoopManifest::parse and scoop sync.
     "find_manifest",
-    # Equivalent mutations: both `find_environment` implementations guard with
-    # `exists() && is_dir()` (conda) / `!exists() || !is_dir()` (venvwrapper)
-    # before calling `parse_environment`, and `parse_environment` independently
-    # rejects anything that is not a real environment — conda wants a
-    # `conda-meta/` directory, virtualenvwrapper wants `bin/python`. Weakening
-    # either guard therefore lets a plain file reach `parse_environment`, which
-    # returns `None`, and the function still returns the same `...NotFound`
-    # error. There is no observable difference for a test to assert on; the
-    # guard exists to avoid the pointless call, not to change the answer.
+    # Equivalent mutation in all three discovery sources: `find_environment`
+    # guards with `exists() && is_dir()` (conda, pyenv) / `!exists() ||
+    # !is_dir()` (venvwrapper) before calling `parse_environment`, and
+    # `parse_environment` independently rejects anything that is not a real
+    # environment — conda wants a `conda-meta/` directory, virtualenvwrapper
+    # wants `bin/python`. Weakening the guard therefore lets a plain file reach
+    # `parse_environment`, which returns `None`, and the function still returns
+    # the same `...NotFound` error. There is no observable difference for a
+    # test to assert on; the guard exists to avoid the pointless call, not to
+    # change the answer.
     #
     # Verified rather than assumed: tests covering a same-named file and a
     # missing path are in place (`find_environment_ignores_file_with_matching_name`,
-    # `find_environment_rejects_missing_and_non_directory`) and both mutants
-    # survive them.
-    "<impl EnvironmentSource for CondaDiscovery>::find_environment",
-    "<impl EnvironmentSource for VenvWrapperDiscovery>::find_environment",
-    # PyenvDiscovery::find_environment is the same shape, and its
-    # scan_environments carries a second equivalent: the `envs` guard
+    # `find_environment_rejects_missing_and_non_directory`) and these mutants
+    # survive them. Excluded per-mutant rather than per-function on purpose —
+    # every other mutation of these three functions IS killed by those tests
+    # and has to stay gated.
+    "replace && with \\|\\| in <impl EnvironmentSource for CondaDiscovery>::find_environment",
+    "replace && with \\|\\| in <impl EnvironmentSource for PyenvDiscovery>::find_environment",
+    "replace \\|\\| with && in <impl EnvironmentSource for VenvWrapperDiscovery>::find_environment",
+    # Equivalent: in `PyenvDiscovery::scan_environments` the `envs` guard
     # `!exists() || !is_dir()` weakened to `&&` lets a *file* named `envs`
     # through, but the very next statement is `fs::read_dir(&envs_dir)` with
     # `Err(_) => continue`, so the entry is skipped either way. Confirmed with
     # scan_skips_version_dir_whose_envs_is_a_file in place.
-    "<impl EnvironmentSource for PyenvDiscovery>::find_environment",
-    "<impl EnvironmentSource for PyenvDiscovery>::scan_environments",
+    #
+    # Collateral, and unavoidable: this pattern also matches the symlink guard
+    # `is_symlink() || !is_dir()` one loop deeper, which IS killed by
+    # scan_skips_symlinked_env_entries. cargo-mutants gives both mutants a
+    # byte-identical description, so no name-based rule can separate them.
+    # The symlink guard's other mutant (`delete !`) stays gated, and the test
+    # pins the behaviour either way.
+    "replace \\|\\| with && in <impl EnvironmentSource for PyenvDiscovery>::scan_environments",
     # Equivalent: `extract_major_minor` matches `[major, minor, ..]`, then
     # `[major]`, then a catchall of `version.to_string()`. Deleting the
     # `[major]` arm sends a single-segment version to the catchall, which
-    # produces the same string. Covered by extract_major_minor_handles_each_shape.
-    "extract_major_minor",
+    # produces the same string. The function's three other mutants are killed
+    # by extract_major_minor_handles_each_shape and stay gated.
+    "delete match arm \\[major\\] in extract_major_minor",
     # Needs a real pip. `PackageExtractor::extract` spawns `bin/pip freeze` and
     # branches on `!output.status.success()`; reaching the failure arm requires
     # a pip that runs and exits non-zero, which a fixture cannot provide
-    # hermetically. The missing-pip guard immediately above it IS tested
+    # hermetically. Excluded whole-function rather than per-mutant because the
+    # missing-pip guard above it yields a byte-identical mutant description
+    # (`delete ! in PackageExtractor::extract`). That guard IS tested
     # (extract_errors_when_pip_is_missing), as is the freeze-output parsing
     # (parse_freeze_output tests).
     "PackageExtractor::extract",
