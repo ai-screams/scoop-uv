@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: scuv Documentation\n"
-"POT-Creation-Date: 2026-09-04T13:45:23+09:00\n"
+"POT-Creation-Date: 2026-09-10T21:09:10+09:00\n"
 "PO-Revision-Date: 2026-06-04T17:32:29+09:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -33,7 +33,7 @@ msgid "Quick Start"
 msgstr "빠른 시작"
 
 #: src/SUMMARY.md:11 src/shell-integration.md:1
-#: src/development/contributing.md:135 src/api.md:441 src/llms.md:169
+#: src/development/contributing.md:135 src/api.md:450 src/llms.md:169
 msgid "Shell Integration"
 msgstr "셸 통합"
 
@@ -93,13 +93,13 @@ msgid "status"
 msgstr "status"
 
 #: src/SUMMARY.md:29 src/commands/which.md:1
-#: src/development/architecture.md:330
+#: src/development/architecture.md:333
 msgid "which"
 msgstr "which"
 
 #: src/SUMMARY.md:30 src/commands/run.md:1 src/development/testing.md:378
-#: src/development/testing.md:381 src/development/code-quality.md:235
-#: src/development/code-quality.md:238 src/development/code-quality.md:241
+#: src/development/testing.md:381 src/development/code-quality.md:240
+#: src/development/code-quality.md:243 src/development/code-quality.md:246
 msgid "run"
 msgstr "run"
 
@@ -213,7 +213,7 @@ msgstr "LLM 레퍼런스"
 #: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:45
 #: src/commands/create.md:27 src/commands/use.md:58 src/commands/remove.md:26
 #: src/commands/install.md:56 src/commands/uninstall.md:25
-#: src/commands/doctor.md:29 src/commands/info.md:75 src/commands/status.md:97
+#: src/commands/doctor.md:31 src/commands/info.md:75 src/commands/status.md:97
 #: src/commands/which.md:36 src/commands/run.md:42 src/commands/sync.md:65
 #: src/commands/import.md:39 src/commands/clone.md:39
 #: src/commands/migrate.md:117 src/commands/gc.md:84 src/commands/prune.md:25
@@ -427,8 +427,8 @@ msgid "**Rust**"
 msgstr "**Rust**"
 
 #: src/installation.md:8
-msgid "1.85+"
-msgstr "1.85+"
+msgid "1.88+"
+msgstr "1.88+"
 
 #: src/installation.md:8
 msgid "`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \\| sh`"
@@ -522,7 +522,7 @@ msgid "# scuv 0.15.3\n"
 msgstr "# scuv 0.15.3\n"
 
 #: src/installation.md:61 src/python-management.md:175
-#: src/development/testing.md:384 src/development/code-quality.md:420
+#: src/development/testing.md:384 src/development/code-quality.md:425
 msgid "Troubleshooting"
 msgstr "문제 해결"
 
@@ -691,7 +691,7 @@ msgid "Task"
 msgstr "작업"
 
 #: src/quick-start.md:93 src/commands/index.md:7 src/commands/migrate.md:306
-#: src/commands/verify.md:42 src/api.md:709 src/llms.md:19
+#: src/commands/verify.md:42 src/api.md:718 src/llms.md:19
 msgid "Command"
 msgstr "명령어"
 
@@ -785,7 +785,7 @@ msgstr "\"$1\""
 msgid "\"$@\""
 msgstr "\"$@\""
 
-#: src/shell-integration.md:21 src/development/docs-translation.md:59
+#: src/shell-integration.md:21 src/development/docs-translation.md:58
 #: src/development/testing.md:255
 msgid "\"\""
 msgstr "\"\""
@@ -889,7 +889,7 @@ msgstr "설정 방법"
 #: src/shell-integration.md:107 src/shell-integration.md:133
 #: src/shell-integration.md:141 src/faq.md:141 src/commands/which.md:49
 #: src/commands/sync.md:116 src/commands/export.md:72 src/commands/import.md:75
-#: src/commands/clone.md:74 src/api.md:709 src/llms.md:111
+#: src/commands/clone.md:74 src/api.md:718 src/llms.md:111
 msgid "1"
 msgstr "1"
 
@@ -901,7 +901,7 @@ msgstr "`SCUV_VERSION` 환경 변수"
 msgid "`scuv shell`"
 msgstr "`scuv shell`"
 
-#: src/shell-integration.md:108 src/api.md:709
+#: src/shell-integration.md:108 src/api.md:718
 msgid "2"
 msgstr "2"
 
@@ -913,7 +913,7 @@ msgstr "`.scuv-version` 파일"
 msgid "`scuv use` (walks parent directories)"
 msgstr "`scuv use` (부모 디렉터리를 순서대로 탐색)"
 
-#: src/shell-integration.md:109 src/shell-integration.md:178 src/api.md:709
+#: src/shell-integration.md:109 src/shell-integration.md:178 src/api.md:718
 msgid "3"
 msgstr "3"
 
@@ -1110,7 +1110,7 @@ msgstr "# 현재 디렉터리만 확인 (가장 빠름)\n"
 
 #: src/shell-integration.md:181 src/commands/which.md:48
 #: src/commands/sync.md:115 src/commands/export.md:71 src/commands/import.md:74
-#: src/commands/clone.md:73 src/api.md:709
+#: src/commands/clone.md:73 src/api.md:718
 msgid "0"
 msgstr "0"
 
@@ -1986,8 +1986,8 @@ msgstr ""
 msgid "Extras"
 msgstr ""
 
-#: src/faq.md:38 src/commands/list.md:29 src/api.md:711 src/api.md:712
-#: src/api.md:713 src/api.md:714 src/api.md:715
+#: src/faq.md:38 src/commands/list.md:29 src/api.md:720 src/api.md:721
+#: src/api.md:722 src/api.md:723 src/api.md:724
 msgid "—"
 msgstr "—"
 
@@ -2915,7 +2915,7 @@ msgid "Location"
 msgstr "위치"
 
 #: src/commands/index.md:60 src/development/architecture.md:85
-#: src/development/architecture.md:319 src/development/ci-cd.md:191
+#: src/development/architecture.md:322 src/development/ci-cd.md:209
 msgid "Purpose"
 msgstr "용도"
 
@@ -3191,7 +3191,7 @@ msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링�
 
 #: src/commands/list.md:99 src/commands/remove.md:40
 #: src/commands/uninstall.md:113 src/commands/uninstall.md:160
-#: src/commands/doctor.md:49 src/commands/doctor.md:58
+#: src/commands/doctor.md:51 src/commands/doctor.md:60
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
@@ -4138,8 +4138,8 @@ msgid ""
 "If you uninstalled a Python version without cleaning up environments first:"
 msgstr "환경을 먼저 정리하지 않고 Python 버전을 제거한 경우:"
 
-#: src/commands/uninstall.md:162 src/commands/doctor.md:53
-#: src/commands/doctor.md:60 src/commands/migrate.md:137
+#: src/commands/uninstall.md:162 src/commands/doctor.md:55
+#: src/commands/doctor.md:62 src/commands/migrate.md:137
 msgid "'myproject'"
 msgstr "'myproject'"
 
@@ -4192,66 +4192,86 @@ msgid "**uv installation**"
 msgstr "**uv 설치**"
 
 #: src/commands/doctor.md:23
-msgid "uv is installed and accessible"
-msgstr "uv가 설치되어 있고 접근 가능한 상태"
+msgid "uv is installed and meets the minimum version (0.5.19)"
+msgstr "uv가 설치돼 있고 최소 버전(0.5.19)을 만족함"
 
 #: src/commands/doctor.md:24
-msgid "**Shell integration**"
-msgstr "**Shell 통합**"
+msgid "**SCUV_HOME directory**"
+msgstr "**SCUV_HOME 디렉터리**"
 
 #: src/commands/doctor.md:24
-msgid "Shell hook is properly configured"
-msgstr "Shell hook이 올바르게 구성되어 있음"
+msgid "`~/.scuv/` exists and is writable"
+msgstr "`~/.scuv/`가 존재하고 쓰기 가능함"
 
 #: src/commands/doctor.md:25
-msgid "**Environment integrity**"
-msgstr "**환경 무결성**"
+msgid "**virtual environments**"
+msgstr "**가상 환경**"
 
 #: src/commands/doctor.md:25
-msgid "Python symlinks are valid, `pyvenv.cfg` exists"
-msgstr "Python 심볼릭 링크가 유효하고 `pyvenv.cfg`가 존재함"
+msgid "Every environment has a `bin/python` and a `pyvenv.cfg`"
+msgstr "모든 환경에 `bin/python`과 `pyvenv.cfg`가 있음"
 
 #: src/commands/doctor.md:26
-msgid "**Path configuration**"
-msgstr "**경로 구성**"
+msgid "**symbolic links**"
+msgstr "**심볼릭 링크**"
 
 #: src/commands/doctor.md:26
-msgid "`~/.scuv/` directory structure is correct"
-msgstr "`~/.scuv/` 디렉터리 구조가 올바름"
+msgid "Python symlinks inside each environment still resolve"
+msgstr "각 환경 안의 Python 심볼릭 링크가 여전히 유효함"
 
 #: src/commands/doctor.md:27
-msgid "**Version file validity**"
-msgstr "**버전 파일 유효성**"
+msgid "**shell configuration**"
+msgstr "**셸 구성**"
 
 #: src/commands/doctor.md:27
-msgid "`.scuv-version` files reference existing environments"
-msgstr "`.scuv-version` 파일이 존재하는 환경을 참조함"
+msgid "The shell hook is present in your rc file"
+msgstr "셸 훅이 rc 파일에 설정돼 있음"
 
-#: src/commands/doctor.md:32
+#: src/commands/doctor.md:28
+msgid "**version files**"
+msgstr "**버전 파일**"
+
+#: src/commands/doctor.md:28
+msgid "`.scuv-version` entries reference environments that exist"
+msgstr "`.scuv-version` 항목이 존재하는 환경을 참조함"
+
+#: src/commands/doctor.md:29
+msgid "**legacy scoop remnants**"
+msgstr "**레거시 scoop 잔여물**"
+
+#: src/commands/doctor.md:29
+msgid ""
+"Leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or legacy `.scoop-"
+"version` / `.scoop.toml` from the rename"
+msgstr ""
+"rename 이후 남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 또는 레거시 `.scoop-"
+"version` / `.scoop.toml`"
+
+#: src/commands/doctor.md:34
 msgid "# Quick health check\n"
 msgstr "# 빠른 상태 점검\n"
 
-#: src/commands/doctor.md:33
+#: src/commands/doctor.md:35
 msgid "# Verbose diagnostics\n"
 msgstr "# 상세 진단\n"
 
-#: src/commands/doctor.md:34
+#: src/commands/doctor.md:36
 msgid "# Fix what can be fixed\n"
 msgstr "# 수정 가능한 항목 수정\n"
 
-#: src/commands/doctor.md:35
+#: src/commands/doctor.md:37
 msgid "# JSON output for scripting\n"
 msgstr "# 스크립팅을 위한 JSON 출력\n"
 
-#: src/commands/doctor.md:38
+#: src/commands/doctor.md:40
 msgid "Environment Integrity"
 msgstr "환경 무결성"
 
-#: src/commands/doctor.md:40
+#: src/commands/doctor.md:42
 msgid "The doctor checks each virtual environment for:"
 msgstr "doctor 명령은 각 가상 환경에 대해 다음 항목을 검사합니다:"
 
-#: src/commands/doctor.md:42
+#: src/commands/doctor.md:44
 msgid ""
 "**Python symlink** — Does the `python` binary in the environment point to a "
 "valid Python installation?"
@@ -4259,7 +4279,7 @@ msgstr ""
 "**Python 심볼릭 링크** — 환경 내 `python` 바이너리가 유효한 Python 설치를 가"
 "리키고 있습니까?"
 
-#: src/commands/doctor.md:43
+#: src/commands/doctor.md:45
 msgid ""
 "**pyvenv.cfg** — Does the environment's configuration file exist and "
 "reference a valid Python?"
@@ -4267,7 +4287,7 @@ msgstr ""
 "**pyvenv.cfg** — 환경의 설정 파일이 존재하고 유효한 Python을 참조하고 있습니"
 "까?"
 
-#: src/commands/doctor.md:45
+#: src/commands/doctor.md:47
 msgid ""
 "Environments can become broken when their underlying Python version is "
 "uninstalled. Use `scuv doctor` to detect these issues:"
@@ -4275,27 +4295,27 @@ msgstr ""
 "기반 Python 버전이 제거되면 환경이 손상될 수 있습니다. `scuv doctor`를 사용하"
 "여 이러한 문제를 감지하세요:"
 
-#: src/commands/doctor.md:48
+#: src/commands/doctor.md:50
 msgid "# After accidentally uninstalling Python 3.12:\n"
 msgstr "# Python 3.12를 실수로 제거한 후:\n"
 
-#: src/commands/doctor.md:51
+#: src/commands/doctor.md:53
 msgid "#   ✓ Shell: zsh integration active\n"
 msgstr "#   ✓ Shell: zsh 통합 활성화됨\n"
 
-#: src/commands/doctor.md:53
+#: src/commands/doctor.md:55
 msgid "#   ⚠ Environment 'webapp': Python symlink broken\n"
 msgstr "#   ⚠ 환경 'webapp': Python 심볼릭 링크 손상됨\n"
 
-#: src/commands/doctor.md:55
+#: src/commands/doctor.md:57
 msgid "# Auto-fix by recreating symlinks (requires Python to be reinstalled)\n"
 msgstr "# 심볼릭 링크 재생성으로 자동 수정 (Python 재설치 필요)\n"
 
-#: src/commands/doctor.md:60
+#: src/commands/doctor.md:62
 msgid "#   ✓ Fixed 'webapp': Python symlink restored\n"
 msgstr "#   ✓ 'webapp' 수정됨: Python 심볼릭 링크 복원됨\n"
 
-#: src/commands/doctor.md:64
+#: src/commands/doctor.md:66
 msgid ""
 "**Tip:** Run `scuv doctor` periodically or after uninstalling Python "
 "versions to catch broken environments early. See [uninstall command]"
@@ -4567,7 +4587,7 @@ msgstr "값"
 
 #: src/commands/status.md:31 src/commands/which.md:46 src/commands/sync.md:113
 #: src/commands/export.md:69 src/commands/import.md:72 src/commands/clone.md:71
-#: src/development/translation.md:248 src/api.md:700
+#: src/development/translation.md:248 src/api.md:709
 msgid "Meaning"
 msgstr "의미"
 
@@ -4587,7 +4607,7 @@ msgstr "`env_var`"
 msgid "`SCUV_VERSION` (or the legacy `SCOOP_VERSION`)"
 msgstr "`SCUV_VERSION` (또는 레거시 `SCOOP_VERSION`)"
 
-#: src/commands/status.md:35 src/development/code-quality.md:259
+#: src/commands/status.md:35 src/development/code-quality.md:264
 msgid "`version_file`"
 msgstr "`version_file`"
 
@@ -4774,7 +4794,7 @@ msgstr "종료 코드"
 #: src/commands/which.md:46 src/commands/sync.md:113 src/commands/export.md:69
 #: src/commands/import.md:72 src/commands/clone.md:71
 #: src/commands/migrate.md:56 src/commands/migrate.md:64
-#: src/commands/diff.md:51 src/commands/lang.md:37 src/api.md:700
+#: src/commands/diff.md:51 src/commands/lang.md:37 src/api.md:709
 msgid "Code"
 msgstr "코드"
 
@@ -5765,7 +5785,7 @@ msgid "Returned when"
 msgstr "반환 조건"
 
 #: src/commands/migrate.md:58 src/commands/migrate.md:66
-#: src/commands/diff.md:53 src/api.md:702
+#: src/commands/diff.md:53 src/api.md:711
 msgid "`0`"
 msgstr "`0`"
 
@@ -5779,7 +5799,7 @@ msgstr ""
 "어 있음, 또는 (c) 충돌 없는 건너뜀만 발생(건너뛴 버킷의 EOL / 손상된 환경, 사"
 "전 점검 이름 충돌 없음, 환경별 실패 없음)"
 
-#: src/commands/migrate.md:59 src/commands/migrate.md:67 src/api.md:704
+#: src/commands/migrate.md:59 src/commands/migrate.md:67 src/api.md:713
 msgid "`2`"
 msgstr "`2`"
 
@@ -5791,7 +5811,7 @@ msgstr ""
 "하나 이상의 환경별 실패 **또는** `--force` 없이 하나 이상의 사전 점검 이름 충"
 "돌. `MigrationBatchFailed`를 통해 반환됩니다"
 
-#: src/commands/migrate.md:60 src/commands/migrate.md:68 src/api.md:705
+#: src/commands/migrate.md:60 src/commands/migrate.md:68 src/api.md:714
 msgid "`3`"
 msgstr "`3`"
 
@@ -6390,7 +6410,7 @@ msgstr ""
 "source`를 사용하면 원본이 제거됩니다."
 
 #: src/commands/migrate.md:336 src/commands/lang.md:122
-#: src/development/architecture.md:407
+#: src/development/architecture.md:416
 msgid "Notes"
 msgstr "참고 사항"
 
@@ -6411,7 +6431,7 @@ msgid ""
 "Migration creates fresh environments using `uv` for improved performance"
 msgstr "마이그레이션은 성능 향상을 위해 `uv`를 사용해 새 환경을 생성합니다."
 
-#: src/commands/migrate.md:342 src/development/code-quality.md:372
+#: src/commands/migrate.md:342 src/development/code-quality.md:377
 msgid "Performance"
 msgstr "성능"
 
@@ -7020,7 +7040,7 @@ msgstr "범위"
 msgid "Action"
 msgstr "동작"
 
-#: src/commands/verify.md:44 src/development/architecture.md:87 src/api.md:714
+#: src/commands/verify.md:44 src/development/architecture.md:87 src/api.md:723
 msgid "`doctor`"
 msgstr "`doctor`"
 
@@ -7032,7 +7052,7 @@ msgstr "시스템 (uv 설치, shell wrapper, 경로)"
 msgid "Diagnose + optional `--fix`"
 msgstr "진단 + 선택적 `--fix`"
 
-#: src/commands/verify.md:45 src/api.md:711
+#: src/commands/verify.md:45 src/api.md:720
 msgid "`verify`"
 msgstr "`verify`"
 
@@ -7267,7 +7287,7 @@ msgstr ""
 msgid "Default — diff reported (even if envs differ)"
 msgstr "기본값 — diff 결과 출력 (환경이 달라도)"
 
-#: src/commands/diff.md:54 src/api.md:703
+#: src/commands/diff.md:54 src/api.md:712
 msgid "`1`"
 msgstr "`1`"
 
@@ -8150,8 +8170,8 @@ msgid "Guide for contributing to scuv development."
 msgstr "scuv 개발에 기여하기 위한 가이드입니다."
 
 #: src/development/contributing.md:7
-msgid "**Rust 1.85+** (Edition 2024)"
-msgstr "**Rust 1.85+** (Edition 2024)"
+msgid "**Rust 1.88+** (Edition 2024)"
+msgstr "**Rust 1.88+** (Edition 2024)"
 
 #: src/development/contributing.md:8
 msgid ""
@@ -8265,8 +8285,8 @@ msgid "Resolves current directory to active environment"
 msgstr "현재 디렉터리를 활성 환경으로 결정합니다"
 
 #: src/development/contributing.md:125
-msgid "**Doctor** (`src/core/doctor.rs`)"
-msgstr "**Doctor** (`src/core/doctor.rs`)"
+msgid "**Doctor** (`src/core/doctor/`)"
+msgstr "**Doctor** (`src/core/doctor/`)"
 
 #: src/development/contributing.md:127
 msgid "Health diagnostics for scuv setup"
@@ -8316,7 +8336,7 @@ msgstr "**Hook 함수** - 디렉터리 변경 시 자동 활성화"
 msgid "**Completion function** - Tab completion"
 msgstr "**자동 완성 함수** - Tab 자동 완성"
 
-#: src/development/contributing.md:148 src/api.md:593
+#: src/development/contributing.md:148 src/api.md:602
 msgid "Adding a New Command"
 msgstr "새 명령 추가하기"
 
@@ -8326,7 +8346,7 @@ msgstr "`src/cli/mod.rs`에 명령을 정의합니다:"
 
 #: src/development/contributing.md:155 src/development/contributing.md:191
 #: src/development/architecture.md:149 src/development/architecture.md:159
-#: src/development/code-quality.md:292
+#: src/development/code-quality.md:297
 msgid "// ...\n"
 msgstr "// ...\n"
 
@@ -8334,7 +8354,7 @@ msgstr "// ...\n"
 msgid "Create handler in `src/cli/commands/my_command.rs`:"
 msgstr "`src/cli/commands/my_command.rs`에 핸들러를 생성합니다:"
 
-#: src/development/contributing.md:167 src/api.md:613
+#: src/development/contributing.md:167 src/api.md:622
 msgid "// Implementation\n"
 msgstr "// Implementation\n"
 
@@ -8408,46 +8428,54 @@ msgid "See `.docs/` for internal technical references:"
 msgstr "내부 기술 참고 문서는 `.docs/`를 참고하세요:"
 
 #: src/development/contributing.md:226
-msgid "`TECHNICAL_REFERENCE.md` - Implementation details"
-msgstr "`TECHNICAL_REFERENCE.md` - 구현 세부 사항"
+msgid "`adr/` - Architecture decision records"
+msgstr "`adr/` - 아키텍처 결정 기록"
 
 #: src/development/contributing.md:227
-msgid "`SHELL_GOTCHAS.md` - Shell integration pitfalls"
-msgstr "`SHELL_GOTCHAS.md` - Shell 통합 시 주의 사항"
+msgid "`spec/` - Naming and CLI option specs"
+msgstr "`spec/` - 네이밍 및 CLI 옵션 명세"
 
 #: src/development/contributing.md:228
-msgid "`IMPLEMENTATION_PLAN.md` - Development roadmap"
-msgstr "`IMPLEMENTATION_PLAN.md` - 개발 로드맵"
+msgid "`dev/` - Code quality, documentation and testing strategy notes"
+msgstr "`dev/` - 코드 품질, 문서화, 테스트 전략 노트"
 
 #: src/development/contributing.md:229
+msgid "`plan/` - Feature scope and roadmap"
+msgstr "`plan/` - 기능 범위와 로드맵"
+
+#: src/development/contributing.md:230
+msgid "`ref/`, `design/`, `research/`, `wip/` - Working notes"
+msgstr "`ref/`, `design/`, `research/`, `wip/` - 작업 노트"
+
+#: src/development/contributing.md:231
 msgid "`brand/brand.md` - Brand guidelines"
 msgstr "`brand/brand.md` - 브랜드 가이드라인"
 
-#: src/development/contributing.md:231
+#: src/development/contributing.md:233
 msgid "Code Style"
 msgstr "코드 스타일"
 
-#: src/development/contributing.md:233
+#: src/development/contributing.md:235
 msgid "Follow Rust conventions"
 msgstr "Rust 관례를 따릅니다"
 
-#: src/development/contributing.md:234
+#: src/development/contributing.md:236
 msgid "Run `cargo fmt` before committing"
 msgstr "커밋 전에 `cargo fmt`를 실행합니다"
 
-#: src/development/contributing.md:235
+#: src/development/contributing.md:237
 msgid "Keep functions small and focused"
 msgstr "함수는 작고 명확하게 유지합니다"
 
-#: src/development/contributing.md:236
+#: src/development/contributing.md:238
 msgid "Document public APIs with `///` comments"
 msgstr "공개 API는 `///` 주석으로 문서화합니다"
 
-#: src/development/contributing.md:237
+#: src/development/contributing.md:239
 msgid "Use `thiserror` for error types"
 msgstr "오류 타입에는 `thiserror`를 사용합니다"
 
-#: src/development/contributing.md:238
+#: src/development/contributing.md:240
 msgid "Translated error messages with solutions (en, ko, ja, pt-BR)"
 msgstr "다국어 오류 메시지와 해결 방법 (en, ko, ja, pt-BR)"
 
@@ -8504,7 +8532,7 @@ msgstr "create.success"
 msgid "\"Created '%{name}' environment\""
 msgstr "\"Created '%{name}' environment\""
 
-#: src/development/translation.md:30 src/development/docs-translation.md:85
+#: src/development/translation.md:30 src/development/docs-translation.md:84
 msgid "ko"
 msgstr "ko"
 
@@ -8836,7 +8864,7 @@ msgstr "\"Installing...\""
 msgid "Use progressive/ongoing form"
 msgstr "진행형을 사용합니다"
 
-#: src/development/translation.md:164 src/api.md:702
+#: src/development/translation.md:164 src/api.md:711
 msgid "Success"
 msgstr "완료"
 
@@ -9141,7 +9169,7 @@ msgid "Your language's term for file path"
 msgstr "해당 언어에서 파일 경로에 해당하는 표현"
 
 #: src/development/translation.md:239 src/development/translation.md:308
-#: src/api.md:714
+#: src/api.md:723
 msgid "error"
 msgstr "error"
 
@@ -9149,7 +9177,7 @@ msgstr "error"
 msgid "Your language's term for \"error\""
 msgstr "해당 언어에서 \"error\"에 해당하는 표현"
 
-#: src/development/translation.md:240 src/api.md:713 src/api.md:715
+#: src/development/translation.md:240 src/api.md:722 src/api.md:724
 msgid "success"
 msgstr "success"
 
@@ -9446,13 +9474,15 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the ~115 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 226 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 약 115개 키) 번역"
-"에 대해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문"
-"서 번역에 대해서만 다룹니다."
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 226개 키) 번역에 대"
+"해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
+"역만 다룹니다.CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 약 "
+"115개 키) 번역에 대해서는 [translation](translation.md)을 참고하세요. 이 페이"
+"지는 사용자 문서 번역에 대해서만 다룹니다."
 
 #: src/development/docs-translation.md:7
 msgid ""
@@ -9509,20 +9539,22 @@ msgstr "# 위와 동일한 `cargo install` 명령어를 실행하세요.\n"
 #: src/development/docs-translation.md:37
 msgid ""
 "The `cargo install` step needs Rust **1.88 or newer** (helpers' upstream "
-"MSRV). The project's `rust-toolchain.toml` pins 1.85 for the CRATE itself; "
-"for the docs tooling, use `cargo +stable install ...` from outside the repo, "
-"or just rely on whatever stable toolchain is on `ubuntu-latest` in CI."
+"MSRV). The project's `rust-toolchain.toml` pins 1.88 as well, so the "
+"toolchain already in the repo is new enough — no `+stable` override needed."
 msgstr ""
 "`cargo install` 단계에는 Rust **1.88 이상**이 필요합니다(헬퍼 상위 MSRV 기"
-"준). 프로젝트의 `rust-toolchain.toml`은 CRATE 자체에 대해 1.85를 고정합니다. "
-"문서 도구를 위해서는 저장소 외부에서 `cargo +stable install ...`을 실행하거"
-"나, CI의 `ubuntu-latest`에 있는 stable 툴체인을 그대로 사용하세요."
+"준). 프로젝트의 `rust-toolchain.toml`도 1.88로 고정하므로, 저장소에 이미 있"
+"는 툴체인으로 충분합니다 — `+stable` 오버라이드는 필요 없습니다.`cargo "
+"install` 단계에는 Rust **1.88 이상**이 필요합니다(헬퍼 상위 MSRV 기준). 프로"
+"젝트의 `rust-toolchain.toml`은 CRATE 자체에 대해 1.85를 고정합니다. 문서 도구"
+"를 위해서는 저장소 외부에서 `cargo +stable install ...`을 실행하거나, CI의 "
+"`ubuntu-latest`에 있는 stable 툴체인을 그대로 사용하세요."
 
-#: src/development/docs-translation.md:43
+#: src/development/docs-translation.md:42
 msgid "Workflow: updating an existing translation"
 msgstr "워크플로우: 기존 번역 업데이트"
 
-#: src/development/docs-translation.md:45
+#: src/development/docs-translation.md:44
 msgid ""
 "When you edit a page in `docs/src/`, the existing translations need to learn "
 "about the new / changed strings."
@@ -9530,28 +9562,28 @@ msgstr ""
 "`docs/src/`의 페이지를 편집하면 기존 번역이 새로 추가되거나 변경된 문자열을 "
 "반영해야 합니다."
 
-#: src/development/docs-translation.md:50
+#: src/development/docs-translation.md:49
 msgid "# 1. Re-extract template (overwrites docs/po/messages.pot).\n"
 msgstr "# 1. 템플릿 재추출 (docs/po/messages.pot 덮어쓰기).\n"
 
-#: src/development/docs-translation.md:52
-#: src/development/docs-translation.md:124
+#: src/development/docs-translation.md:51
+#: src/development/docs-translation.md:123
 msgid "'{\"xgettext\": {}}'"
 msgstr "'{\"xgettext\": {}}'"
 
-#: src/development/docs-translation.md:53
+#: src/development/docs-translation.md:52
 msgid "# 2. Merge the new template into your locale's .po file.\n"
 msgstr "# 2. 새 템플릿을 로케일 .po 파일에 병합.\n"
 
-#: src/development/docs-translation.md:57
+#: src/development/docs-translation.md:56
 msgid "# 3. Open po/ko.po in your editor. Look for:\n"
 msgstr "# 3. 편집기에서 po/ko.po를 열고 다음을 확인하세요:\n"
 
-#: src/development/docs-translation.md:59
+#: src/development/docs-translation.md:58
 msgid "#    - \"#, fuzzy\" markers              →  review and remove flag\n"
 msgstr "#    - \"#, fuzzy\" 마커              →  검토 후 플래그 제거\n"
 
-#: src/development/docs-translation.md:63
+#: src/development/docs-translation.md:62
 msgid ""
 "`docs/po/messages.pot` is in `.gitignore` — it's regenerated on every CI "
 "run, committing it would create churn. The locale `.po` files (`docs/po/"
@@ -9561,61 +9593,61 @@ msgstr ""
 "성되므로 커밋하면 불필요한 변경이 발생합니다. 로케일 `.po` 파일(`docs/po/"
 "ko.po` 등)은 커밋 대상이며, 번역 메모리 역할을 합니다."
 
-#: src/development/docs-translation.md:68
+#: src/development/docs-translation.md:67
 msgid "Workflow: previewing a translated build"
 msgstr "워크플로우: 번역된 빌드 미리보기"
 
-#: src/development/docs-translation.md:72
+#: src/development/docs-translation.md:71
 msgid "# English (root)\n"
 msgstr "# 영어 (루트)\n"
 
-#: src/development/docs-translation.md:76
+#: src/development/docs-translation.md:75
 msgid "# Korean (book/ko subdir)\n"
 msgstr "# 한국어 (book/ko 하위 디렉토리)\n"
 
-#: src/development/docs-translation.md:82
+#: src/development/docs-translation.md:81
 msgid "`mdbook serve` works too if you want live reload:"
 msgstr "라이브 리로드를 원하면 `mdbook serve`도 사용할 수 있습니다:"
 
-#: src/development/docs-translation.md:88
+#: src/development/docs-translation.md:87
 msgid "Workflow: adding a brand-new locale (e.g. `ja`)"
 msgstr "워크플로우: 새 로케일 추가 (예: `ja`)"
 
-#: src/development/docs-translation.md:92
+#: src/development/docs-translation.md:91
 msgid "# Initialise an empty translation file.\n"
 msgstr "# 빈 번역 파일 초기화.\n"
 
-#: src/development/docs-translation.md:95
+#: src/development/docs-translation.md:94
 msgid ""
 "# Translate msgids in po/ja.po (untranslated ones fall back to English).\n"
 msgstr "# po/ja.po의 msgid를 번역하세요 (미번역 항목은 영어로 대체됩니다).\n"
 
-#: src/development/docs-translation.md:97
+#: src/development/docs-translation.md:96
 msgid "# Add a CI build step for the new locale in\n"
 msgstr "# 다음 경로에 새 로케일을 위한 CI 빌드 단계를 추가하세요:\n"
 
-#: src/development/docs-translation.md:99
-#: src/development/docs-translation.md:105
+#: src/development/docs-translation.md:98
+#: src/development/docs-translation.md:104
 msgid "#\n"
 msgstr "#\n"
 
-#: src/development/docs-translation.md:101
+#: src/development/docs-translation.md:100
 msgid "#     working-directory: docs\n"
 msgstr "#     working-directory: docs\n"
 
-#: src/development/docs-translation.md:103
+#: src/development/docs-translation.md:102
 msgid "#       MDBOOK_BOOK__LANGUAGE: ja\n"
 msgstr "#       MDBOOK_BOOK__LANGUAGE: ja\n"
 
-#: src/development/docs-translation.md:107
+#: src/development/docs-translation.md:106
 msgid "# include the new locale link.\n"
 msgstr "# 새 로케일 링크를 포함하세요.\n"
 
-#: src/development/docs-translation.md:111
+#: src/development/docs-translation.md:110
 msgid "CI guard: stale translations"
 msgstr "CI 가드: 번역 동기화 확인"
 
-#: src/development/docs-translation.md:113
+#: src/development/docs-translation.md:112
 msgid ""
 "The `Verify ko translations are in sync` step in `.github/workflows/"
 "docs.yml` regenerates the pot template from the current English source, runs "
@@ -9629,19 +9661,19 @@ msgstr ""
 "은 PR에 해당하는 `.po` 업데이트와 함께 반영되거나, 아예 반영되지 않도록 보장"
 "합니다."
 
-#: src/development/docs-translation.md:120
+#: src/development/docs-translation.md:119
 msgid "To fix a CI failure on this step:"
 msgstr "이 단계의 CI 실패를 수정하려면:"
 
-#: src/development/docs-translation.md:127
+#: src/development/docs-translation.md:126
 msgid "# or as a separate fixup commit\n"
 msgstr "# 또는 별도의 fixup 커밋으로\n"
 
-#: src/development/docs-translation.md:130
+#: src/development/docs-translation.md:129
 msgid "Style guidelines"
 msgstr "스타일 가이드라인"
 
-#: src/development/docs-translation.md:132
+#: src/development/docs-translation.md:131
 msgid ""
 "The same casual-tone guidelines from [translation](translation.md) apply "
 "here. Don't try to translate code samples or CLI commands literally — only "
@@ -9658,11 +9690,11 @@ msgstr ""
 "서 번역을 보간하지 않지만, 코드 주석(`# Install Python`)은 별도의 msgid로 추"
 "출하므로 가독성에 도움이 된다면 번역해도 됩니다."
 
-#: src/development/docs-translation.md:141
+#: src/development/docs-translation.md:140
 msgid "Known limitations"
 msgstr "알려진 제한 사항"
 
-#: src/development/docs-translation.md:143
+#: src/development/docs-translation.md:142
 msgid ""
 "Search index is built per-locale. Korean search results only hit Korean "
 "pages, English only hits English. This is the intended mdBook behaviour."
@@ -9670,7 +9702,7 @@ msgstr ""
 "검색 인덱스는 로케일별로 구축됩니다. 한국어 검색 결과는 한국어 페이지만, 영"
 "어 검색은 영어 페이지만 검색합니다. 이는 mdBook의 의도된 동작입니다."
 
-#: src/development/docs-translation.md:146
+#: src/development/docs-translation.md:145
 msgid ""
 "The locale switcher uses a JS-injected DOM element; users with JS disabled "
 "won't see it. They can navigate via direct URL (`/scoop-uv/ko/...`) or "
@@ -9680,7 +9712,7 @@ msgstr ""
 "를 볼 수 없습니다. 직접 URL(`/scoop-uv/ko/...`)이나 브라우저 북마크를 통해 탐"
 "색할 수 있습니다."
 
-#: src/development/docs-translation.md:149
+#: src/development/docs-translation.md:148
 msgid ""
 "mdbook-i18n-helpers' `xgettext` doesn't extract HTML tables' cell-by-cell "
 "content as separate msgids when the table is written in pipe-syntax — it "
@@ -9857,8 +9889,8 @@ msgstr "\"$(command scuv activate myenv)\""
 msgid "This pattern is used by pyenv, rbenv, and other version managers."
 msgstr "이 패턴은 pyenv, rbenv 및 기타 버전 관리자에서 사용됩니다."
 
-#: src/development/architecture.md:138 src/api.md:317
-#: src/development/code-quality.md:296
+#: src/development/architecture.md:138 src/api.md:318
+#: src/development/code-quality.md:301
 msgid "Error Handling"
 msgstr "에러 처리"
 
@@ -9940,11 +9972,11 @@ msgstr ""
 msgid "Health Check Flow"
 msgstr "상태 확인 흐름"
 
-#: src/development/architecture.md:277
+#: src/development/architecture.md:280
 msgid "Migration Architecture"
 msgstr "마이그레이션 아키텍처"
 
-#: src/development/architecture.md:279
+#: src/development/architecture.md:282
 msgid ""
 "scuv supports migrating environments from pyenv-virtualenv, "
 "virtualenvwrapper, and conda."
@@ -9952,143 +9984,167 @@ msgstr ""
 "scuv는 pyenv-virtualenv, virtualenvwrapper, conda에서 환경 마이그레이션을 지"
 "원합니다."
 
-#: src/development/architecture.md:317
+#: src/development/architecture.md:320
 msgid "Dependencies"
 msgstr "의존성"
 
-#: src/development/architecture.md:319
+#: src/development/architecture.md:322
 msgid "Crate"
 msgstr "Crate"
 
-#: src/development/architecture.md:321
+#: src/development/architecture.md:324
 msgid "clap"
 msgstr "clap"
 
-#: src/development/architecture.md:321
+#: src/development/architecture.md:324
 msgid "Argument parsing & completion"
 msgstr "인수 파싱 및 완성"
 
-#: src/development/architecture.md:322
+#: src/development/architecture.md:325
 msgid "clap_complete"
 msgstr "clap_complete"
 
-#: src/development/architecture.md:322
+#: src/development/architecture.md:325
 msgid "Shell completion generation"
 msgstr "Shell 완성 생성"
 
-#: src/development/architecture.md:323
+#: src/development/architecture.md:326
 msgid "serde"
 msgstr "serde"
 
-#: src/development/architecture.md:323
+#: src/development/architecture.md:326
 msgid "JSON serialization"
 msgstr "JSON 직렬화"
 
-#: src/development/architecture.md:324
+#: src/development/architecture.md:327
 msgid "serde_json"
 msgstr "serde_json"
 
-#: src/development/architecture.md:324
+#: src/development/architecture.md:327
 msgid "Metadata persistence"
 msgstr "메타데이터 지속성"
 
-#: src/development/architecture.md:325
+#: src/development/architecture.md:328
 msgid "thiserror"
 msgstr "thiserror"
 
-#: src/development/architecture.md:325
+#: src/development/architecture.md:328
 msgid "Error type definitions"
 msgstr "에러 타입 정의"
 
-#: src/development/architecture.md:326
+#: src/development/architecture.md:329
 msgid "owo-colors"
 msgstr "owo-colors"
 
-#: src/development/architecture.md:326
+#: src/development/architecture.md:329
 msgid "Terminal colors"
 msgstr "터미널 색상"
 
-#: src/development/architecture.md:327
+#: src/development/architecture.md:330
 msgid "indicatif"
 msgstr "indicatif"
 
-#: src/development/architecture.md:327
+#: src/development/architecture.md:330
 msgid "Progress bars & spinners"
 msgstr "진행 표시줄 및 스피너"
 
-#: src/development/architecture.md:328
+#: src/development/architecture.md:331
 msgid "dialoguer"
 msgstr "dialoguer"
 
-#: src/development/architecture.md:328
+#: src/development/architecture.md:331
 msgid "Interactive prompts"
 msgstr "인터랙티브 프롬프트"
 
-#: src/development/architecture.md:329
+#: src/development/architecture.md:332
 msgid "dirs"
 msgstr "dirs"
 
-#: src/development/architecture.md:329
+#: src/development/architecture.md:332
 msgid "Home directory resolution"
 msgstr "홈 디렉토리 결정"
 
-#: src/development/architecture.md:330
+#: src/development/architecture.md:333
 msgid "Binary lookup (uv, python)"
 msgstr "바이너리 조회 (uv, python)"
 
-#: src/development/architecture.md:331
+#: src/development/architecture.md:334
 msgid "regex"
 msgstr "regex"
 
-#: src/development/architecture.md:331
+#: src/development/architecture.md:334
 msgid "Version parsing & validation"
 msgstr "버전 파싱 및 검증"
 
-#: src/development/architecture.md:332
+#: src/development/architecture.md:335
 msgid "walkdir"
 msgstr "walkdir"
 
-#: src/development/architecture.md:332
+#: src/development/architecture.md:335
 msgid "Directory traversal"
 msgstr "디렉토리 순회"
 
-#: src/development/architecture.md:333
+#: src/development/architecture.md:336
 msgid "rust-i18n"
 msgstr "rust-i18n"
 
-#: src/development/architecture.md:333
+#: src/development/architecture.md:336
 msgid "Internationalization (en, ko, ja, pt-BR)"
 msgstr "국제화 (en, ko, ja, pt-BR)"
 
-#: src/development/architecture.md:334
+#: src/development/architecture.md:337
 msgid "sys-locale"
 msgstr "sys-locale"
 
-#: src/development/architecture.md:334
+#: src/development/architecture.md:337
 msgid "System locale detection"
 msgstr "시스템 로케일 감지"
 
-#: src/development/architecture.md:335
+#: src/development/architecture.md:338
 msgid "chrono"
 msgstr "chrono"
 
-#: src/development/architecture.md:335
+#: src/development/architecture.md:338
 msgid "Timestamp generation"
 msgstr "타임스탬프 생성"
 
-#: src/development/architecture.md:337
+#: src/development/architecture.md:339
+msgid "rayon"
+msgstr "rayon"
+
+#: src/development/architecture.md:339
+msgid "Parallel `scuv migrate all`"
+msgstr "`scuv migrate all` 병렬 실행"
+
+#: src/development/architecture.md:340
+msgid "toml"
+msgstr "toml"
+
+#: src/development/architecture.md:340
+msgid "`.scuv.toml` manifest parsing (`scuv sync`)"
+msgstr "`.scuv.toml` 매니페스트 파싱 (`scuv sync`)"
+
+#: src/development/architecture.md:341
+msgid "clap_mangen"
+msgstr "clap_mangen"
+
+#: src/development/architecture.md:341
+msgid "Man page generation (`scuv man`)"
+msgstr "man 페이지 생성 (`scuv man`)"
+
+#: src/development/architecture.md:343
 msgid "Extension Points"
 msgstr "확장 포인트"
 
-#: src/development/architecture.md:339
+#: src/development/architecture.md:345
 msgid "Adding a New Shell"
 msgstr "새 Shell 추가"
 
-#: src/development/architecture.md:341
+#: src/development/architecture.md:347
 msgid "Create `shell/myshell.rs`:"
 msgstr "`shell/myshell.rs` 생성:"
 
-#: src/development/architecture.md:344
+#: src/development/architecture.md:350
 msgid ""
 "// Return shell-specific initialization code as static string\n"
 "    r#\"\n"
@@ -10102,63 +10158,68 @@ msgstr ""
 "    scuv() { ... }\n"
 "    \"#"
 
-#: src/development/architecture.md:352
+#: src/development/architecture.md:358
 msgid ""
-"**Note**: Completions are generated by clap via `clap_complete`, not per-"
-"shell functions."
+"**Note**: `scuv completions <shell>` is generated by clap via "
+"`clap_complete`, but the completions built into the init scripts are hand-"
+"written per shell (`_scuv_complete()` in `bash.rs`, `complete -c scuv` lines "
+"in `fish.rs`, the `langs` array in `zsh.rs`) — those need updating by hand "
+"when a subcommand or option changes."
 msgstr ""
-"**참고**: 완성 스크립트는 per-shell 함수가 아닌 `clap_complete`를 통해 clap으"
-"로 생성됩니다."
+"**참고**: `scuv completions <shell>`은 clap의 `clap_complete`로 생성되지만, "
+"init 스크립트에 내장된 완성 기능은 셸별로 직접 작성돼 있습니다(`bash.rs`의 "
+"`_scuv_complete()`, `fish.rs`의 `complete -c scuv` 줄, `zsh.rs`의 `langs` 배"
+"열). 서브커맨드나 옵션이 바뀌면 이쪽은 손으로 갱신해야 합니다."
 
-#: src/development/architecture.md:354
+#: src/development/architecture.md:363
 msgid "Add to `ShellType` enum in `cli/mod.rs`:"
 msgstr "`cli/mod.rs`의 `ShellType` 열거형에 추가:"
 
-#: src/development/architecture.md:357 src/development/architecture.md:396
+#: src/development/architecture.md:366 src/development/architecture.md:405
 msgid "// ... existing\n"
 msgstr "// ... 기존 항목\n"
 
-#: src/development/architecture.md:362
+#: src/development/architecture.md:371
 msgid "Add detection to `shell::detect_shell()` in `src/shell/mod.rs`:"
 msgstr "`src/shell/mod.rs`의 `shell::detect_shell()`에 감지 로직 추가:"
 
-#: src/development/architecture.md:365
+#: src/development/architecture.md:374
 msgid "\"MYSHELL_VERSION\""
 msgstr "\"MYSHELL_VERSION\""
 
-#: src/development/architecture.md:368 src/api.md:653
+#: src/development/architecture.md:377 src/api.md:662
 msgid "// ... existing checks\n"
 msgstr "// ... 기존 검사 항목\n"
 
-#: src/development/architecture.md:372
+#: src/development/architecture.md:381
 msgid "Adding a New Migration Source"
 msgstr "새 마이그레이션 소스 추가"
 
-#: src/development/architecture.md:374
+#: src/development/architecture.md:383
 msgid "Create `core/migrate/mysource.rs`:"
 msgstr "`core/migrate/mysource.rs` 생성:"
 
-#: src/development/architecture.md:380
+#: src/development/architecture.md:389
 msgid "// Check if source is available\n"
 msgstr "// 소스가 사용 가능한지 확인\n"
 
-#: src/development/architecture.md:384
+#: src/development/architecture.md:393
 msgid "// Return list of environments\n"
 msgstr "// 환경 목록 반환\n"
 
-#: src/development/architecture.md:388
+#: src/development/architecture.md:397
 msgid "// Perform migration\n"
 msgstr "// 마이그레이션 수행\n"
 
-#: src/development/architecture.md:393
-msgid "Register in `cli/commands/migrate.rs`:"
-msgstr "`cli/commands/migrate.rs`에 등록:"
+#: src/development/architecture.md:402
+msgid "Register in `cli/commands/migrate/` (its `mod.rs`):"
+msgstr "`cli/commands/migrate/`(의 `mod.rs`)에 등록:"
 
-#: src/development/architecture.md:401
+#: src/development/architecture.md:410
 msgid "Adding a New Doctor Check"
 msgstr "새 Doctor 점검 항목 추가"
 
-#: src/development/architecture.md:403
+#: src/development/architecture.md:412
 msgid ""
 "See [API Reference - Adding a New Health Check](../api.md#adding-a-new-"
 "health-check) for details."
@@ -10166,86 +10227,86 @@ msgstr ""
 "자세한 내용은 [API 레퍼런스 - 새 상태 점검 추가](../api.md#adding-a-new-"
 "health-check)를 참고하세요."
 
-#: src/development/architecture.md:405
+#: src/development/architecture.md:414
 msgid "Performance Characteristics"
 msgstr "성능 특성"
 
-#: src/development/architecture.md:407
+#: src/development/architecture.md:416
 msgid "Operation"
 msgstr "작업"
 
-#: src/development/architecture.md:407
+#: src/development/architecture.md:416
 msgid "Time Complexity"
 msgstr "시간 복잡도"
 
-#: src/development/architecture.md:409
+#: src/development/architecture.md:418
 msgid "List envs"
 msgstr "환경 목록 조회"
 
-#: src/development/architecture.md:409 src/development/architecture.md:413
+#: src/development/architecture.md:418 src/development/architecture.md:422
 msgid "O(n)"
 msgstr "O(n)"
 
-#: src/development/architecture.md:409
+#: src/development/architecture.md:418
 msgid "n = number of virtualenvs"
 msgstr "n = virtualenv 수"
 
-#: src/development/architecture.md:410
+#: src/development/architecture.md:419
 msgid "Create env"
 msgstr "환경 생성"
 
-#: src/development/architecture.md:410
+#: src/development/architecture.md:419
 msgid "O(1)\\*"
 msgstr "O(1)\\*"
 
-#: src/development/architecture.md:410
+#: src/development/architecture.md:419
 msgid "\\*Depends on uv performance"
 msgstr "\\*uv 성능에 따라 다름"
 
-#: src/development/architecture.md:411
+#: src/development/architecture.md:420
 msgid "Delete env"
 msgstr "환경 삭제"
 
-#: src/development/architecture.md:411
+#: src/development/architecture.md:420
 msgid "O(1)"
 msgstr "O(1)"
 
-#: src/development/architecture.md:411
+#: src/development/architecture.md:420
 msgid "Simple directory removal"
 msgstr "단순 디렉토리 제거"
 
-#: src/development/architecture.md:412
+#: src/development/architecture.md:421
 msgid "Version resolution"
 msgstr "버전 결정"
 
-#: src/development/architecture.md:412
+#: src/development/architecture.md:421
 msgid "O(d)"
 msgstr "O(d)"
 
-#: src/development/architecture.md:412
+#: src/development/architecture.md:421
 msgid "d = directory depth (walks parents)"
 msgstr "d = 디렉토리 깊이 (상위 디렉토리 탐색)"
 
-#: src/development/architecture.md:413
+#: src/development/architecture.md:422
 msgid "Doctor checks"
 msgstr "Doctor 점검"
 
-#: src/development/architecture.md:413
+#: src/development/architecture.md:422
 msgid "n = number of checks (fixed)"
 msgstr "n = 점검 항목 수 (고정)"
 
-#: src/development/architecture.md:415
+#: src/development/architecture.md:424
 msgid "Thread Safety"
 msgstr "스레드 안전성"
 
-#: src/development/architecture.md:417
+#: src/development/architecture.md:426
 msgid ""
 "scuv is a single-threaded CLI application. No concurrent operations are "
 "performed."
 msgstr ""
 "scuv는 단일 스레드 CLI 애플리케이션입니다. 동시 작업은 수행되지 않습니다."
 
-#: src/development/architecture.md:419
+#: src/development/architecture.md:428
 msgid ""
 "**File locking:** Not implemented. Assumes single user on single machine. "
 "Concurrent operations (e.g., two terminals creating the same env) may result "
@@ -10255,11 +10316,11 @@ msgstr ""
 "고 가정합니다. 동시 작업(예: 두 터미널에서 동일한 환경 생성)은 레이스 컨디션"
 "을 유발할 수 있습니다."
 
-#: src/development/architecture.md:421 src/development/code-quality.md:342
+#: src/development/architecture.md:430 src/development/code-quality.md:347
 msgid "Security Considerations"
 msgstr "보안 고려 사항"
 
-#: src/development/architecture.md:423
+#: src/development/architecture.md:432
 msgid ""
 "**Path Traversal:** All user-provided names are validated via regex before "
 "use in filesystem operations."
@@ -10267,7 +10328,7 @@ msgstr ""
 "**경로 순회 공격:** 사용자가 제공한 모든 이름은 파일시스템 작업에 사용되기 전"
 "에 regex로 검증됩니다."
 
-#: src/development/architecture.md:424
+#: src/development/architecture.md:433
 msgid ""
 "**Command Injection:** uv commands are constructed using typed arguments, "
 "not string concatenation."
@@ -10275,33 +10336,33 @@ msgstr ""
 "**커맨드 인젝션:** uv 커맨드는 문자열 연결이 아닌 타입 안전한 인수를 사용하"
 "여 구성됩니다."
 
-#: src/development/architecture.md:425
+#: src/development/architecture.md:434
 msgid ""
 "**Symlink Safety:** Doctor checks detect and warn about broken symlinks."
 msgstr ""
 "**심볼릭 링크 안전성:** Doctor 점검이 끊어진 심볼릭 링크를 감지하고 경고합니"
 "다."
 
-#: src/development/architecture.md:426
+#: src/development/architecture.md:435
 msgid ""
 "**Metadata Integrity:** JSON parsing errors are gracefully handled without "
 "panics."
 msgstr ""
 "**메타데이터 무결성:** JSON 파싱 오류는 패닉 없이 정상적으로 처리됩니다."
 
-#: src/development/architecture.md:428 src/api.md:663
+#: src/development/architecture.md:437 src/api.md:672
 msgid "Related Documentation"
 msgstr "관련 문서"
 
-#: src/development/architecture.md:430
+#: src/development/architecture.md:439
 msgid "[API Reference](../api.md) - Detailed API documentation"
 msgstr "[API 레퍼런스](../api.md) - 상세 API 문서"
 
-#: src/development/architecture.md:431
+#: src/development/architecture.md:440
 msgid "[Testing](testing.md) - Testing strategies"
 msgstr "[테스팅](testing.md) - 테스팅 전략"
 
-#: src/development/architecture.md:432
+#: src/development/architecture.md:441
 msgid "[Contributing](contributing.md) - Development guide"
 msgstr "[기여하기](contributing.md) - 개발 가이드"
 
@@ -10400,7 +10461,7 @@ msgstr "**예시 (읽기 전용; 구조체 리터럴 생성은 더 이상 허용
 msgid "\"{} (last used: {:?})\""
 msgstr "\"{} (last used: {:?})\""
 
-#: src/api.md:53 src/development/code-quality.md:261
+#: src/api.md:53 src/development/code-quality.md:266
 msgid "`VirtualenvService`"
 msgstr "`VirtualenvService`"
 
@@ -10565,8 +10626,8 @@ msgstr ""
 "8601 문자열로 직렬화됩니다."
 
 #: src/api.md:167
-msgid "Doctor Module (`core/doctor.rs`)"
-msgstr "Doctor 모듈 (`core/doctor.rs`)"
+msgid "Doctor Module (`core/doctor/`)"
+msgstr "Doctor 모듈 (`core/doctor/`)"
 
 #: src/api.md:169
 msgid "`Check` Trait"
@@ -10612,179 +10673,196 @@ msgstr "`ShellCheck` - shell 통합을 확인합니다"
 msgid "`VersionCheck` - Validates version files"
 msgstr "`VersionCheck` - 버전 파일을 검증합니다"
 
-#: src/api.md:191
+#: src/api.md:188
+msgid ""
+"`LegacyCheck` - Warns about leftover `SCOOP_*` vars, an orphaned `~/.scoop`, "
+"or legacy `.scoop-version` / `.scoop.toml` from the rename"
+msgstr ""
+"`LegacyCheck` - rename 이후 남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 레거시 "
+"`.scoop-version` / `.scoop.toml`을 경고합니다"
+
+#: src/api.md:192
 msgid "`CheckStatus`"
 msgstr "`CheckStatus`"
 
-#: src/api.md:193
+#: src/api.md:194
 msgid "Result status for health checks."
 msgstr "상태 점검의 결과 상태입니다."
 
-#: src/api.md:197
+#: src/api.md:198
 msgid "// ✅ Check passed\n"
 msgstr "// ✅ 점검 통과\n"
 
-#: src/api.md:198
+#: src/api.md:199
 msgid "// ⚠️  Issue found, but not critical\n"
 msgstr "// ⚠️  문제가 발견되었으나 심각하지 않음\n"
 
-#: src/api.md:199
+#: src/api.md:200
 msgid "// ❌ Critical issue\n"
 msgstr "// ❌ 심각한 문제\n"
 
-#: src/api.md:205
+#: src/api.md:206
 msgid "`CheckResult`"
 msgstr "`CheckResult`"
 
-#: src/api.md:207
+#: src/api.md:208
 msgid "Detailed result from a health check."
 msgstr "상태 점검의 상세 결과입니다."
 
-#: src/api.md:219
+#: src/api.md:220
 msgid "/// Creates an OK result\n"
 msgstr "/// OK 결과를 생성합니다\n"
 
-#: src/api.md:222
+#: src/api.md:223
 msgid "/// Creates a warning result\n"
 msgstr "/// 경고 결과를 생성합니다\n"
 
-#: src/api.md:225
+#: src/api.md:226
 msgid "/// Creates an error result\n"
 msgstr "/// 오류 결과를 생성합니다\n"
 
-#: src/api.md:228
+#: src/api.md:229
 msgid "/// Adds a suggestion for fixing the issue\n"
 msgstr "/// 문제 해결을 위한 제안을 추가합니다\n"
 
-#: src/api.md:231
+#: src/api.md:232
 msgid "/// Adds detailed information\n"
 msgstr "/// 상세 정보를 추가합니다\n"
 
-#: src/api.md:234
+#: src/api.md:235
 msgid "// Status checks\n"
 msgstr "// 상태 확인\n"
 
-#: src/api.md:241
+#: src/api.md:242
 msgid "**Example - Implementing a Custom Check:**"
 msgstr "**예시 - 커스텀 점검 구현:**"
 
-#: src/api.md:247 src/api.md:635
+#: src/api.md:248 src/api.md:644
 msgid "\"my_check\""
 msgstr "\"my_check\""
 
-#: src/api.md:251 src/api.md:639
+#: src/api.md:252 src/api.md:648
 msgid "\"My Custom Check\""
 msgstr "\"My Custom Check\""
 
-#: src/api.md:258
+#: src/api.md:259
 msgid "\"Error message here\""
 msgstr "\"Error message here\""
 
-#: src/api.md:259
+#: src/api.md:260
 msgid "\"Run: scuv fix-it\""
 msgstr "\"Run: scuv fix-it\""
 
-#: src/api.md:260
+#: src/api.md:261
 msgid "\"Expected X, found Y\""
 msgstr "\"Expected X, found Y\""
 
-#: src/api.md:268
+#: src/api.md:269
 msgid "`Doctor`"
 msgstr "`Doctor`"
 
-#: src/api.md:270
+#: src/api.md:271
 msgid "Orchestrates all health checks."
 msgstr "모든 상태 점검을 조율합니다."
 
-#: src/api.md:278
+#: src/api.md:279
 msgid "/// Creates a doctor with default checks\n"
 msgstr "/// 기본 점검 항목으로 doctor를 생성합니다\n"
 
-#: src/api.md:281
+#: src/api.md:282
 msgid "/// Runs all checks without fixing\n"
 msgstr "/// 수정 없이 모든 점검을 실행합니다\n"
 
-#: src/api.md:284
+#: src/api.md:285
 msgid "/// Runs checks and attempts to fix issues\n"
 msgstr "/// 점검을 실행하고 문제 수정을 시도합니다\n"
 
-#: src/api.md:295
+#: src/api.md:296
 msgid "**Usage:**"
 msgstr "**사용법:**"
 
-#: src/api.md:298
+#: src/api.md:299
 msgid "// Run diagnostics\n"
 msgstr "// 진단 실행\n"
 
-#: src/api.md:303
+#: src/api.md:304
 msgid "\"❌ {}: {}\""
 msgstr "\"❌ {}: {}\""
 
-#: src/api.md:304
+#: src/api.md:305
 msgid "\"⚠️  {}: {}\""
 msgstr "\"⚠️  {}: {}\""
 
-#: src/api.md:305
+#: src/api.md:306
 msgid "\"✅ {}\""
 msgstr "\"✅ {}\""
 
-#: src/api.md:308
+#: src/api.md:309
 msgid "// Auto-fix issues (requires Output for progress display)\n"
 msgstr "// 문제 자동 수정 (진행 상황 표시를 위해 Output 필요)\n"
 
-#: src/api.md:319
+#: src/api.md:320
 msgid "`ScoopError` (`error/` module)"
 msgstr "`ScoopError` (`error/` 모듈)"
 
-#: src/api.md:321
+#: src/api.md:322
 msgid "Primary error type for all scuv operations."
 msgstr "모든 scuv 작업에 대한 기본 에러 타입입니다."
 
-#: src/api.md:326
+#: src/api.md:327
 msgid "// Virtualenv errors\n"
 msgstr "// Virtualenv 에러\n"
 
-#: src/api.md:331
+#: src/api.md:332
 msgid "// Python errors\n"
 msgstr "// Python 에러\n"
 
-#: src/api.md:338
+#: src/api.md:339
 msgid "// uv errors\n"
 msgstr "// uv 에러\n"
 
-#: src/api.md:342
+#: src/api.md:343
 msgid "// Path/IO errors\n"
 msgstr "// 경로/IO 에러\n"
 
-#: src/api.md:343
+#: src/api.md:344
 msgid "// Tuple variant\n"
 msgstr "// 튜플 변형\n"
 
-#: src/api.md:345 src/api.md:346
+#: src/api.md:346 src/api.md:347
 msgid "// Tuple variant with From\n"
 msgstr "// From이 있는 튜플 변형\n"
 
-#: src/api.md:348
+#: src/api.md:349
 msgid "// Config errors\n"
 msgstr "// 설정 에러\n"
 
-#: src/api.md:352
+#: src/api.md:353
 msgid "// CLI errors\n"
 msgstr "// CLI 에러\n"
 
-#: src/api.md:355
+#: src/api.md:356
 msgid "// Migration errors\n"
 msgstr "// 마이그레이션 에러\n"
 
-#: src/api.md:365
+#: src/api.md:366
 msgid "// Python path errors\n"
 msgstr "// Python 경로 에러\n"
 
-#: src/api.md:368
+#: src/api.md:369
 msgid "// Cascade errors\n"
 msgstr "// 연쇄 에러\n"
 
-#: src/api.md:373
+#: src/api.md:372
+msgid ""
+"// Abridged: 38 variants in total. See src/error/mod.rs for the full set,\n"
+"    // including SelfUpdateFailed, NoActiveEnvironment, ExecutableNotFound,\n"
+"    // ManifestNotFound, InvalidExportFile, UnsupportedExportVersion,\n"
+"    // VerifyFailed, SitePackagesNotFound, MigrationSourcesNotFound,\n"
+"    // MigrationBatchFailed and DiffMismatch.\n"
+msgstr ""
+
+#: src/api.md:380
 msgid ""
 "/// Returns error code string (e.g., \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")\n"
@@ -10792,7 +10870,7 @@ msgstr ""
 "/// 에러 코드 문자열을 반환합니다 (예: \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")\n"
 
-#: src/api.md:376
+#: src/api.md:383
 msgid ""
 "/// Localized message in an explicit locale (bypasses the process-global\n"
 "    /// current locale). `Display` delegates to this with the current "
@@ -10802,12 +10880,12 @@ msgstr ""
 "    /// 현재 로케일을 우회합니다). `Display`는 현재 로케일로 이를 위임합니"
 "다.\n"
 
-#: src/api.md:380
+#: src/api.md:387
 msgid ""
 "/// Returns user-friendly suggestion in the current locale (if available)\n"
 msgstr "/// 현재 로케일에서 사용자 친화적인 제안을 반환합니다 (가능한 경우)\n"
 
-#: src/api.md:383
+#: src/api.md:390
 msgid ""
 "/// Locale-explicit sibling of `suggestion()` — useful for deterministic,\n"
 "    /// parallel tests that must not depend on the global locale.\n"
@@ -10815,11 +10893,11 @@ msgstr ""
 "/// `suggestion()`의 로케일 명시 버전 — 전역 로케일에 의존하지 않아야 하는\n"
 "    /// 결정적 병렬 테스트에 유용합니다.\n"
 
-#: src/api.md:387
+#: src/api.md:394
 msgid "/// Returns migration-specific exit code\n"
 msgstr "/// 마이그레이션 전용 종료 코드를 반환합니다\n"
 
-#: src/api.md:392
+#: src/api.md:399
 msgid ""
 "The `*_in(locale)` accessors pass `locale =` to rust-i18n's `t!`, which "
 "bypasses the process-global current locale — this lets tests assert messages "
@@ -10829,96 +10907,105 @@ msgstr ""
 "프로세스 전역 현재 로케일을 우회합니다. 덕분에 테스트에서 `#[serial]` 없이도 "
 "메시지를 결정적으로 검증할 수 있습니다."
 
-#: src/api.md:396
+#: src/api.md:403
 msgid "**Error Code String Prefixes:**"
 msgstr "**에러 코드 문자열 접두사:**"
 
-#: src/api.md:397
+#: src/api.md:404
 msgid ""
 "`ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)"
 msgstr "`ENV_*` - 환경 에러 (예: `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)"
 
-#: src/api.md:398
+#: src/api.md:405
 msgid "`PYTHON_*` - Python version errors (e.g., `PYTHON_NOT_INSTALLED`)"
 msgstr "`PYTHON_*` - Python 버전 에러 (예: `PYTHON_NOT_INSTALLED`)"
 
-#: src/api.md:399
+#: src/api.md:406
 msgid "`UV_*` - uv errors (e.g., `UV_NOT_INSTALLED`, `UV_COMMAND_FAILED`)"
 msgstr "`UV_*` - uv 에러 (예: `UV_NOT_INSTALLED`, `UV_COMMAND_FAILED`)"
 
-#: src/api.md:400
+#: src/api.md:407
 msgid "`IO_*` - Path/IO errors (e.g., `IO_ERROR`, `PATH_ERROR`)"
 msgstr "`IO_*` - 경로/IO 에러 (예: `IO_ERROR`, `PATH_ERROR`)"
 
-#: src/api.md:401
+#: src/api.md:408
 msgid "`CONFIG_*` - Config errors (e.g., `CONFIG_VERSION_FILE_NOT_FOUND`)"
 msgstr "`CONFIG_*` - 설정 에러 (예: `CONFIG_VERSION_FILE_NOT_FOUND`)"
 
-#: src/api.md:402
+#: src/api.md:409
 msgid "`SHELL_*` - Shell errors (e.g., `SHELL_NOT_SUPPORTED`)"
 msgstr "`SHELL_*` - Shell 에러 (예: `SHELL_NOT_SUPPORTED`)"
 
-#: src/api.md:403
+#: src/api.md:410
 msgid "`ARG_*` - CLI argument errors (e.g., `ARG_INVALID`)"
 msgstr "`ARG_*` - CLI 인수 에러 (예: `ARG_INVALID`)"
 
-#: src/api.md:404
+#: src/api.md:411
 msgid "`SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)"
 msgstr "`SOURCE_*` - 마이그레이션 소스 에러 (예: `SOURCE_PYENV_NOT_FOUND`)"
 
-#: src/api.md:405
+#: src/api.md:412
 msgid "`MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)"
 msgstr "`MIGRATE_*` - 마이그레이션 프로세스 에러 (예: `MIGRATE_FAILED`)"
 
-#: src/api.md:406
+#: src/api.md:413
 msgid "`UNINSTALL_*` - Uninstall errors (e.g., `UNINSTALL_CASCADE_ABORTED`)"
 msgstr "`UNINSTALL_*` - 제거 에러 (예: `UNINSTALL_CASCADE_ABORTED`)"
 
-#: src/api.md:408
+#: src/api.md:414
+msgid ""
+"Plus `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`, "
+"`VERIFY_*` and `DIFF_*` — see `src/error/code.rs` for the authoritative list"
+msgstr ""
+"그 밖에 `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`, "
+"`VERIFY_*`, `DIFF_*`가 있습니다 — 정확한 목록은 `src/error/code.rs`를 참고하"
+"세요"
+
+#: src/api.md:417
 msgid "**Example Error Handling:**"
 msgstr "**에러 처리 예시:**"
 
-#: src/api.md:416
+#: src/api.md:425
 msgid "\"Must start with a letter\""
 msgstr "\"Must start with a letter\""
 
-#: src/api.md:420
+#: src/api.md:429
 msgid "// ... operation\n"
 msgstr "// ... 작업\n"
 
-#: src/api.md:424
+#: src/api.md:433
 msgid "// Usage\n"
 msgstr "// 사용 예시\n"
 
-#: src/api.md:426
+#: src/api.md:435
 msgid "\"123invalid\""
 msgstr "\"123invalid\""
 
-#: src/api.md:427
+#: src/api.md:436
 msgid "\"Success\""
 msgstr "\"Success\""
 
-#: src/api.md:429
+#: src/api.md:438
 msgid "\"Error: {}\""
 msgstr "\"Error: {}\""
 
-#: src/api.md:431
+#: src/api.md:440
 msgid "\"Suggestion: {}\""
 msgstr "\"Suggestion: {}\""
 
-#: src/api.md:433
+#: src/api.md:442
 msgid "\"Error code: {}\""
 msgstr "\"Error code: {}\""
 
-#: src/api.md:434
+#: src/api.md:443
 msgid "// Non-zero exit for error\n"
 msgstr "// 에러 시 0이 아닌 종료 코드\n"
 
-#: src/api.md:443
+#: src/api.md:452
 msgid "Shell Types (`cli/mod.rs`)"
 msgstr "Shell 타입 (`cli/mod.rs`)"
 
-#: src/api.md:452
+#: src/api.md:461
 msgid ""
 "// Note: ShellType is a plain enum without methods\n"
 "// Shell operations are handled by module-level functions:\n"
@@ -10936,96 +11023,96 @@ msgstr ""
 "// - shell::fish::init_script() -> &'static str\n"
 "// - shell::powershell::init_script() -> &'static str\n"
 
-#: src/api.md:462
+#: src/api.md:471
 msgid "**Auto-detection Priority:**"
 msgstr "**자동 감지 우선순위:**"
 
-#: src/api.md:463
+#: src/api.md:472
 msgid "`FISH_VERSION` → Fish"
 msgstr "`FISH_VERSION` → Fish"
 
-#: src/api.md:464
+#: src/api.md:473
 msgid "`PSModulePath` → PowerShell"
 msgstr "`PSModulePath` → PowerShell"
 
-#: src/api.md:465
+#: src/api.md:474
 msgid "`ZSH_VERSION` → Zsh"
 msgstr "`ZSH_VERSION` → Zsh"
 
-#: src/api.md:466
+#: src/api.md:475
 msgid "Default → Bash"
 msgstr "기본값 → Bash"
 
-#: src/api.md:470
+#: src/api.md:479
 msgid "Path Utilities (`paths.rs`)"
 msgstr "경로 유틸리티 (`paths.rs`)"
 
-#: src/api.md:473
+#: src/api.md:482
 msgid "/// Returns scuv home directory (SCUV_HOME or ~/.scuv)\n"
 msgstr "/// scuv 홈 디렉토리를 반환합니다 (SCUV_HOME 또는 ~/.scuv)\n"
 
-#: src/api.md:475
+#: src/api.md:484
 msgid "/// Returns virtualenvs directory\n"
 msgstr "/// virtualenvs 디렉토리를 반환합니다\n"
 
-#: src/api.md:478
+#: src/api.md:487
 msgid "/// Returns global version file path (~/.scuv/version)\n"
 msgstr "/// 전역 버전 파일 경로를 반환합니다 (~/.scuv/version)\n"
 
-#: src/api.md:481
+#: src/api.md:490
 msgid "/// Returns local version file path in the given directory\n"
 msgstr "/// 지정된 디렉토리의 로컬 버전 파일 경로를 반환합니다\n"
 
-#: src/api.md:488
+#: src/api.md:497
 msgid "Version Resolution (`core/version.rs`)"
 msgstr "버전 결정 (`core/version.rs`)"
 
-#: src/api.md:490
+#: src/api.md:499
 msgid "`VersionService`"
 msgstr "`VersionService`"
 
-#: src/api.md:492
+#: src/api.md:501
 msgid "Service for managing version files."
 msgstr "버전 파일을 관리하는 서비스입니다."
 
-#: src/api.md:498
+#: src/api.md:507
 msgid "/// Set the local version for a directory\n"
 msgstr "/// 디렉토리의 로컬 버전을 설정합니다\n"
 
-#: src/api.md:501
+#: src/api.md:510
 msgid "/// Set the global version\n"
 msgstr "/// 전역 버전을 설정합니다\n"
 
-#: src/api.md:504
+#: src/api.md:513
 msgid "/// Get the local version for a directory\n"
 msgstr "/// 디렉토리의 로컬 버전을 가져옵니다\n"
 
-#: src/api.md:507
+#: src/api.md:516
 msgid "/// Get the global version\n"
 msgstr "/// 전역 버전을 가져옵니다\n"
 
-#: src/api.md:510
+#: src/api.md:519
 msgid ""
 "/// Resolve the version for a directory (local -> parent walk -> global)\n"
 msgstr "/// 디렉토리의 버전을 결정합니다 (로컬 → 상위 디렉토리 탐색 → 전역)\n"
 
-#: src/api.md:513
+#: src/api.md:522
 msgid "/// Resolve from current directory\n"
 msgstr "/// 현재 디렉토리에서 결정합니다\n"
 
-#: src/api.md:516
+#: src/api.md:525
 msgid "/// Unset local version (removes .scuv-version)\n"
 msgstr "/// 로컬 버전을 해제합니다 (.scuv-version 제거)\n"
 
-#: src/api.md:519
+#: src/api.md:528
 msgid "/// Unset global version (removes ~/.scuv/version)\n"
 msgstr "/// 전역 버전을 해제합니다 (~/.scuv/version 제거)\n"
 
-#: src/api.md:524
+#: src/api.md:533
 msgid "**CLI Equivalent (User Workflow):**"
 msgstr "**동등한 CLI 명령어 (사용자 워크플로우):**"
 
-#: src/api.md:526
+#: src/api.md:535
 msgid ""
 "`VersionService::set_global()` is exposed by the `scuv use <name> --global` "
 "command. To set Python 3.11.0 as the global default in practice:"
@@ -11033,7 +11120,7 @@ msgstr ""
 "`VersionService::set_global()`은 `scuv use <name> --global` 명령어로 노출됩니"
 "다. 실제로 Python 3.11.0을 전역 기본값으로 설정하려면:"
 
-#: src/api.md:535
+#: src/api.md:544
 msgid ""
 "This writes `py311` to `~/.scuv/version`. The global value is used when no "
 "local `.scuv-version` or `SCUV_VERSION` override is present."
@@ -11041,11 +11128,11 @@ msgstr ""
 "이 명령어는 `py311`을 `~/.scuv/version`에 기록합니다. 로컬 `.scuv-version`이"
 "나 `SCUV_VERSION` 재정의가 없을 때 전역 값이 사용됩니다."
 
-#: src/api.md:538
+#: src/api.md:547
 msgid "**Resolution Priority Order:**"
 msgstr "**결정 우선순위 순서:**"
 
-#: src/api.md:539
+#: src/api.md:548
 msgid ""
 "`SCUV_VERSION` environment variable (checked at shell hook level, not in "
 "VersionService)"
@@ -11053,167 +11140,167 @@ msgstr ""
 "`SCUV_VERSION` 환경 변수 (shell hook 수준에서 확인, VersionService 내부에서"
 "는 확인하지 않음)"
 
-#: src/api.md:540
+#: src/api.md:549
 msgid "`.scuv-version` in current directory"
 msgstr "현재 디렉토리의 `.scuv-version`"
 
-#: src/api.md:541
+#: src/api.md:550
 msgid "`.scuv-version` in parent directories (walks up)"
 msgstr "상위 디렉토리의 `.scuv-version` (상위로 탐색)"
 
-#: src/api.md:542 src/llms.md:167
+#: src/api.md:551 src/llms.md:167
 msgid "`~/.scuv/version` (global default)"
 msgstr "`~/.scuv/version` (전역 기본값)"
 
-#: src/api.md:544
+#: src/api.md:553
 msgid "**Note**: `.python-version` is not supported."
 msgstr "**참고**: `.python-version`은 지원되지 않습니다."
 
-#: src/api.md:548
+#: src/api.md:557
 msgid "Testing Patterns"
 msgstr "테스트 패턴"
 
-#: src/api.md:550
+#: src/api.md:559
 msgid "Property-Based Testing"
 msgstr "속성 기반 테스트"
 
-#: src/api.md:552
+#: src/api.md:561
 msgid "scuv uses `proptest` for property-based testing of critical logic:"
 msgstr "scuv는 중요 로직의 속성 기반 테스트를 위해 `proptest`를 사용합니다:"
 
-#: src/api.md:568
+#: src/api.md:577
 msgid "Integration Testing"
 msgstr "통합 테스트"
 
-#: src/api.md:570
+#: src/api.md:579
 msgid "Test files follow the pattern:"
 msgstr "테스트 파일은 다음 패턴을 따릅니다:"
 
-#: src/api.md:578
+#: src/api.md:587
 msgid "// Test setup\n"
 msgstr "// 테스트 설정\n"
 
-#: src/api.md:584
+#: src/api.md:593
 msgid "// Test logic\n"
 msgstr "// 테스트 로직\n"
 
-#: src/api.md:591
+#: src/api.md:600
 msgid "Extending scuv"
 msgstr "scuv 확장"
 
-#: src/api.md:595
+#: src/api.md:604
 msgid "**Define command in `cli/mod.rs`:**"
 msgstr "**`cli/mod.rs`에서 명령어 정의:**"
 
-#: src/api.md:599
+#: src/api.md:608
 msgid "// ... existing commands\n"
 msgstr "// ... 기존 명령어\n"
 
-#: src/api.md:601
+#: src/api.md:610
 msgid "\"Argument description\""
 msgstr "\"Argument description\""
 
-#: src/api.md:607
+#: src/api.md:616
 msgid "**Create handler in `cli/commands/`:**"
 msgstr "**`cli/commands/`에 핸들러 생성:**"
 
-#: src/api.md:609
+#: src/api.md:618
 msgid "// cli/commands/my_command.rs\n"
 msgstr "// cli/commands/my_command.rs\n"
 
-#: src/api.md:618
+#: src/api.md:627
 msgid "**Wire up in `main.rs`:**"
 msgstr "**`main.rs`에서 연결:**"
 
-#: src/api.md:627
+#: src/api.md:636
 msgid "Adding a New Health Check"
 msgstr "새 상태 점검 추가"
 
-#: src/api.md:630
-msgid "// In core/doctor.rs\n"
-msgstr "// core/doctor.rs에서\n"
+#: src/api.md:639
+msgid "// In core/doctor/checks/\n"
+msgstr "// core/doctor/checks/ 에서\n"
 
-#: src/api.md:643
+#: src/api.md:652
 msgid "// Check logic\n"
 msgstr "// 점검 로직\n"
 
-#: src/api.md:647
+#: src/api.md:656
 msgid "// Register in Doctor::new()\n"
 msgstr "// Doctor::new()에 등록\n"
 
-#: src/api.md:665
+#: src/api.md:674
 msgid ""
 "[Architecture](development/architecture.md) - System design and patterns"
 msgstr "[아키텍처](development/architecture.md) - 시스템 설계와 패턴"
 
-#: src/api.md:666
+#: src/api.md:675
 msgid "[Commands](commands/README.md) - CLI reference"
 msgstr "[명령어](commands/README.md) - CLI 참조"
 
-#: src/api.md:667
+#: src/api.md:676
 msgid "[Contributing](development/contributing.md) - Development guide"
 msgstr "[기여하기](development/contributing.md) - 개발 가이드"
 
-#: src/api.md:668
+#: src/api.md:677
 msgid "[Testing](development/testing.md) - Testing strategies"
 msgstr "[테스트](development/testing.md) - 테스트 전략"
 
-#: src/api.md:672
+#: src/api.md:681
 msgid "For AI/LLM Tools"
 msgstr "AI/LLM 도구를 위한 안내"
 
-#: src/api.md:674
+#: src/api.md:683
 msgid "When analyzing or modifying this codebase:"
 msgstr "이 코드베이스를 분석하거나 수정할 때:"
 
-#: src/api.md:676
+#: src/api.md:685
 msgid "**Use symbolic tools** for precise navigation:"
 msgstr "**심볼 도구를 활용하세요** — 정확한 탐색을 위해:"
 
-#: src/api.md:677
+#: src/api.md:686
 msgid "`find_symbol` to locate specific functions/types"
 msgstr "`find_symbol` — 특정 함수/타입 위치 파악"
 
-#: src/api.md:678
+#: src/api.md:687
 msgid "`find_referencing_symbols` to understand usage"
 msgstr "`find_referencing_symbols` — 사용처 파악"
 
-#: src/api.md:679
+#: src/api.md:688
 msgid "`get_symbols_overview` for module structure"
 msgstr "`get_symbols_overview` — 모듈 구조 파악"
 
-#: src/api.md:681
+#: src/api.md:690
 msgid "**Follow existing patterns**:"
 msgstr "**기존 패턴을 따르세요**:"
 
-#: src/api.md:682
+#: src/api.md:691
 msgid "Error handling: Always return `Result<T>` with `ScoopError`"
 msgstr "에러 처리: 항상 `ScoopError`와 함께 `Result<T>`를 반환합니다"
 
-#: src/api.md:683
+#: src/api.md:692
 msgid "Shell output: CLI outputs shell code, wrapper evals it"
 msgstr "Shell 출력: CLI가 shell 코드를 출력하면 래퍼가 eval로 실행합니다"
 
-#: src/api.md:684
+#: src/api.md:693
 msgid "Testing: Unit tests + integration tests + property tests"
 msgstr "테스트: 단위 테스트 + 통합 테스트 + 속성 테스트"
 
-#: src/api.md:685
+#: src/api.md:694
 msgid "i18n: Use `t!()` macro for all user-facing strings"
 msgstr "i18n: 사용자 대상 문자열에는 모두 `t!()` 매크로를 사용합니다"
 
-#: src/api.md:687
+#: src/api.md:696
 msgid "**Preserve conventions**:"
 msgstr "**관례를 유지하세요**:"
 
-#: src/api.md:688
+#: src/api.md:697
 msgid ""
 "Error codes are string constants (e.g., \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")"
 msgstr ""
 "에러 코드는 문자열 상수입니다 (예: \"ENV_NOT_FOUND\", \"UV_COMMAND_FAILED\")"
 
-#: src/api.md:689
+#: src/api.md:698
 msgid ""
 "Process exit codes follow a layered contract (see **Process exit codes** "
 "below)"
@@ -11221,7 +11308,7 @@ msgstr ""
 "프로세스 종료 코드는 계층적 계약을 따릅니다 (아래 **프로세스 종료 코드** 참"
 "조)"
 
-#: src/api.md:690
+#: src/api.md:699
 msgid ""
 "Path handling via `paths.rs` utilities (cross-platform — Unix `bin/` vs "
 "Windows `Scripts/`)"
@@ -11229,15 +11316,15 @@ msgstr ""
 "경로 처리는 `paths.rs` 유틸리티를 통해 수행합니다 (크로스 플랫폼 — Unix `bin/"
 "` vs Windows `Scripts/`)"
 
-#: src/api.md:691
+#: src/api.md:700
 msgid "Shell detection via `shell::detect_shell()` function"
 msgstr "Shell 감지는 `shell::detect_shell()` 함수를 통해 수행합니다"
 
-#: src/api.md:693
+#: src/api.md:702
 msgid "Process exit codes"
 msgstr "프로세스 종료 코드"
 
-#: src/api.md:695
+#: src/api.md:704
 msgid ""
 "scuv centralises exit-code policy in `src/error/exit.rs` via "
 "`ScoopError::exit_code()`. Commands that already render their own report "
@@ -11249,13 +11336,13 @@ msgstr ""
 "`ErrorRenderPolicy::Quiet`를 선택하여 `main.rs`가 중복 `error:` 줄을 추가하"
 "지 않도록 합니다."
 
-#: src/api.md:703
+#: src/api.md:712
 msgid ""
 "Generic failure or semantic finding (verify failed, generic operational "
 "error)"
 msgstr "일반적인 실패 또는 의미론적 결과 (verify 실패, 일반 작업 오류)"
 
-#: src/api.md:704
+#: src/api.md:713
 msgid ""
 "Migration failure / `MigrationNameConflict` (and reserved for future probe/"
 "tool failures)"
@@ -11263,77 +11350,77 @@ msgstr ""
 "마이그레이션 실패 / `MigrationNameConflict` (및 향후 프로브/도구 실패를 위한 "
 "예약)"
 
-#: src/api.md:705
+#: src/api.md:714
 msgid ""
 "Migration source-discovery error (pyenv/conda/venvwrapper missing or "
 "corrupted)"
 msgstr "마이그레이션 소스 검색 오류 (pyenv/conda/venvwrapper 없음 또는 손상됨)"
 
-#: src/api.md:707
+#: src/api.md:716
 msgid "Per-command exit code table:"
 msgstr "명령어별 종료 코드 표:"
 
-#: src/api.md:711
+#: src/api.md:720
 msgid "always (informational)"
 msgstr "항상 (정보성)"
 
-#: src/api.md:712
+#: src/api.md:721
 msgid "`verify --strict`"
 msgstr "`verify --strict`"
 
-#: src/api.md:712 src/api.md:714
+#: src/api.md:721 src/api.md:723
 msgid "clean"
 msgstr "정상"
 
-#: src/api.md:712
+#: src/api.md:721
 msgid "any Fail check"
 msgstr "Fail 점검 발생 시"
 
-#: src/api.md:713
+#: src/api.md:722
 msgid "`migrate @env` / `migrate all`"
 msgstr "`migrate @env` / `migrate all`"
 
-#: src/api.md:713
+#: src/api.md:722
 msgid "failure / conflict"
 msgstr "실패 / 충돌"
 
-#: src/api.md:713
+#: src/api.md:722
 msgid "source tool not found"
 msgstr "소스 도구 없음"
 
-#: src/api.md:714
+#: src/api.md:723
 msgid "warning"
 msgstr "경고"
 
-#: src/api.md:715
+#: src/api.md:724
 msgid "Other commands"
 msgstr "기타 명령어"
 
-#: src/api.md:715
+#: src/api.md:724
 msgid "failure"
 msgstr "실패"
 
-#: src/api.md:717
+#: src/api.md:726
 msgid "**Documentation requirements**:"
 msgstr "**문서화 요구사항**:"
 
-#: src/api.md:718
+#: src/api.md:727
 msgid "All `pub fn` must have doc comments"
 msgstr "모든 `pub fn`에는 doc 주석이 있어야 합니다"
 
-#: src/api.md:719
+#: src/api.md:728
 msgid "Examples in doctests where applicable"
 msgstr "해당하는 경우 doctest에 예시 포함"
 
-#: src/api.md:720
+#: src/api.md:729
 msgid "Error conditions documented"
 msgstr "에러 조건 문서화"
 
-#: src/api.md:721
+#: src/api.md:730
 msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
-#: src/api.md:725
+#: src/api.md:734
 msgid "**Last Updated:** 2026-09-06 **scuv Version:** 0.15.3"
 msgstr "**최종 업데이트:** 2026-09-06 **scuv 버전:** 0.15.3"
 
@@ -11463,11 +11550,11 @@ msgstr "테스트 카테고리"
 
 #: src/development/testing.md:101
 msgid ""
-"The bulk of the suite (916 tests, ~93% of the total 988) lives within source "
-"files using `#[cfg(test)]`:"
+"The bulk of the suite (957 tests, ~93% of the total 1029) lives within "
+"source files using `#[cfg(test)]`:"
 msgstr ""
-"테스트 스위트의 대부분(916개 테스트, 전체 988개의 약 93%)은 `#[cfg(test)]`를 "
-"사용하여 소스 파일 내에 위치합니다:"
+"테스트 스위트의 대부분(957개 테스트, 전체 1029개의 약 93%)은 `#[cfg(test)]`"
+"를 사용하여 소스 파일 내에 위치합니다:"
 
 #: src/development/testing.md:115
 msgid "Key test modules:"
@@ -11486,8 +11573,8 @@ msgid "`error::tests`"
 msgstr "`error::tests`"
 
 #: src/development/testing.md:119
-msgid "54"
-msgstr "54"
+msgid "92"
+msgstr "92"
 
 #: src/development/testing.md:119
 msgid "Error types, codes, suggestions"
@@ -11498,8 +11585,8 @@ msgid "`output::json::tests`"
 msgstr "`output::json::tests`"
 
 #: src/development/testing.md:120
-msgid "35"
-msgstr "35"
+msgid "44"
+msgstr "44"
 
 #: src/development/testing.md:120
 msgid "JSON serialization, edge cases"
@@ -11510,8 +11597,8 @@ msgid "`validate::tests`"
 msgstr "`validate::tests`"
 
 #: src/development/testing.md:121
-msgid "30"
-msgstr "30"
+msgid "56"
+msgstr "56"
 
 #: src/development/testing.md:121
 msgid "Name/version validation"
@@ -11522,8 +11609,8 @@ msgid "`core::version::tests`"
 msgstr "`core::version::tests`"
 
 #: src/development/testing.md:122
-msgid "18"
-msgstr "18"
+msgid "35"
+msgstr "35"
 
 #: src/development/testing.md:122
 msgid "Version file resolution"
@@ -11534,8 +11621,8 @@ msgid "`core::virtualenv::tests`"
 msgstr "`core::virtualenv::tests`"
 
 #: src/development/testing.md:123
-msgid "12"
-msgstr "12"
+msgid "26"
+msgstr "26"
 
 #: src/development/testing.md:123
 msgid "Virtualenv service"
@@ -11546,8 +11633,8 @@ msgid "`paths::tests`"
 msgstr "`paths::tests`"
 
 #: src/development/testing.md:124
-msgid "16"
-msgstr "16"
+msgid "48"
+msgstr "48"
 
 #: src/development/testing.md:124
 msgid "Path utilities"
@@ -11558,8 +11645,8 @@ msgid "`shell::*::tests`"
 msgstr "`shell::*::tests`"
 
 #: src/development/testing.md:125
-msgid "14"
-msgstr "14"
+msgid "50"
+msgstr "50"
 
 #: src/development/testing.md:125
 msgid "Shell scripts (shellcheck)"
@@ -11567,9 +11654,9 @@ msgstr "Shell 스크립트 (shellcheck)"
 
 #: src/development/testing.md:127
 msgid ""
-"Integration Tests (43 tests in `tests/cli.rs` + 2 in `tests/"
+"Integration Tests (45 tests in `tests/cli.rs` + 2 in `tests/"
 "i18n_completeness.rs`)"
-msgstr "통합 테스트 (43개: `tests/cli.rs` + 2개: `tests/i18n_completeness.rs`)"
+msgstr "통합 테스트 (45개: `tests/cli.rs` + 2개: `tests/i18n_completeness.rs`)"
 
 #: src/development/testing.md:129
 msgid "Located in `tests/cli.rs`:"
@@ -11604,8 +11691,8 @@ msgid "# Run ignored tests (requires uv)\n"
 msgstr "# Run ignored tests (requires uv)\n"
 
 #: src/development/testing.md:149
-msgid "Doc Tests (24 tests)"
-msgstr "Doc 테스트 (24개)"
+msgid "Doc Tests (25 tests)"
+msgstr "Doc 테스트 (25개)"
 
 #: src/development/testing.md:151
 msgid "Examples in documentation comments:"
@@ -11699,11 +11786,14 @@ msgstr "퍼즈 테스트"
 msgid ""
 "`cargo-fuzz` (libFuzzer) fuzzes the untrusted-input parsers. It lives in an "
 "isolated `fuzz/` workspace pinned to nightly, so it never affects the "
-"MSRV-1.85 build; CI runs the targets on a weekly schedule."
+"MSRV-1.88 build; CI runs the targets on a weekly schedule."
 msgstr ""
-"`cargo-fuzz` (libFuzzer)는 신뢰할 수 없는 입력 파서를 퍼징합니다. nightly에 "
-"고정된 격리된 `fuzz/` 워크스페이스에 위치하여 MSRV-1.85 빌드에 영향을 주지 않"
-"으며, CI에서 매주 스케줄에 따라 실행됩니다."
+"`cargo-fuzz`(libFuzzer)는 신뢰할 수 없는 입력 파서를 퍼징합니다. nightly에 고"
+"정된 격리된 `fuzz/` 워크스페이스에 위치하여 MSRV-1.88 빌드에 영향을 주지 않으"
+"며, CI가 주간 일정으로 타깃을 실행합니다.`cargo-fuzz` (libFuzzer)는 신뢰할 "
+"수 없는 입력 파서를 퍼징합니다. nightly에 고정된 격리된 `fuzz/` 워크스페이스"
+"에 위치하여 MSRV-1.85 빌드에 영향을 주지 않으며, CI에서 매주 스케줄에 따라 실"
+"행됩니다."
 
 #: src/development/testing.md:228
 msgid "Writing Tests"
@@ -11853,9 +11943,9 @@ msgstr "GitHub Actions 워크플로우 (`.github/workflows/ci.yml`):"
 
 #: src/development/testing.md:377 src/development/testing.md:380
 #: src/development/code-quality.md:159 src/development/code-quality.md:166
-#: src/development/code-quality.md:173 src/development/code-quality.md:219
-#: src/development/code-quality.md:229 src/development/code-quality.md:234
-#: src/development/code-quality.md:237 src/development/code-quality.md:240
+#: src/development/code-quality.md:173 src/development/code-quality.md:224
+#: src/development/code-quality.md:234 src/development/code-quality.md:239
+#: src/development/code-quality.md:242 src/development/code-quality.md:245
 msgid "name"
 msgstr "name"
 
@@ -11863,7 +11953,7 @@ msgstr "name"
 msgid "Run tests"
 msgstr "Run tests"
 
-#: src/development/testing.md:378 src/development/code-quality.md:241
+#: src/development/testing.md:378 src/development/code-quality.md:246
 msgid "cargo test --all-features"
 msgstr "cargo test --all-features"
 
@@ -11945,14 +12035,18 @@ msgstr "Codespaces / Devcontainer"
 
 #: src/development/testing.md:433
 msgid ""
-"`.devcontainer/devcontainer.json` boots a Rust 1.85 dev environment on "
+"`.devcontainer/devcontainer.json` boots a Rust 1.88 dev environment on "
 "`mcr.microsoft.com/devcontainers/rust:1-bookworm` that matches the local "
 "toolchain pinned by `rust-toolchain.toml`. Open the repo in VS Code "
 "(\"Reopen in Container\") or create a Codespace — both follow the same "
 "lifecycle:"
 msgstr ""
 "`.devcontainer/devcontainer.json`은 `rust-toolchain.toml`에 고정된 로컬 툴체"
-"인과 일치하는 `mcr.microsoft.com/devcontainers/rust:1-bookworm` 기반 Rust "
+"인과 일치하는 Rust 1.88 개발 환경을 `mcr.microsoft.com/devcontainers/rust:1-"
+"bookworm` 위에 띄웁니다. VS Code에서 저장소를 열거나(\"Reopen in "
+"Container\") Codespace를 만들면 되며, 둘 다 같은 생명주기를 따릅니"
+"다:`.devcontainer/devcontainer.json`은 `rust-toolchain.toml`에 고정된 로컬 툴"
+"체인과 일치하는 `mcr.microsoft.com/devcontainers/rust:1-bookworm` 기반 Rust "
 "1.85 개발 환경을 시작합니다. VS Code에서 리포지토리를 열면(\"Reopen in "
 "Container\") 또는 Codespace를 생성하면 동일한 라이프사이클을 따릅니다:"
 
@@ -12481,7 +12575,7 @@ msgstr "cargo-clippy"
 msgid "cargo clippy"
 msgstr "cargo clippy"
 
-#: src/development/code-quality.md:167 src/development/code-quality.md:238
+#: src/development/code-quality.md:167 src/development/code-quality.md:243
 msgid "cargo clippy --all-targets --all-features -- -D warnings"
 msgstr "cargo clippy --all-targets --all-features -- -D warnings"
 
@@ -12536,7 +12630,9 @@ msgstr "코드 포맷팅"
 #: src/development/code-quality.md:204 src/development/code-quality.md:205
 #: src/development/code-quality.md:206 src/development/code-quality.md:207
 #: src/development/code-quality.md:208 src/development/code-quality.md:209
-#: src/development/code-quality.md:210
+#: src/development/code-quality.md:210 src/development/code-quality.md:211
+#: src/development/code-quality.md:212 src/development/code-quality.md:213
+#: src/development/code-quality.md:214 src/development/code-quality.md:215
 msgid "Pre-commit"
 msgstr "Pre-commit"
 
@@ -12588,175 +12684,215 @@ msgstr "`check-yaml`"
 msgid "Validate YAML files"
 msgstr "YAML 파일 유효성 검사"
 
+#: src/development/code-quality.md:211
+msgid "`cargo-test`"
+msgstr "`cargo-test`"
+
+#: src/development/code-quality.md:211
+msgid "Test suite"
+msgstr "테스트 스위트"
+
 #: src/development/code-quality.md:212
+msgid "`mixed-line-ending`"
+msgstr "`mixed-line-ending`"
+
+#: src/development/code-quality.md:212
+msgid "Normalise line endings"
+msgstr "줄바꿈 문자 정규화"
+
+#: src/development/code-quality.md:213
+msgid "`check-added-large-files`"
+msgstr "`check-added-large-files`"
+
+#: src/development/code-quality.md:213
+msgid "Block large blobs"
+msgstr "큰 파일 차단"
+
+#: src/development/code-quality.md:214
+msgid "`check-merge-conflict`"
+msgstr "`check-merge-conflict`"
+
+#: src/development/code-quality.md:214
+msgid "Catch conflict markers"
+msgstr "충돌 마커 검출"
+
+#: src/development/code-quality.md:215
+msgid "`check-case-conflict`"
+msgstr "`check-case-conflict`"
+
+#: src/development/code-quality.md:215
+msgid "Catch case collisions"
+msgstr "대소문자 충돌 검출"
+
+#: src/development/code-quality.md:217
 msgid "CI Pipeline"
 msgstr "CI 파이프라인"
 
-#: src/development/code-quality.md:214
+#: src/development/code-quality.md:219
 msgid "GitHub Actions"
 msgstr "GitHub Actions"
 
-#: src/development/code-quality.md:216
+#: src/development/code-quality.md:221
 msgid "Located in `.github/workflows/ci.yml`:"
 msgstr "`.github/workflows/ci.yml`에 위치합니다:"
 
-#: src/development/code-quality.md:219
+#: src/development/code-quality.md:224
 msgid "CI"
 msgstr "CI"
 
-#: src/development/code-quality.md:221
+#: src/development/code-quality.md:226
 msgid "push"
 msgstr "push"
 
-#: src/development/code-quality.md:221
+#: src/development/code-quality.md:226
 msgid "pull_request"
 msgstr "pull_request"
 
-#: src/development/code-quality.md:222
+#: src/development/code-quality.md:227
 msgid "jobs"
 msgstr "jobs"
 
-#: src/development/code-quality.md:224
+#: src/development/code-quality.md:229
 msgid "check"
 msgstr "check"
 
-#: src/development/code-quality.md:225
+#: src/development/code-quality.md:230
 msgid "runs-on"
 msgstr "runs-on"
 
-#: src/development/code-quality.md:225
+#: src/development/code-quality.md:230
 msgid "ubuntu-latest"
 msgstr "ubuntu-latest"
 
-#: src/development/code-quality.md:226
+#: src/development/code-quality.md:231
 msgid "steps"
 msgstr "steps"
 
-#: src/development/code-quality.md:227 src/development/code-quality.md:230
+#: src/development/code-quality.md:232 src/development/code-quality.md:235
 msgid "uses"
 msgstr "uses"
 
-#: src/development/code-quality.md:227
+#: src/development/code-quality.md:232
 msgid "actions/checkout@v4"
 msgstr "actions/checkout@v4"
 
-#: src/development/code-quality.md:229
+#: src/development/code-quality.md:234
 msgid "Install Rust"
 msgstr "Install Rust"
 
-#: src/development/code-quality.md:230
-msgid "dtolnay/rust-action@stable"
-msgstr "dtolnay/rust-action@stable"
+#: src/development/code-quality.md:235
+msgid "dtolnay/rust-toolchain@stable"
+msgstr "dtolnay/rust-toolchain@stable"
 
-#: src/development/code-quality.md:231
+#: src/development/code-quality.md:236
 msgid "with"
 msgstr "with"
 
-#: src/development/code-quality.md:232
+#: src/development/code-quality.md:237
 msgid "components"
 msgstr "components"
 
-#: src/development/code-quality.md:232
+#: src/development/code-quality.md:237
 msgid "rustfmt, clippy"
 msgstr "rustfmt, clippy"
 
-#: src/development/code-quality.md:234
+#: src/development/code-quality.md:239
 msgid "Format check"
 msgstr "Format check"
 
-#: src/development/code-quality.md:235
+#: src/development/code-quality.md:240
 msgid "cargo fmt --all -- --check"
 msgstr "cargo fmt --all -- --check"
 
-#: src/development/code-quality.md:237
+#: src/development/code-quality.md:242
 msgid "Clippy"
 msgstr "Clippy"
 
-#: src/development/code-quality.md:240
+#: src/development/code-quality.md:245
 msgid "Test"
 msgstr "Test"
 
-#: src/development/code-quality.md:244
+#: src/development/code-quality.md:249
 msgid "Local CI Simulation"
 msgstr "로컬 CI 시뮬레이션"
 
-#: src/development/code-quality.md:247
+#: src/development/code-quality.md:252
 msgid "# Run exactly what CI runs\n"
 msgstr "# Run exactly what CI runs\n"
 
-#: src/development/code-quality.md:253
+#: src/development/code-quality.md:258
 msgid "Code Style Guidelines"
 msgstr "코드 스타일 가이드라인"
 
-#: src/development/code-quality.md:255
+#: src/development/code-quality.md:260
 msgid "Naming Conventions"
 msgstr "네이밍 컨벤션"
 
-#: src/development/code-quality.md:257
+#: src/development/code-quality.md:262
 msgid "Item"
 msgstr "항목"
 
-#: src/development/code-quality.md:257
+#: src/development/code-quality.md:262
 msgid "Convention"
 msgstr "컨벤션"
 
-#: src/development/code-quality.md:257 src/examples.md:5
+#: src/development/code-quality.md:262 src/examples.md:5
 msgid "Example"
 msgstr "예시"
 
-#: src/development/code-quality.md:259
+#: src/development/code-quality.md:264
 msgid "Modules"
 msgstr "모듈"
 
-#: src/development/code-quality.md:259 src/development/code-quality.md:260
+#: src/development/code-quality.md:264 src/development/code-quality.md:265
 msgid "`snake_case`"
 msgstr "`snake_case`"
 
-#: src/development/code-quality.md:260
+#: src/development/code-quality.md:265
 msgid "Functions"
 msgstr "함수"
 
-#: src/development/code-quality.md:260
+#: src/development/code-quality.md:265
 msgid "`get_version()`"
 msgstr "`get_version()`"
 
-#: src/development/code-quality.md:261
+#: src/development/code-quality.md:266
 msgid "Types"
 msgstr "타입"
 
-#: src/development/code-quality.md:261
+#: src/development/code-quality.md:266
 msgid "`PascalCase`"
 msgstr "`PascalCase`"
 
-#: src/development/code-quality.md:262
+#: src/development/code-quality.md:267
 msgid "Constants"
 msgstr "상수"
 
-#: src/development/code-quality.md:262
+#: src/development/code-quality.md:267
 msgid "`SCREAMING_SNAKE`"
 msgstr "`SCREAMING_SNAKE`"
 
-#: src/development/code-quality.md:262
+#: src/development/code-quality.md:267
 msgid "`MAX_NAME_LENGTH`"
 msgstr "`MAX_NAME_LENGTH`"
 
-#: src/development/code-quality.md:263
+#: src/development/code-quality.md:268
 msgid "Lifetimes"
 msgstr "라이프타임"
 
-#: src/development/code-quality.md:263
+#: src/development/code-quality.md:268
 msgid "short lowercase"
 msgstr "짧은 소문자"
 
-#: src/development/code-quality.md:263
+#: src/development/code-quality.md:268
 msgid "`'a`, `'src`"
 msgstr "`'a`, `'src`"
 
-#: src/development/code-quality.md:265
+#: src/development/code-quality.md:270
 msgid "Documentation"
 msgstr "문서화"
 
-#: src/development/code-quality.md:268
+#: src/development/code-quality.md:273
 msgid ""
 "/// Creates a new virtual environment.\n"
 "///\n"
@@ -12806,227 +12942,230 @@ msgstr ""
 "/// # }\n"
 "/// ```\n"
 
-#: src/development/code-quality.md:299
+#: src/development/code-quality.md:304
 msgid "// Good: Use ? operator\n"
 msgstr "// Good: Use ? operator\n"
 
-#: src/development/code-quality.md:305
+#: src/development/code-quality.md:310
 msgid "// Good: Contextual errors\n"
 msgstr "// Good: Contextual errors\n"
 
-#: src/development/code-quality.md:312
+#: src/development/code-quality.md:317
 msgid "// Avoid: unwrap() in library code\n"
 msgstr "// Avoid: unwrap() in library code\n"
 
-#: src/development/code-quality.md:315
+#: src/development/code-quality.md:320
 msgid "// Bad\n"
 msgstr "// Bad\n"
 
-#: src/development/code-quality.md:317
+#: src/development/code-quality.md:322
 msgid "// OK: expect() with explanation\n"
 msgstr "// OK: expect() with explanation\n"
 
-#: src/development/code-quality.md:321
+#: src/development/code-quality.md:326
 msgid "\"home directory must exist\""
 msgstr "\"home directory must exist\""
 
-#: src/development/code-quality.md:325
+#: src/development/code-quality.md:330
 msgid "Import Organization"
 msgstr "import 정리"
 
-#: src/development/code-quality.md:328
+#: src/development/code-quality.md:333
 msgid "// 1. Standard library\n"
 msgstr "// 1. Standard library\n"
 
-#: src/development/code-quality.md:331
+#: src/development/code-quality.md:336
 msgid "// 2. External crates\n"
 msgstr "// 2. External crates\n"
 
-#: src/development/code-quality.md:336
+#: src/development/code-quality.md:341
 msgid "// 3. Local modules\n"
 msgstr "// 3. Local modules\n"
 
-#: src/development/code-quality.md:344
+#: src/development/code-quality.md:349
 msgid "Dependency Auditing"
 msgstr "의존성 감사"
 
-#: src/development/code-quality.md:347
+#: src/development/code-quality.md:352
 msgid "# Install cargo-audit\n"
 msgstr "# Install cargo-audit\n"
 
-#: src/development/code-quality.md:349
+#: src/development/code-quality.md:354
 msgid "# Run audit\n"
 msgstr "# Run audit\n"
 
-#: src/development/code-quality.md:352
+#: src/development/code-quality.md:357
 msgid "# Fix vulnerabilities\n"
 msgstr "# Fix vulnerabilities\n"
 
-#: src/development/code-quality.md:357
+#: src/development/code-quality.md:362
 msgid "MSRV (Minimum Supported Rust Version)"
 msgstr "MSRV (최소 지원 Rust 버전)"
 
-#: src/development/code-quality.md:359
-msgid "Current MSRV: **1.85**"
-msgstr "현재 MSRV: **1.85**"
+#: src/development/code-quality.md:364
+msgid "Current MSRV: **1.88**"
+msgstr "현재 MSRV: **1.88**"
 
-#: src/development/code-quality.md:360
+#: src/development/code-quality.md:365
 msgid "Defined in `Cargo.toml`:"
 msgstr "`Cargo.toml`에 정의합니다:"
 
-#: src/development/code-quality.md:361
+#: src/development/code-quality.md:366
 msgid ""
 "```toml\n"
 "[package]\n"
-"rust-version = \"1.85\"\n"
+"rust-version = \"1.88\"\n"
 "```"
 msgstr ""
 "```toml\n"
 "[package]\n"
+"rust-version = \"1.88\"\n"
+"``````toml\n"
+"[package]\n"
 "rust-version = \"1.85\"\n"
 "```"
 
-#: src/development/code-quality.md:366
+#: src/development/code-quality.md:371
 msgid "Unsafe Code"
 msgstr "Unsafe 코드"
 
-#: src/development/code-quality.md:368
+#: src/development/code-quality.md:373
 msgid "Avoid `unsafe` unless absolutely necessary"
 msgstr "꼭 필요한 경우가 아니면 `unsafe` 사용 금지"
 
-#: src/development/code-quality.md:369
+#: src/development/code-quality.md:374
 msgid "Document safety invariants"
 msgstr "안전성 불변식을 문서화"
 
-#: src/development/code-quality.md:370
+#: src/development/code-quality.md:375
 msgid "Use `#![forbid(unsafe_code)]` in library crates"
 msgstr "라이브러리 크레이트에서 `#![forbid(unsafe_code)]` 사용"
 
-#: src/development/code-quality.md:374
+#: src/development/code-quality.md:379
 msgid "Profiling"
 msgstr "프로파일링"
 
-#: src/development/code-quality.md:377
+#: src/development/code-quality.md:382
 msgid "# Build with debug info for release\n"
 msgstr "# Build with debug info for release\n"
 
-#: src/development/code-quality.md:379
+#: src/development/code-quality.md:384
 msgid "# Use flamegraph\n"
 msgstr "# Use flamegraph\n"
 
-#: src/development/code-quality.md:385
+#: src/development/code-quality.md:390
 msgid "Benchmarks"
 msgstr "벤치마크"
 
-#: src/development/code-quality.md:388
+#: src/development/code-quality.md:393
 msgid "# Run benchmarks (if defined)\n"
 msgstr "# Run benchmarks (if defined)\n"
 
-#: src/development/code-quality.md:390
+#: src/development/code-quality.md:395
 msgid "# Using criterion\n"
 msgstr "# Using criterion\n"
 
-#: src/development/code-quality.md:395
+#: src/development/code-quality.md:400
 msgid "Continuous Improvement"
 msgstr "지속적 개선"
 
-#: src/development/code-quality.md:397
+#: src/development/code-quality.md:402
 msgid "Regular Checks"
 msgstr "정기 점검"
 
-#: src/development/code-quality.md:400
+#: src/development/code-quality.md:405
 msgid "# Weekly dependency update check\n"
 msgstr "# Weekly dependency update check\n"
 
-#: src/development/code-quality.md:402
+#: src/development/code-quality.md:407
 msgid "# Security audit\n"
 msgstr "# Security audit\n"
 
-#: src/development/code-quality.md:405
+#: src/development/code-quality.md:410
 msgid "# MSRV check\n"
 msgstr "# MSRV check\n"
 
-#: src/development/code-quality.md:410
+#: src/development/code-quality.md:415
 msgid "Upgrade Dependencies"
 msgstr "의존성 업그레이드"
 
-#: src/development/code-quality.md:413
+#: src/development/code-quality.md:418
 msgid "# Update Cargo.lock\n"
 msgstr "# Update Cargo.lock\n"
 
-#: src/development/code-quality.md:415
+#: src/development/code-quality.md:420
 msgid "# Upgrade to latest compatible versions\n"
 msgstr "# Upgrade to latest compatible versions\n"
 
-#: src/development/code-quality.md:417
+#: src/development/code-quality.md:422
 msgid "# requires cargo-edit\n"
 msgstr "# requires cargo-edit\n"
 
-#: src/development/code-quality.md:422
+#: src/development/code-quality.md:427
 msgid "Clippy False Positives"
 msgstr "Clippy 거짓 양성"
 
-#: src/development/code-quality.md:425
+#: src/development/code-quality.md:430
 msgid "// Silence with explanation\n"
 msgstr "// Silence with explanation\n"
 
-#: src/development/code-quality.md:428
+#: src/development/code-quality.md:433
 msgid "// Intentional for readability\n"
 msgstr "// Intentional for readability\n"
 
-#: src/development/code-quality.md:432
+#: src/development/code-quality.md:437
 msgid "Format Conflicts"
 msgstr "포맷 충돌"
 
-#: src/development/code-quality.md:435
+#: src/development/code-quality.md:440
 msgid "// Skip formatting for specific block\n"
 msgstr "// Skip formatting for specific block\n"
 
-#: src/development/code-quality.md:444
+#: src/development/code-quality.md:449
 msgid "CI vs Local Differences"
 msgstr "CI와 로컬 환경의 차이"
 
-#: src/development/code-quality.md:447
+#: src/development/code-quality.md:452
 msgid "# Ensure same toolchain as CI\n"
 msgstr "# Ensure same toolchain as CI\n"
 
-#: src/development/code-quality.md:450
+#: src/development/code-quality.md:455
 msgid "# Check Rust version\n"
 msgstr "# Check Rust version\n"
 
-#: src/development/code-quality.md:455
+#: src/development/code-quality.md:460
 msgid "Summary Checklist"
 msgstr "요약 체크리스트"
 
-#: src/development/code-quality.md:457
+#: src/development/code-quality.md:462
 msgid "Before committing:"
 msgstr "커밋하기 전:"
 
-#: src/development/code-quality.md:459
+#: src/development/code-quality.md:464
 msgid "`cargo fmt` - Code formatted"
 msgstr "`cargo fmt` - 코드 포맷팅 완료"
 
-#: src/development/code-quality.md:460
+#: src/development/code-quality.md:465
 msgid "`cargo clippy -- -D warnings` - No lint warnings"
 msgstr "`cargo clippy -- -D warnings` - 린트 경고 없음"
 
-#: src/development/code-quality.md:461
+#: src/development/code-quality.md:466
 msgid "`cargo test` - All tests pass"
 msgstr "`cargo test` - 모든 테스트 통과"
 
-#: src/development/code-quality.md:462
+#: src/development/code-quality.md:467
 msgid "`cargo doc` - Documentation builds"
 msgstr "`cargo doc` - 문서 빌드 성공"
 
-#: src/development/code-quality.md:463
+#: src/development/code-quality.md:468
 msgid "No `todo!()` or `dbg!()` left in code"
 msgstr "코드에 `todo!()`나 `dbg!()`가 남아 있지 않음"
 
-#: src/development/code-quality.md:464
+#: src/development/code-quality.md:469
 msgid "Public APIs documented"
 msgstr "공개 API 문서화 완료"
 
-#: src/development/code-quality.md:465
+#: src/development/code-quality.md:470
 msgid "Error messages are helpful"
 msgstr "오류 메시지가 유용함"
 
@@ -13085,7 +13224,7 @@ msgstr "`coverage.yml`"
 msgid "Untested code paths going unnoticed"
 msgstr "테스트되지 않은 코드 경로를 모르고 지나가는 것"
 
-#: src/development/ci-cd.md:14 src/development/ci-cd.md:113
+#: src/development/ci-cd.md:14 src/development/ci-cd.md:131
 msgid "`bench.yml`"
 msgstr "`bench.yml`"
 
@@ -13117,7 +13256,7 @@ msgstr "PR, main, 매주"
 msgid "Vulnerable dependencies, disallowed licences, untrusted sources"
 msgstr "취약한 의존성, 허용되지 않은 라이선스, 신뢰할 수 없는 출처"
 
-#: src/development/ci-cd.md:17 src/development/ci-cd.md:112
+#: src/development/ci-cd.md:17 src/development/ci-cd.md:130
 msgid "`msrv-check.yml`"
 msgstr "`msrv-check.yml`"
 
@@ -13165,8 +13304,8 @@ msgstr "`v*` 태그"
 msgid "Broken documentation site"
 msgstr "깨진 문서 사이트"
 
-#: src/development/ci-cd.md:21 src/development/ci-cd.md:193
-#: src/development/ci-cd.md:194
+#: src/development/ci-cd.md:21 src/development/ci-cd.md:211
+#: src/development/ci-cd.md:212
 msgid "`release-plz.yml`"
 msgstr "`release-plz.yml`"
 
@@ -13401,17 +13540,49 @@ msgstr ""
 
 #: src/development/ci-cd.md:100
 msgid ""
+"`exclude_re` matches the whole mutant description, not the function name. A "
+"bare `\"foo\"` therefore drops every mutant in `foo`, including the ones "
+"existing tests already kill — the exclusion outlives the reason given for "
+"it, and `--in-diff` never gates that code again. Exclude the specific "
+"description instead (`\"delete match arm \\[major\\] in foo\"`), and confirm "
+"what actually left the gate by listing both configs and diffing them:"
+msgstr ""
+"`exclude_re`는 함수 이름이 아니라 변이 설명 전체에 매칭됩니다. 따라서 "
+"`\"foo\"`처럼 이름만 쓰면 `foo` 안의 모든 변이가 빠지며, 기존 테스트가 이미 "
+"잡고 있던 변이까지 함께 빠집니다 — 제외가 그 근거보다 오래 살아남고, `--in-"
+"diff`는 그 코드를 다시는 게이트하지 않습니다. 대신 특정 설명을 제외하고"
+"(`\"delete match arm \\[major\\] in foo\"`), 두 설정의 목록을 뽑아 비교해 실"
+"제로 무엇이 게이트에서 빠졌는지 확인하십시오:"
+
+#: src/development/ci-cd.md:108 src/development/ci-cd.md:109
+msgid "'<glob>'"
+msgstr ""
+
+#: src/development/ci-cd.md:113
+msgid ""
+"Some mutants cannot be separated that way. Two `delete !` in one function "
+"produce a byte-identical description, so a whole-function exclusion is the "
+"only option available — say so in the comment when that is the reason, "
+"instead of letting it read as an equivalence claim."
+msgstr ""
+"그렇게 분리할 수 없는 변이도 있습니다. 한 함수 안의 `delete !` 두 개는 바이"
+"트 단위로 같은 설명을 만들어내므로, 함수 전체를 제외하는 것 말고는 방법이 없"
+"습니다 — 그것이 이유일 때는 주석에 그렇게 적고, 등가성 주장처럼 읽히게 두지 "
+"마십시오."
+
+#: src/development/ci-cd.md:118
+msgid ""
 "New `Check` trait implementations and thin wrappers need direct dispatch "
 "tests, or the PR gate reports them as `MISSED`."
 msgstr ""
 "새로운 `Check` 트레이트 구현체와 얇은 래퍼에는 직접 디스패치 테스트가 필요합"
 "니다. 없으면 PR 게이트가 `MISSED`로 보고합니다."
 
-#: src/development/ci-cd.md:103
+#: src/development/ci-cd.md:121
 msgid "One cache per toolchain, one writer per cache"
 msgstr "툴체인마다 캐시 하나, 캐시마다 writer 하나"
 
-#: src/development/ci-cd.md:105
+#: src/development/ci-cd.md:123
 msgid ""
 "`Swatinem/rust-cache` keys on `shared-key`, so jobs sharing a key share a "
 "cache:"
@@ -13419,39 +13590,39 @@ msgstr ""
 "`Swatinem/rust-cache`는 `shared-key`로 캐시를 구분하므로, 키를 공유하는 잡들"
 "은 캐시를 공유합니다:"
 
-#: src/development/ci-cd.md:108
+#: src/development/ci-cd.md:126
 msgid "`shared-key`"
 msgstr "`shared-key`"
 
-#: src/development/ci-cd.md:108
+#: src/development/ci-cd.md:126
 msgid "Jobs"
 msgstr "잡"
 
-#: src/development/ci-cd.md:110
+#: src/development/ci-cd.md:128
 msgid "`stable-ci`"
 msgstr "`stable-ci`"
 
-#: src/development/ci-cd.md:110
+#: src/development/ci-cd.md:128
 msgid "`ci.yml` lint / test / shellcheck, `coverage.yml`, `mutants.yml`"
 msgstr "`ci.yml`의 lint / test / shellcheck, `coverage.yml`, `mutants.yml`"
 
-#: src/development/ci-cd.md:111
+#: src/development/ci-cd.md:129
 msgid "`msrv`"
 msgstr "`msrv`"
 
-#: src/development/ci-cd.md:111
+#: src/development/ci-cd.md:129
 msgid "`ci.yml` msrv"
 msgstr "`ci.yml`의 msrv"
 
-#: src/development/ci-cd.md:112
+#: src/development/ci-cd.md:130
 msgid "`msrv-verify`"
 msgstr "`msrv-verify`"
 
-#: src/development/ci-cd.md:113
+#: src/development/ci-cd.md:131
 msgid "`bench`"
 msgstr "`bench`"
 
-#: src/development/ci-cd.md:115
+#: src/development/ci-cd.md:133
 msgid ""
 "MSRV artifacts are kept separate on purpose: a different compiler produces "
 "incompatible output, and sharing would mean both jobs permanently "
@@ -13460,7 +13631,7 @@ msgstr ""
 "MSRV 산출물을 분리해 둔 것은 의도적입니다. 컴파일러가 다르면 호환되지 않는 결"
 "과물이 나오고, 공유하면 두 잡이 서로의 캐시를 계속 무효화하게 됩니다."
 
-#: src/development/ci-cd.md:119
+#: src/development/ci-cd.md:137
 msgid ""
 "Within a shared key there is one writer. `ci.yml` marks lint and shellcheck "
 "`save-if: false` so only the test job — which produces the richest "
@@ -13472,7 +13643,7 @@ msgstr ""
 "만 캐시를 채우게 합니다. `mutants.yml`에서는 incremental 잡이 쓰고 주간 full "
 "잡이 읽습니다."
 
-#: src/development/ci-cd.md:124
+#: src/development/ci-cd.md:142
 msgid ""
 "Note that `rust-cache` folds workflow-level `env` into its key hash. Two "
 "jobs can declare the same `shared-key` and still land on different caches if "
@@ -13482,11 +13653,11 @@ msgstr ""
 "두 잡이 같은 `shared-key`를 선언해도 워크플로가 설정한 환경 변수가 다르면 서"
 "로 다른 캐시에 떨어질 수 있습니다."
 
-#: src/development/ci-cd.md:128
+#: src/development/ci-cd.md:146
 msgid "Failure modes worth remembering"
 msgstr "기억해 둘 만한 실패 양상"
 
-#: src/development/ci-cd.md:130
+#: src/development/ci-cd.md:148
 msgid ""
 "These cost real debugging time. They are recorded so the next person "
 "recognises them faster."
@@ -13494,11 +13665,11 @@ msgstr ""
 "아래는 실제로 디버깅 시간을 잡아먹은 것들입니다. 다음 사람이 더 빨리 알아보도"
 "록 기록해 둡니다."
 
-#: src/development/ci-cd.md:133
+#: src/development/ci-cd.md:151
 msgid "Criterion errors corrupt the benchmark parser output"
 msgstr "Criterion 에러가 벤치마크 파서 출력을 오염시킨다"
 
-#: src/development/ci-cd.md:135
+#: src/development/ci-cd.md:153
 msgid ""
 "`rust-cache` restores `target/` with the criterion tree present but its "
 "`sample.json` baselines pruned out. Criterion then fails to load a baseline "
@@ -13508,7 +13679,7 @@ msgstr ""
 "낸 상태로 `target/`을 복원합니다. 그러면 criterion은 있어야 마땅해 보이는 "
 "baseline을 읽지 못하고, 그 에러를 표준출력에 *줄 중간에* 씁니다:"
 
-#: src/development/ci-cd.md:140
+#: src/development/ci-cd.md:158
 msgid ""
 "```\n"
 "test clap_parse_create ... Criterion.rs ERROR: error: Failed to access file\n"
@@ -13522,7 +13693,7 @@ msgstr ""
 "bench:      41,347 ns/iter (+/- 2,364)\n"
 "```"
 
-#: src/development/ci-cd.md:146
+#: src/development/ci-cd.md:164
 msgid ""
 "`benchmark-action`'s parser needs `test NAME ... bench: N ns/iter` on one "
 "line. Split in two, it reports \"no benchmark result\" even though every "
@@ -13534,7 +13705,7 @@ msgstr ""
 "음\"으로 보고합니다. 콜드 캐시에서 통과하는 이유는 반쯤 읽을 트리 자체가 없"
 "기 때문입니다."
 
-#: src/development/ci-cd.md:151
+#: src/development/ci-cd.md:169
 msgid ""
 "Each bench step therefore starts with `rm -rf target/criterion`. The gate "
 "compares against `gh-pages` history and never against criterion's local "
@@ -13544,11 +13715,11 @@ msgstr ""
 "`gh-pages` 이력과 비교하지 criterion의 로컬 baseline과는 비교하지 않으므로, "
 "지워도 잃는 것이 없습니다."
 
-#: src/development/ci-cd.md:155
+#: src/development/ci-cd.md:173
 msgid "Two benchmark-action invocations collide on gh-pages"
 msgstr "benchmark-action을 두 번 호출하면 gh-pages에서 충돌한다"
 
-#: src/development/ci-cd.md:157
+#: src/development/ci-cd.md:175
 msgid ""
 "The first invocation fetches `gh-pages` into a local branch and commits its "
 "entry onto it — even on PRs, where it simply never pushes. A second "
@@ -13562,11 +13733,11 @@ msgstr ""
 "도 전에 스텝이 실패합니다. 두 번째 스텝에 `skip-fetch-gh-pages: true`를 주면 "
 "첫 번째가 가져온 것을 재사용합니다."
 
-#: src/development/ci-cd.md:164
+#: src/development/ci-cd.md:182
 msgid "`cargo bench | tee` swallows failures"
 msgstr "`cargo bench | tee`가 실패를 삼킨다"
 
-#: src/development/ci-cd.md:166
+#: src/development/ci-cd.md:184
 msgid ""
 "Without `set -o pipefail` the step exits with `tee`'s status, so a genuinely "
 "failing `cargo bench` reports success and resurfaces one step later as a "
@@ -13576,11 +13747,11 @@ msgstr ""
 "로 실패한 `cargo bench`가 성공으로 보고되고, 한 스텝 뒤에 알아보기 어려운 파"
 "싱 에러로 다시 나타납니다."
 
-#: src/development/ci-cd.md:170
+#: src/development/ci-cd.md:188
 msgid "Docs guards only run on release tags"
 msgstr "문서 가드는 릴리스 태그에서만 돈다"
 
-#: src/development/ci-cd.md:172
+#: src/development/ci-cd.md:190
 msgid ""
 "`docs.yml` — the mdBook build and the `ko.po` staleness round-trip — "
 "triggers only on `v*` tags. Nothing about the documentation site is verified "
@@ -13591,7 +13762,7 @@ msgstr ""
 "거됩니다. 문서 사이트에 관한 어떤 것도 PR에서는 검증되지 않습니다. 그중 가장 "
 "큰 공백을 메우기 위해 두 가지 검사를 `ci.yml`의 Lint 잡으로 옮겼습니다:"
 
-#: src/development/ci-cd.md:177
+#: src/development/ci-cd.md:195
 msgid ""
 "`scripts/check-doc-references.py` compares facts copied into `README.md`, "
 "`CONTRIBUTING.md`, `llms.txt`, `llms-full.txt` and the docs against the code "
@@ -13606,7 +13777,7 @@ msgstr ""
 "는 `locales/app.yml`에서 가져옵니다. 모든 검사가 문서 대 코드입니다. 세 "
 "`llms` 파일을 서로 비교하면 셋 다 틀렸을 때도 통과합니다."
 
-#: src/development/ci-cd.md:183
+#: src/development/ci-cd.md:201
 msgid ""
 "`msgfmt --check` on `docs/po/*.po` catches structural damage such as a "
 "`msgstr` whose trailing newline no longer matches its `msgid`."
@@ -13614,7 +13785,7 @@ msgstr ""
 "`docs/po/*.po`에 대한 `msgfmt --check`는 `msgstr`의 끝 개행이 `msgid`와 더 이"
 "상 맞지 않는 것 같은 구조적 손상을 잡습니다."
 
-#: src/development/ci-cd.md:186
+#: src/development/ci-cd.md:204
 msgid ""
 "Editing any page under `docs/src/` still requires regenerating `ko.po` in "
 "the same commit. See [Docs Translation](docs-translation.md)."
@@ -13622,47 +13793,47 @@ msgstr ""
 "`docs/src/` 아래 페이지를 수정할 때는 여전히 같은 커밋에서 `ko.po`를 재생성해"
 "야 합니다. [문서 번역](docs-translation.md)을 참고하세요."
 
-#: src/development/ci-cd.md:189
+#: src/development/ci-cd.md:207
 msgid "Secrets"
 msgstr "시크릿"
 
-#: src/development/ci-cd.md:191
+#: src/development/ci-cd.md:209
 msgid "Secret"
 msgstr "시크릿"
 
-#: src/development/ci-cd.md:191
+#: src/development/ci-cd.md:209
 msgid "Used by"
 msgstr "사용하는 곳"
 
-#: src/development/ci-cd.md:193
+#: src/development/ci-cd.md:211
 msgid "`RELEASE_PLZ_TOKEN`"
 msgstr "`RELEASE_PLZ_TOKEN`"
 
-#: src/development/ci-cd.md:193
+#: src/development/ci-cd.md:211
 msgid "Push release PRs and tags"
 msgstr "릴리스 PR과 태그 푸시"
 
-#: src/development/ci-cd.md:194
+#: src/development/ci-cd.md:212
 msgid "`CARGO_REGISTRY_TOKEN`"
 msgstr "`CARGO_REGISTRY_TOKEN`"
 
-#: src/development/ci-cd.md:194
+#: src/development/ci-cd.md:212
 msgid "Publish to crates.io"
 msgstr "crates.io 게시"
 
-#: src/development/ci-cd.md:195
+#: src/development/ci-cd.md:213
 msgid "`GITHUB_TOKEN`"
 msgstr "`GITHUB_TOKEN`"
 
-#: src/development/ci-cd.md:195
+#: src/development/ci-cd.md:213
 msgid "bench, docker"
 msgstr "bench, docker"
 
-#: src/development/ci-cd.md:195
+#: src/development/ci-cd.md:213
 msgid "Push `gh-pages`, publish to ghcr.io"
 msgstr "`gh-pages` 푸시, ghcr.io 게시"
 
-#: src/development/ci-cd.md:197
+#: src/development/ci-cd.md:215
 msgid ""
 "Default workflow permissions are `read`. Workflows that need more declare it "
 "explicitly — `bench.yml` needs `contents: write` for `gh-pages`, `docker-"
@@ -13672,11 +13843,11 @@ msgstr ""
 "다 — `bench.yml`은 `gh-pages`를 위해 `contents: write`가, `docker-build.yml`"
 "은 레지스트리를 위해 `packages: write`가 필요합니다."
 
-#: src/development/ci-cd.md:201
+#: src/development/ci-cd.md:219
 msgid "Releases"
 msgstr "릴리스"
 
-#: src/development/ci-cd.md:203
+#: src/development/ci-cd.md:221
 msgid ""
 "`release-plz` reads Conventional Commits on `main` and prepares the release; "
 "`release-plz.toml` holds the policy:"
@@ -13684,7 +13855,7 @@ msgstr ""
 "`release-plz`는 `main`의 Conventional Commits를 읽어 릴리스를 준비하며, 정책"
 "은 `release-plz.toml`에 있습니다:"
 
-#: src/development/ci-cd.md:206
+#: src/development/ci-cd.md:224
 msgid ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — documentation and "
 "chore commits do not trigger a release on their own."
@@ -13692,7 +13863,7 @@ msgstr ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — 문서와 잡무 커밋만"
 "으로는 릴리스가 생기지 않습니다."
 
-#: src/development/ci-cd.md:208
+#: src/development/ci-cd.md:226
 msgid ""
 "`features_always_increment_minor = true` — a `feat` bumps the minor version "
 "even in `0.x`, where cargo's default would only bump the patch."
@@ -13700,11 +13871,11 @@ msgstr ""
 "`features_always_increment_minor = true` — `0.x`에서도 `feat`이면 minor 버전"
 "이 올라갑니다. cargo 기본값이라면 patch만 올랐을 자리입니다."
 
-#: src/development/ci-cd.md:210
+#: src/development/ci-cd.md:228
 msgid "Changelog generation goes through `git-cliff` (`cliff.toml`)."
 msgstr "체인지로그 생성은 `git-cliff`(`cliff.toml`)를 거칩니다."
 
-#: src/development/ci-cd.md:212
+#: src/development/ci-cd.md:230
 msgid ""
 "Merging the release PR is what publishes: it creates the tag, the GitHub "
 "release, and the crates.io upload — and the `v*` tag is also what deploys "
@@ -13713,11 +13884,11 @@ msgstr ""
 "게시를 일으키는 것은 릴리스 PR의 머지입니다. 태그, GitHub 릴리스, crates.io "
 "업로드가 그때 만들어지며 — 그 `v*` 태그가 문서 사이트 배포까지 일으킵니다."
 
-#: src/development/ci-cd.md:216
+#: src/development/ci-cd.md:234
 msgid "Known gaps"
 msgstr "알려진 공백"
 
-#: src/development/ci-cd.md:218
+#: src/development/ci-cd.md:236
 msgid ""
 "Accurate as of the last revision of this page. Verify before relying on any "
 "of these being fixed."
@@ -13725,7 +13896,7 @@ msgstr ""
 "이 페이지를 마지막으로 고친 시점 기준입니다. 아래 항목이 해결됐다고 전제하기 "
 "전에 직접 확인하세요."
 
-#: src/development/ci-cd.md:221
+#: src/development/ci-cd.md:239
 msgid ""
 "**No coverage threshold.** Uploads work again, but there is no "
 "`codecov.yml`, so nothing sets a target percentage or a PR status policy. "
@@ -13735,25 +13906,27 @@ msgstr ""
 "서 목표 비율도 PR 상태 정책도 설정되지 않습니다. 커버리지는 보고될 뿐 강제되"
 "지 않습니다."
 
-#: src/development/ci-cd.md:224
+#: src/development/ci-cd.md:242
 msgid ""
-"**55 unreviewed mutation escapes.** The weekly full run now finishes, and "
-"the run it has been failing to complete already found 55 mutants no test "
-"kills — 46 of them under `src/core/migrate/**`. Roughly 23 are pure logic "
-"mutations (`&&` to `||`, `delete !`) that unit tests ought to catch; the "
-"rest are return-value mutations that may need a real `uv` or `conda` to "
-"observe, in which case they belong in `.cargo/mutants.toml` with a "
-"rationale. Until that triage happens the job tolerates exit 2."
+"**Unreviewed mutation escapes outside `migrate/`.** The last full-run "
+"artifact listed 55 mutants no test kills, 46 of them under `src/core/migrate/"
+"**`. That module is now closed — 111 mutants, 0 missed — so what remains is "
+"the return-value backlog elsewhere (`UvClient::list_pythons -> Ok(vec![])` "
+"and similar). Those may need a real `uv` or `conda` to observe, in which "
+"case they belong in `.cargo/mutants.toml` with a rationale, but each needs "
+"checking rather than assuming. The next completed weekly run supersedes that "
+"artifact; until the triage happens the job tolerates exit 2."
 msgstr ""
-"**검토되지 않은 변이 누출 55건.** 주간 full 실행이 이제 완주하며, 그동안 완주"
-"하지 못하던 그 실행이 이미 어떤 테스트도 잡지 못하는 변이 55건을 찾아두었습니"
-"다 — 그중 46건이 `src/core/migrate/**`에 있습니다. 약 23건은 유닛 테스트가 잡"
-"아야 마땅한 순수 논리 변이(`&&`를 `||`로, `delete !`)이고, 나머지는 실제 `uv`"
-"나 `conda`가 있어야 관측 가능할 수 있는 반환값 변이로, 그렇다면 근거와 함께 "
-"`.cargo/mutants.toml`에 들어가야 합니다. 그 분류가 끝날 때까지 이 잡은 exit 2"
-"를 허용합니다."
+"**`migrate/` 밖의 검토되지 않은 변이 누출.** 마지막 full 실행 아티팩트는 어"
+"떤 테스트도 잡지 못하는 변이 55건을 나열했고, 그중 46건이 `src/core/migrate/"
+"**`에 있었습니다. 그 모듈은 이제 정리됐습니다 — 변이 111건, 누출 0건 — 따라"
+"서 남은 것은 다른 곳의 반환값 누출 잔여분(`UvClient::list_pythons -> Ok(vec!"
+"[])` 등)입니다. 이들은 관측하려면 실제 `uv`나 `conda`가 필요할 수 있고, 그렇"
+"다면 근거와 함께 `.cargo/mutants.toml`에 들어가야 하지만, 각각을 가정이 아니"
+"라 확인해야 합니다. 다음으로 완주하는 주간 실행이 그 아티팩트를 대체합니다. "
+"그 분류가 끝날 때까지 이 잡은 exit 2를 허용합니다."
 
-#: src/development/ci-cd.md:231
+#: src/development/ci-cd.md:251
 msgid ""
 "**Docs are only verified on release tags.** `docs.yml` still runs nowhere "
 "else, so an mdBook build failure or a stale `ko.po` surfaces at release "
@@ -13764,7 +13937,7 @@ msgstr ""
 "지 않으므로, mdBook 빌드 실패나 낡은 `ko.po`는 릴리스 시점에 드러납니다. 가"
 "장 값싼 검사 두 가지는 Lint 잡으로 옮겼지만 빌드 자체는 옮기지 않았습니다."
 
-#: src/development/ci-cd.md:235
+#: src/development/ci-cd.md:255
 msgid ""
 "**The cache sits near its limit.** 8.34 GB of the 10 GB allowance, of which "
 "`v0-rust-*` is only about 1 GB — the bulk is BuildKit blobs from the Docker "
@@ -13774,11 +13947,11 @@ msgstr ""
 "rust-*`는 약 1GB뿐입니다 — 대부분은 Docker 워크플로가 만드는 BuildKit blob입"
 "니다. 아직 실패하는 것은 없고, 축출은 LRU 방식입니다."
 
-#: src/development/ci-cd.md:239
+#: src/development/ci-cd.md:259
 msgid "Recently closed"
 msgstr "최근에 해결된 것"
 
-#: src/development/ci-cd.md:241
+#: src/development/ci-cd.md:261
 msgid ""
 "Left here because the reasoning is worth keeping, not because anything is "
 "outstanding."
@@ -13786,7 +13959,7 @@ msgstr ""
 "남겨 둔 이유는 그 판단 과정이 기록할 만해서이지, 아직 남은 문제가 있어서가 아"
 "닙니다."
 
-#: src/development/ci-cd.md:244
+#: src/development/ci-cd.md:264
 msgid ""
 "Coverage uploads were rejected for months with `Token required because "
 "branch is protected` while the job reported success, because "
@@ -13800,7 +13973,7 @@ msgstr ""
 "PR만 다룹니다. `CODECOV_TOKEN`을 배선하고 거부된 업로드가 잡을 실패시키도록 "
 "바꿔 해결했습니다."
 
-#: src/development/ci-cd.md:249
+#: src/development/ci-cd.md:269
 msgid ""
 "The weekly full mutation run had never once completed — 60 minutes killed it "
 "every time, and GitHub reports a timed-out job as _cancelled_, which reads "
@@ -13811,7 +13984,7 @@ msgstr ""
 "GitHub은 타임아웃된 잡을 _cancelled_ 로 보고하는데 이는 별일 아닌 것처럼 읽힙"
 "니다. 60분에 385/446개로 측정돼 타임아웃을 90분으로 올렸습니다."
 
-#: src/development/ci-cd.md:253
+#: src/development/ci-cd.md:273
 msgid ""
 "`aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now "
 "pinned to release tags. Dependabot could not follow either: it cannot bump a "
@@ -13822,7 +13995,7 @@ msgstr ""
 "올릴 수 없고, setup-uv는 v8부터 움직이는 메이저 태그 발행을 중단했기 때문입니"
 "다."
 
-#: src/development/ci-cd.md:257
+#: src/development/ci-cd.md:277
 msgid ""
 "`stable-ci` had four writers and, because `rust-cache` hashes workflow-level "
 "`env`, was never actually shared with `coverage.yml` or `mutants.yml` at "
@@ -13832,7 +14005,7 @@ msgstr ""
 "시에 넣기 때문에 `coverage.yml`이나 `mutants.yml`과는 애초에 공유된 적조차 없"
 "었습니다. 이제 각자 실제로 쓰는 키를 이름으로 밝힙니다."
 
-#: src/development/ci-cd.md:260
+#: src/development/ci-cd.md:280
 msgid ""
 "`release-plz.yml` had no concurrency group. It has one now, with `cancel-in-"
 "progress: false` — which delivers the \"must always complete\" intent that "
@@ -14451,6 +14624,64 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "1.85+"
+#~ msgstr "1.85+"
+
+#~ msgid "`TECHNICAL_REFERENCE.md` - Implementation details"
+#~ msgstr "`TECHNICAL_REFERENCE.md` - 구현 세부 사항"
+
+#~ msgid "`SHELL_GOTCHAS.md` - Shell integration pitfalls"
+#~ msgstr "`SHELL_GOTCHAS.md` - Shell 통합 시 주의 사항"
+
+#~ msgid "`IMPLEMENTATION_PLAN.md` - Development roadmap"
+#~ msgstr "`IMPLEMENTATION_PLAN.md` - 개발 로드맵"
+
+#~ msgid ""
+#~ "**Note**: Completions are generated by clap via `clap_complete`, not per-"
+#~ "shell functions."
+#~ msgstr ""
+#~ "**참고**: 완성 스크립트는 per-shell 함수가 아닌 `clap_complete`를 통해 "
+#~ "clap으로 생성됩니다."
+
+#~ msgid "54"
+#~ msgstr "54"
+
+#~ msgid "30"
+#~ msgstr "30"
+
+#~ msgid "18"
+#~ msgstr "18"
+
+#~ msgid "12"
+#~ msgstr "12"
+
+#~ msgid "16"
+#~ msgstr "16"
+
+#~ msgid "14"
+#~ msgstr "14"
+
+#~ msgid "uv is installed and accessible"
+#~ msgstr "uv가 설치되어 있고 접근 가능한 상태"
+
+#~ msgid "**Shell integration**"
+#~ msgstr "**Shell 통합**"
+
+#~ msgid "Shell hook is properly configured"
+#~ msgstr "Shell hook이 올바르게 구성되어 있음"
+
+#~ msgid "**Environment integrity**"
+#~ msgstr "**환경 무결성**"
+
+#~ msgid "Python symlinks are valid, `pyvenv.cfg` exists"
+#~ msgstr "Python 심볼릭 링크가 유효하고 `pyvenv.cfg`가 존재함"
+
+#~ msgid "`~/.scuv/` directory structure is correct"
+#~ msgstr "`~/.scuv/` 디렉터리 구조가 올바름"
+
+#~ msgid "**Version file validity**"
+#~ msgstr "**버전 파일 유효성**"
 
 #~ msgid ""
 #~ "`release-plz.yml` has no concurrency block today. See [Known gaps](#known-"

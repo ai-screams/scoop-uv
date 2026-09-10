@@ -208,6 +208,11 @@ git commit --no-verify
 | `end-of-file-fixer`   | Ensure newline at EOF  | Pre-commit |
 | `check-toml`          | Validate TOML files    | Pre-commit |
 | `check-yaml`          | Validate YAML files    | Pre-commit |
+| `cargo-test`             | Test suite             | Pre-commit |
+| `mixed-line-ending`      | Normalise line endings | Pre-commit |
+| `check-added-large-files`| Block large blobs      | Pre-commit |
+| `check-merge-conflict`   | Catch conflict markers | Pre-commit |
+| `check-case-conflict`    | Catch case collisions  | Pre-commit |
 
 ## CI Pipeline
 
@@ -227,7 +232,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
 
@@ -356,11 +361,11 @@ cargo audit fix
 
 ### MSRV (Minimum Supported Rust Version)
 
-- Current MSRV: **1.85**
+- Current MSRV: **1.88**
 - Defined in `Cargo.toml`:
   ```toml
   [package]
-  rust-version = "1.85"
+  rust-version = "1.88"
   ```
 
 ### Unsafe Code

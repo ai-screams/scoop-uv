@@ -1,6 +1,6 @@
 # Documentation Translation (mdBook)
 
-> For translating CLI strings (the ~115 keys in `locales/app.yml`
+> For translating CLI strings (the 226 keys in `locales/app.yml`
 > consumed by the Rust binary), see [translation](translation.md)
 > instead. This page covers user-documentation translation only.
 
@@ -35,10 +35,9 @@ sudo apt-get install -y gettext
 ```
 
 The `cargo install` step needs Rust **1.88 or newer** (helpers'
-upstream MSRV). The project's `rust-toolchain.toml` pins 1.85
-for the CRATE itself; for the docs tooling, use `cargo +stable
-install ...` from outside the repo, or just rely on whatever
-stable toolchain is on `ubuntu-latest` in CI.
+upstream MSRV). The project's `rust-toolchain.toml` pins 1.88 as well, so the
+toolchain already in the repo is new enough — no `+stable`
+override needed.
 
 ## Workflow: updating an existing translation
 

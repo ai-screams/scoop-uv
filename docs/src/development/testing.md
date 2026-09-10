@@ -98,7 +98,7 @@ cargo test test_name -- --nocapture --test-threads=1
 
 ### Unit Tests
 
-The bulk of the suite (916 tests, ~93% of the total 988) lives within source files using `#[cfg(test)]`:
+The bulk of the suite (957 tests, ~93% of the total 1029) lives within source files using `#[cfg(test)]`:
 
 ```rust
 #[cfg(test)]
@@ -116,15 +116,15 @@ Key test modules:
 
 | Module                    | Tests | Coverage                        |
 |---------------------------|-------|---------------------------------|
-| `error::tests`            | 54    | Error types, codes, suggestions |
-| `output::json::tests`     | 35    | JSON serialization, edge cases  |
-| `validate::tests`         | 30    | Name/version validation         |
-| `core::version::tests`    | 18    | Version file resolution         |
-| `core::virtualenv::tests` | 12    | Virtualenv service              |
-| `paths::tests`            | 16    | Path utilities                  |
-| `shell::*::tests`         | 14    | Shell scripts (shellcheck)      |
+| `error::tests`            | 92    | Error types, codes, suggestions |
+| `output::json::tests`     | 44    | JSON serialization, edge cases  |
+| `validate::tests`         | 56    | Name/version validation         |
+| `core::version::tests`    | 35    | Version file resolution         |
+| `core::virtualenv::tests` | 26    | Virtualenv service              |
+| `paths::tests`            | 48    | Path utilities                  |
+| `shell::*::tests`         | 50    | Shell scripts (shellcheck)      |
 
-### Integration Tests (43 tests in `tests/cli.rs` + 2 in `tests/i18n_completeness.rs`)
+### Integration Tests (45 tests in `tests/cli.rs` + 2 in `tests/i18n_completeness.rs`)
 
 Located in `tests/cli.rs`:
 
@@ -146,7 +146,7 @@ Some tests are marked `#[ignore]` because they require `uv` installed:
 cargo test -- --ignored
 ```
 
-### Doc Tests (24 tests)
+### Doc Tests (25 tests)
 
 Examples in documentation comments:
 
@@ -218,7 +218,7 @@ git diff origin/main.. | cargo mutants --in-diff /dev/stdin   # changed lines
 
 `cargo-fuzz` (libFuzzer) fuzzes the untrusted-input parsers. It lives in an
 isolated `fuzz/` workspace pinned to nightly, so it never affects the
-MSRV-1.85 build; CI runs the targets on a weekly schedule.
+MSRV-1.88 build; CI runs the targets on a weekly schedule.
 
 ```bash
 cargo install cargo-fuzz
@@ -430,7 +430,7 @@ apt install shellcheck
 
 ## Codespaces / Devcontainer
 
-`.devcontainer/devcontainer.json` boots a Rust 1.85 dev environment on
+`.devcontainer/devcontainer.json` boots a Rust 1.88 dev environment on
 `mcr.microsoft.com/devcontainers/rust:1-bookworm` that matches the local
 toolchain pinned by `rust-toolchain.toml`. Open the repo in VS Code
 ("Reopen in Container") or create a Codespace — both follow the same
