@@ -10,7 +10,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
-const LOCALES: &[&str] = &["en", "ko", "ja", "pt-BR"];
+const LOCALES: &[&str] = &["en", "ko", "ja", "pt-BR", "es"];
 
 fn manifest_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
