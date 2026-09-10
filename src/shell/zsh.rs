@@ -352,7 +352,7 @@ _scuv() {
                         [[ $has_json == false ]] && opts+=('--json:Output as JSON')
                         _describe 'option' opts
                     else
-                        local langs=('en:English' 'ko:Korean' 'ja:Japanese' 'pt-BR:Portuguese (Brazilian)')
+                        local langs=('en:English' 'ko:Korean' 'ja:Japanese' 'pt-BR:Portuguese (Brazilian)' 'es:Spanish')
                         _describe 'language' langs
                     fi
                     ;;
