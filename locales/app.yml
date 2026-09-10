@@ -10,36 +10,42 @@ lang.current:
   ko: "현재: %{lang} (%{name})"
   pt-BR: "Atual: %{lang} (%{name})"
   ja: "現在: %{lang} (%{name})"
+  es: "Actual: %{lang} (%{name})"
 
 lang.set:
   en: "Language set to %{lang}"
   ko: "언어가 %{lang}(으)로 설정됨"
   pt-BR: "Idioma definido para %{lang}"
   ja: "%{lang} に設定しました"
+  es: "Idioma establecido a %{lang}"
 
 lang.reset:
   en: "Reset to system default: %{lang}"
   ko: "시스템 기본으로 리셋됨: %{lang}"
   pt-BR: "Redefinido para o padrão do sistema: %{lang}"
   ja: "システムデフォルトにリセットしました: %{lang}"
+  es: "Restablecido al idioma por defecto: %{lang}"
 
 lang.unsupported:
   en: "Unsupported language: %{lang}"
   ko: "지원하지 않는 언어: %{lang}"
   pt-BR: "Idioma não suportado: %{lang}"
   ja: "サポートされていない言語: %{lang}"
+  es: "Idioma no compatible: %{lang}"
 
 lang.list_header:
   en: "Supported languages:"
   ko: "지원 언어:"
   pt-BR: "Idiomas suportados:"
   ja: "対応言語:"
+  es: "Idiomas disponibles:"
 
 lang.hint:
   en: "Run 'scuv lang --list' to see supported languages"
   ko: "'scuv lang --list'로 지원 언어 확인"
   pt-BR: "Execute 'scuv lang --list' para ver os idiomas suportados"
   ja: "'scuv lang --list' を実行するとサポートされている言語を確認できます"
+  es: "Ejecutar 'scuv lang --list' para ver idiomas disponibles"
 
 # ============================================================================
 # Create command
@@ -49,42 +55,49 @@ create.removing_existing:
   ko: "기존 '%{name}' 삭제 중..."
   pt-BR: "Removendo '%{name}' existente..."
   ja: "既存の '%{name}' を削除中..."
+  es: "Eliminando '%{name}' existente..."
 
 create.creating:
   en: "Creating '%{name}' (Python %{python})..."
   ko: "'%{name}' 생성 중 (Python %{python})..."
   pt-BR: "Criando '%{name}' (Python %{python})..."
   ja: "'%{name}' を作成中 (Python %{python})..."
+  es: "Creando '%{name}' (Python %{python})..."
 
 create.success:
   en: "Created '%{name}' environment"
   ko: "'%{name}' 환경 생성됨"
   pt-BR: "Ambiente '%{name}' criado"
   ja: "'%{name}' 環境を作成しました"
+  es: "Entorno '%{name}' creado"
 
 create.path:
   en: "  Path: %{path}"
   ko: "  경로: %{path}"
   pt-BR: "  Caminho: %{path}"
   ja: "  パス: %{path}"
+  es: "  Ruta: %{path}"
 
 create.activate_hint:
   en: "  Activate: scuv use %{name}"
   ko: "  활성화: scuv use %{name}"
   pt-BR: "  Ativar: scuv use %{name}"
   ja: "  有効化: scuv use %{name}"
+  es: "  Activar: scuv use %{name}"
 
 create.creating_with_path:
   en: "Creating '%{name}' (Python: %{path})..."
   ko: "'%{name}' 생성 중 (Python: %{path})..."
   pt-BR: "Criando '%{name}' (Python: %{path})..."
   ja: "'%{name}' を作成中 (Python: %{path})..."
+  es: "Creando '%{name}' (Python: %{path})..."
 
 create.installing_python:
   en: "Python %{version} is not installed — installing now..."
   ko: "Python %{version}이(가) 설치되어 있지 않아 설치합니다..."
   pt-BR: "Python %{version} não está instalado — instalando agora..."
   ja: "Python %{version} は未インストール — 今インストールします..."
+  es: "Python %{version} no está instalado — instalando ahora..."
 
 # ============================================================================
 # Clone command
@@ -94,30 +107,35 @@ clone.cloning:
   ko: "'%{src}' → '%{dst}' 복제 중 (Python %{python})..."
   pt-BR: "Clonando '%{src}' → '%{dst}' (Python %{python})..."
   ja: "'%{src}' → '%{dst}' を複製中 (Python %{python})..."
+  es: "Clonando '%{src}' → '%{dst}' (Python %{python})..."
 
 clone.copying_packages:
   en: "Copying %{count} packages..."
   ko: "패키지 %{count}개 복사 중..."
   pt-BR: "Copiando %{count} pacotes..."
   ja: "パッケージ %{count} 個をコピー中..."
+  es: "Copiando %{count} paquetes..."
 
 clone.no_packages_skipped:
   en: "Package copy skipped (--no-packages)"
   ko: "패키지 복사를 건너뜀 (--no-packages)"
   pt-BR: "Cópia de pacotes ignorada (--no-packages)"
   ja: "パッケージのコピーをスキップ (--no-packages)"
+  es: "Copia de paquetes omitida (--no-packages)"
 
 clone.success:
   en: "Cloned '%{src}' → '%{dst}'"
   ko: "'%{src}' → '%{dst}' 복제 완료"
   pt-BR: "'%{src}' → '%{dst}' clonado"
   ja: "'%{src}' → '%{dst}' を複製しました"
+  es: "'%{src}' → '%{dst}' clonado"
 
 clone.self_clone_error:
   en: "Source and destination must differ"
   ko: "원본과 대상이 같을 수 없어요"
   pt-BR: "Origem e destino devem ser diferentes"
   ja: "コピー元とコピー先が同じです"
+  es: "El origen y el destino deben ser diferentes"
 
 # ============================================================================
 # Export / Import commands
@@ -127,42 +145,49 @@ export.written:
   ko: "'%{name}'을(를) %{path}에 내보냄"
   pt-BR: "'%{name}' exportado para %{path}"
   ja: "'%{name}' を %{path} にエクスポートしました"
+  es: "'%{name}' exportado a %{path}"
 
 import.creating:
   en: "Importing into '%{name}' (Python %{python})..."
   ko: "'%{name}'(으)로 가져오는 중 (Python %{python})..."
   pt-BR: "Importando para '%{name}' (Python %{python})..."
   ja: "'%{name}' へインポート中 (Python %{python})..."
+  es: "Importando a '%{name}' (Python %{python})..."
 
 import.installing:
   en: "Installing %{count} packages from export..."
   ko: "내보낸 파일에서 패키지 %{count}개 설치 중..."
   pt-BR: "Instalando %{count} pacotes do export..."
   ja: "エクスポートから %{count} 個のパッケージをインストール中..."
+  es: "Instalando %{count} paquetes desde la exportación..."
 
 import.success:
   en: "Imported '%{name}' with %{count} packages"
   ko: "'%{name}'을(를) 패키지 %{count}개와 함께 가져왔어요"
   pt-BR: "'%{name}' importado com %{count} pacotes"
   ja: "'%{name}' を %{count} 個のパッケージとともにインポートしました"
+  es: "Importado '%{name}' con %{count} paquetes"
 
 error.invalid_export_file:
   en: "Invalid export file '%{path}': %{reason}"
   ko: "잘못된 내보내기 파일 '%{path}': %{reason}"
   pt-BR: "Arquivo de exportação inválido '%{path}': %{reason}"
   ja: "無効なエクスポートファイル '%{path}': %{reason}"
+  es: "Archivo de exportación inválido '%{path}': %{reason}"
 
 error.unsupported_export_version:
   en: "Export file version '%{version}' is not supported (this binary speaks '%{supported}')"
   ko: "내보내기 파일 버전 '%{version}'은(는) 지원되지 않아요 (이 바이너리는 '%{supported}' 사용)"
   pt-BR: "Versão '%{version}' do arquivo de exportação não é suportada (este binário usa '%{supported}')"
   ja: "エクスポートファイルのバージョン '%{version}' は未対応です (このバイナリは '%{supported}')"
+  es: "La versión '%{version}' del archivo de exportación no es compatible (este binario usa '%{supported}')"
 
 suggestion.unsupported_export_version:
   en: "→ Upgrade scuv to a build that supports version '%{supported}' or higher, or re-export from a compatible source"
   ko: "→ '%{supported}' 이상을 지원하는 scuv로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
   pt-BR: "→ Atualize o scuv para uma versão que suporte '%{supported}' ou superior, ou re-exporte de uma fonte compatível"
   ja: "→ '%{supported}' 以降に対応する scuv にアップグレードするか、互換性のある環境から再エクスポートしてください"
+  es: "→ Actualizar scuv a una versión que soporte '%{supported}' o superior, o reexportar de una fuente compatible"
 
 # ============================================================================
 # Sync command (.scuv.toml)
@@ -172,54 +197,63 @@ sync.creating_env:
   ko: ".scuv.toml에 따라 '%{name}' 생성 중 (Python %{python})..."
   pt-BR: "Criando '%{name}' (Python %{python}) conforme .scuv.toml..."
   ja: ".scuv.toml に従って '%{name}' を作成中 (Python %{python})..."
+  es: "Creando '%{name}' (Python %{python}) según .scuv.toml..."
 
 sync.installing:
   en: "Installing %{count} packages..."
   ko: "패키지 %{count}개 설치 중..."
   pt-BR: "Instalando %{count} pacotes..."
   ja: "パッケージ %{count} 個をインストール中..."
+  es: "Instalando %{count} paquetes..."
 
 sync.up_to_date:
   en: "Nothing to install (no packages in the resolved groups)"
   ko: "설치할 항목 없음 (선택된 그룹에 패키지 없음)"
   pt-BR: "Nada a instalar (sem pacotes nos grupos selecionados)"
   ja: "インストールするものはありません (選択されたグループにパッケージなし)"
+  es: "Nada que instalar (no hay paquetes en los grupos seleccionados)"
 
 sync.success:
   en: "Synced %{count} packages into '%{name}'"
   ko: "'%{name}'에 패키지 %{count}개 동기화 완료"
   pt-BR: "%{count} pacotes sincronizados em '%{name}'"
   ja: "'%{name}' に %{count} 個のパッケージを同期しました"
+  es: "%{count} paquetes sincronizados en '%{name}'"
 
 sync.dry_run_header:
   en: "Dry-run plan:"
   ko: "Dry-run 계획:"
   pt-BR: "Plano dry-run:"
   ja: "Dry-run 計画:"
+  es: "Plan dry-run:"
 
 sync.python_mismatch_warn:
   en: "'%{name}' uses Python %{actual} but .scuv.toml asks for %{wanted} — syncing packages anyway"
   ko: "'%{name}'은 Python %{actual} 사용 중이지만 .scuv.toml은 %{wanted} 요청 — 패키지 동기화는 계속 진행"
   pt-BR: "'%{name}' usa Python %{actual} mas .scuv.toml pede %{wanted} — sincronizando pacotes mesmo assim"
   ja: "'%{name}' は Python %{actual} を使用していますが .scuv.toml は %{wanted} を要求 — パッケージ同期は続行"
+  es: "'%{name}' usa Python %{actual} pero .scuv.toml pide %{wanted} — sincronizando paquetes igualmente"
 
 sync.unknown_group_error:
   en: "Group '%{group}' is not defined in .scuv.toml (available: %{groups})"
   ko: "'%{group}' 그룹이 .scuv.toml에 정의되어 있지 않음 (사용 가능: %{groups})"
   pt-BR: "Grupo '%{group}' não está definido em .scuv.toml (disponíveis: %{groups})"
   ja: ".scuv.toml にグループ '%{group}' が定義されていません (利用可能: %{groups})"
+  es: "Grupo '%{group}' no está definido en .scuv.toml (disponibles: %{groups})"
 
 error.manifest_not_found:
   en: "No .scuv.toml found in '%{path}' or any parent directory"
   ko: "'%{path}' 또는 상위 디렉터리 어디에도 .scuv.toml이 없어요"
   pt-BR: "Nenhum .scuv.toml encontrado em '%{path}' ou nos diretórios pai"
   ja: "'%{path}' またはその上位ディレクトリに .scuv.toml が見つかりません"
+  es: "No se encontró .scuv.toml en '%{path}' ni en los directorios padre"
 
 suggestion.manifest_not_found:
   en: "→ Create one at the project root (see https://ai-scream.ai/scoop-uv/commands/sync.html)"
   ko: "→ 프로젝트 루트에 만들어 주세요 (https://ai-scream.ai/scoop-uv/commands/sync.html 참고)"
   pt-BR: "→ Crie um na raiz do projeto (veja https://ai-scream.ai/scoop-uv/commands/sync.html)"
   ja: "→ プロジェクトルートに作成してください (https://ai-scream.ai/scoop-uv/commands/sync.html 参照)"
+  es: "→ Crear uno en la raíz del proyecto (ver https://ai-scream.ai/scoop-uv/commands/sync.html)"
 
 # ============================================================================
 # Run command
