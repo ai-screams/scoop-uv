@@ -50,7 +50,7 @@ indicatif = "0.18"
 dialoguer = "0.12"
 
 # Utilities
-dirs = "6.0"
+dirs = "7.0"
 which = "8.0.3"
 regex = "1.11"
 once_cell = "1.21"
@@ -86,7 +86,7 @@ predicates = "3.1"
 serial_test = "3.2"
 proptest = "1.11"
 insta = { version = "1.47", features = ["yaml"] }
-rstest = "0.26"
+rstest = "0.27"
 serde_yaml = "0.9"
 # Benchmark runner. html_reports gives a `target/criterion/report/index.html`
 # overview that's useful when comparing baselines locally.
