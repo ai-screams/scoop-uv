@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789484915069,
+  "lastUpdate": 1789484916641,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5029,6 +5029,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1338,
             "range": "± 6",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dedceef2ee04e31f45094eee47512a4e3e12fbb9",
+          "message": "Merge pull request #175 from ai-screams/chore/bump-msrv-1.89\n\nfix(msrv): [#173] bump to 1.89 so the rust-dependencies group can land",
+          "timestamp": "2026-09-16T00:03:54+09:00",
+          "tree_id": "185298adde404931978031da9127ab073ce0f187",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/dedceef2ee04e31f45094eee47512a4e3e12fbb9"
+        },
+        "date": 1789484916530,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1666,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1091,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
