@@ -35,36 +35,35 @@ pub fn init() {
 pub fn detect_locale() -> String {
     // 1. SCUV_LANG environment variable (override for scripts/CI), falling
     // back to the legacy SCOOP_LANG name (deprecated; one-shot warning).
-    if let Ok(lang) = std::env::var("SCUV_LANG") {
-        if let Some(code) = resolve_supported(&lang) {
-            return code.to_string();
-        }
+    if let Ok(lang) = std::env::var("SCUV_LANG")
+        && let Some(code) = resolve_supported(&lang)
+    {
+        return code.to_string();
     }
-    if let Ok(lang) = std::env::var("SCOOP_LANG") {
-        if let Some(code) = resolve_supported(&lang) {
-            crate::output::deprecation::warn_once(&rust_i18n::t!(
-                "deprecation.env_var",
-                old = "SCOOP_LANG",
-                new = "SCUV_LANG"
-            ));
-            return code.to_string();
-        }
+    if let Ok(lang) = std::env::var("SCOOP_LANG")
+        && let Some(code) = resolve_supported(&lang)
+    {
+        crate::output::deprecation::warn_once(&rust_i18n::t!(
+            "deprecation.env_var",
+            old = "SCOOP_LANG",
+            new = "SCUV_LANG"
+        ));
+        return code.to_string();
     }
 
     // 2. Config file (scuv lang command)
-    if let Ok(config) = Config::load() {
-        if let Some(lang) = config.lang {
-            if let Some(code) = resolve_supported(&lang) {
-                return code.to_string();
-            }
-        }
+    if let Ok(config) = Config::load()
+        && let Some(lang) = config.lang
+        && let Some(code) = resolve_supported(&lang)
+    {
+        return code.to_string();
     }
 
     // 3. System locale
-    if let Some(locale) = sys_locale::get_locale() {
-        if let Some(code) = resolve_supported(&locale) {
-            return code.to_string();
-        }
+    if let Some(locale) = sys_locale::get_locale()
+        && let Some(code) = resolve_supported(&locale)
+    {
+        return code.to_string();
     }
 
     // 4. Fallback

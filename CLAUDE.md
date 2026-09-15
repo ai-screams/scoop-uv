@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Minimum uv version**: 0.5.19 (first release with `uv python list --output-format=json`; enforced by `scuv doctor`, pinned in a CI smoke job, single source of truth is `MIN_VERSION` in `src/uv/version.rs`).
 
-- **Language**: Rust (Edition 2024, MSRV 1.88)
+- **Language**: Rust (Edition 2024, MSRV 1.89)
 - **License**: MIT OR Apache-2.0
 - **Version**: scuv 0.15.3 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
 - **Tests**: 1029 passed (957 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings — these drift; `cargo test` is the source of truth
@@ -73,23 +73,48 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 
 ## MSRV Policy
 
-**Policy**: N-1 (Moderate) · **Current MSRV**: 1.88 · **Test Matrix**: `[msrv, stable]`
+**Policy**: dependency-driven · **Current MSRV**: 1.89 · **Test Matrix**: `[msrv, stable]`
 
-1.88 because the ecosystem adopted `let`-chains and deps like `ignore` 0.4.30 and
-`serde-saphyr` require it. Edition 2024's own hard floor is 1.85 — going below that
-means changing the edition, not just the MSRV. `rust-toolchain.toml` auto-selects
-1.88 here, so `cargo test` already runs on MSRV; `rustup override set stable` checks
-the other half of the matrix.
+The MSRV rises only when a dependency forces it — never on a schedule. Both bumps so
+far were forced (1.85 → 1.88 by `let`-chains and `ignore` 0.4.30; 1.88 → 1.89 by
+`serde-saphyr` 1.2). It therefore trails stable by a wide margin: 1.89 against stable
+1.98.1 as of 2026-09. This was previously labelled "N-1 (current stable + 1 previous)",
+which the numbers never supported.
+
+1.89 because `rust-i18n` 4.2.2 depends on `serde-saphyr ^1.2`, and the only release
+in that range (1.2.0) declares `rust-version = 1.89`. No pin escapes it — taking
+`rust-i18n` 4.2.2 and holding MSRV 1.88 are mutually exclusive. The earlier 1.88 floor
+came from `let`-chains and `ignore` 0.4.30. Edition 2024's own hard floor is 1.85 —
+going below that means changing the edition, not just the MSRV. `rust-toolchain.toml`
+auto-selects 1.89 here, so `cargo test` already runs on MSRV; `rustup override set
+stable` checks the other half of the matrix.
 
 ### Bumping it
 
-Verify first (`cargo msrv verify`, `cargo tree --duplicates`), then update all five:
+Verify first (`cargo msrv verify`, `cargo tree --duplicates`). The version string is
+spread wider than it looks — `git grep '1\.<old>'` is the real checklist. The 1.88 → 1.89
+bump touched 24 files:
 
-- [ ] `Cargo.toml`: `rust-version`
-- [ ] `rust-toolchain.toml`: `channel`
-- [ ] `.github/workflows/ci.yml`: MSRV job toolchain
-- [ ] `CHANGELOG.md`: entry with the reason
+- [ ] Declarations: `Cargo.toml` `rust-version`, `rust-toolchain.toml` `channel`,
+      `.clippy.toml` `msrv`, `.github/workflows/ci.yml` (`dtolnay/rust-toolchain@<ver>`
+      and the job name), `docker/Dockerfile` `ARG RUST_VERSION`
+- [ ] Prose stating the current MSRV: `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`,
+      `llms.txt`, `llms-full.txt`, `docs/src/**`, `context7.json`,
+      `.devcontainer/devcontainer.json`, `docker/docker-compose.yml`, `fuzz/**`,
+      and comments in `docs.yml` / `fuzz.yml` / `msrv-check.yml` / `release-plz.yml`
+- [ ] `CHANGELOG.md`: a new `[Unreleased]` entry with the reason — do NOT rewrite the
+      historical entries that record earlier bumps
 - [ ] README badge auto-updates from `Cargo.toml` — nothing to do
+
+Three traps a blanket `sed` walks into: the `CHANGELOG.md` history above; the
+CONTRIBUTING "Bumping MSRV" guide, whose worked example must stay one step *ahead* of
+the current MSRV; and the 1.88s that are **not ours** — `mdbook-i18n-helpers`' own
+upstream floor (`docs.yml`, `docs/src/development/docs-translation.md`). Verify with
+`git grep -n '1\.<old>' -- . ':!Cargo.lock' ':!CHANGELOG.md' ':!docs/po/ko.po'` and
+`python3 scripts/check-doc-references.py`.
+
+Editing `docs/src/**` invalidates `docs/po/ko.po`; regenerate it (see the i18n section)
+before the next `v*` tag, or `docs.yml` fails the release.
 
 CI enforces it: `ci.yml` tests both toolchains, and `msrv-check.yml` runs
 `cargo-msrv` whenever `Cargo.toml`/`Cargo.lock` changes.

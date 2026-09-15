@@ -188,10 +188,10 @@ impl UvClient {
 
         if let Some(pattern) = PythonVersion::parse(version_pattern) {
             for info in installed {
-                if let Some(ver) = PythonVersion::parse(&info.version) {
-                    if pattern.matches(&ver) {
-                        return Ok(Some(info));
-                    }
+                if let Some(ver) = PythonVersion::parse(&info.version)
+                    && pattern.matches(&ver)
+                {
+                    return Ok(Some(info));
                 }
             }
         }

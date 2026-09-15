@@ -305,16 +305,16 @@ impl PythonVersion {
             return false;
         }
 
-        if let Some(minor) = self.minor {
-            if other.minor != Some(minor) {
-                return false;
-            }
+        if let Some(minor) = self.minor
+            && other.minor != Some(minor)
+        {
+            return false;
         }
 
-        if let Some(patch) = self.patch {
-            if other.patch != Some(patch) {
-                return false;
-            }
+        if let Some(patch) = self.patch
+            && other.patch != Some(patch)
+        {
+            return false;
         }
 
         true

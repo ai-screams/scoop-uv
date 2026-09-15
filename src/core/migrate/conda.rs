@@ -72,17 +72,17 @@ impl CondaDiscovery {
     fn get_python_version(env_path: &Path) -> Option<String> {
         // Method 1: Check conda-meta for python package
         let conda_meta = env_path.join("conda-meta");
-        if conda_meta.exists() {
-            if let Ok(entries) = fs::read_dir(&conda_meta) {
-                for entry in entries.flatten() {
-                    let name = entry.file_name();
-                    let name_str = name.to_string_lossy();
-                    if name_str.starts_with("python-") && name_str.ends_with(".json") {
-                        // Parse version from filename: python-3.11.0-h...json
-                        let version_part = &name_str[7..]; // Skip "python-"
-                        if let Some(dash_idx) = version_part.find('-') {
-                            return Some(version_part[..dash_idx].to_string());
-                        }
+        if conda_meta.exists()
+            && let Ok(entries) = fs::read_dir(&conda_meta)
+        {
+            for entry in entries.flatten() {
+                let name = entry.file_name();
+                let name_str = name.to_string_lossy();
+                if name_str.starts_with("python-") && name_str.ends_with(".json") {
+                    // Parse version from filename: python-3.11.0-h...json
+                    let version_part = &name_str[7..]; // Skip "python-"
+                    if let Some(dash_idx) = version_part.find('-') {
+                        return Some(version_part[..dash_idx].to_string());
                     }
                 }
             }
@@ -90,15 +90,15 @@ impl CondaDiscovery {
 
         // Method 2: Check pyvenv.cfg (some conda envs have this)
         let cfg_path = env_path.join("pyvenv.cfg");
-        if cfg_path.exists() {
-            if let Ok(content) = fs::read_to_string(&cfg_path) {
-                // Reads both `version` (stdlib venv) and `version_info` (uv) keys.
-                if let Some(version) = content
-                    .lines()
-                    .find_map(crate::core::pyvenv_version_from_line)
-                {
-                    return Some(version);
-                }
+        if cfg_path.exists()
+            && let Ok(content) = fs::read_to_string(&cfg_path)
+        {
+            // Reads both `version` (stdlib venv) and `version_info` (uv) keys.
+            if let Some(version) = content
+                .lines()
+                .find_map(crate::core::pyvenv_version_from_line)
+            {
+                return Some(version);
             }
         }
 
@@ -201,10 +201,11 @@ impl EnvironmentSource for CondaDiscovery {
         // Search in each root directory directly
         for root in &self.roots {
             let env_path = root.join(name);
-            if env_path.exists() && env_path.is_dir() {
-                if let Some(env) = self.parse_environment(&env_path) {
-                    return Ok(env);
-                }
+            if env_path.exists()
+                && env_path.is_dir()
+                && let Some(env) = self.parse_environment(&env_path)
+            {
+                return Ok(env);
             }
         }
 

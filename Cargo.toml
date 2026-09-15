@@ -2,7 +2,7 @@
 name = "scoop-uv"
 version = "0.15.3"
 edition = "2024"
-rust-version = "1.88"
+rust-version = "1.89"
 authors = ["Hanyul <pignuante@gmail.com>"]
 description = "Scoop up your Python envs with uv — the command is scuv"
 license = "MIT OR Apache-2.0"
@@ -50,7 +50,7 @@ indicatif = "0.18"
 dialoguer = "0.12"
 
 # Utilities
-dirs = "6.0"
+dirs = "7.0"
 which = "8.0.3"
 regex = "1.11"
 once_cell = "1.21"
@@ -86,7 +86,7 @@ predicates = "3.1"
 serial_test = "3.2"
 proptest = "1.11"
 insta = { version = "1.47", features = ["yaml"] }
-rstest = "0.26"
+rstest = "0.27"
 serde_yaml = "0.9"
 # Benchmark runner. html_reports gives a `target/criterion/report/index.html`
 # overview that's useful when comparing baselines locally.
@@ -107,7 +107,7 @@ name = "path_lookup"
 harness = false
 
 [lints.clippy]
-# The MSRV 1.88 clippy promotes `uninlined_format_args` to a default warning.
+# The MSRV clippy promotes `uninlined_format_args` to a default warning.
 # The codebase uses the explicit `format!("{}", x)` style in ~270 places; that
 # is a cosmetic preference, not a defect, so allow it rather than churn every
 # call site inside an infrastructure bump. Revisit as a standalone cleanup.

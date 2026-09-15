@@ -56,32 +56,32 @@ impl Check for HomeCheck {
 
     fn fix(&self, result: &CheckResult, output: &crate::output::Output) -> Option<CheckResult> {
         // Only fix "directory not found" errors
-        if let CheckStatus::Error(msg) = &result.status {
-            if msg.contains("not found") {
-                // Create the directory
-                if let Ok(home) = paths::scoop_home() {
-                    output.info(&format!("Creating {}...", home.display()));
+        if let CheckStatus::Error(msg) = &result.status
+            && msg.contains("not found")
+        {
+            // Create the directory
+            if let Ok(home) = paths::scoop_home() {
+                output.info(&format!("Creating {}...", home.display()));
 
-                    match std::fs::create_dir_all(&home) {
-                        Ok(_) => {
-                            // Also create virtualenvs subdirectory
-                            let _ = std::fs::create_dir_all(home.join("virtualenvs"));
+                match std::fs::create_dir_all(&home) {
+                    Ok(_) => {
+                        // Also create virtualenvs subdirectory
+                        let _ = std::fs::create_dir_all(home.join("virtualenvs"));
 
-                            return Some(
-                                CheckResult::ok("home", "SCUV_HOME directory")
-                                    .with_details(format!("created {}", home.display())),
-                            );
-                        }
-                        Err(e) => {
-                            return Some(
-                                CheckResult::error(
-                                    "home",
-                                    "SCUV_HOME directory",
-                                    format!("failed to create: {}", e),
-                                )
-                                .with_suggestion("Check permissions"),
-                            );
-                        }
+                        return Some(
+                            CheckResult::ok("home", "SCUV_HOME directory")
+                                .with_details(format!("created {}", home.display())),
+                        );
+                    }
+                    Err(e) => {
+                        return Some(
+                            CheckResult::error(
+                                "home",
+                                "SCUV_HOME directory",
+                                format!("failed to create: {}", e),
+                            )
+                            .with_suggestion("Check permissions"),
+                        );
                     }
                 }
             }

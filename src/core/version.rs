@@ -212,20 +212,20 @@ impl VersionService {
     ///
     /// DEPRECATION(0.16.0): remove the legacy `SCOOP_VERSION` branch.
     fn resolve_env_version() -> Option<String> {
-        if let Ok(raw) = std::env::var("SCUV_VERSION") {
-            if let Some(name) = Self::normalize_version_value(&raw) {
-                return Some(name);
-            }
+        if let Ok(raw) = std::env::var("SCUV_VERSION")
+            && let Some(name) = Self::normalize_version_value(&raw)
+        {
+            return Some(name);
         }
-        if let Ok(raw) = std::env::var("SCOOP_VERSION") {
-            if let Some(name) = Self::normalize_version_value(&raw) {
-                crate::output::deprecation::warn_once(&rust_i18n::t!(
-                    "deprecation.env_var",
-                    old = "SCOOP_VERSION",
-                    new = "SCUV_VERSION"
-                ));
-                return Some(name);
-            }
+        if let Ok(raw) = std::env::var("SCOOP_VERSION")
+            && let Some(name) = Self::normalize_version_value(&raw)
+        {
+            crate::output::deprecation::warn_once(&rust_i18n::t!(
+                "deprecation.env_var",
+                old = "SCOOP_VERSION",
+                new = "SCUV_VERSION"
+            ));
+            return Some(name);
         }
         None
     }

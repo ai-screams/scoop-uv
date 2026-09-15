@@ -33,10 +33,10 @@ pub fn render_human(output: &Output, data: &DiffData, mode: DiffMode) {
         }
     }
 
-    if mode != DiffMode::PackagesOnly {
-        if let Some(meta) = &data.metadata {
-            render_metadata_section(output, meta);
-        }
+    if mode != DiffMode::PackagesOnly
+        && let Some(meta) = &data.metadata
+    {
+        render_metadata_section(output, meta);
     }
 
     if !data.summary.python_changed

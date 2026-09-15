@@ -101,12 +101,12 @@ fn write_page(dir: &Path, filename: &str, cmd: &clap::Command) -> Result<()> {
     // path would otherwise have `fs::write` follow the link — an arbitrary
     // truncate/write under whatever UID is running `scuv man`. Use
     // `symlink_metadata` so we inspect the link itself, not its target.
-    if let Ok(meta) = std::fs::symlink_metadata(&target) {
-        if meta.file_type().is_symlink() {
-            return Err(ScoopError::InvalidArgument {
-                message: t!("man.refuse_symlink", path = target.display()).to_string(),
-            });
-        }
+    if let Ok(meta) = std::fs::symlink_metadata(&target)
+        && meta.file_type().is_symlink()
+    {
+        return Err(ScoopError::InvalidArgument {
+            message: t!("man.refuse_symlink", path = target.display()).to_string(),
+        });
     }
 
     let man = clap_mangen::Man::new(cmd.clone());

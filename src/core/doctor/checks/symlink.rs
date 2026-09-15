@@ -181,17 +181,17 @@ impl Check for SymlinkCheck {
         let symlink_path = crate::paths::virtualenv_python_exe(&venv_path);
 
         // Remove old symlink if exists
-        if symlink_path.exists() || symlink_path.is_symlink() {
-            if let Err(e) = std::fs::remove_file(&symlink_path) {
-                return Some(
-                    CheckResult::error(
-                        "symlink",
-                        "broken symlink",
-                        format!("failed to remove old symlink: {}", e),
-                    )
-                    .with_suggestion("Check file permissions"),
-                );
-            }
+        if (symlink_path.exists() || symlink_path.is_symlink())
+            && let Err(e) = std::fs::remove_file(&symlink_path)
+        {
+            return Some(
+                CheckResult::error(
+                    "symlink",
+                    "broken symlink",
+                    format!("failed to remove old symlink: {}", e),
+                )
+                .with_suggestion("Check file permissions"),
+            );
         }
 
         // Create new symlink

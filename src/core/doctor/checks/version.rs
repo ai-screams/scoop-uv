@@ -75,30 +75,30 @@ impl Check for VersionCheck {
         let venvs_dir = paths::virtualenvs_dir().ok();
 
         // Check global version file
-        if let Ok(global_file) = paths::global_version_file() {
-            if global_file.exists() {
-                match std::fs::read_to_string(&global_file) {
-                    Ok(content) => {
-                        let env_name = content.trim();
-                        if !env_name.is_empty() {
-                            results.push(classify_version_entry(
-                                "version:global",
-                                "global version",
-                                env_name,
-                                venvs_dir.as_deref(),
-                            ));
-                        }
+        if let Ok(global_file) = paths::global_version_file()
+            && global_file.exists()
+        {
+            match std::fs::read_to_string(&global_file) {
+                Ok(content) => {
+                    let env_name = content.trim();
+                    if !env_name.is_empty() {
+                        results.push(classify_version_entry(
+                            "version:global",
+                            "global version",
+                            env_name,
+                            venvs_dir.as_deref(),
+                        ));
                     }
-                    Err(_) => {
-                        results.push(
-                            CheckResult::warn(
-                                "version:global",
-                                "global version",
-                                "could not read global version file",
-                            )
-                            .with_suggestion(format!("Check file: {}", global_file.display())),
-                        );
-                    }
+                }
+                Err(_) => {
+                    results.push(
+                        CheckResult::warn(
+                            "version:global",
+                            "global version",
+                            "could not read global version file",
+                        )
+                        .with_suggestion(format!("Check file: {}", global_file.display())),
+                    );
                 }
             }
         }

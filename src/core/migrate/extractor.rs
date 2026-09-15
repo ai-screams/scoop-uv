@@ -21,10 +21,10 @@ pub struct PackageSpec {
 impl PackageSpec {
     /// Creates a requirements.txt format string.
     pub fn to_requirement(&self) -> String {
-        if self.editable {
-            if let Some(path) = &self.editable_path {
-                return format!("-e {}", path.display());
-            }
+        if self.editable
+            && let Some(path) = &self.editable_path
+        {
+            return format!("-e {}", path.display());
         }
         format!("{}=={}", self.name, self.version)
     }

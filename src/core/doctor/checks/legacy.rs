@@ -27,10 +27,11 @@ fn check_legacy_remnants() -> CheckResult {
         }
     }
 
-    if let Some(home) = dirs::home_dir() {
-        if home.join(".scoop").exists() && !home.join(".scuv").exists() {
-            found.push("~/.scoop".to_string());
-        }
+    if let Some(home) = dirs::home_dir()
+        && home.join(".scoop").exists()
+        && !home.join(".scuv").exists()
+    {
+        found.push("~/.scoop".to_string());
     }
 
     if let Ok(cwd) = std::env::current_dir() {

@@ -361,11 +361,11 @@ cargo audit fix
 
 ### MSRV (Minimum Supported Rust Version)
 
-- Current MSRV: **1.88**
+- Current MSRV: **1.89**
 - Defined in `Cargo.toml`:
   ```toml
   [package]
-  rust-version = "1.88"
+  rust-version = "1.89"
   ```
 
 ### Unsafe Code

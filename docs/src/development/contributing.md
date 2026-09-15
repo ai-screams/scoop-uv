@@ -4,7 +4,7 @@ Guide for contributing to scuv development.
 
 ## Prerequisites
 
-- **Rust 1.88+** (Edition 2024)
+- **Rust 1.89+** (Edition 2024)
 - **uv** - Python package manager ([install](https://github.com/astral-sh/uv))
 - **prek** - Pre-commit hooks ([install](https://github.com/j178/prek))
 
