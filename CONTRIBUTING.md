@@ -262,7 +262,8 @@ EOF
 **Step 5: Create PR**
 
 ```bash
-git add -A   # the version string spans ~24 files; stage them all
+git add -u   # the version string spans ~24 tracked files; -u stages them all
+             # (-u, not -A: -A would also stage untracked scratch files)
 git commit -m "chore: bump MSRV to 1.90 for [reason]"
 git push origin feat/msrv-1.90
 ```
