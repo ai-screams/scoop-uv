@@ -33,6 +33,14 @@ exclude_re = [
     "UvClient::uninstall_python",
     "UvClient::pip_install",
     "UvClient::cache_prune",
+    # find_python reads list_installed_pythons -> run_python_list (excluded just
+    # above), which spawns `uv python list`. With no uv on the runner the real
+    # function returns Ok(None) anyway, so the Ok(None) mutant is indistinguishable
+    # from correct behaviour — the same gap as its siblings here. The matching
+    # logic it wraps (PythonVersion::parse + matches) IS mutation-tested in
+    # validate.rs. Excluded per-mutant, not by bare name, so that any future
+    # branch added to this function still gets gated.
+    "replace UvClient::find_python -> Result<Option<PythonInfo>> with Ok\\(None\\)",
     # Spawns the interpreter; its parsing logic is covered via the pure
     # parse_python_version_output (this wrapper can't be unit-mutation-tested
     # without a real exec, which is container-flaky).

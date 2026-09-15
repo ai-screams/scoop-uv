@@ -281,28 +281,28 @@ impl Migrator {
             .map(|p| p.to_requirement())
             .collect();
 
-        if !regular_specs.is_empty() {
-            if let Err(e) = self.uv.pip_install(target_path, &regular_specs) {
-                // Try installing packages one by one to identify failures
-                for spec in &regular_specs {
-                    if self
-                        .uv
-                        .pip_install(target_path, std::slice::from_ref(spec))
-                        .is_err()
-                    {
-                        if strict {
-                            return Err(ScoopError::MigrationFailed {
-                                reason: format!("Failed to install package: {}", spec),
-                            });
-                        }
-                        failed.push(spec.clone());
+        if !regular_specs.is_empty()
+            && let Err(e) = self.uv.pip_install(target_path, &regular_specs)
+        {
+            // Try installing packages one by one to identify failures
+            for spec in &regular_specs {
+                if self
+                    .uv
+                    .pip_install(target_path, std::slice::from_ref(spec))
+                    .is_err()
+                {
+                    if strict {
+                        return Err(ScoopError::MigrationFailed {
+                            reason: format!("Failed to install package: {}", spec),
+                        });
                     }
+                    failed.push(spec.clone());
                 }
+            }
 
-                // If all failed, propagate the original error
-                if failed.len() == regular_specs.len() {
-                    return Err(e);
-                }
+            // If all failed, propagate the original error
+            if failed.len() == regular_specs.len() {
+                return Err(e);
             }
         }
 

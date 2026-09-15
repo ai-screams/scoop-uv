@@ -73,7 +73,7 @@ Help make scuv accessible to developers worldwide!
 
 | Tool | Version | Install |
 |------|---------|---------|
-| **Rust** | 1.88+ | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
+| **Rust** | 1.89+ | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
 | **uv** | latest | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
 | **prek** | 0.2.23+ | `uv tool install prek` or `cargo install prek` |
 
@@ -99,7 +99,7 @@ cargo run -- --help
 
 ### Rust Version & MSRV
 
-scuv requires **Rust 1.88 or newer** (our MSRV - Minimum Supported Rust Version). The project uses `rust-toolchain.toml` to automatically select the correct version.
+scuv requires **Rust 1.89 or newer** (our MSRV - Minimum Supported Rust Version). The project uses `rust-toolchain.toml` to automatically select the correct version.
 
 #### First-Time Setup
 
@@ -108,20 +108,20 @@ scuv requires **Rust 1.88 or newer** (our MSRV - Minimum Supported Rust Version)
 git clone https://github.com/ai-screams/scoop-uv.git
 cd scoop-uv
 
-# Rust 1.88 will be automatically selected via rust-toolchain.toml
+# Rust 1.89 will be automatically selected via rust-toolchain.toml
 rustc --version
-# Expected: rustc 1.88.0 (or the version pinned by rust-toolchain.toml)
+# Expected: rustc 1.89.0 (or the version pinned by rust-toolchain.toml)
 
 # If you see a different version:
 rustup update
-rustup toolchain install 1.88
+rustup toolchain install 1.89
 ```
 
 #### Updating Rust
 
 ```bash
 # Update to latest within the MSRV channel
-rustup update 1.88
+rustup update 1.89
 
 # Or update to latest stable (for testing)
 rustup update stable
@@ -132,7 +132,7 @@ rustup update stable
 **Before submitting PRs**, verify compatibility with our MSRV:
 
 ```bash
-# The project automatically uses 1.88 via rust-toolchain.toml
+# The project automatically uses 1.89 via rust-toolchain.toml
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features --workspace
 cargo build --all-features
@@ -143,7 +143,7 @@ cargo test --all-features
 rustup override unset  # Back to MSRV
 ```
 
-CI automatically tests both MSRV (1.88) and stable Rust.
+CI automatically tests both MSRV (1.89) and stable Rust.
 
 #### Adding Dependencies
 
@@ -155,7 +155,7 @@ When adding dependencies:
    # Look for rust-version in dependencies' Cargo.toml
    ```
 
-2. **Ensure compatibility** with our MSRV (1.88)
+2. **Ensure compatibility** with our MSRV (1.89)
 
 3. **If dependency requires newer Rust**:
    - Evaluate if benefit justifies MSRV bump
@@ -170,8 +170,8 @@ When adding dependencies:
 
 #### MSRV Policy for Contributors
 
-- **Current MSRV**: 1.88 (Edition 2024 requirement)
-- **Policy**: N-1 (support current stable + 1 previous version)
+- **Current MSRV**: 1.89 (required by `serde-saphyr` 1.2, via `rust-i18n`; Edition 2024's own floor is 1.85)
+- **Policy**: dependency-driven — we raise the MSRV only when a dependency requires it, never on a schedule, so it trails current stable by a wide margin
 - **Updates**: MSRV bumps only for clear benefits (features, security, dependencies)
 - **Communication**: All MSRV changes documented in CHANGELOG with rationale
 
@@ -192,7 +192,7 @@ cargo msrv find
 
 #### Bumping MSRV: Step-by-Step Guide
 
-When you need to increase the MSRV (e.g., from 1.88 to 1.89):
+When you need to increase the MSRV (e.g., from 1.89 to 1.90):
 
 **Step 1: Evaluate Justification**
 
@@ -204,34 +204,41 @@ Ask yourself:
 
 If not justified, don't bump.
 
-**Step 2: Update All Three Locations**
+**Step 2: Update Every Location**
+
+The three commands below are the *declarations*; they are not the whole job. The
+version string also appears in `.clippy.toml`, `docker/Dockerfile`, `context7.json`,
+`README.md`, `CONTRIBUTING.md`, `llms.txt`, `llms-full.txt` and `docs/src/**`. Use
+`git grep '1\.<old>'` as the actual checklist — and leave two kinds of hit alone: the
+historical `CHANGELOG.md` entries, and the 1.88 that is `mdbook-i18n-helpers`' own
+upstream floor rather than ours. See CLAUDE.md's "MSRV Policy" for the full list.
 
 ```bash
 # 1. Update Cargo.toml
 # macOS: sed -i '' 's/...' file
 # Linux: sed -i 's/...' file
-sed -i.bak 's/rust-version = "1.88"/rust-version = "1.89"/' Cargo.toml && rm Cargo.toml.bak
+sed -i.bak 's/rust-version = "1.89"/rust-version = "1.90"/' Cargo.toml && rm Cargo.toml.bak
 
 # 2. Update rust-toolchain.toml
-sed -i.bak 's/channel = "1.88"/channel = "1.89"/' rust-toolchain.toml && rm rust-toolchain.toml.bak
+sed -i.bak 's/channel = "1.89"/channel = "1.90"/' rust-toolchain.toml && rm rust-toolchain.toml.bak
 
 # 3. Update CI workflow
-sed -i.bak 's/@1.88/@1.89/g' .github/workflows/ci.yml && rm .github/workflows/ci.yml.bak
+sed -i.bak 's/@1.89/@1.90/g' .github/workflows/ci.yml && rm .github/workflows/ci.yml.bak
 
-# Or manually edit the three files in your editor (safer)
+# Or manually edit the files in your editor (safer)
 ```
 
 **Step 3: Test Locally**
 
 ```bash
 # Install new MSRV
-rustup install 1.89
+rustup install 1.90
 
 # Test compilation
-cargo +1.89 test --all-features
+cargo +1.90 test --all-features
 
 # Test clippy
-cargo +1.89 clippy --all-targets --all-features -- -D warnings
+cargo +1.90 clippy --all-targets --all-features -- -D warnings
 
 # Verify MSRV
 cargo msrv verify
@@ -245,24 +252,25 @@ cat >> CHANGELOG.md << 'EOF'
 
 ### Changed
 
-- **MSRV**: Bumped to 1.89 (reason: [your justification])
+- **MSRV**: Bumped to 1.90 (reason: [your justification])
   - Example: "for improved async trait support in std"
-  - Example: "clap 4.6 requires Rust 1.89"
-  - Example: "security fix CVE-YYYY-XXXXX in rustc 1.89"
+  - Example: "clap 4.6 requires Rust 1.90"
+  - Example: "security fix CVE-YYYY-XXXXX in rustc 1.90"
 EOF
 ```
 
 **Step 5: Create PR**
 
 ```bash
-git add Cargo.toml rust-toolchain.toml .github/workflows/ci.yml CHANGELOG.md
-git commit -m "chore: bump MSRV to 1.89 for [reason]"
-git push origin feat/msrv-1.89
+git add -u   # the version string spans ~24 tracked files; -u stages them all
+             # (-u, not -A: -A would also stage untracked scratch files)
+git commit -m "chore: bump MSRV to 1.90 for [reason]"
+git push origin feat/msrv-1.90
 ```
 
 **Step 6: Verify CI Passes**
 
-- ✅ MSRV job (1.89) passes
+- ✅ MSRV job (1.90) passes
 - ✅ cargo-msrv verify passes
 - ✅ Test job (stable) passes
 
@@ -694,20 +702,20 @@ Common MSRV-related problems and their solutions:
 
 **Symptom**: MSRV job fails with compilation errors, but stable test job passes.
 
-**Cause**: Code uses Rust features newer than MSRV (1.88).
+**Cause**: Code uses Rust features newer than MSRV (1.89).
 
 **Solution**:
 ```bash
 # Test locally with MSRV
-cargo +1.88 clippy --all-targets --all-features -- -D warnings
-cargo +1.88 build --all-features
+cargo +1.89 clippy --all-targets --all-features -- -D warnings
+cargo +1.89 build --all-features
 
 # Check which feature is problematic
-rustc +1.88 --version  # Verify you're on 1.88
-cargo +1.88 check 2>&1 | grep "error"
+rustc +1.89 --version  # Verify you're on 1.89
+cargo +1.89 check 2>&1 | grep "error"
 
 # Options:
-# A) Rewrite code to work on 1.88
+# A) Rewrite code to work on 1.89
 # B) Bump MSRV if feature is essential (follow bump guide above)
 ```
 
@@ -758,7 +766,7 @@ cargo tree --duplicates
 rustup show
 
 # Should see:
-# active toolchain: 1.88-aarch64-apple-darwin
+# active toolchain: 1.89-aarch64-apple-darwin
 # active because: overridden by '.../rust-toolchain.toml'
 
 # If you see "rustup override":
@@ -766,7 +774,7 @@ rustup override unset  # Clear manual override
 
 # If rust-toolchain.toml not working:
 cat rust-toolchain.toml  # Verify it exists and is correct
-rustup update 1.88       # Ensure 1.88 is installed
+rustup update 1.89       # Ensure 1.89 is installed
 ```
 
 ---
@@ -782,7 +790,7 @@ rustup update 1.88       # Ensure 1.88 is installed
 # Quick check for sync
 grep -E "rust-version|channel|@1\." Cargo.toml rust-toolchain.toml .github/workflows/ci.yml
 
-# Should all show same version (e.g., 1.88)
+# Should all show same version (e.g., 1.89)
 
 # Fix each file:
 # - Cargo.toml:           rust-version = "1.89"
@@ -825,7 +833,7 @@ cargo msrv verify
 
 ---
 
-### "Can I use features from Rust > 1.88?"
+### "Can I use features from Rust > 1.89?"
 
 **Answer**: Only if you bump the MSRV.
 
@@ -835,7 +843,7 @@ cargo msrv verify
 3. Follow [MSRV bump guide](#bumping-msrv-step-by-step-guide)
 4. Update all documentation
 
-**Quick Reference**: Since our MSRV is Rust 1.88+ (Edition 2024), you have access to:
+**Quick Reference**: Since our MSRV is Rust 1.89+ (Edition 2024), you have access to:
 - ✅ Async-await (since 1.39)
 - ✅ Const generics (since 1.51)
 - ✅ Let-else statements (since 1.65)

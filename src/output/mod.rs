@@ -253,13 +253,13 @@ impl Output {
         }
 
         // Print details in verbose mode
-        if self.verbose > 0 {
-            if let Some(details) = &result.details {
-                if self.no_color {
-                    eprintln!("  {}", details);
-                } else {
-                    eprintln!("  {}", details.dimmed());
-                }
+        if self.verbose > 0
+            && let Some(details) = &result.details
+        {
+            if self.no_color {
+                eprintln!("  {}", details);
+            } else {
+                eprintln!("  {}", details.dimmed());
             }
         }
 

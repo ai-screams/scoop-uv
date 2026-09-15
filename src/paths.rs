@@ -243,14 +243,14 @@ pub fn virtualenv_site_packages(venv_root: &Path) -> Result<PathBuf> {
                 "import sysconfig; print(sysconfig.get_path('purelib'))",
             ])
             .output();
-        if let Ok(out) = output {
-            if out.status.success() {
-                let line = String::from_utf8_lossy(&out.stdout).trim().to_string();
-                if !line.is_empty() {
-                    let path = PathBuf::from(line);
-                    if path.is_dir() {
-                        return Ok(path);
-                    }
+        if let Ok(out) = output
+            && out.status.success()
+        {
+            let line = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            if !line.is_empty() {
+                let path = PathBuf::from(line);
+                if path.is_dir() {
+                    return Ok(path);
                 }
             }
         }
@@ -395,10 +395,10 @@ fn executable_candidates(exe: &str) -> Vec<String> {
 /// assert!(abbreviated.starts_with("~/"));
 /// ```
 pub fn abbreviate_home(path: &std::path::Path) -> String {
-    if let Some(home) = dirs::home_dir() {
-        if let Ok(stripped) = path.strip_prefix(&home) {
-            return format!("~/{}", stripped.display());
-        }
+    if let Some(home) = dirs::home_dir()
+        && let Ok(stripped) = path.strip_prefix(&home)
+    {
+        return format!("~/{}", stripped.display());
     }
     path.display().to_string()
 }

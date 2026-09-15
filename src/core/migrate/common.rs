@@ -128,22 +128,21 @@ pub fn determine_status(name: &str, python_version: &str) -> EnvironmentStatus {
 
     // Check for EOL Python versions
     let major_minor: Vec<&str> = python_version.split('.').collect();
-    if major_minor.len() >= 2 {
-        if let (Ok(major), Ok(minor)) =
+    if major_minor.len() >= 2
+        && let (Ok(major), Ok(minor)) =
             (major_minor[0].parse::<u32>(), major_minor[1].parse::<u32>())
-        {
-            // Python 3.8 and earlier are EOL (as of 2024)
-            if major == 3 && minor <= EOL_PYTHON_MINOR {
-                return EnvironmentStatus::PythonEol {
-                    version: python_version.to_string(),
-                };
-            }
-            // Python 2.x is definitely EOL
-            if major == 2 {
-                return EnvironmentStatus::PythonEol {
-                    version: python_version.to_string(),
-                };
-            }
+    {
+        // Python 3.8 and earlier are EOL (as of 2024)
+        if major == 3 && minor <= EOL_PYTHON_MINOR {
+            return EnvironmentStatus::PythonEol {
+                version: python_version.to_string(),
+            };
+        }
+        // Python 2.x is definitely EOL
+        if major == 2 {
+            return EnvironmentStatus::PythonEol {
+                version: python_version.to_string(),
+            };
         }
     }
 

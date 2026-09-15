@@ -218,7 +218,7 @@ git diff origin/main.. | cargo mutants --in-diff /dev/stdin   # changed lines
 
 `cargo-fuzz` (libFuzzer) fuzzes the untrusted-input parsers. It lives in an
 isolated `fuzz/` workspace pinned to nightly, so it never affects the
-MSRV-1.88 build; CI runs the targets on a weekly schedule.
+MSRV-1.89 build; CI runs the targets on a weekly schedule.
 
 ```bash
 cargo install cargo-fuzz
@@ -430,7 +430,7 @@ apt install shellcheck
 
 ## Codespaces / Devcontainer
 
-`.devcontainer/devcontainer.json` boots a Rust 1.88 dev environment on
+`.devcontainer/devcontainer.json` boots a Rust 1.89 dev environment on
 `mcr.microsoft.com/devcontainers/rust:1-bookworm` that matches the local
 toolchain pinned by `rust-toolchain.toml`. Open the repo in VS Code
 ("Reopen in Container") or create a Codespace — both follow the same

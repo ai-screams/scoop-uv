@@ -40,7 +40,7 @@
 
 <!-- Project Identity -->
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos-blue?style=flat-square)](https://github.com/ai-screams/scoop-uv)
-[![Rust](https://img.shields.io/badge/rust-1.88+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.89+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![Powered by uv](https://img.shields.io/badge/powered%20by-uv-blueviolet?style=flat-square&logo=python)](https://github.com/astral-sh/uv)
 [![Maintained](https://img.shields.io/badge/maintained-yes-green?style=flat-square)](https://github.com/ai-screams/scoop-uv)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/ai-screams/scoop-uv/pulls)
@@ -537,22 +537,27 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 
 ## Minimum Supported Rust Version (MSRV) 🦀
 
-**Current MSRV:** 1.88 (required by Rust Edition 2024)
+**Current MSRV:** 1.89 (required by `serde-saphyr` 1.2, pulled in via `rust-i18n`)
 
-scuv follows an **N-1 MSRV policy** — we support the current stable Rust and one previous version (~6 week lag).
+scuv raises its MSRV **only when a dependency requires it**, never on a schedule. It therefore trails current stable by a wide margin — 1.89 against stable 1.98.1 as of 2026-09.
 
 | User Type | MSRV Impact | Action |
 |-----------|-------------|--------|
 | **Binary users** | ✅ None | Download from [releases](https://github.com/ai-screams/scoop-uv/releases) or `cargo install` |
-| **Source builders** | ⚠️ Rust >= 1.88 required | Run `rustup update` if needed |
-| **Contributors** | 🔧 Test on MSRV before PR | `cargo +1.88 test --all-features` |
+| **Source builders** | ⚠️ Rust >= 1.89 required | Run `rustup update` if needed |
+| **Contributors** | 🔧 Test on MSRV before PR | `cargo +1.89 test --all-features` |
 
 <details>
 <summary>📋 Full MSRV policy (click to expand)</summary>
 
-### About N-1 Policy
+### How the MSRV moves
 
-We support the current stable Rust and one previous version (~6 week lag). MSRV updates are considered **non-breaking** for binary users per [Cargo RFC 3537](https://rust-lang.github.io/rfcs/3537-msrv-resolver.html).
+The MSRV is dependency-driven: it rises when a crate we depend on requires a newer
+rustc, and otherwise stays put. Both bumps to date were forced this way — 1.85 → 1.88 by
+`let`-chains and `ignore` 0.4.30, and 1.88 → 1.89 by `serde-saphyr` 1.2 via `rust-i18n`.
+Because nothing pushes it otherwise, it sits well below current stable.
+
+MSRV updates are considered **non-breaking** for binary users per [Cargo RFC 3537](https://rust-lang.github.io/rfcs/3537-msrv-resolver.html).
 
 ### When We Bump MSRV
 
@@ -577,10 +582,10 @@ scuv uses **Rust Edition 2024**, which requires:
 
 ### Automation
 
-- **CI**: Tests on both MSRV (1.88) and stable automatically
+- **CI**: Tests on both MSRV (1.89) and stable automatically
 - **cargo-msrv**: Verifies MSRV on Cargo.toml changes in CI
 - **Badge**: README badge auto-updates from Cargo.toml via shields.io
-- **Local**: rust-toolchain.toml auto-selects 1.88 in project directory
+- **Local**: rust-toolchain.toml auto-selects 1.89 in project directory
 
 For more details, see our [MSRV bump guide in CONTRIBUTING.md](CONTRIBUTING.md#bumping-msrv-step-by-step-guide).
 

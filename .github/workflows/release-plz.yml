@@ -27,12 +27,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15  # Release creation + crates.io publish
     env:
-      # rust-toolchain.toml pins 1.88 (our MSRV) and applies to any cargo
+      # rust-toolchain.toml pins 1.89 (our MSRV) and applies to any cargo
       # invocation inside the checkout — including the action's own
       # `cargo install release-plz`. When cargo-binstall has no prebuilt
       # binary for a release it falls back to building from source, and
       # release-plz 0.3.162 needs rustc 1.96, so the install compiled
-      # against 1.88 and failed:
+      # against the pinned MSRV and failed:
       #
       #   crates-io@0.41.1 requires rustc 1.96
       #   failed to compile `release-plz v0.3.162`

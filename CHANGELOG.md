@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **MSRV**: Bumped to 1.89. `rust-i18n` 4.2.2 depends on `serde-saphyr ^1.2`, and the
+  only release in that range (1.2.0) declares `rust-version = 1.89`, so no `--precise`
+  pin keeps both the dependency update and the 1.88 floor. Edition 2024's own floor
+  remains 1.85; 1.89 is still well below current stable (1.98.1).
+- Collapsed 40 nested `if` statements across 20 files into let-chains. The 1.89 clippy
+  extends `collapsible_if` to nesting that let-chains can fold, and let-chains are the
+  reason this project moved to 1.88 in the first place.
+- **MSRV policy**: restated as dependency-driven rather than "N-1 (current stable + 1
+  previous version)". Both bumps to date were forced by dependencies, and the MSRV has
+  trailed stable by far more than one release throughout — the N-1 label never matched
+  what the project actually did.
+
+### Dependencies
+
+- **deps:** Bump the rust-dependencies group with 4 updates — `dirs` 6.0 → 7.0,
+  `rust-i18n` 4.2.1 → 4.2.2, `toml` 1.1.5 → 1.1.6, `rstest` 0.26 → 0.27
+  ([#173](https://github.com/ai-screams/scoop-uv/pull/173)) (by [@dependabot[bot]](https://github.com/dependabot[bot]))
+
 ## [0.15.3] - 2026-09-06
 
 ### Dependencies

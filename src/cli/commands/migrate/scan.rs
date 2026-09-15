@@ -36,28 +36,25 @@ pub fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<Source
         source_filter.is_none() || source_filter == Some(MigrateSource::Virtualenvwrapper);
     let scan_conda = source_filter.is_none() || source_filter == Some(MigrateSource::Conda);
 
-    if scan_pyenv {
-        if let Some(discovery) = PyenvDiscovery::default_root() {
-            if let Ok(envs) = discovery.scan_environments() {
-                all_envs.extend(envs);
-            }
-        }
+    if scan_pyenv
+        && let Some(discovery) = PyenvDiscovery::default_root()
+        && let Ok(envs) = discovery.scan_environments()
+    {
+        all_envs.extend(envs);
     }
 
-    if scan_venv {
-        if let Some(discovery) = VenvWrapperDiscovery::default_root() {
-            if let Ok(envs) = discovery.scan_environments() {
-                all_envs.extend(envs);
-            }
-        }
+    if scan_venv
+        && let Some(discovery) = VenvWrapperDiscovery::default_root()
+        && let Ok(envs) = discovery.scan_environments()
+    {
+        all_envs.extend(envs);
     }
 
-    if scan_conda {
-        if let Some(discovery) = CondaDiscovery::default_roots() {
-            if let Ok(envs) = discovery.scan_environments() {
-                all_envs.extend(envs);
-            }
-        }
+    if scan_conda
+        && let Some(discovery) = CondaDiscovery::default_roots()
+        && let Ok(envs) = discovery.scan_environments()
+    {
+        all_envs.extend(envs);
     }
 
     // Sort by source type, then by name
@@ -127,30 +124,27 @@ pub fn find_environment_by_name(
     source_filter: Option<MigrateSource>,
 ) -> Result<SourceEnvironment> {
     // Try pyenv first
-    if source_filter.is_none() || source_filter == Some(MigrateSource::Pyenv) {
-        if let Some(discovery) = PyenvDiscovery::default_root() {
-            if let Ok(env) = discovery.find_environment(name) {
-                return Ok(env);
-            }
-        }
+    if (source_filter.is_none() || source_filter == Some(MigrateSource::Pyenv))
+        && let Some(discovery) = PyenvDiscovery::default_root()
+        && let Ok(env) = discovery.find_environment(name)
+    {
+        return Ok(env);
     }
 
     // Try virtualenvwrapper
-    if source_filter.is_none() || source_filter == Some(MigrateSource::Virtualenvwrapper) {
-        if let Some(discovery) = VenvWrapperDiscovery::default_root() {
-            if let Ok(env) = discovery.find_environment(name) {
-                return Ok(env);
-            }
-        }
+    if (source_filter.is_none() || source_filter == Some(MigrateSource::Virtualenvwrapper))
+        && let Some(discovery) = VenvWrapperDiscovery::default_root()
+        && let Ok(env) = discovery.find_environment(name)
+    {
+        return Ok(env);
     }
 
     // Try conda
-    if source_filter.is_none() || source_filter == Some(MigrateSource::Conda) {
-        if let Some(discovery) = CondaDiscovery::default_roots() {
-            if let Ok(env) = discovery.find_environment(name) {
-                return Ok(env);
-            }
-        }
+    if (source_filter.is_none() || source_filter == Some(MigrateSource::Conda))
+        && let Some(discovery) = CondaDiscovery::default_roots()
+        && let Ok(env) = discovery.find_environment(name)
+    {
+        return Ok(env);
     }
 
     // If a specific source was requested, return that error

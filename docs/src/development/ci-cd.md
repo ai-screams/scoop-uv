@@ -44,7 +44,7 @@ either, and a group delivers both.
 
 ### The MSRV is verified twice, deliberately
 
-`ci.yml` has an `msrv` job that builds and tests on 1.88. `msrv-check.yml`
+`ci.yml` has an `msrv` job that builds and tests on 1.89. `msrv-check.yml`
 separately runs `cargo msrv verify`. These answer different questions:
 
 - **`ci.yml`** — does the code work on the version we claim?

@@ -4,7 +4,7 @@
 # Trigger: Only runs when Cargo.toml, Cargo.lock, or this workflow file changes
 # Strategy: Uses cargo-msrv tool to validate that code compiles with declared MSRV
 #
-# This workflow is part of the N-1 MSRV policy implementation:
+# This workflow is part of the MSRV policy implementation:
 # - Prevents accidental MSRV bumps through dependency updates
 # - Acts as safety net when updating dependencies
 # - Complements the main CI's MSRV testing (ci.yml)
@@ -63,7 +63,7 @@ jobs:
       # Step 4: Install cargo-msrv only if not cached
       # --locked ensures Cargo.lock is respected (security)
       # Version pinned to ^0.18 because cargo-msrv 0.19+ requires rustc 1.91+,
-      # which conflicts with our MSRV (1.88). Keep in sync with the cache key above.
+      # which conflicts with our MSRV (1.89). Keep in sync with the cache key above.
       - name: Install cargo-msrv
         if: steps.cache-cargo-msrv.outputs.cache-hit != 'true'
         run: cargo install cargo-msrv --version "^0.18" --locked

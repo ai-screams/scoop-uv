@@ -35,12 +35,12 @@ impl Doctor {
 
             for result in results {
                 // Attempt auto-fix for specific error types
-                if result.is_error() {
-                    if let Some(fixed_result) = check.fix(&result, output) {
-                        output.doctor_check(&fixed_result);
-                        all_results.push(fixed_result);
-                        continue;
-                    }
+                if result.is_error()
+                    && let Some(fixed_result) = check.fix(&result, output)
+                {
+                    output.doctor_check(&fixed_result);
+                    all_results.push(fixed_result);
+                    continue;
                 }
 
                 output.doctor_check(&result);

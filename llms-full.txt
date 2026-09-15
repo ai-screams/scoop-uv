@@ -9,7 +9,7 @@
      locally after editing any of the three. -->
 
 - Package: scoop-uv (binary name: `scuv`)
-- Language: Rust, Edition 2024, MSRV 1.88
+- Language: Rust, Edition 2024, MSRV 1.89
 - License: MIT OR Apache-2.0
 - Repository: https://github.com/ai-screams/scoop-uv
 - Documentation: https://ai-scream.ai/scoop-uv/
@@ -20,7 +20,7 @@
 
 Prerequisites:
 - [uv](https://github.com/astral-sh/uv): `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- Rust 1.88+: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+- Rust 1.89+: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 
 ```bash
 cargo install scoop-uv
@@ -806,8 +806,9 @@ cargo fmt --check                                             # Format check
 
 ## MSRV Policy
 
-N-1 policy: supports current stable Rust + one previous version.
-Current MSRV: 1.88 (required by Edition 2024, cannot go lower).
+Dependency-driven policy: the MSRV rises only when a dependency requires it, never on a
+schedule, so it trails current stable by a wide margin (stable was 1.98.1 in 2026-09).
+Current MSRV: 1.89 (required by serde-saphyr 1.2, via rust-i18n; Edition 2024's own floor is 1.85).
 
 ---
 

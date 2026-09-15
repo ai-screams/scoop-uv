@@ -40,22 +40,22 @@ impl Check for UvCheck {
                 // Enforce the minimum supported uv version when parseable.
                 // Unparseable output (custom build, unknown format) is treated
                 // as a soft pass so we don't block users on a banner change.
-                if let Some(version) = uv_version::parse(raw) {
-                    if !uv_version::meets_minimum(version) {
-                        return vec![
-                            CheckResult::error(
-                                self.id(),
-                                self.name(),
-                                format!(
-                                    "uv {} is older than the supported minimum ({})",
-                                    uv_version::format_version(version),
-                                    uv_version::format_version(uv_version::MIN_VERSION),
-                                ),
-                            )
-                            .with_details(raw.to_string())
-                            .with_suggestion(format!("Upgrade uv: {}", Self::install_hint())),
-                        ];
-                    }
+                if let Some(version) = uv_version::parse(raw)
+                    && !uv_version::meets_minimum(version)
+                {
+                    return vec![
+                        CheckResult::error(
+                            self.id(),
+                            self.name(),
+                            format!(
+                                "uv {} is older than the supported minimum ({})",
+                                uv_version::format_version(version),
+                                uv_version::format_version(uv_version::MIN_VERSION),
+                            ),
+                        )
+                        .with_details(raw.to_string())
+                        .with_suggestion(format!("Upgrade uv: {}", Self::install_hint())),
+                    ];
                 }
 
                 vec![CheckResult::ok(self.id(), self.name()).with_details(raw.to_string())]

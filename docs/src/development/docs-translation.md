@@ -35,7 +35,7 @@ sudo apt-get install -y gettext
 ```
 
 The `cargo install` step needs Rust **1.88 or newer** (helpers'
-upstream MSRV). The project's `rust-toolchain.toml` pins 1.88 as well, so the
+upstream MSRV). The project's `rust-toolchain.toml` pins 1.89, so the
 toolchain already in the repo is new enough — no `+stable`
 override needed.
 

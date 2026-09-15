@@ -65,18 +65,18 @@ pub fn execute(output: &Output, extra_groups: &[String], dry_run: bool) -> Resul
             service.install_python(&wanted_python)?;
         }
         service.create(&env_name, &wanted_python)?;
-    } else if let Some(actual) = installed_python_version(&service, &env_name)? {
-        if !python_matches(&actual, &wanted_python) {
-            // Warn-and-proceed: recreating an existing env on a version
-            // mismatch is destructive, so leave that to an explicit
-            // `scuv remove` + `scuv sync`.
-            output.warn(&t!(
-                "sync.python_mismatch_warn",
-                name = env_name,
-                actual = actual,
-                wanted = wanted_python
-            ));
-        }
+    } else if let Some(actual) = installed_python_version(&service, &env_name)?
+        && !python_matches(&actual, &wanted_python)
+    {
+        // Warn-and-proceed: recreating an existing env on a version
+        // mismatch is destructive, so leave that to an explicit
+        // `scuv remove` + `scuv sync`.
+        output.warn(&t!(
+            "sync.python_mismatch_warn",
+            name = env_name,
+            actual = actual,
+            wanted = wanted_python
+        ));
     }
 
     if packages.is_empty() {
