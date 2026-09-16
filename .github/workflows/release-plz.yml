@@ -56,7 +56,53 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Run release-plz
+        id: release-plz
         uses: MarcoIeni/release-plz-action@v0.5
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      # release-plz bumps `version` in Cargo.toml but leaves the `scuv <version>`
+      # samples in README.md, CLAUDE.md, installation.md and api.md untouched.
+      # check-doc-references.py reads Cargo.toml as the source of truth, so every
+      # release PR failed the Lint job until someone hand-synced those four files
+      # (v0.15.3 in 99d093c, v0.15.4 again in #176). release-plz has no hook that
+      # runs while it builds the release PR, so the sync happens here instead —
+      # the direction 99d093c called for: teach the release to update the samples
+      # rather than loosen the check.
+      #
+      # Pushing with RELEASE_PLZ_TOKEN (a PAT) is deliberate: the default
+      # GITHUB_TOKEN does not re-trigger workflows, so the PR would keep the
+      # failed Lint run. This cannot loop — release-plz.yml only fires on pushes
+      # to main, and this pushes to the release branch.
+      - name: Sync version samples into the release PR
+        if: steps.release-plz.outputs.pr != ''
+        env:
+          PR_JSON: ${{ steps.release-plz.outputs.pr }}
+        run: |
+          set -euo pipefail
+          BRANCH=$(printf '%s' "$PR_JSON" | jq -r '.head_branch // empty')
+          if [ -z "$BRANCH" ]; then
+            echo "release-plz reported no release PR branch; nothing to sync"
+            exit 0
+          fi
+          # Explicit refspec + checkout -B: the release branch has no local ref
+          # in this checkout, and a bare `git checkout <branch>` would depend on
+          # DWIM resolving it from a remote-tracking ref that may not exist yet.
+          git fetch origin "+refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}"
+          git checkout -B "$BRANCH" "refs/remotes/origin/${BRANCH}"
+          python3 scripts/check-doc-references.py --fix || true
+          if git diff --quiet; then
+            echo "version samples already match Cargo.toml"
+            exit 0
+          fi
+          VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "docs: sync version samples to ${VERSION}"
+          git push origin "$BRANCH"
+
+          # Re-run the full guard on the synced tree. `--fix` only touches the
+          # version samples; if any other reference went stale, that is a real
+          # omission and this job should say so rather than push and go green.
+          python3 scripts/check-doc-references.py
