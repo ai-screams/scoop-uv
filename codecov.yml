@@ -1,0 +1,44 @@
+# Codecov configuration
+# https://docs.codecov.com/docs/codecov-yaml
+#
+# Until this file existed the repository ran on Codecov's defaults: coverage
+# was uploaded and reported, but no target was ever stated, so "did this PR
+# make coverage worse" had no answer anyone had agreed on.
+
+coverage:
+  status:
+    # Project: the whole codebase. `auto` compares against the PR's base
+    # instead of naming a number, so a refactor that moves covered code around
+    # does not have to defend an absolute figure it never promised.
+    #
+    # The threshold comes from measurement, not taste: across the last 40
+    # commits on main, coverage sat at 76.57% and then 78.50% — a step, not
+    # drift — and movement inside each regime was 0.1 percentage points
+    # (78.4 <-> 78.5). 0.5% is five times the observed noise, so a real drop
+    # is caught while instrumentation jitter is not.
+    project:
+      default:
+        target: auto
+        threshold: 0.5%
+
+    # Patch: only the lines this PR changed. `auto` holds new code to the same
+    # standard as the existing codebase rather than a number picked out of the
+    # air.
+    #
+    # The 5% slack exists because patch coverage misreads a particular kind of
+    # honest change. #175 rewrote 40 nested `if` statements into let-chains
+    # without touching behaviour; the relocated lines counted as new, several
+    # of them in files that are deliberately thin on unit tests, and patch
+    # failed while project coverage went UP (78.37% -> 78.50%). A gate that
+    # fires on that teaches people to ignore it.
+    patch:
+      default:
+        target: auto
+        threshold: 5%
+
+# Post one comment per PR and keep it updated, rather than adding a new one on
+# every push.
+comment:
+  layout: "condensed_header, diff, flags, components"
+  behavior: default
+  require_changes: true
