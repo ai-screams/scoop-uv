@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: scuv Documentation\n"
-"POT-Creation-Date: 2026-09-16T15:29:27+09:00\n"
+"POT-Creation-Date: 2026-09-16T18:11:23+09:00\n"
 "PO-Revision-Date: 2026-06-04T17:32:29+09:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -11417,8 +11417,8 @@ msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
 #: src/api.md:734
-msgid "**Last Updated:** 2026-09-16 **scuv Version:** 0.15.4"
-msgstr "**최종 업데이트:** 2026-09-16 **scuv 버전:** 0.15.4"
+msgid "**scuv Version:** 0.15.4"
+msgstr "**scuv 버전:** 0.15.4"
 
 #: src/development/testing.md:3
 msgid "Comprehensive guide for testing scuv."
