@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789549116428,
+  "lastUpdate": 1789549118145,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5713,6 +5713,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 418,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eb93345308cbc5d616964c29b233de3d379dfe0b",
+          "message": "Merge pull request #180 from ai-screams/fix/docs-guard-on-pr\n\nci(docs): run the docs guards on PRs and drop the unmaintained serde_yaml",
+          "timestamp": "2026-09-16T17:54:39+09:00",
+          "tree_id": "5bf3a809c331208beea5f90f790dd99ec210bc28",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/eb93345308cbc5d616964c29b233de3d379dfe0b"
+        },
+        "date": 1789549118029,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1902,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1326,
+            "range": "± 5",
             "unit": "ns/iter"
           }
         ]
