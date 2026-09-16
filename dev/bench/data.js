@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789572656620,
+  "lastUpdate": 1789572658576,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6193,6 +6193,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1317,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9a9241dae093ae0e351d27a0c7f21151c86b92c3",
+          "message": "Merge pull request #185 from ai-screams/ci/stable-msrv-job-name\n\nci(msrv): drop the version from the MSRV job name",
+          "timestamp": "2026-09-17T00:27:23+09:00",
+          "tree_id": "a310dbc41370bfb8f3cfda96689f820ea9ea4f87",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/9a9241dae093ae0e351d27a0c7f21151c86b92c3"
+        },
+        "date": 1789572658505,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1343,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 893,
+            "range": "± 39",
             "unit": "ns/iter"
           }
         ]
