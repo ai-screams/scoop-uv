@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789534554646,
+  "lastUpdate": 1789534556412,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5149,6 +5149,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1091,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "51c5c1556099f64bcf896e6ad04782f166d60ddd",
+          "message": "Merge pull request #177 from ai-screams/fix/release-pr-version-samples\n\nfix(release): [#176] sync version samples into the release PR automatically",
+          "timestamp": "2026-09-16T13:51:59+09:00",
+          "tree_id": "53dd23db65d69db4c0e30e5d7601094d65edb5a8",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/51c5c1556099f64bcf896e6ad04782f166d60ddd"
+        },
+        "date": 1789534556307,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1679,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1112,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
