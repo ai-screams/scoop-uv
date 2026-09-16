@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789535594535,
+  "lastUpdate": 1789535596119,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5389,6 +5389,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1348,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "883f1b302492cf409afb3eb82ef14bd3bf88a039",
+          "message": "Merge pull request #174 from ai-screams/dependabot/github_actions/github-actions-03db81fe05\n\nci(deps): bump astral-sh/setup-uv from 10.0.1 to 10.1.0 in the github-actions group",
+          "timestamp": "2026-09-16T14:09:17+09:00",
+          "tree_id": "c20e4c35308bbea4a26e74d73d7445314c5a278a",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/883f1b302492cf409afb3eb82ef14bd3bf88a039"
+        },
+        "date": 1789535596003,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1924,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1331,
+            "range": "± 50",
             "unit": "ns/iter"
           }
         ]
