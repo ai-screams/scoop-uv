@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789566425508,
+  "lastUpdate": 1789566427585,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5833,6 +5833,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1326,
             "range": "± 5",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fe6af580c4ff9323f8bb0b74ca9e0f339cacef99",
+          "message": "Merge pull request #181 from ai-screams/fix/api-md-date-stamp\n\ndocs(api): drop the ambiguous Last Updated stamp from the API reference",
+          "timestamp": "2026-09-16T22:43:01+09:00",
+          "tree_id": "583f67b9a4a6e1993621f3da02ced8c1350aeb03",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/fe6af580c4ff9323f8bb0b74ca9e0f339cacef99"
+        },
+        "date": 1789566427463,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1925,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1336,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
