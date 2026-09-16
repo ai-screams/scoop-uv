@@ -518,8 +518,8 @@ msgid "Verify Installation"
 msgstr "설치 확인"
 
 #: src/installation.md:57
-msgid "# scuv 0.15.4\n"
-msgstr "# scuv 0.15.4\n"
+msgid "# scuv 0.15.5\n"
+msgstr "# scuv 0.15.5\n"
 
 #: src/installation.md:61 src/python-management.md:175
 #: src/development/testing.md:384 src/development/code-quality.md:425
@@ -11417,8 +11417,8 @@ msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
 #: src/api.md:734
-msgid "**scuv Version:** 0.15.4"
-msgstr "**scuv 버전:** 0.15.4"
+msgid "**scuv Version:** 0.15.5"
+msgstr "**scuv 버전:** 0.15.5"
 
 #: src/development/testing.md:3
 msgid "Comprehensive guide for testing scuv."
