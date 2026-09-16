@@ -67,8 +67,10 @@ jobs:
       # resurface as a confusing parse error one step later.
       #
       # The benches are split by what they measure. `parsing` and
-      # `validation` are pure CPU and hold a ~1.4x spread across runs, so
-      # a 1.5x threshold is a meaningful gate for them. `path_lookup`
+      # `validation` are pure CPU; they are steady within a run of similar
+      # runners but swing up to 2.37x across the recorded history, which is
+      # why their gate sits at 250% (see the threshold comment below).
+      # `path_lookup`
       # stats the filesystem; its own module doc asks for "a generous
       # regression threshold for this group", and 38 runs of history bear
       # that out — 574-1931 ns for the same code, a 3.4x spread driven by
@@ -107,10 +109,32 @@ jobs:
           # On PRs: compare only — do NOT push.
           auto-push: ${{ github.ref == 'refs/heads/main' }}
           # With `fail-on-alert: true` the workflow fails the moment a
-          # bench crosses `alert-threshold`. 150% absorbs the ~1.4x spread
-          # these CPU benches actually show on GitHub-hosted runners while
-          # still catching a real 1.5x regression.
-          alert-threshold: "150%"
+          # bench crosses `alert-threshold`.
+          #
+          # This was 150%, on the stated premise that the CPU benches show a
+          # "~1.4x spread". Measured over the 60 runs recorded on gh-pages,
+          # that premise is wrong: the spread runs from 1.71x
+          # (is_valid_env_name/reserved_reject) to 2.37x
+          # (is_valid_env_name/version_like_reject), with clap_parse_create at
+          # 1.90x (44,637 to 84,779 ns). The gate's own noise floor sat above
+          # its threshold, so it could not tell a regression from a runner.
+          #
+          # The failure mode is specific. This action compares against the
+          # single previous data point, and the low ends above are not
+          # scattered — commit 9a9241da measured ~1.7x fast across every
+          # bench at once, one lucky runner. Every PR afterwards compared
+          # against that and failed, re-runs included, until the next commit
+          # landed on main and replaced the baseline. Twice this month.
+          #
+          # 250% clears the measured ceiling, so runner luck stops failing
+          # PRs that changed no code. It is a coarse gate and deliberately so:
+          # the regressions worth catching here are algorithmic (a parser
+          # going quadratic), which land far beyond 2.5x. A gate that fires on
+          # noise is one reviewers learn to click past — the same reasoning
+          # that already moved the filesystem group to tracked-only, recorded
+          # under "Gate what is stable, track what is noisy" in
+          # docs/src/development/ci-cd.md.
+          alert-threshold: "250%"
           fail-on-alert: true
           comment-on-alert: true
           # Always leave a PR comment summarising the comparison, even

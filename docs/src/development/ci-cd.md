@@ -66,7 +66,7 @@ how reproducible they are on shared runners:
 
 | Group | Benches | Observed spread | Behaviour |
 |-------|---------|-----------------|-----------|
-| CPU | `parsing`, `validation` | ~1.4x | Fails the build past 150% |
+| CPU | `parsing`, `validation` | 1.71x-2.37x | Fails the build past 250% |
 | Filesystem | `path_lookup` | ~3.4x | Recorded, never fails |
 
 `find_executable_in` calls `stat`. Across 38 runs of unchanged code on
@@ -77,6 +77,18 @@ and `fail-on-alert: false` keeps it out of the gate.
 
 This matters because a noisy gate is worse than no gate: it blocks
 unrelated work and trains reviewers to ignore red.
+
+The CPU row was written as "~1.4x, fails past 150%", and the numbers did not
+hold. Measured across the 60 runs on `gh-pages`, the group swings 1.71x to
+2.37x — its noise floor was above its own threshold, so it could not tell a
+regression from a runner. The way it failed is worth remembering, because a
+re-run does not clear it: the action compares against the single previous
+data point, and a run that lands on a fast runner measures low across every
+bench at once. Commit `9a9241da` came in ~1.7x fast, and every PR afterwards
+compared against that and failed until the next commit reached main and
+replaced the baseline. 250% clears the measured ceiling. It is a coarse gate
+on purpose — the regressions worth catching here are algorithmic, and those
+land far beyond 2.5x.
 
 ### Mutation testing runs at two scopes
 
