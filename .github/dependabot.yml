@@ -14,6 +14,22 @@ updates:
     open-pull-requests-limit: 10
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      # Dependabot does not read `rust-version`, so it will happily raise a
+      # dependency past our MSRV. When it does, resolution fails before a single
+      # line compiles and every job in the matrix dies on the same error -- that
+      # is what happened in #173, where rust-i18n 4.2.2 pulled serde-saphyr 1.2
+      # (rustc 1.89) while the floor was 1.88, and it cost a full PR to diagnose.
+      #
+      # serial_test 4.x needs rustc 1.93.1 against an MSRV of 1.89. Cargo's
+      # MSRV-aware resolver already holds it back locally (`cargo update` reports
+      # it as "Unchanged ... requires Rust 1.93.1"); this makes dependabot agree
+      # instead of opening a PR that cannot pass.
+      #
+      # Drop this entry when the MSRV reaches 1.93.1. It is a debt marker, not a
+      # permanent exclusion -- 4.x carries real changes we will eventually want.
+      - dependency-name: "serial_test"
+        versions: [">=4.0.0"]
     groups:
       # Group all Rust dependencies into a single PR
       rust-dependencies:

@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: scuv Documentation\n"
-"POT-Creation-Date: 2026-09-10T21:09:10+09:00\n"
+"POT-Creation-Date: 2026-09-16T14:20:14+09:00\n"
 "PO-Revision-Date: 2026-06-04T17:32:29+09:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -427,8 +427,8 @@ msgid "**Rust**"
 msgstr "**Rust**"
 
 #: src/installation.md:8
-msgid "1.88+"
-msgstr "1.88+"
+msgid "1.89+"
+msgstr ""
 
 #: src/installation.md:8
 msgid "`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \\| sh`"
@@ -518,8 +518,8 @@ msgid "Verify Installation"
 msgstr "설치 확인"
 
 #: src/installation.md:57
-msgid "# scuv 0.15.3\n"
-msgstr "# scuv 0.15.3\n"
+msgid "# scuv 0.15.4\n"
+msgstr "# scuv 0.15.4\n"
 
 #: src/installation.md:61 src/python-management.md:175
 #: src/development/testing.md:384 src/development/code-quality.md:425
@@ -8170,8 +8170,8 @@ msgid "Guide for contributing to scuv development."
 msgstr "scuv 개발에 기여하기 위한 가이드입니다."
 
 #: src/development/contributing.md:7
-msgid "**Rust 1.88+** (Edition 2024)"
-msgstr "**Rust 1.88+** (Edition 2024)"
+msgid "**Rust 1.89+** (Edition 2024)"
+msgstr "**Rust 1.89+** (Edition 2024)"
 
 #: src/development/contributing.md:8
 msgid ""
@@ -9539,16 +9539,12 @@ msgstr "# 위와 동일한 `cargo install` 명령어를 실행하세요.\n"
 #: src/development/docs-translation.md:37
 msgid ""
 "The `cargo install` step needs Rust **1.88 or newer** (helpers' upstream "
-"MSRV). The project's `rust-toolchain.toml` pins 1.88 as well, so the "
-"toolchain already in the repo is new enough — no `+stable` override needed."
+"MSRV). The project's `rust-toolchain.toml` pins 1.89, so the toolchain "
+"already in the repo is new enough — no `+stable` override needed."
 msgstr ""
-"`cargo install` 단계에는 Rust **1.88 이상**이 필요합니다(헬퍼 상위 MSRV 기"
-"준). 프로젝트의 `rust-toolchain.toml`도 1.88로 고정하므로, 저장소에 이미 있"
-"는 툴체인으로 충분합니다 — `+stable` 오버라이드는 필요 없습니다.`cargo "
-"install` 단계에는 Rust **1.88 이상**이 필요합니다(헬퍼 상위 MSRV 기준). 프로"
-"젝트의 `rust-toolchain.toml`은 CRATE 자체에 대해 1.85를 고정합니다. 문서 도구"
-"를 위해서는 저장소 외부에서 `cargo +stable install ...`을 실행하거나, CI의 "
-"`ubuntu-latest`에 있는 stable 툴체인을 그대로 사용하세요."
+"`cargo install` 단계에는 Rust **1.88 이상이** 필요합니다(헬퍼의 상위 MSRV 기"
+"준). 프로젝트의 `rust-toolchain.toml`은 1.89를 고정하므로, 저장소에 이미 있"
+"는 툴체인으로 충분합니다 — `+stable` 오버라이드는 필요 없습니다."
 
 #: src/development/docs-translation.md:42
 msgid "Workflow: updating an existing translation"
@@ -11421,8 +11417,8 @@ msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
 #: src/api.md:734
-msgid "**Last Updated:** 2026-09-06 **scuv Version:** 0.15.3"
-msgstr "**최종 업데이트:** 2026-09-06 **scuv 버전:** 0.15.3"
+msgid "**Last Updated:** 2026-09-06 **scuv Version:** 0.15.4"
+msgstr "**최종 업데이트:** 2026-09-06 **scuv 버전:** 0.15.4"
 
 #: src/development/testing.md:3
 msgid "Comprehensive guide for testing scuv."
@@ -11786,14 +11782,11 @@ msgstr "퍼즈 테스트"
 msgid ""
 "`cargo-fuzz` (libFuzzer) fuzzes the untrusted-input parsers. It lives in an "
 "isolated `fuzz/` workspace pinned to nightly, so it never affects the "
-"MSRV-1.88 build; CI runs the targets on a weekly schedule."
+"MSRV-1.89 build; CI runs the targets on a weekly schedule."
 msgstr ""
 "`cargo-fuzz`(libFuzzer)는 신뢰할 수 없는 입력 파서를 퍼징합니다. nightly에 고"
-"정된 격리된 `fuzz/` 워크스페이스에 위치하여 MSRV-1.88 빌드에 영향을 주지 않으"
-"며, CI가 주간 일정으로 타깃을 실행합니다.`cargo-fuzz` (libFuzzer)는 신뢰할 "
-"수 없는 입력 파서를 퍼징합니다. nightly에 고정된 격리된 `fuzz/` 워크스페이스"
-"에 위치하여 MSRV-1.85 빌드에 영향을 주지 않으며, CI에서 매주 스케줄에 따라 실"
-"행됩니다."
+"정된 격리된 `fuzz/` 워크스페이스에 있어 MSRV-1.89 빌드에 영향을 주지 않으며, "
+"CI가 주간 일정으로 타깃을 실행합니다."
 
 #: src/development/testing.md:228
 msgid "Writing Tests"
@@ -12035,20 +12028,16 @@ msgstr "Codespaces / Devcontainer"
 
 #: src/development/testing.md:433
 msgid ""
-"`.devcontainer/devcontainer.json` boots a Rust 1.88 dev environment on "
+"`.devcontainer/devcontainer.json` boots a Rust 1.89 dev environment on "
 "`mcr.microsoft.com/devcontainers/rust:1-bookworm` that matches the local "
 "toolchain pinned by `rust-toolchain.toml`. Open the repo in VS Code "
 "(\"Reopen in Container\") or create a Codespace — both follow the same "
 "lifecycle:"
 msgstr ""
-"`.devcontainer/devcontainer.json`은 `rust-toolchain.toml`에 고정된 로컬 툴체"
-"인과 일치하는 Rust 1.88 개발 환경을 `mcr.microsoft.com/devcontainers/rust:1-"
+"`.devcontainer/devcontainer.json`은 `rust-toolchain.toml`이 고정한 로컬 툴체"
+"인과 일치하는 Rust 1.89 개발 환경을 `mcr.microsoft.com/devcontainers/rust:1-"
 "bookworm` 위에 띄웁니다. VS Code에서 저장소를 열거나(\"Reopen in "
-"Container\") Codespace를 만들면 되며, 둘 다 같은 생명주기를 따릅니"
-"다:`.devcontainer/devcontainer.json`은 `rust-toolchain.toml`에 고정된 로컬 툴"
-"체인과 일치하는 `mcr.microsoft.com/devcontainers/rust:1-bookworm` 기반 Rust "
-"1.85 개발 환경을 시작합니다. VS Code에서 리포지토리를 열면(\"Reopen in "
-"Container\") 또는 Codespace를 생성하면 동일한 라이프사이클을 따릅니다:"
+"Container\") Codespace를 만들면 되며, 둘 다 같은 생명주기를 따릅니다:"
 
 #: src/development/testing.md:439 src/development/code-quality.md:202
 msgid "Hook"
@@ -13003,8 +12992,8 @@ msgid "MSRV (Minimum Supported Rust Version)"
 msgstr "MSRV (최소 지원 Rust 버전)"
 
 #: src/development/code-quality.md:364
-msgid "Current MSRV: **1.88**"
-msgstr "현재 MSRV: **1.88**"
+msgid "Current MSRV: **1.89**"
+msgstr "현재 MSRV: **1.89**"
 
 #: src/development/code-quality.md:365
 msgid "Defined in `Cargo.toml`:"
@@ -13014,15 +13003,12 @@ msgstr "`Cargo.toml`에 정의합니다:"
 msgid ""
 "```toml\n"
 "[package]\n"
-"rust-version = \"1.88\"\n"
+"rust-version = \"1.89\"\n"
 "```"
 msgstr ""
 "```toml\n"
 "[package]\n"
-"rust-version = \"1.88\"\n"
-"``````toml\n"
-"[package]\n"
-"rust-version = \"1.85\"\n"
+"rust-version = \"1.89\"\n"
 "```"
 
 #: src/development/code-quality.md:371
@@ -13379,10 +13365,10 @@ msgstr "MSRV는 의도적으로 두 번 검증한다"
 
 #: src/development/ci-cd.md:47
 msgid ""
-"`ci.yml` has an `msrv` job that builds and tests on 1.88. `msrv-check.yml` "
+"`ci.yml` has an `msrv` job that builds and tests on 1.89. `msrv-check.yml` "
 "separately runs `cargo msrv verify`. These answer different questions:"
 msgstr ""
-"`ci.yml`에는 1.88에서 빌드하고 테스트하는 `msrv` 잡이 있습니다. `msrv-"
+"`ci.yml`에는 1.89에서 빌드하고 테스트하는 `msrv` 잡이 있습니다. `msrv-"
 "check.yml`은 별도로 `cargo msrv verify`를 실행합니다. 둘은 서로 다른 질문에 "
 "답합니다:"
 
@@ -14624,6 +14610,9 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "1.88+"
+#~ msgstr "1.88+"
 
 #~ msgid "1.85+"
 #~ msgstr "1.85+"
