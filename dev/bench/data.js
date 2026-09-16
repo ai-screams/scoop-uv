@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789576821736,
+  "lastUpdate": 1789576823525,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6433,6 +6433,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1034,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "37ab23726ae47026e9ab66c778dc85d64d0c108f",
+          "message": "Merge pull request #187 from ai-screams/ci/bench-threshold-from-data\n\nci(bench): set the CPU benchmark threshold from measured variance",
+          "timestamp": "2026-09-17T01:36:21+09:00",
+          "tree_id": "13f36edb919da7444a771fc9b553cef6268db6cd",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/37ab23726ae47026e9ab66c778dc85d64d0c108f"
+        },
+        "date": 1789576823407,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1690,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1115,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
