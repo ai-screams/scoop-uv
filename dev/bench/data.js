@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789542632091,
+  "lastUpdate": 1789542633848,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5509,6 +5509,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1331,
             "range": "± 50",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "50b29942fc9695d2436e21354be394df099a7f9e",
+          "message": "Merge pull request #178 from ai-screams/fix/ko-po-and-dependabot-ignore\n\nfix(docs): regenerate ko.po for the 1.89 docs and gate serial_test 4.x",
+          "timestamp": "2026-09-16T16:06:34+09:00",
+          "tree_id": "2a8fde0e08d063db1b6bf4ef6b3e7e839042debf",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/50b29942fc9695d2436e21354be394df099a7f9e"
+        },
+        "date": 1789542633761,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 577,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 418,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
