@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789543843945,
+  "lastUpdate": 1789549116428,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5087,6 +5087,90 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 204,
             "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eb93345308cbc5d616964c29b233de3d379dfe0b",
+          "message": "Merge pull request #180 from ai-screams/fix/docs-guard-on-pr\n\nci(docs): run the docs guards on PRs and drop the unmaintained serde_yaml",
+          "timestamp": "2026-09-16T17:54:39+09:00",
+          "tree_id": "5bf3a809c331208beea5f90f790dd99ec210bc28",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/eb93345308cbc5d616964c29b233de3d379dfe0b"
+        },
+        "date": 1789549115737,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 74413,
+            "range": "± 718",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 88059,
+            "range": "± 553",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3243,
+            "range": "± 48",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 854,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 95,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 98,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 92,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 81,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 22,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 204,
+            "range": "± 1",
             "unit": "ns/iter"
           }
         ]
