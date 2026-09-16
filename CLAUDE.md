@@ -70,6 +70,13 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 - PR CI runs `cargo-mutants --in-diff`: new `Check`-trait impls and thin wrappers need direct dispatch tests or the Mutants gate fails.
 - `.cargo/mutants.toml` `exclude_re` matches the full mutant description, not the function name — a bare `"foo"` silently drops every mutant in `foo`, including ones the tests kill. Exclude the exact description (`"delete match arm \\[major\\] in foo"`); verify the delta with `cargo mutants --config <alt>.toml --list --file '<glob>'` + `comm`.
 - A green `Mutants (diff)` proves little on a test-only PR — no production lines changed — and `Mutants (full)` is skipped on PRs. Verify mutation claims locally with `cargo mutants --file '<glob>'`.
+- `--in-diff` scopes mutants to the *enclosing function*, not the changed lines — touching one line in an untested function surfaces its pre-existing gaps as new failures. Check whether the missed mutant is one your change could have caused before treating it as a regression.
+
+## Dependabot & Release Automation
+
+- Dependabot does not read `rust-version`: it will raise a dep past the MSRV, and resolution then fails before anything compiles (every job dies on one error — #173). Block those in `.github/dependabot.yml` `ignore`; entries there are debt markers to drop when the MSRV catches up.
+- Dependabot-triggered runs get the **Dependabot** secret store, not Actions'. A secret needed by both (e.g. `CODECOV_TOKEN`) must be registered twice: `gh secret set NAME --app dependabot`.
+- release-plz bumps `Cargo.toml` only; a step in `release-plz.yml` then commits `check-doc-references.py --fix` onto the release branch, so the release PR carries an extra `docs: sync version samples` commit. That is expected, not drift.
 
 ## MSRV Policy
 
@@ -363,9 +370,10 @@ t!("error.virtualenv_not_found", name = name)
 - 226 keys total (error.* 41, suggestion.* 16); parity across all 4 locales enforced by tests/i18n_completeness.rs
 - Adding a locale touches 5 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the `scuv lang` completion lists in `src/shell/fish.rs` + `src/shell/zsh.rs`. Missing `LOCALES` is the only one that fails silently — CI passes with that locale unverified. Contributor guide: `docs/src/development/translation.md`.
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
-- `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical.
+- `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical. Install the versions `docs.yml` pins (mdbook 0.5.3, mdbook-i18n-helpers 0.4.0) — latest produces a different `.pot`. `messages.pot` is untracked; only `ko.po` is committed.
   - Reproducing that guard locally also needs: restore `POT-Creation-Date`/`PO-Revision-Date` from the pre-merge copy (msgmerge rewrites both to "now" → phantom diff), and `msgcat --width=79` any hand-written msgstr (unwrapped lines are gettext-version-sensitive; CI's gettext may differ from Homebrew's). Done when two consecutive runs leave the file byte-identical with 0 fuzzy.
 - `.github/workflows/docs.yml` (mdbook build + ko.po staleness guard) runs only on `v*` tags, so docs/po breakage isn't caught on PRs — only `msgfmt --check` in the CI Lint job is.
+- `docs.yml`'s `deploy` job has no branch guard — a `workflow_dispatch` from any branch publishes that branch to production Pages. Verify on `main` only.
 
 ## Docker Development
 

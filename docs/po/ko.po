@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: scuv Documentation\n"
-"POT-Creation-Date: 2026-09-16T14:20:14+09:00\n"
+"POT-Creation-Date: 2026-09-16T15:29:27+09:00\n"
 "PO-Revision-Date: 2026-06-04T17:32:29+09:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -11417,8 +11417,8 @@ msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
 #: src/api.md:734
-msgid "**Last Updated:** 2026-09-06 **scuv Version:** 0.15.4"
-msgstr "**최종 업데이트:** 2026-09-06 **scuv 버전:** 0.15.4"
+msgid "**Last Updated:** 2026-09-16 **scuv Version:** 0.15.4"
+msgstr "**최종 업데이트:** 2026-09-16 **scuv 버전:** 0.15.4"
 
 #: src/development/testing.md:3
 msgid "Comprehensive guide for testing scuv."
@@ -13202,7 +13202,7 @@ msgstr "`integration-test.yml`"
 msgid "Migration breaking for pyenv / conda / virtualenvwrapper users"
 msgstr "pyenv / conda / virtualenvwrapper 사용자의 마이그레이션 실패"
 
-#: src/development/ci-cd.md:13
+#: src/development/ci-cd.md:13 src/development/ci-cd.md:213
 msgid "`coverage.yml`"
 msgstr "`coverage.yml`"
 
@@ -13808,18 +13808,38 @@ msgid "Publish to crates.io"
 msgstr "crates.io 게시"
 
 #: src/development/ci-cd.md:213
+msgid "`CODECOV_TOKEN`"
+msgstr "`CODECOV_TOKEN`"
+
+#: src/development/ci-cd.md:213
+msgid "Upload coverage reports"
+msgstr "커버리지 리포트 업로드"
+
+#: src/development/ci-cd.md:214
 msgid "`GITHUB_TOKEN`"
 msgstr "`GITHUB_TOKEN`"
 
-#: src/development/ci-cd.md:213
+#: src/development/ci-cd.md:214
 msgid "bench, docker"
 msgstr "bench, docker"
 
-#: src/development/ci-cd.md:213
+#: src/development/ci-cd.md:214
 msgid "Push `gh-pages`, publish to ghcr.io"
 msgstr "`gh-pages` 푸시, ghcr.io 게시"
 
-#: src/development/ci-cd.md:215
+#: src/development/ci-cd.md:216
+msgid ""
+"A workflow triggered by Dependabot reads the **Dependabot** secret store, "
+"not the Actions one. A secret both need has to be registered twice — `gh "
+"secret set CODECOV_TOKEN --app dependabot` — or the job fails on every "
+"Dependabot PR while passing everywhere else."
+msgstr ""
+"Dependabot이 띄운 워크플로는 Actions가 아니라 **Dependabot 시크릿 저장소를** "
+"읽습니다. 양쪽 모두 필요한 시크릿은 두 번 등록해야 합니다 — `gh secret set "
+"CODECOV_TOKEN --app dependabot` — 그렇지 않으면 다른 곳에서는 통과하면서 "
+"Dependabot PR에서만 잡이 실패합니다."
+
+#: src/development/ci-cd.md:221
 msgid ""
 "Default workflow permissions are `read`. Workflows that need more declare it "
 "explicitly — `bench.yml` needs `contents: write` for `gh-pages`, `docker-"
@@ -13829,11 +13849,11 @@ msgstr ""
 "다 — `bench.yml`은 `gh-pages`를 위해 `contents: write`가, `docker-build.yml`"
 "은 레지스트리를 위해 `packages: write`가 필요합니다."
 
-#: src/development/ci-cd.md:219
+#: src/development/ci-cd.md:225
 msgid "Releases"
 msgstr "릴리스"
 
-#: src/development/ci-cd.md:221
+#: src/development/ci-cd.md:227
 msgid ""
 "`release-plz` reads Conventional Commits on `main` and prepares the release; "
 "`release-plz.toml` holds the policy:"
@@ -13841,7 +13861,7 @@ msgstr ""
 "`release-plz`는 `main`의 Conventional Commits를 읽어 릴리스를 준비하며, 정책"
 "은 `release-plz.toml`에 있습니다:"
 
-#: src/development/ci-cd.md:224
+#: src/development/ci-cd.md:230
 msgid ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — documentation and "
 "chore commits do not trigger a release on their own."
@@ -13849,7 +13869,7 @@ msgstr ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — 문서와 잡무 커밋만"
 "으로는 릴리스가 생기지 않습니다."
 
-#: src/development/ci-cd.md:226
+#: src/development/ci-cd.md:232
 msgid ""
 "`features_always_increment_minor = true` — a `feat` bumps the minor version "
 "even in `0.x`, where cargo's default would only bump the patch."
@@ -13857,11 +13877,39 @@ msgstr ""
 "`features_always_increment_minor = true` — `0.x`에서도 `feat`이면 minor 버전"
 "이 올라갑니다. cargo 기본값이라면 patch만 올랐을 자리입니다."
 
-#: src/development/ci-cd.md:228
+#: src/development/ci-cd.md:234
 msgid "Changelog generation goes through `git-cliff` (`cliff.toml`)."
 msgstr "체인지로그 생성은 `git-cliff`(`cliff.toml`)를 거칩니다."
 
-#: src/development/ci-cd.md:230
+#: src/development/ci-cd.md:236
+msgid ""
+"`release-plz` only rewrites `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`. "
+"The `scuv <version>` samples in `README.md`, `CLAUDE.md`, `installation.md` "
+"and `api.md` are not its business, so every release PR used to fail the Lint "
+"job on `check-doc-references.py` until someone hand-synced those four files. "
+"There is no hook that runs while release-plz builds the PR — the hooks it "
+"does have live on the publish path, which is too late — so `release-plz.yml` "
+"carries a step that runs `check-doc-references.py --fix` and commits the "
+"result onto the release branch. A release PR therefore arrives with an extra "
+"`docs: sync version samples to <version>` commit; that is the automation "
+"working, not drift. The step pushes with `RELEASE_PLZ_TOKEN` because the "
+"default `GITHUB_TOKEN` does not re-trigger workflows, and re-runs the full "
+"guard afterwards so a reference `--fix` does not cover still fails the job."
+msgstr ""
+"`release-plz`는 `Cargo.toml`, `Cargo.lock`, `CHANGELOG.md`만 고쳐 씁니다. "
+"`README.md`, `CLAUDE.md`, `installation.md`, `api.md`에 박힌 `scuv "
+"<version>` 예시는 그 도구의 소관이 아니라서, 누군가 네 파일을 손으로 맞추기 "
+"전까지 모든 릴리스 PR이 `check-doc-references.py`에서 Lint 잡을 실패시켰습니"
+"다. release-plz가 PR을 만드는 동안 실행되는 훅은 없고 — 있는 훅은 publish 경"
+"로에 있어 시점이 너무 늦습니다 — 그래서 `release-plz.yml`이 `check-doc-"
+"references.py --fix`를 돌려 결과를 릴리스 브랜치에 커밋하는 스텝을 갖고 있습"
+"니다. 따라서 릴리스 PR에는 `docs: sync version samples to <version>` 커밋이 "
+"하나 더 붙어서 도착하는데, 이는 드리프트가 아니라 자동화가 동작한 것입니다. "
+"이 스텝이 `RELEASE_PLZ_TOKEN`으로 push하는 이유는 기본 `GITHUB_TOKEN`이 워크"
+"플로를 재실행시키지 않기 때문이고, 뒤이어 전체 가드를 다시 돌려서 `--fix`가 "
+"다루지 않는 참조가 어긋나 있으면 잡이 그대로 실패하게 합니다."
+
+#: src/development/ci-cd.md:249
 msgid ""
 "Merging the release PR is what publishes: it creates the tag, the GitHub "
 "release, and the crates.io upload — and the `v*` tag is also what deploys "
@@ -13870,11 +13918,11 @@ msgstr ""
 "게시를 일으키는 것은 릴리스 PR의 머지입니다. 태그, GitHub 릴리스, crates.io "
 "업로드가 그때 만들어지며 — 그 `v*` 태그가 문서 사이트 배포까지 일으킵니다."
 
-#: src/development/ci-cd.md:234
+#: src/development/ci-cd.md:253
 msgid "Known gaps"
 msgstr "알려진 공백"
 
-#: src/development/ci-cd.md:236
+#: src/development/ci-cd.md:255
 msgid ""
 "Accurate as of the last revision of this page. Verify before relying on any "
 "of these being fixed."
@@ -13882,7 +13930,7 @@ msgstr ""
 "이 페이지를 마지막으로 고친 시점 기준입니다. 아래 항목이 해결됐다고 전제하기 "
 "전에 직접 확인하세요."
 
-#: src/development/ci-cd.md:239
+#: src/development/ci-cd.md:258
 msgid ""
 "**No coverage threshold.** Uploads work again, but there is no "
 "`codecov.yml`, so nothing sets a target percentage or a PR status policy. "
@@ -13892,7 +13940,7 @@ msgstr ""
 "서 목표 비율도 PR 상태 정책도 설정되지 않습니다. 커버리지는 보고될 뿐 강제되"
 "지 않습니다."
 
-#: src/development/ci-cd.md:242
+#: src/development/ci-cd.md:261
 msgid ""
 "**Unreviewed mutation escapes outside `migrate/`.** The last full-run "
 "artifact listed 55 mutants no test kills, 46 of them under `src/core/migrate/"
@@ -13912,18 +13960,36 @@ msgstr ""
 "라 확인해야 합니다. 다음으로 완주하는 주간 실행이 그 아티팩트를 대체합니다. "
 "그 분류가 끝날 때까지 이 잡은 exit 2를 허용합니다."
 
-#: src/development/ci-cd.md:251
+#: src/development/ci-cd.md:270
 msgid ""
 "**Docs are only verified on release tags.** `docs.yml` still runs nowhere "
 "else, so an mdBook build failure or a stale `ko.po` surfaces at release "
 "time. The two cheapest checks were moved into the Lint job; the build itself "
-"was not."
+"was not. This is no longer hypothetical: the MSRV 1.89 bump edited pages "
+"under `docs/src/`, its PR went green, and the `v0.15.4` tag then failed at "
+"the `ko.po` round-trip. The crate published and the tag was fine — only the "
+"Pages deploy stopped, which is the quiet half of the failure and the reason "
+"it went unnoticed until someone opened the site."
 msgstr ""
-"**문서는 릴리스 태그에서만 검증됩니다.** `docs.yml`은 여전히 다른 곳에서 돌"
-"지 않으므로, mdBook 빌드 실패나 낡은 `ko.po`는 릴리스 시점에 드러납니다. 가"
-"장 값싼 검사 두 가지는 Lint 잡으로 옮겼지만 빌드 자체는 옮기지 않았습니다."
+"**문서는 릴리스 태그에서만 검증됩니다.** `docs.yml`은 여전히 그 밖의 어디에서"
+"도 돌지 않아서, mdBook 빌드 실패나 stale한 `ko.po`가 릴리스 시점에야 드러납니"
+"다. 가장 값싼 검사 두 개는 Lint 잡으로 옮겼지만 빌드 자체는 옮기지 못했습니"
+"다. 이제는 가정이 아닙니다. MSRV 1.89 bump가 `docs/src/` 아래 페이지를 고쳤"
+"고 그 PR은 초록이었는데, `v0.15.4` 태그가 `ko.po` 라운드트립에서 실패했습니"
+"다. 크레이트는 배포됐고 태그도 정상이었으며 멈춘 것은 Pages 배포뿐이었는데, "
+"그것이 이 실패의 조용한 절반이자 누군가 사이트를 열어보기 전까지 아무도 몰랐"
+"던 이유입니다."
 
-#: src/development/ci-cd.md:255
+#: src/development/ci-cd.md:278
+msgid ""
+"**No coverage threshold on Dependabot PRs either.** The token is now in both "
+"stores, so uploads succeed, but see the first gap: nothing enforces a number."
+msgstr ""
+"**Dependabot PR에도 커버리지 임계값이 없습니다.** 토큰이 이제 양쪽 저장소에 "
+"있어 업로드는 성공하지만, 첫 번째 항목과 같습니다 — 수치를 강제하는 것이 없습"
+"니다."
+
+#: src/development/ci-cd.md:281
 msgid ""
 "**The cache sits near its limit.** 8.34 GB of the 10 GB allowance, of which "
 "`v0-rust-*` is only about 1 GB — the bulk is BuildKit blobs from the Docker "
@@ -13933,11 +13999,11 @@ msgstr ""
 "rust-*`는 약 1GB뿐입니다 — 대부분은 Docker 워크플로가 만드는 BuildKit blob입"
 "니다. 아직 실패하는 것은 없고, 축출은 LRU 방식입니다."
 
-#: src/development/ci-cd.md:259
+#: src/development/ci-cd.md:285
 msgid "Recently closed"
 msgstr "최근에 해결된 것"
 
-#: src/development/ci-cd.md:261
+#: src/development/ci-cd.md:287
 msgid ""
 "Left here because the reasoning is worth keeping, not because anything is "
 "outstanding."
@@ -13945,21 +14011,55 @@ msgstr ""
 "남겨 둔 이유는 그 판단 과정이 기록할 만해서이지, 아직 남은 문제가 있어서가 아"
 "닙니다."
 
-#: src/development/ci-cd.md:264
+#: src/development/ci-cd.md:290
 msgid ""
 "Coverage uploads were rejected for months with `Token required because "
 "branch is protected` while the job reported success, because "
 "`fail_ci_if_error: false` hid it. The org allows tokenless uploads, but that "
 "path only covers fork PRs. Fixed by wiring `CODECOV_TOKEN` and letting a "
-"rejected upload fail the job."
+"rejected upload fail the job. That fix was half of it: Dependabot-triggered "
+"runs read a different secret store, so every Dependabot PR kept failing the "
+"same way until the token was registered there too."
 msgstr ""
 "커버리지 업로드는 몇 달 동안 `Token required because branch is protected`로 "
-"거부당했지만 잡은 성공으로 보고됐습니다. `fail_ci_if_error: false`가 그것을 "
-"가렸기 때문입니다. 조직이 토큰 없는 업로드를 허용하긴 하지만 그 경로는 포크 "
-"PR만 다룹니다. `CODECOV_TOKEN`을 배선하고 거부된 업로드가 잡을 실패시키도록 "
-"바꿔 해결했습니다."
+"거부당했는데 잡은 성공으로 보고했습니다. `fail_ci_if_error: false`가 그것을 "
+"가렸기 때문입니다. 조직이 토큰 없는 업로드를 허용하지만 그 경로는 fork PR만 "
+"감당합니다. `CODECOV_TOKEN`을 연결하고 거부된 업로드가 잡을 실패시키도록 바"
+"꿔 해결했습니다. 그 수정은 절반이었습니다. Dependabot이 띄운 실행은 다른 시크"
+"릿 저장소를 읽기 때문에, 그쪽에도 토큰을 등록하기 전까지 모든 Dependabot PR"
+"이 같은 방식으로 계속 실패했습니다."
 
-#: src/development/ci-cd.md:269
+#: src/development/ci-cd.md:298
+msgid ""
+"Every release PR failed the Lint job because release-plz bumps `Cargo.toml` "
+"without touching the version samples in prose. Hand-fixed at v0.15.3, hit "
+"again at v0.15.4, and now handled by the sync step described under [Releases]"
+"(#releases) — the direction the v0.15.3 fix asked for: teach the release to "
+"update them rather than loosen the check."
+msgstr ""
+"release-plz가 산문 속 버전 예시를 건드리지 않고 `Cargo.toml`만 올리는 탓에 모"
+"든 릴리스 PR이 Lint 잡을 실패시켰습니다. v0.15.3에서 손으로 고쳤고 v0.15.4에"
+"서 다시 걸렸으며, 지금은 [Releases](#releases)에 설명한 동기화 스텝이 처리합"
+"니다. v0.15.3의 수정이 요구한 방향 그대로입니다 — 검사를 느슨하게 하는 대신 "
+"릴리스가 예시를 갱신하도록 가르치는 것입니다."
+
+#: src/development/ci-cd.md:303
+msgid ""
+"Dependabot does not read `rust-version`, so it raised `rust-i18n` past the "
+"MSRV and every job died at dependency resolution before a line compiled. The "
+"group could not land without the MSRV moving to 1.89, which it did. `.github/"
+"dependabot.yml` now carries an `ignore` for the next known case "
+"(`serial_test` 4.x needs rustc 1.93.1), marked as debt to drop when the MSRV "
+"catches up."
+msgstr ""
+"Dependabot은 `rust-version`을 읽지 않기 때문에 `rust-i18n`를 MSRV 위로 올렸"
+"고, 한 줄도 컴파일되기 전에 모든 잡이 의존성 해석 단계에서 죽었습니다. MSRV"
+"가 1.89로 옮겨가지 않으면 그 그룹은 들어올 수 없었고, 실제로 옮겼습니다. "
+"`.github/dependabot.yml`은 이제 다음으로 알려진 사례(`serial_test` 4.x가 "
+"rustc 1.93.1을 요구)에 대한 `ignore`를 갖고 있으며, MSRV가 따라잡으면 지울 부"
+"채로 표시해 두었습니다."
+
+#: src/development/ci-cd.md:309
 msgid ""
 "The weekly full mutation run had never once completed — 60 minutes killed it "
 "every time, and GitHub reports a timed-out job as _cancelled_, which reads "
@@ -13970,7 +14070,7 @@ msgstr ""
 "GitHub은 타임아웃된 잡을 _cancelled_ 로 보고하는데 이는 별일 아닌 것처럼 읽힙"
 "니다. 60분에 385/446개로 측정돼 타임아웃을 90분으로 올렸습니다."
 
-#: src/development/ci-cd.md:273
+#: src/development/ci-cd.md:313
 msgid ""
 "`aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now "
 "pinned to release tags. Dependabot could not follow either: it cannot bump a "
@@ -13981,7 +14081,7 @@ msgstr ""
 "올릴 수 없고, setup-uv는 v8부터 움직이는 메이저 태그 발행을 중단했기 때문입니"
 "다."
 
-#: src/development/ci-cd.md:277
+#: src/development/ci-cd.md:317
 msgid ""
 "`stable-ci` had four writers and, because `rust-cache` hashes workflow-level "
 "`env`, was never actually shared with `coverage.yml` or `mutants.yml` at "
@@ -13991,7 +14091,7 @@ msgstr ""
 "시에 넣기 때문에 `coverage.yml`이나 `mutants.yml`과는 애초에 공유된 적조차 없"
 "었습니다. 이제 각자 실제로 쓰는 키를 이름으로 밝힙니다."
 
-#: src/development/ci-cd.md:280
+#: src/development/ci-cd.md:320
 msgid ""
 "`release-plz.yml` had no concurrency group. It has one now, with `cancel-in-"
 "progress: false` — which delivers the \"must always complete\" intent that "
@@ -14610,6 +14710,17 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid ""
+#~ "**Docs are only verified on release tags.** `docs.yml` still runs nowhere "
+#~ "else, so an mdBook build failure or a stale `ko.po` surfaces at release "
+#~ "time. The two cheapest checks were moved into the Lint job; the build "
+#~ "itself was not."
+#~ msgstr ""
+#~ "**문서는 릴리스 태그에서만 검증됩니다.** `docs.yml`은 여전히 다른 곳에서 "
+#~ "돌지 않으므로, mdBook 빌드 실패나 낡은 `ko.po`는 릴리스 시점에 드러납니"
+#~ "다. 가장 값싼 검사 두 가지는 Lint 잡으로 옮겼지만 빌드 자체는 옮기지 않았"
+#~ "습니다."
 
 #~ msgid "1.88+"
 #~ msgstr "1.88+"

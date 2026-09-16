@@ -210,7 +210,13 @@ the same commit. See [Docs Translation](docs-translation.md).
 |--------|---------|---------|
 | `RELEASE_PLZ_TOKEN` | `release-plz.yml` | Push release PRs and tags |
 | `CARGO_REGISTRY_TOKEN` | `release-plz.yml` | Publish to crates.io |
+| `CODECOV_TOKEN` | `coverage.yml` | Upload coverage reports |
 | `GITHUB_TOKEN` | bench, docker | Push `gh-pages`, publish to ghcr.io |
+
+A workflow triggered by Dependabot reads the **Dependabot** secret store, not
+the Actions one. A secret both need has to be registered twice —
+`gh secret set CODECOV_TOKEN --app dependabot` — or the job fails on every
+Dependabot PR while passing everywhere else.
 
 Default workflow permissions are `read`. Workflows that need more declare
 it explicitly — `bench.yml` needs `contents: write` for `gh-pages`,
@@ -226,6 +232,19 @@ release; `release-plz.toml` holds the policy:
 - `features_always_increment_minor = true` — a `feat` bumps the minor
   version even in `0.x`, where cargo's default would only bump the patch.
 - Changelog generation goes through `git-cliff` (`cliff.toml`).
+
+`release-plz` only rewrites `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`. The
+`scuv <version>` samples in `README.md`, `CLAUDE.md`, `installation.md` and
+`api.md` are not its business, so every release PR used to fail the Lint job on
+`check-doc-references.py` until someone hand-synced those four files. There is
+no hook that runs while release-plz builds the PR — the hooks it does have live
+on the publish path, which is too late — so `release-plz.yml` carries a step
+that runs `check-doc-references.py --fix` and commits the result onto the
+release branch. A release PR therefore arrives with an extra
+`docs: sync version samples to <version>` commit; that is the automation
+working, not drift. The step pushes with `RELEASE_PLZ_TOKEN` because the
+default `GITHUB_TOKEN` does not re-trigger workflows, and re-runs the full
+guard afterwards so a reference `--fix` does not cover still fails the job.
 
 Merging the release PR is what publishes: it creates the tag, the GitHub
 release, and the crates.io upload — and the `v*` tag is also what deploys
@@ -251,7 +270,14 @@ any of these being fixed.
 - **Docs are only verified on release tags.** `docs.yml` still runs
   nowhere else, so an mdBook build failure or a stale `ko.po` surfaces at
   release time. The two cheapest checks were moved into the Lint job; the
-  build itself was not.
+  build itself was not. This is no longer hypothetical: the MSRV 1.89 bump
+  edited pages under `docs/src/`, its PR went green, and the `v0.15.4` tag
+  then failed at the `ko.po` round-trip. The crate published and the tag was
+  fine — only the Pages deploy stopped, which is the quiet half of the
+  failure and the reason it went unnoticed until someone opened the site.
+- **No coverage threshold on Dependabot PRs either.** The token is now in
+  both stores, so uploads succeed, but see the first gap: nothing enforces a
+  number.
 - **The cache sits near its limit.** 8.34 GB of the 10 GB allowance, of
   which `v0-rust-*` is only about 1 GB — the bulk is BuildKit blobs from
   the Docker workflows. Nothing is failing yet; eviction is LRU.
@@ -265,7 +291,21 @@ outstanding.
   `Token required because branch is protected` while the job reported
   success, because `fail_ci_if_error: false` hid it. The org allows
   tokenless uploads, but that path only covers fork PRs. Fixed by wiring
-  `CODECOV_TOKEN` and letting a rejected upload fail the job.
+  `CODECOV_TOKEN` and letting a rejected upload fail the job. That fix was
+  half of it: Dependabot-triggered runs read a different secret store, so
+  every Dependabot PR kept failing the same way until the token was
+  registered there too.
+- Every release PR failed the Lint job because release-plz bumps
+  `Cargo.toml` without touching the version samples in prose. Hand-fixed at
+  v0.15.3, hit again at v0.15.4, and now handled by the sync step described
+  under [Releases](#releases) — the direction the v0.15.3 fix asked for:
+  teach the release to update them rather than loosen the check.
+- Dependabot does not read `rust-version`, so it raised `rust-i18n` past the
+  MSRV and every job died at dependency resolution before a line compiled.
+  The group could not land without the MSRV moving to 1.89, which it did.
+  `.github/dependabot.yml` now carries an `ignore` for the next known case
+  (`serial_test` 4.x needs rustc 1.93.1), marked as debt to drop when the
+  MSRV catches up.
 - The weekly full mutation run had never once completed — 60 minutes
   killed it every time, and GitHub reports a timed-out job as *cancelled*,
   which reads as benign. Measured at 385/446 mutants in 60 minutes, so the
