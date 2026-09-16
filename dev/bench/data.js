@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789571065412,
+  "lastUpdate": 1789571067453,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6073,6 +6073,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1116,
             "range": "± 62",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b3bafed1c5a72531b3dc5a0fcb93e06ce5693031",
+          "message": "Merge pull request #184 from ai-screams/ci/codecov-thresholds\n\nci(coverage): state a coverage target instead of reporting into the void",
+          "timestamp": "2026-09-17T00:00:20+09:00",
+          "tree_id": "ef09f19218223d17a2727df3befa650de77c9da4",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/b3bafed1c5a72531b3dc5a0fcb93e06ce5693031"
+        },
+        "date": 1789571067335,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1906,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1317,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
