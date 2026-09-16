@@ -123,7 +123,12 @@ jobs:
   #
   # Complements msrv-check.yml which verifies MSRV accuracy with cargo-msrv
   msrv:
-    name: MSRV (1.89)
+    # Deliberately unversioned. This job's name is the status-check context, so
+    # putting the version in it means an MSRV bump silently renames the check.
+    # Any branch rule requiring it would then wait forever for a context that
+    # no longer exists, blocking every PR until someone edits the rule. The
+    # version under test is `rust-toolchain.toml`'s and appears in the log.
+    name: MSRV
     runs-on: ubuntu-latest
     timeout-minutes: 25  # MSRV can be slower than stable
     steps:

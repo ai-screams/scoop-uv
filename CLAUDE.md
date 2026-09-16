@@ -103,8 +103,10 @@ spread wider than it looks — `git grep '1\.<old>'` is the real checklist. The 
 bump touched 24 files:
 
 - [ ] Declarations: `Cargo.toml` `rust-version`, `rust-toolchain.toml` `channel`,
-      `.clippy.toml` `msrv`, `.github/workflows/ci.yml` (`dtolnay/rust-toolchain@<ver>`
-      and the job name), `docker/Dockerfile` `ARG RUST_VERSION`
+      `.clippy.toml` `msrv`, `.github/workflows/ci.yml` (`dtolnay/rust-toolchain@<ver>`),
+      `docker/Dockerfile` `ARG RUST_VERSION`. The `msrv` job's *name* is
+      deliberately unversioned — it is the status-check context, and renaming it
+      would strand any branch rule that requires it.
 - [ ] Prose stating the current MSRV: `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`,
       `llms.txt`, `llms-full.txt`, `docs/src/**`, `context7.json`,
       `.devcontainer/devcontainer.json`, `docker/docker-compose.yml`, `fuzz/**`,
