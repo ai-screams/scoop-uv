@@ -1,44 +1,52 @@
-# Documentation Deployment
-# Deploys mdBook to GitHub Pages on release tags.
+# Documentation checks (PR only)
 #
-# Both English (default) and Korean locales are built. English lives
-# at the site root (legacy URL contract preserved); Korean lives at
-# `/ko/` as a sibling subdir. Translation memory is in `docs/po/`
-# managed by mdbook-i18n-helpers (gettext-based, English fallback).
+# docs.yml deploys, and deploys only on `v*` tags and manual dispatch. Its
+# guards therefore never saw a pull request, so a PR that edited `docs/src/**`
+# without regenerating `ko.po` merged green and broke the next release
+# instead. That is not hypothetical: #175 went green and the `v0.15.4` tag
+# then failed at the `ko.po` round-trip. The crate published and the tag was
+# fine — only the Pages deploy stopped, which is the quiet half of the
+# failure and the reason nobody noticed until the site was opened.
+#
+# This workflow runs the same build and the same stale-PO guard on PRs, and
+# nothing else. Split from docs.yml rather than bolted onto it so that a PR
+# run needs neither `pages: write` nor `id-token: write`, and never enters the
+# `pages` concurrency group where it would queue behind — or ahead of — a real
+# release deployment.
 
-name: Documentation
+name: Documentation checks
 
 on:
-  push:
-    tags:
-      - 'v*'  # Trigger on version tags (v0.2.10, v1.0.0, etc.)
-  workflow_dispatch:  # Allow manual trigger
-# PR validation lives in docs-check.yml, which runs the same guards without
-# `pages: write` and without entering the deployment concurrency group.
+  pull_request:
+    branches: [main]
+    # Only what the mdBook build and the PO round-trip actually read. Note
+    # `locales/app.yml` is deliberately absent: that is the application's
+    # translation catalogue, checked by tests/i18n_completeness.rs, and it is
+    # not an input to the docs gettext cycle.
+    paths:
+      - 'docs/src/**'
+      - 'docs/po/**'
+      - 'docs/book.toml'
+      - 'docs/theme/**'
+      - '.github/workflows/docs-check.yml'
 
-# Sets permissions for GITHUB_TOKEN
+# No `pages: write`, no `id-token: write` — this workflow never deploys.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Allow only one deployment at a time
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: docs-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 env:
   MDBOOK_VERSION: "0.5.3"
   MDBOOK_I18N_HELPERS_VERSION: "0.4.0"
 
 jobs:
-  # ====================
-  # Build Documentation
-  # ====================
-  build:
-    name: Build
+  check:
+    name: Build and verify translations
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # mdBook + i18n-helpers compile + dual-locale build
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -126,38 +134,3 @@ jobs:
         env:
           MDBOOK_BOOK__LANGUAGE: ko
         run: mdbook build -d book/ko
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v6
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: docs/book
-
-  # ====================
-  # Deploy to GitHub Pages
-  # ====================
-  deploy:
-    name: Deploy
-    needs: build
-    # Allow-list the two paths that may publish, rather than excluding the one
-    # that may not. `github.ref` alone cannot express this: a release deploy is
-    # a tag push where the ref is `refs/tags/v0.15.4`, while a manual re-deploy
-    # is workflow_dispatch on a branch — so `ref == 'refs/heads/main'` would
-    # block both. Excluding only pull_request works today but fails open: add a
-    # branch-push trigger later and it publishes that branch unasked.
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' &&
-       github.ref_type == 'tag' &&
-       startsWith(github.ref, 'refs/tags/v'))
-    runs-on: ubuntu-latest
-    timeout-minutes: 5  # GitHub Pages deployment
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
