@@ -77,6 +77,7 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 - Dependabot does not read `rust-version`: it will raise a dep past the MSRV, and resolution then fails before anything compiles (every job dies on one error — #173). Block those in `.github/dependabot.yml` `ignore`; entries there are debt markers to drop when the MSRV catches up.
 - Dependabot-triggered runs get the **Dependabot** secret store, not Actions'. A secret needed by both (e.g. `CODECOV_TOKEN`) must be registered twice: `gh secret set NAME --app dependabot`.
 - release-plz bumps `Cargo.toml` only; a step in `release-plz.yml` then commits `check-doc-references.py --fix` onto the release branch, so the release PR carries an extra `docs: sync version samples` commit. That is expected, not drift.
+- `--fix` rewrites `docs/po/ko.po` alongside the four doc files, because two of them live in the mdBook and changing them moves the gettext msgids. Without it the release automation fixes the Lint gate and breaks the docs gate on the same commit. Entry-scoped and version-string-only: api.md's msgstr reads `**scuv 버전:**`, so matching on the English `scuv <version>` pattern alone would leave the Korean page on the previous release.
 
 ## MSRV Policy
 
