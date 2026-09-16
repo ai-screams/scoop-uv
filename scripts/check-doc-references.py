@@ -13,6 +13,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 failures = []
 
+# `--fix` rewrites the version samples (check 2) and nothing else.
+#
+# That check is the only one whose source of truth moves without a human
+# touching the docs: release-plz bumps `version` in Cargo.toml when it opens a
+# release PR, which strands the `scuv <version>` samples in prose and fails the
+# Lint job on every release. The other checks answer to code a person just
+# edited -- MSRV, RESERVED_NAMES, translation keys, MIN_VERSION -- so a stale
+# doc there is a real omission in that PR and must stay a human decision.
+FIX = "--fix" in sys.argv[1:]
+fixed = []
+
 
 def read(rel):
     return (ROOT / rel).read_text(encoding="utf-8")
@@ -39,6 +50,16 @@ version = re.search(r'^version = "(.+?)"', read("Cargo.toml"), re.M).group(1)
 # the file was checked, matched nothing, and passed while stale.
 SAMPLE = re.compile(r"scuv (?:Version:\**\s*)?(\d+\.\d+\.\d+)")
 for rel in ("README.md", "CLAUDE.md", "docs/src/installation.md", "docs/src/api.md"):
+    if FIX:
+        body = read(rel)
+        # Rewrite only the captured version, keeping whatever prefix matched
+        # (`scuv ` or api.md's `scuv Version:** `) exactly as it was.
+        patched = SAMPLE.sub(
+            lambda m: m.group(0)[: m.start(1) - m.start(0)] + version, body
+        )
+        if patched != body:
+            (ROOT / rel).write_text(patched, encoding="utf-8")
+            fixed.append(rel)
     found = [m.group(1) for m in SAMPLE.finditer(read(rel))]
     stale = sorted({v for v in found if v != version})
     check(
@@ -102,7 +123,13 @@ for rel in ("README.md", "CLAUDE.md", "docs/src/installation.md"):
         f"stale: {', '.join(sorted(set(stale)))} -- MIN_VERSION is {floor}",
     )
 
+if fixed:
+    print(f"\nRewrote version samples to {version} in: {', '.join(fixed)}")
+
 if failures:
     print("\n".join(["", "Stale references found:"] + [f" - {f}" for f in failures]))
+    if not FIX:
+        print("\nVersion samples alone can be fixed with: "
+              "python3 scripts/check-doc-references.py --fix")
     sys.exit(1)
 print("\nAll reference docs are in sync with the code.")
