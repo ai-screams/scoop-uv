@@ -16,26 +16,38 @@ fn manifest_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
 
+/// One top-level entry in `app.yml`: either a key's locale mapping, or the
+/// `_version: 2` scalar that sits beside them. serde-saphyr has no untyped
+/// `Value`, so the shape has to be named -- and naming it is what lets a
+/// malformed entry fail loudly below instead of being skipped.
+#[derive(serde::Deserialize)]
+#[serde(untagged)]
+enum AppEntry {
+    Translations(BTreeMap<String, String>),
+    /// `_version: 2`. The value is never read -- the variant exists so the
+    /// scalar deserializes instead of failing the whole document.
+    Version(#[allow(dead_code)] u64),
+}
+
 /// Parse `app.yml` into `key -> set of locales that define it`.
 fn translation_keys() -> BTreeMap<String, BTreeSet<String>> {
     let path = manifest_dir().join("locales/app.yml");
     let raw = std::fs::read_to_string(&path).expect("read locales/app.yml");
-    let doc: BTreeMap<String, serde_norway::Value> =
-        serde_norway::from_str(&raw).expect("parse locales/app.yml");
+    let doc: BTreeMap<String, AppEntry> =
+        serde_saphyr::from_str(&raw).expect("parse locales/app.yml");
 
     let mut keys = BTreeMap::new();
-    for (key, value) in doc {
+    for (key, entry) in doc {
         if key.starts_with('_') {
             continue; // _version and other metadata
         }
-        let Some(mapping) = value.as_mapping() else {
-            continue;
+        // Not `else { continue }`: an entry that is not a locale mapping is a
+        // malformed schema, and silently skipping it would let the parity
+        // check pass over the very file it is meant to police.
+        let AppEntry::Translations(translations) = entry else {
+            panic!("translation key {key} is not a locale mapping");
         };
-        let locales: BTreeSet<String> = mapping
-            .keys()
-            .filter_map(|k| k.as_str().map(str::to_string))
-            .collect();
-        keys.insert(key, locales);
+        keys.insert(key, translations.into_keys().collect::<BTreeSet<String>>());
     }
     keys
 }

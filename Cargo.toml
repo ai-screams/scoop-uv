@@ -87,10 +87,10 @@ serial_test = "3.2"
 proptest = "1.11"
 insta = { version = "1.47", features = ["yaml"] }
 rstest = "0.27"
-# serde_yaml is unmaintained (its own version string says `+deprecated`).
-# serde_norway is the maintained fork and a drop-in for the `Value`/`as_mapping`
-# API this test uses; both sit on the same libyaml lineage.
-serde_norway = "0.9"
+# YAML for the locale-parity test. serde-saphyr is already in the lock file --
+# rust-i18n parses this same app.yml with it at build time -- so this adds no
+# new package. `deserialize` only: the test reads, never writes.
+serde-saphyr = { version = "1.2", default-features = false, features = ["deserialize"] }
 # Benchmark runner. html_reports gives a `target/criterion/report/index.html`
 # overview that's useful when comparing baselines locally.
 criterion = { version = "0.8", features = ["html_reports"] }
