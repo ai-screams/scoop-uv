@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789549118145,
+  "lastUpdate": 1789566425508,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5158,6 +5158,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/version_like_reject",
             "value": 81,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 22,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 204,
+            "range": "± 1",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fe6af580c4ff9323f8bb0b74ca9e0f339cacef99",
+          "message": "Merge pull request #181 from ai-screams/fix/api-md-date-stamp\n\ndocs(api): drop the ambiguous Last Updated stamp from the API reference",
+          "timestamp": "2026-09-16T22:43:01+09:00",
+          "tree_id": "583f67b9a4a6e1993621f3da02ced8c1350aeb03",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/fe6af580c4ff9323f8bb0b74ca9e0f339cacef99"
+        },
+        "date": 1789566424852,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 75445,
+            "range": "± 439",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 88462,
+            "range": "± 544",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3251,
+            "range": "± 44",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 838,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 96,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 99,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 96,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 80,
             "range": "± 0",
             "unit": "ns/iter"
           },
