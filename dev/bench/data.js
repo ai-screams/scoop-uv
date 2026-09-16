@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789566674958,
+  "lastUpdate": 1789566676802,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5953,6 +5953,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1336,
             "range": "± 6",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "04d3d72189f4264e1d27fe49bc1e6aa1c04ca935",
+          "message": "Merge pull request #182 from ai-screams/fix/saphyr-and-docs-check\n\nrefactor(ci): split PR docs checks from deploy and use the already-locked serde-saphyr",
+          "timestamp": "2026-09-16T22:43:41+09:00",
+          "tree_id": "949df8abb3034e4ff97c03545424db169589e3c7",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/04d3d72189f4264e1d27fe49bc1e6aa1c04ca935"
+        },
+        "date": 1789566676696,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1695,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1116,
+            "range": "± 62",
             "unit": "ns/iter"
           }
         ]
