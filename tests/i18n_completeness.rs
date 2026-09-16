@@ -20,8 +20,8 @@ fn manifest_dir() -> PathBuf {
 fn translation_keys() -> BTreeMap<String, BTreeSet<String>> {
     let path = manifest_dir().join("locales/app.yml");
     let raw = std::fs::read_to_string(&path).expect("read locales/app.yml");
-    let doc: BTreeMap<String, serde_yaml::Value> =
-        serde_yaml::from_str(&raw).expect("parse locales/app.yml");
+    let doc: BTreeMap<String, serde_norway::Value> =
+        serde_norway::from_str(&raw).expect("parse locales/app.yml");
 
     let mut keys = BTreeMap::new();
     for (key, value) in doc {
