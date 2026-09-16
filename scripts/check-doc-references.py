@@ -24,6 +24,14 @@ failures = []
 FIX = "--fix" in sys.argv[1:]
 fixed = []
 
+# Two of the four files carry the sample inside the mdBook (installation.md and
+# api.md), so rewriting them changes the gettext msgids and strands ko.po --
+# which docs.yml then rejects. The release automation would fix one gate by
+# breaking the other, every release. The samples are version strings, not
+# prose, so the fix is mechanical and stays here rather than pulling mdbook and
+# msgmerge into the release job.
+PO_FILES = ("docs/po/ko.po",)
+
 
 def read(rel):
     return (ROOT / rel).read_text(encoding="utf-8")
@@ -69,6 +77,37 @@ for rel in ("README.md", "CLAUDE.md", "docs/src/installation.md", "docs/src/api.
         if stale
         else "no version sample found; the pattern no longer matches this file",
     )
+
+if FIX:
+    # Entry-scoped, not a blanket substitution. A `.po` entry is a blank-line
+    # separated block; only blocks whose msgid carries a `scuv <version>`
+    # sample are touched, and inside those the bare version string is replaced
+    # wherever it appears. That last part matters: api.md's msgid reads
+    # `**scuv Version:** 0.15.4` while its msgstr reads `**scuv 버전:** 0.15.4`,
+    # so a SAMPLE-regex substitution would update the English side and leave
+    # the Korean page advertising the previous release.
+    #
+    # Obsolete entries (`#~`) are left alone -- they describe text that no
+    # longer exists in the source, so rewriting them would invent history.
+    for rel in PO_FILES:
+        body = read(rel)
+        blocks = body.split("\n\n")
+        touched = False
+        for i, block in enumerate(blocks):
+            if block.startswith("#~"):
+                continue
+            msgid_versions = {
+                m.group(1)
+                for line in block.splitlines()
+                if line.startswith(("msgid", '"'))
+                for m in SAMPLE.finditer(line)
+            }
+            for old_version in msgid_versions - {version}:
+                blocks[i] = blocks[i].replace(old_version, version)
+                touched = True
+        if touched:
+            (ROOT / rel).write_text("\n\n".join(blocks), encoding="utf-8")
+            fixed.append(rel)
 
 # --- 3. Reserved names: src/validate.rs is the source of truth -----------
 names = re.findall(
