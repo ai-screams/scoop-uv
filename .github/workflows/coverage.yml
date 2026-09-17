@@ -73,3 +73,32 @@ jobs:
           files: codecov.json
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
+      # The floor that codecov.yml's `project` status was supposed to be.
+      #
+      # That status has never been posted on this repository — not since
+      # codecov.yml landed, and not before it either; every PR back through
+      # #165 shows `codecov/patch` alone. The config is live (setting
+      # `comment.require_changes` did change comment behaviour), so the cause
+      # is on the Codecov side, in settings this repository cannot read. Until
+      # that is sorted, "coverage must not collapse" is enforced here instead,
+      # where it depends on nothing outside the runner.
+      #
+      # Runs after the upload on purpose: a drop should still publish its
+      # report, so the next person can see *what* stopped being covered rather
+      # than only that something did.
+      #
+      # `report` re-reads the profiling data the step above already produced,
+      # so this costs no test time.
+      #
+      # 80 is measured against llvm-cov, not Codecov. The two disagree —
+      # llvm-cov reads 80.97% where Codecov reads 78.5% — because they count
+      # different things, so a number copied from the Codecov dashboard would
+      # be wrong here. It leaves roughly a point of headroom below today's
+      # figure.
+      #
+      # This is a floor, not a ratchet: it catches a collapse, not a slow
+      # slide from 81% to 80.1%. Catching the slide needs the relative
+      # comparison `codecov/project` would give.
+      - name: Enforce coverage floor
+        run: cargo llvm-cov report --fail-under-lines 80

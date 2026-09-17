@@ -267,9 +267,16 @@ the documentation site.
 Accurate as of the last revision of this page. Verify before relying on
 any of these being fixed.
 
-- **No coverage threshold.** Uploads work again, but there is no
-  `codecov.yml`, so nothing sets a target percentage or a PR status
-  policy. Coverage is reported and never enforced.
+- **`codecov/project` has never posted.** `codecov.yml` states a target for
+  it, and the config is live — setting `comment.require_changes` changed
+  comment behaviour on the next PR. The status itself has never appeared,
+  though, on any PR back through #165, which predates that config by months.
+  The cause is on the Codecov side, in account or organisation settings this
+  repository cannot read, so the relative check ("did this PR drop overall
+  coverage") is not being enforced. An absolute floor stands in for it in
+  `coverage.yml` (`cargo llvm-cov report --fail-under-lines 80`), which
+  catches a collapse but not a slow slide. Requiring the status before it is
+  known to post would leave every PR waiting on a check that never arrives.
 - **Unreviewed mutation escapes outside `migrate/`.** The last full-run
   artifact listed 55 mutants no test kills, 46 of them under
   `src/core/migrate/**`. That module is now closed — 111 mutants, 0
@@ -287,9 +294,12 @@ any of these being fixed.
   then failed at the `ko.po` round-trip. The crate published and the tag was
   fine — only the Pages deploy stopped, which is the quiet half of the
   failure and the reason it went unnoticed until someone opened the site.
-- **No coverage threshold on Dependabot PRs either.** The token is now in
-  both stores, so uploads succeed, but see the first gap: nothing enforces a
-  number.
+- **The coverage floor is absolute, not relative.** `--fail-under-lines 80`
+  is measured against llvm-cov, which reads 80.97% where Codecov reads 78.5%;
+  the two count different things, so a number taken from the Codecov
+  dashboard would be wrong in the workflow. Coverage can still drift from 81%
+  to 80.1% without tripping it — closing that needs `codecov/project`, see
+  the gap above.
 - **The cache sits near its limit.** 8.34 GB of the 10 GB allowance, of
   which `v0-rust-*` is only about 1 GB — the bulk is BuildKit blobs from
   the Docker workflows. Nothing is failing yet; eviction is LRU.
