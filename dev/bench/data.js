@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1789612380572,
+  "lastUpdate": 1789612382238,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6673,6 +6673,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1115,
             "range": "± 8",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7a305a8a523266e0a8320d0c04f69cba19e26f64",
+          "message": "Merge pull request #189 from ai-screams/ci/coverage-floor\n\nci(coverage): enforce a floor locally, since codecov/project never posts",
+          "timestamp": "2026-09-17T11:29:08+09:00",
+          "tree_id": "eac2070c27225a47d9d90f81005aa4fbca2df73a",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/7a305a8a523266e0a8320d0c04f69cba19e26f64"
+        },
+        "date": 1789612382132,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1698,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1113,
+            "range": "± 5",
             "unit": "ns/iter"
           }
         ]
