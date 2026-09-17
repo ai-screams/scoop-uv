@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: scuv Documentation\n"
-"POT-Creation-Date: 2026-09-17T01:25:50+09:00\n"
+"POT-Creation-Date: 2026-09-17T11:20:00+09:00\n"
 "PO-Revision-Date: 2026-06-04T17:32:29+09:00\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -13947,15 +13947,19 @@ msgstr ""
 
 #: src/development/ci-cd.md:270
 msgid ""
-"**No coverage threshold.** Uploads work again, but there is no "
-"`codecov.yml`, so nothing sets a target percentage or a PR status policy. "
-"Coverage is reported and never enforced."
+"**`codecov/project` has never posted.** `codecov.yml` states a target for "
+"it, and the config is live — setting `comment.require_changes` changed "
+"comment behaviour on the next PR. The status itself has never appeared, "
+"though, on any PR back through #165, which predates that config by months. "
+"The cause is on the Codecov side, in account or organisation settings this "
+"repository cannot read, so the relative check (\"did this PR drop overall "
+"coverage\") is not being enforced. An absolute floor stands in for it in "
+"`coverage.yml` (`cargo llvm-cov report --fail-under-lines 80`), which "
+"catches a collapse but not a slow slide. Requiring the status before it is "
+"known to post would leave every PR waiting on a check that never arrives."
 msgstr ""
-"**커버리지 임계값이 없습니다.** 업로드는 다시 동작하지만 `codecov.yml`이 없어"
-"서 목표 비율도 PR 상태 정책도 설정되지 않습니다. 커버리지는 보고될 뿐 강제되"
-"지 않습니다."
 
-#: src/development/ci-cd.md:273
+#: src/development/ci-cd.md:280
 msgid ""
 "**Unreviewed mutation escapes outside `migrate/`.** The last full-run "
 "artifact listed 55 mutants no test kills, 46 of them under `src/core/migrate/"
@@ -13975,7 +13979,7 @@ msgstr ""
 "라 확인해야 합니다. 다음으로 완주하는 주간 실행이 그 아티팩트를 대체합니다. "
 "그 분류가 끝날 때까지 이 잡은 exit 2를 허용합니다."
 
-#: src/development/ci-cd.md:282
+#: src/development/ci-cd.md:289
 msgid ""
 "**Docs are only verified on release tags.** `docs.yml` still runs nowhere "
 "else, so an mdBook build failure or a stale `ko.po` surfaces at release "
@@ -13995,16 +13999,17 @@ msgstr ""
 "그것이 이 실패의 조용한 절반이자 누군가 사이트를 열어보기 전까지 아무도 몰랐"
 "던 이유입니다."
 
-#: src/development/ci-cd.md:290
+#: src/development/ci-cd.md:297
 msgid ""
-"**No coverage threshold on Dependabot PRs either.** The token is now in both "
-"stores, so uploads succeed, but see the first gap: nothing enforces a number."
+"**The coverage floor is absolute, not relative.** `--fail-under-lines 80` is "
+"measured against llvm-cov, which reads 80.97% where Codecov reads 78.5%; the "
+"two count different things, so a number taken from the Codecov dashboard "
+"would be wrong in the workflow. Coverage can still drift from 81% to 80.1% "
+"without tripping it — closing that needs `codecov/project`, see the gap "
+"above."
 msgstr ""
-"**Dependabot PR에도 커버리지 임계값이 없습니다.** 토큰이 이제 양쪽 저장소에 "
-"있어 업로드는 성공하지만, 첫 번째 항목과 같습니다 — 수치를 강제하는 것이 없습"
-"니다."
 
-#: src/development/ci-cd.md:293
+#: src/development/ci-cd.md:303
 msgid ""
 "**The cache sits near its limit.** 8.34 GB of the 10 GB allowance, of which "
 "`v0-rust-*` is only about 1 GB — the bulk is BuildKit blobs from the Docker "
@@ -14014,11 +14019,11 @@ msgstr ""
 "rust-*`는 약 1GB뿐입니다 — 대부분은 Docker 워크플로가 만드는 BuildKit blob입"
 "니다. 아직 실패하는 것은 없고, 축출은 LRU 방식입니다."
 
-#: src/development/ci-cd.md:297
+#: src/development/ci-cd.md:307
 msgid "Recently closed"
 msgstr "최근에 해결된 것"
 
-#: src/development/ci-cd.md:299
+#: src/development/ci-cd.md:309
 msgid ""
 "Left here because the reasoning is worth keeping, not because anything is "
 "outstanding."
@@ -14026,7 +14031,7 @@ msgstr ""
 "남겨 둔 이유는 그 판단 과정이 기록할 만해서이지, 아직 남은 문제가 있어서가 아"
 "닙니다."
 
-#: src/development/ci-cd.md:302
+#: src/development/ci-cd.md:312
 msgid ""
 "Coverage uploads were rejected for months with `Token required because "
 "branch is protected` while the job reported success, because "
@@ -14044,7 +14049,7 @@ msgstr ""
 "릿 저장소를 읽기 때문에, 그쪽에도 토큰을 등록하기 전까지 모든 Dependabot PR"
 "이 같은 방식으로 계속 실패했습니다."
 
-#: src/development/ci-cd.md:310
+#: src/development/ci-cd.md:320
 msgid ""
 "Every release PR failed the Lint job because release-plz bumps `Cargo.toml` "
 "without touching the version samples in prose. Hand-fixed at v0.15.3, hit "
@@ -14058,7 +14063,7 @@ msgstr ""
 "니다. v0.15.3의 수정이 요구한 방향 그대로입니다 — 검사를 느슨하게 하는 대신 "
 "릴리스가 예시를 갱신하도록 가르치는 것입니다."
 
-#: src/development/ci-cd.md:315
+#: src/development/ci-cd.md:325
 msgid ""
 "Dependabot does not read `rust-version`, so it raised `rust-i18n` past the "
 "MSRV and every job died at dependency resolution before a line compiled. The "
@@ -14074,7 +14079,7 @@ msgstr ""
 "rustc 1.93.1을 요구)에 대한 `ignore`를 갖고 있으며, MSRV가 따라잡으면 지울 부"
 "채로 표시해 두었습니다."
 
-#: src/development/ci-cd.md:321
+#: src/development/ci-cd.md:331
 msgid ""
 "The weekly full mutation run had never once completed — 60 minutes killed it "
 "every time, and GitHub reports a timed-out job as _cancelled_, which reads "
@@ -14085,7 +14090,7 @@ msgstr ""
 "GitHub은 타임아웃된 잡을 _cancelled_ 로 보고하는데 이는 별일 아닌 것처럼 읽힙"
 "니다. 60분에 385/446개로 측정돼 타임아웃을 90분으로 올렸습니다."
 
-#: src/development/ci-cd.md:325
+#: src/development/ci-cd.md:335
 msgid ""
 "`aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now "
 "pinned to release tags. Dependabot could not follow either: it cannot bump a "
@@ -14096,7 +14101,7 @@ msgstr ""
 "올릴 수 없고, setup-uv는 v8부터 움직이는 메이저 태그 발행을 중단했기 때문입니"
 "다."
 
-#: src/development/ci-cd.md:329
+#: src/development/ci-cd.md:339
 msgid ""
 "`stable-ci` had four writers and, because `rust-cache` hashes workflow-level "
 "`env`, was never actually shared with `coverage.yml` or `mutants.yml` at "
@@ -14106,7 +14111,7 @@ msgstr ""
 "시에 넣기 때문에 `coverage.yml`이나 `mutants.yml`과는 애초에 공유된 적조차 없"
 "었습니다. 이제 각자 실제로 쓰는 키를 이름으로 밝힙니다."
 
-#: src/development/ci-cd.md:332
+#: src/development/ci-cd.md:342
 msgid ""
 "`release-plz.yml` had no concurrency group. It has one now, with `cancel-in-"
 "progress: false` — which delivers the \"must always complete\" intent that "
@@ -14725,6 +14730,24 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid ""
+#~ "**No coverage threshold.** Uploads work again, but there is no "
+#~ "`codecov.yml`, so nothing sets a target percentage or a PR status policy. "
+#~ "Coverage is reported and never enforced."
+#~ msgstr ""
+#~ "**커버리지 임계값이 없습니다.** 업로드는 다시 동작하지만 `codecov.yml`이 "
+#~ "없어서 목표 비율도 PR 상태 정책도 설정되지 않습니다. 커버리지는 보고될 뿐 "
+#~ "강제되지 않습니다."
+
+#~ msgid ""
+#~ "**No coverage threshold on Dependabot PRs either.** The token is now in "
+#~ "both stores, so uploads succeed, but see the first gap: nothing enforces "
+#~ "a number."
+#~ msgstr ""
+#~ "**Dependabot PR에도 커버리지 임계값이 없습니다.** 토큰이 이제 양쪽 저장소"
+#~ "에 있어 업로드는 성공하지만, 첫 번째 항목과 같습니다 — 수치를 강제하는 것"
+#~ "이 없습니다."
 
 #~ msgid "~1.4x"
 #~ msgstr "약 1.4배"
