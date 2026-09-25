@@ -537,7 +537,7 @@ migrate.found:
   ko: "%{count}개 환경 발견:"
   pt-BR: "%{count} ambiente(s) encontrado(s):"
   ja: "%{count}個の環境が見つかりました:"
-  es: "Se encontraron %{count} entorno(s):"  
+  es: "Se encontraron %{count} entorno(s):"
 
 migrate.hint_single:
   en: "To migrate: scuv migrate @env <name>"
@@ -1521,7 +1521,7 @@ diff.section_metadata:
   ko: "메타데이터"
   pt-BR: "Metadados"
   ja: "メタデータ"
-  es: "Metadados"
+  es: "Metadatos"
 
 diff.hint_strict:
   en: "→ exit 1: differences detected under --strict"

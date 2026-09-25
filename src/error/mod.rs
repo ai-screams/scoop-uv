@@ -217,6 +217,8 @@ mod tests {
     #[case::ko("ko")]
     #[case::ja("ja")]
     #[case::pt_br("pt-BR")]
+    // Fails if the es `error.virtualenv_not_found` value drops `%{name}`.
+    #[case::es("es")]
     fn message_in_all_locales_keeps_name(#[case] locale: &str) {
         let err = ScoopError::VirtualenvNotFound {
             name: "proj-env".to_string(),

@@ -158,7 +158,7 @@ Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
 
     # Language completion for lang
     if ($cmd -eq 'lang') {
-        @('en', 'ko', 'ja', 'pt-BR') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+        @('en', 'ko', 'ja', 'pt-BR', 'es') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
             [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
         }
         return

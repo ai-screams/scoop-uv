@@ -18,7 +18,7 @@ pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
     ("pt-BR", "Português (Brasil)"),
     ("ja", "日本語"),
     ("es", "Español"),
-    // Coming Soon: ja (日本語), zh-CN (简体中文), fr (Français), ar (العربية)
+    // Coming Soon: zh-CN (简体中文), fr (Français), ar (العربية)
 ];
 
 /// Initialize locale on startup.
@@ -147,6 +147,8 @@ mod tests {
         assert!(is_supported("ko"));
         assert!(is_supported("ja"));
         assert!(is_supported("pt-BR"));
+        // Fails if ("es", "Español") leaves SUPPORTED_LANGS.
+        assert!(is_supported("es"));
         assert!(!is_supported("fr"));
         assert!(!is_supported("zh-CN")); // Not yet supported
     }
@@ -157,6 +159,7 @@ mod tests {
         assert_eq!(language_name("ko"), Some("한국어"));
         assert_eq!(language_name("ja"), Some("日本語"));
         assert_eq!(language_name("pt-BR"), Some("Português (Brasil)"));
+        assert_eq!(language_name("es"), Some("Español"));
         assert_eq!(language_name("fr"), None);
     }
 
@@ -239,6 +242,9 @@ mod tests {
         assert_eq!(resolve_supported("ko_KR"), Some("ko"));
         assert_eq!(resolve_supported("en_US.UTF-8"), Some("en"));
         assert_eq!(resolve_supported("ja"), Some("ja"));
+        // Regional Spanish collapses onto the single `es` catalogue.
+        assert_eq!(resolve_supported("es_ES.UTF-8"), Some("es"));
+        assert_eq!(resolve_supported("es-MX"), Some("es"));
         // Unsupported.
         assert_eq!(resolve_supported("fr"), None);
         assert_eq!(resolve_supported("zh-CN"), None);
