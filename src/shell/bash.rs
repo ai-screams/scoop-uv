@@ -25,8 +25,7 @@ scuv() {
                     esac
                 done
                 if [[ -n "$name" ]]; then
-                    # 'use' above already warned about any legacy config; don't warn twice
-                    eval "$(SCUV_SUPPRESS_DEPRECATION=1 command scuv activate "$name")"
+                    eval "$(command scuv activate "$name")"
                 fi
             fi
             return $ret
@@ -371,11 +370,12 @@ mod tests {
         assert!(!script.contains("SCOOP_NO_AUTO"));
     }
 
-    /// The chained use→activate call must suppress duplicate deprecation
-    /// warnings (each chained call is a fresh process).
+    /// The one-shot deprecation warnings went with 0.16.0, and with them
+    /// the suppression variable the chained use→activate call used to set.
+    /// Fails if SCUV_SUPPRESS_DEPRECATION plumbing is reintroduced.
     #[test]
-    fn init_script_suppresses_duplicate_deprecation_in_use_chain() {
-        assert!(init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
+    fn init_script_has_no_deprecation_suppression() {
+        assert!(!init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
     /// The transitional `scoop` forwarder went with 0.16.0; the init script

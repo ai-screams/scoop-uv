@@ -49,8 +49,7 @@ function scuv
             if test $ret -eq 0
                 for arg in $argv[2..-1]
                     if not string match -q -- '-*' "$arg"
-                        # 'use' above already warned about any legacy config; don't warn twice
-                        eval (env SCUV_SUPPRESS_DEPRECATION=1 scuv activate "$arg")
+                        eval (command scuv activate "$arg")
                         break
                     end
                 end
@@ -338,11 +337,12 @@ mod tests {
         );
     }
 
-    /// The chained use→activate call must suppress duplicate deprecation
-    /// warnings (each chained call is a fresh process).
+    /// The one-shot deprecation warnings went with 0.16.0, and with them
+    /// the suppression variable the chained use→activate call used to set.
+    /// Fails if SCUV_SUPPRESS_DEPRECATION plumbing is reintroduced.
     #[test]
-    fn init_script_suppresses_duplicate_deprecation_in_use_chain() {
-        assert!(init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
+    fn init_script_has_no_deprecation_suppression() {
+        assert!(!init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
     /// The transitional `scoop` forwarder went with 0.16.0; the init script

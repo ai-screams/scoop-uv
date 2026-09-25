@@ -1,6 +1,5 @@
 //! Output utilities
 
-pub mod deprecation;
 mod json;
 mod spinner;
 mod time;
