@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790352194067,
+  "lastUpdate": 1790352196724,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6793,6 +6793,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1113,
             "range": "± 5",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "808369b218a367f75f3e79a72638f1bae294d14b",
+          "message": "docs(theme): add canonical/hreflang links and an Ai-Scream home link (#193)\n\n* docs(theme): add canonical/hreflang links and an Ai-Scream home link\n\nThe docs live at https://ai-scream.ai/scoop-uv/ next to the Ai-Scream\nhome page, which now lists them in its sitemap. This makes the docs\nside say so too:\n\n- per-page <link rel=\"canonical\"> on https://ai-scream.ai, with\n  /x/index.html folded into /x/, plus hreflang en/ko/x-default pairing\n  each English page with its Korean twin. Set from the head script\n  because mdBook only exposes the source .md path to the theme\n- a \"by Ai-Scream\" link (to /ko/ on Korean pages) in the locale\n  switcher\n- the switcher now sits in the menu bar's right-button row instead of\n  floating over it: the fixed overlay covered the print, git and edit\n  buttons (already true before this change; the longer label made it\n  worse). Links take the theme's icon colors; below 620px only the\n  locale links remain\n- the locale-path logic is shared by the switcher and the SEO links\n\nCloses #192\n\n* docs(theme): keep 404 and print pages out of canonical/hreflang clusters\n\nGitHub Pages serves 404.html for any missing URL, so deriving the links\nfrom location.pathname declared /scoop-uv/missing canonical and\nadvertised /scoop-uv/ko/missing as its Korean twin; a direct\n/404.html request (HTTP 200) got the same. print.html, which mdBook\nalready marks noindex, also got the links.\n\n- the template context's path (404.md / print.md) sets skipSeoLinks,\n  so those pages carry no canonical or hreflang\n- 404.html gets a static <meta name=\"robots\" content=\"noindex\">\n\nChecked in Chrome against a Pages-like server: missing URLs, /404.html\nand /print.html have 0 canonical/hreflang links and noindex; content\npages still get 1 canonical + 3 hreflang. Forcing skipSeoLinks=false\nbrings the links back on the 404 responses.",
+          "timestamp": "2026-09-26T00:59:17+09:00",
+          "tree_id": "8bbf6513365a66044d096690738f9b416a222dad",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/808369b218a367f75f3e79a72638f1bae294d14b"
+        },
+        "date": 1790352196618,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1695,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1120,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
