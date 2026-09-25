@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790362830774,
+  "lastUpdate": 1790362832592,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6913,6 +6913,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1120,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jsmomo0305@gmail.com",
+            "name": "sayam-1",
+            "username": "sayam-1"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a62dd6e316da233fe7e8d1f9c1326cba3b898378",
+          "message": "feat(i18n): add Spanish translation (#190)\n\nAdds the `es` locale: every key in locales/app.yml, SUPPORTED_LANGS,\nthe i18n completeness gate, and the `scuv lang` completion lists in all\nfour shells.\n\nCo-authored-by: pignuante <hanyul.ryu@hanyul.xyz>",
+          "timestamp": "2026-09-26T03:56:26+09:00",
+          "tree_id": "f4a3726ff6059c62081ec4a08478d68c922c514e",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/a62dd6e316da233fe7e8d1f9c1326cba3b898378"
+        },
+        "date": 1790362832468,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 2040,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1409,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
