@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790352196724,
+  "lastUpdate": 1790362830774,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -5927,6 +5927,90 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 186,
             "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jsmomo0305@gmail.com",
+            "name": "sayam-1",
+            "username": "sayam-1"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a62dd6e316da233fe7e8d1f9c1326cba3b898378",
+          "message": "feat(i18n): add Spanish translation (#190)\n\nAdds the `es` locale: every key in locales/app.yml, SUPPORTED_LANGS,\nthe i18n completeness gate, and the `scuv lang` completion lists in all\nfour shells.\n\nCo-authored-by: pignuante <hanyul.ryu@hanyul.xyz>",
+          "timestamp": "2026-09-26T03:56:26+09:00",
+          "tree_id": "f4a3726ff6059c62081ec4a08478d68c922c514e",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/a62dd6e316da233fe7e8d1f9c1326cba3b898378"
+        },
+        "date": 1790362829916,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 79202,
+            "range": "± 507",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 92167,
+            "range": "± 1769",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3545,
+            "range": "± 116",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 890,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 103,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 107,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 96,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 88,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 23,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 218,
+            "range": "± 1",
             "unit": "ns/iter"
           }
         ]
