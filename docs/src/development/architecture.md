@@ -254,11 +254,8 @@ flowchart TD
     Shell -->|Pass| Ver{Version Check}
     Shell -->|Warn| Warn2[Warn: not initialized]
 
-    Ver -->|Pass| Legacy{Legacy Check}
+    Ver -->|Pass| Done([All checks passed])
     Ver -->|Warn| Warn3[Warn: invalid version file]
-
-    Legacy -->|Pass| Done([All checks passed])
-    Legacy -->|Warn| Warn4[Warn: leftover scoop state]
 
     Fix1 --> Report[Generate Report]
     Fix2 --> Report

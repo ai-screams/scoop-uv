@@ -31,7 +31,7 @@ actually activated.
 | Value | Meaning |
 |-------|---------|
 | `scuv_active_env` | `$SCUV_ACTIVE` — what the shell activated |
-| `env_var` | `SCUV_VERSION` (or the legacy `SCOOP_VERSION`) |
+| `env_var` | `SCUV_VERSION` |
 | `version_file` | `.scuv-version` (local or a parent) or `~/.scuv/version` |
 
 Resolution order is `$SCUV_ACTIVE` → `SCUV_VERSION` → version files, so

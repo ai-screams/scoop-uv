@@ -47,9 +47,10 @@ Then update your shell rc file — replace `eval "$(scoop init <shell>)"` with
 `eval "$(scuv init <shell>)"` (fish: `scuv init fish | source`), restart your
 shell, and run `scuv doctor` to confirm nothing legacy is left over.
 
-Legacy `SCOOP_*` env vars and `.scoop-version` / `.scoop.toml` files keep
-working with a one-shot deprecation warning until v0.16.0. Don't skip the
-`rm` step: a leftover old binary keeps running 0.14.x silently.
+Since v0.16.0 the legacy `SCOOP_*` env vars and `.scoop-version` /
+`.scoop.toml` files are no longer read, so rename them as part of the
+migration. Don't skip the `rm` step: a leftover old binary keeps running
+0.14.x silently.
 
 ## Verify Installation
 

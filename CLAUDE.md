@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Rename & Legacy Compatibility (since v0.15.0)
 
-- Legacy names (`SCOOP_*` env, `~/.scoop`, `.scoop-version`, `.scoop.toml`) are READ-only fallbacks with one-shot warnings; every removal site carries a `// DEPRECATION(0.16.0)` comment — sweep those when cutting 0.16.0.
+- Legacy names (`SCOOP_*` env, `~/.scoop`, `.scoop-version`, `.scoop.toml`) stopped being read in v0.16.0; the 0.15.x read-only fallbacks, the `scoop` shell forwarder, the doctor `legacy` check and the `deprecation.*` i18n keys are gone. Tests named `*_ignores_legacy_*` and `init_script_never_defines_scoop` (all four shells) pin that no fallback comes back.
 - **PowerShell must NEVER define a `scoop` function/alias** (would shadow scoop.sh, the Windows package manager — the reason for the rename). Enforced by `init_script_never_defines_scoop` test.
 - fish init/shell idiom is `scuv init fish | source` — `eval (...)` does NOT work in fish (splits multi-line output).
 - Deliberately KEPT legacy identifiers (on-disk/serialized format compat): `.scoop-metadata.json`, export-schema field `scoop_export_version`. Do not "fix" these.
@@ -66,7 +66,7 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 ### Testing Gotchas
 
 - **After editing `locales/app.yml`, run `touch src/lib.rs` before `cargo test`** — rust_i18n's proc-macro isn't cargo-tracked; a yml-only edit reuses the stale binary and reports false-green.
-- Env-var tests MUST use `env_guard` (src/test_utils.rs) + `#[serial]`, controlling both `SCUV_*` and legacy `SCOOP_*` (and `HOME` when dirs are inspected) — the dev machine has a real `~/.scoop`.
+- Env-var tests MUST use `env_guard` (src/test_utils.rs) + `#[serial]` (and control `HOME` when dirs are inspected) — the dev machine has a real `~/.scoop`. Never call `env_guard` inside `with_temp_scoop_home`: both take `ENV_LOCK` and the test deadlocks; use raw `set_var`/`remove_var` there like the neighbouring tests.
 - PR CI runs `cargo-mutants --in-diff`: new `Check`-trait impls and thin wrappers need direct dispatch tests or the Mutants gate fails.
 - `.cargo/mutants.toml` `exclude_re` matches the full mutant description, not the function name — a bare `"foo"` silently drops every mutant in `foo`, including ones the tests kill. Exclude the exact description (`"delete match arm \\[major\\] in foo"`); verify the delta with `cargo mutants --config <alt>.toml --list --file '<glob>'` + `comm`.
 - A green `Mutants (diff)` proves little on a test-only PR — no production lines changed — and `Mutants (full)` is skipped on PRs. Verify mutation claims locally with `cargo mutants --file '<glob>'`.

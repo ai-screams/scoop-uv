@@ -461,7 +461,7 @@ impl Doctor {
 }
 ```
 
-Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck, LegacyCheck
+Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck
 
 #### UvClient
 
