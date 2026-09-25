@@ -79,8 +79,15 @@
     .locale-switcher a[aria-current="true"] { color: #999; }
   }
 </style>
+{{#if (eq path "404.md")}}
+<meta name="robots" content="noindex">
+{{/if}}
 <script>
   (function () {
+    // Pages that must not join a canonical/hreflang cluster: the 404 page
+    // (GitHub Pages serves it for any missing URL, so location.pathname is
+    // arbitrary) and print.html (mdBook already marks it noindex).
+    var skipSeoLinks = {{#if (eq path "404.md")}}true{{else}}{{#if (eq path "print.md")}}true{{else}}false{{/if}}{{/if}};
     var siteOrigin = 'https://ai-scream.ai';
     var siteRoot = '/scoop-uv';  // must match `site-url` in book.toml
     var path = location.pathname;
@@ -108,10 +115,12 @@
       if (hreflang) link.hreflang = hreflang;
       document.head.appendChild(link);
     }
-    addLink('canonical', pageUrl(isKorean ? koPath : enPath));
-    addLink('alternate', pageUrl(enPath), 'en');
-    addLink('alternate', pageUrl(koPath), 'ko');
-    addLink('alternate', pageUrl(enPath), 'x-default');
+    if (!skipSeoLinks) {
+      addLink('canonical', pageUrl(isKorean ? koPath : enPath));
+      addLink('alternate', pageUrl(enPath), 'en');
+      addLink('alternate', pageUrl(koPath), 'ko');
+      addLink('alternate', pageUrl(enPath), 'x-default');
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
       // Preserve query and fragment so search highlights / deep-linked
