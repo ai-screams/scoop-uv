@@ -3,7 +3,9 @@
   "projectOwner": "ai-screams",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": ["README.md"],
+  "files": [
+    "README.md"
+  ],
   "imageSize": 80,
   "commit": false,
   "commitConvention": "angular",
@@ -17,21 +19,37 @@
       "name": "azamarassy",
       "avatar_url": "https://avatars.githubusercontent.com/u/143267784?v=4",
       "profile": "https://github.com/azamarassy",
-      "contributions": ["translation"]
+      "contributions": [
+        "translation"
+      ]
     },
     {
       "login": "murillobazz",
       "name": "Murillo Bazilio",
       "avatar_url": "https://avatars.githubusercontent.com/u/64990540?v=4",
       "profile": "https://github.com/murillobazz",
-      "contributions": ["translation"]
+      "contributions": [
+        "translation"
+      ]
     },
     {
       "login": "Tosinibikunle",
       "name": "Tosinibikunle",
       "avatar_url": "https://avatars.githubusercontent.com/u/87605729?v=4",
       "profile": "https://github.com/Tosinibikunle",
-      "contributions": ["doc"]
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "sayam-1",
+      "name": "sayam-1",
+      "avatar_url": "https://avatars.githubusercontent.com/u/313192563?v=4",
+      "profile": "https://github.com/sayam-1",
+      "contributions": [
+        "translation"
+      ]
     }
-  ]
+  ],
+  "commitType": "docs"
 }

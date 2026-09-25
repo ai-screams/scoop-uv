@@ -657,9 +657,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/azamarassy"><img src="https://avatars.githubusercontent.com/u/143267784?v=4" width="80px;" alt="azamarassy"/><br /><sub><b>azamarassy</b></sub></a><br /><a href="#translation-azamarassy" title="Translation">🌍</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/murillobazz"><img src="https://avatars.githubusercontent.com/u/64990540?v=4" width="80px;" alt="Murillo Bazilio"/><br /><sub><b>Murillo Bazilio</b></sub></a><br /><a href="#translation-murillobazz" title="Translation">🌍</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tosinibikunle"><img src="https://avatars.githubusercontent.com/u/87605729?v=4" width="80px;" alt="Tosinibikunle"/><br /><sub><b>Tosinibikunle</b></sub></a><br /><a href="#doc-Tosinibikunle" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/murillobazz"><img src="https://avatars.githubusercontent.com/u/64990540?v=4?s=80" width="80px;" alt="Murillo Bazilio"/><br /><sub><b>Murillo Bazilio</b></sub></a><br /><a href="#translation-murillobazz" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tosinibikunle"><img src="https://avatars.githubusercontent.com/u/87605729?v=4?s=80" width="80px;" alt="Tosinibikunle"/><br /><sub><b>Tosinibikunle</b></sub></a><br /><a href="https://github.com/ai-screams/scoop-uv/commits?author=Tosinibikunle" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/azamarassy"><img src="https://avatars.githubusercontent.com/u/143267784?v=4?s=80" width="80px;" alt="azamarassy"/><br /><sub><b>azamarassy</b></sub></a><br /><a href="#translation-azamarassy" title="Translation">🌍</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/sayam-1"><img src="https://avatars.githubusercontent.com/u/313192563?v=4?s=80" width="80px;" alt="sayam-1"/><br /><sub><b>sayam-1</b></sub></a><br /><a href="#translation-sayam-1" title="Translation">🌍</a></td>
     </tr>
   </tbody>
 </table>
