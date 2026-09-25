@@ -91,7 +91,6 @@ pub struct IsolatedTestEnv {
 const ENV_VARS_TO_BACKUP: &[&str] = &[
     "HOME",
     "SCUV_HOME",
-    "SCOOP_HOME",
     "PYENV_ROOT",
     "WORKON_HOME",
     "CONDA_PREFIX",
@@ -136,9 +135,6 @@ impl IsolatedTestEnv {
         unsafe {
             std::env::set_var("HOME", home_path);
             std::env::set_var("SCUV_HOME", &scoop_home);
-            // 레거시 변수가 부모 환경에서 새어 들어와 fallback 경로를
-            // 오염시키지 않도록 제거 (백업본으로 Drop 시 복원됨)
-            std::env::remove_var("SCOOP_HOME");
             std::env::set_var("PYENV_ROOT", &pyenv_root);
             std::env::set_var("WORKON_HOME", &workon_home);
             std::env::set_var("CONDA_PREFIX", &conda_prefix);

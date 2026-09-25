@@ -79,8 +79,7 @@ function _scuv_hook --on-variable PWD
 end
 
 # Set up auto-activate on startup
-# DEPRECATION(0.16.0): drop the legacy SCOOP_NO_AUTO fallback check.
-if not set -q SCUV_NO_AUTO; and not set -q SCOOP_NO_AUTO
+if not set -q SCUV_NO_AUTO
     _scuv_hook
 end
 
@@ -188,14 +187,6 @@ complete -c scuv -n "__fish_seen_subcommand_from lang" -a "es" -d "Spanish"
 complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "list" -d "List environments available for migration"
 complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "all" -d "Migrate all environments"
 complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "@env" -d "Migrate a specific environment"
-
-# DEPRECATION(0.16.0): transitional forwarder; never emitted for PowerShell.
-if not command -q scoop
-    function scoop
-        echo "warning: 'scoop' has been renamed to 'scuv'; this alias will be removed in v0.16.0" >&2
-        scuv $argv
-    end
-end
 "#
     )
 }
@@ -305,11 +296,8 @@ mod tests {
             "Script must use 'set -q' to check SCUV_NO_AUTO"
         );
 
-        // Legacy SCOOP_NO_AUTO must still gate auto-activation (deprecated fallback).
-        assert!(
-            script.contains("SCOOP_NO_AUTO"),
-            "Script must still honor legacy SCOOP_NO_AUTO"
-        );
+        // Fails if the scoop-era SCOOP_NO_AUTO read comes back.
+        assert!(!script.contains("SCOOP_NO_AUTO"));
     }
 
     #[test]
@@ -357,10 +345,14 @@ mod tests {
         assert!(init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
+    /// The transitional `scoop` forwarder went with 0.16.0; the init script
+    /// must not define a `scoop` function again (scoop.sh coexistence).
+    /// Fails if a `function scoop` is reintroduced.
     #[test]
-    fn init_script_defines_deprecated_scoop_forwarder() {
-        assert!(init_script().contains("function scoop"));
-        assert!(init_script().contains("renamed to 'scuv'"));
+    fn init_script_never_defines_scoop() {
+        let s = init_script();
+        assert!(!s.contains("function scoop"));
+        assert!(!s.contains("alias scoop"));
     }
 
     #[test]

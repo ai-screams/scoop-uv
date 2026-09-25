@@ -175,12 +175,11 @@ mod tests {
         assert!(!doctor.checks.is_empty());
     }
 
+    /// The scoop-era `legacy` remnant check went with 0.16.0.
+    /// Fails if a check with id `legacy` is registered again.
     #[test]
-    fn doctor_registers_legacy_check() {
+    fn doctor_does_not_register_legacy_check() {
         let doctor = Doctor::new();
-        assert!(
-            doctor.checks.iter().any(|c| c.id() == "legacy"),
-            "Doctor::new() must register the legacy check"
-        );
+        assert!(doctor.checks.iter().all(|c| c.id() != "legacy"));
     }
 }

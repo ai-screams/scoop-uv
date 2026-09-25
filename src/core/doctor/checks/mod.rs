@@ -1,7 +1,6 @@
 //! Individual doctor checks, one per file, registered via [`default_checks`].
 
 mod home;
-mod legacy;
 mod shell;
 mod symlink;
 mod uv;
@@ -22,6 +21,5 @@ pub(super) fn default_checks() -> Vec<Box<dyn Check>> {
         Box::new(symlink::SymlinkCheck),
         Box::new(shell::ShellCheck),
         Box::new(version::VersionCheck),
-        Box::new(legacy::LegacyCheck),
     ]
 }

@@ -57,8 +57,7 @@ _scuv_hook() {
 }
 
 # Set up chpwd hook for auto-activate
-# DEPRECATION(0.16.0): drop the legacy SCOOP_NO_AUTO fallback check.
-if [[ -z "$SCUV_NO_AUTO" && -z "$SCOOP_NO_AUTO" ]]; then
+if [[ -z "$SCUV_NO_AUTO" ]]; then
     autoload -Uz add-zsh-hook
     add-zsh-hook chpwd _scuv_hook
 fi
@@ -400,14 +399,6 @@ _scuv() {
 
 # Register completion only if compdef is available (requires compinit)
 (( $+functions[compdef] )) && compdef _scuv scuv
-
-# DEPRECATION(0.16.0): transitional forwarder; never emitted for PowerShell.
-if ! command -v scoop >/dev/null 2>&1; then
-    scoop() {
-        echo "warning: 'scoop' has been renamed to 'scuv'; this alias will be removed in v0.16.0" >&2
-        scuv "$@"
-    }
-fi
 "#
     )
 }
@@ -498,16 +489,14 @@ mod tests {
         );
     }
 
-    /// The auto-activate gate must honor the new variable AND the legacy one
-    /// (deprecated read, removed in 0.16.0) — fish/powershell have the same
-    /// test; this pins bash/zsh symmetrically.
+    /// The auto-activate gate reads `SCUV_NO_AUTO` only — fish/powershell
+    /// have the same test; this pins bash/zsh symmetrically.
+    /// Fails if the scoop-era `SCOOP_NO_AUTO` read comes back.
     #[test]
-    fn init_script_checks_both_no_auto_variables() {
+    fn init_script_checks_only_scuv_no_auto() {
         let script = init_script();
-        assert!(
-            script.contains(r#"[[ -z "$SCUV_NO_AUTO" && -z "$SCOOP_NO_AUTO" ]]"#),
-            "auto-activate gate must check SCUV_NO_AUTO with legacy SCOOP_NO_AUTO fallback"
-        );
+        assert!(script.contains(r#"[[ -z "$SCUV_NO_AUTO" ]]"#));
+        assert!(!script.contains("SCOOP_NO_AUTO"));
     }
 
     /// The chained use→activate call must suppress duplicate deprecation
@@ -517,10 +506,15 @@ mod tests {
         assert!(init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
+    /// The transitional `scoop` forwarder went with 0.16.0; the init script
+    /// must not define a `scoop` function again (scoop.sh coexistence).
+    /// Fails if a `scoop()` function is reintroduced.
     #[test]
-    fn init_script_defines_deprecated_scoop_forwarder() {
-        assert!(init_script().contains("scoop() {"));
-        assert!(init_script().contains("renamed to 'scuv'"));
+    fn init_script_never_defines_scoop() {
+        let s = init_script();
+        assert!(!s.contains("scoop()"));
+        assert!(!s.contains("function scoop"));
+        assert!(!s.contains("alias scoop"));
     }
 
     #[test]

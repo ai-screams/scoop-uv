@@ -95,8 +95,7 @@ function _scuv_hook {
 }
 
 # Override prompt to call hook
-# DEPRECATION(0.16.0): drop the legacy SCOOP_NO_AUTO fallback check.
-if ((-not $env:SCUV_NO_AUTO) -and (-not $env:SCOOP_NO_AUTO)) {
+if (-not $env:SCUV_NO_AUTO) {
     $global:_scuv_original_prompt = $function:prompt
     function global:prompt {
         _scuv_hook
@@ -273,11 +272,8 @@ mod tests {
             script.contains("SCUV_NO_AUTO"),
             "Script must check SCUV_NO_AUTO environment variable"
         );
-        // Legacy SCOOP_NO_AUTO must still gate auto-activation (deprecated fallback).
-        assert!(
-            script.contains("SCOOP_NO_AUTO"),
-            "Script must still honor legacy SCOOP_NO_AUTO"
-        );
+        // Fails if the scoop-era SCOOP_NO_AUTO read comes back.
+        assert!(!script.contains("SCOOP_NO_AUTO"));
     }
 
     #[test]

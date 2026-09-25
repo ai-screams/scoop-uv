@@ -1,12 +1,8 @@
 //! `.scuv.toml` project manifest — opt-in declarative env definition
 //! consumed by `scuv sync`.
 //!
-//! Resolution walks cwd → parents; within a single directory `.scuv.toml`
-//! wins over a legacy `.scoop.toml` (deprecated; emits a one-shot warning).
-//! A legacy file in a *nearer* directory still beats a new-named file in a
-//! parent directory — nearest-directory-first is unchanged by the rename.
-//!
-//! DEPRECATION(0.16.0): remove the legacy branch.
+//! Resolution walks cwd → parents, nearest directory first. The scoop-era
+//! `.scoop.toml` name stopped being read in 0.16.0.
 //!
 //! The schema is intentionally minimal for v1:
 //!
@@ -32,8 +28,6 @@ use crate::error::{Result, ScoopError};
 
 /// Project manifest filename — searched cwd→parent like `.scuv-version`.
 pub const MANIFEST_FILE: &str = ".scuv.toml";
-/// DEPRECATION(0.16.0): remove the legacy manifest-filename fallback.
-pub const LEGACY_MANIFEST_FILE: &str = ".scoop.toml";
 
 /// Parsed `.scuv.toml`. Fields are validated at parse time so callers receive
 /// a struct that's already meaningful (`name` passes `is_valid_env_name`,
@@ -124,23 +118,15 @@ impl ScoopManifest {
     }
 }
 
-/// Walk from `start` up to filesystem root looking for `.scuv.toml`, falling
-/// back to the legacy `.scoop.toml` name per directory (deprecated; emits a
-/// one-shot warning). Mirrors the version-file resolution model so users get
-/// the same mental model for "this directory is configured" detection.
-///
-/// DEPRECATION(0.16.0): remove the legacy fallback branch.
+/// Walk from `start` up to filesystem root looking for `.scuv.toml`. Mirrors
+/// the version-file resolution model so users get the same mental model for
+/// "this directory is configured" detection.
 pub fn find_manifest(start: &Path) -> Option<PathBuf> {
     let mut current = start.to_path_buf();
     loop {
         let candidate = current.join(MANIFEST_FILE);
         if candidate.is_file() {
             return Some(candidate);
-        }
-        let legacy = current.join(LEGACY_MANIFEST_FILE);
-        if legacy.is_file() {
-            crate::output::deprecation::warn_once(&rust_i18n::t!("deprecation.manifest_file"));
-            return Some(legacy);
         }
         if !current.pop() {
             return None;
@@ -415,30 +401,20 @@ mod tests {
     }
 
     // ==========================================================================
-    // find_manifest — dual-name walk (.scuv.toml / legacy .scoop.toml)
+    // find_manifest — the scoop-era `.scoop.toml` name is ignored
     // ==========================================================================
 
-    /// New name wins when both are present in the same directory.
+    /// A directory holding only the scoop-era `.scoop.toml` is not
+    /// configured; the walk continues past it.
+    /// Fails if a `.scoop.toml` fallback is reintroduced in `find_manifest`.
     #[test]
-    fn find_manifest_new_name_wins_over_legacy_in_same_dir() {
+    fn find_manifest_ignores_legacy_scoop_toml() {
         let dir = TempDir::new().unwrap();
-        std::fs::write(dir.path().join(MANIFEST_FILE), "").unwrap();
-        std::fs::write(dir.path().join(LEGACY_MANIFEST_FILE), "").unwrap();
-        assert_eq!(
-            find_manifest(dir.path()),
-            Some(dir.path().join(MANIFEST_FILE))
-        );
-    }
-
-    /// DEPRECATION(0.16.0): legacy-shim regression test — a directory with
-    /// only the legacy `.scoop.toml` name must still resolve.
-    #[test]
-    fn find_manifest_legacy_only_still_resolves() {
-        let dir = TempDir::new().unwrap();
-        std::fs::write(dir.path().join(LEGACY_MANIFEST_FILE), "").unwrap();
-        assert_eq!(
-            find_manifest(dir.path()),
-            Some(dir.path().join(LEGACY_MANIFEST_FILE))
-        );
+        let parent = dir.path().join("parent");
+        let child = parent.join("child");
+        std::fs::create_dir_all(&child).unwrap();
+        std::fs::write(child.join(".scoop.toml"), "").unwrap();
+        std::fs::write(parent.join(MANIFEST_FILE), "").unwrap();
+        assert_eq!(find_manifest(&child), Some(parent.join(MANIFEST_FILE)));
     }
 }
