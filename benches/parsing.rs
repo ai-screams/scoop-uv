@@ -24,7 +24,7 @@ struct UvPythonEntry {
     path: Option<String>,
 }
 
-/// Representative `.scoop.toml` covering the schema fully: name + python +
+/// Representative `.scuv.toml` covering the schema fully: name + python +
 /// default group + two named groups. Realistic for a small project.
 const TOML_FIXTURE: &str = r#"
 [environment]

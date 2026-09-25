@@ -397,15 +397,14 @@ mod tests {
     /// Fails if a `SCOOP_HOME` fallback is reintroduced in `scoop_home()`.
     #[test]
     #[serial]
-    fn legacy_home_env_is_ignored() {
-        let tmp = tempfile::TempDir::new().unwrap();
-        let home_str = tmp.path().to_str().unwrap();
+    fn scoop_home_ignores_legacy_home_env() {
         let _g = crate::test_utils::env_guard(&[
             (SCUV_HOME_ENV, None),
             ("SCOOP_HOME", Some("/tmp/oldhome")),
-            ("HOME", Some(home_str)),
         ]);
-        assert_eq!(scoop_home().unwrap(), tmp.path().join(".scuv"));
+        let home = scoop_home().unwrap();
+        assert_ne!(home, PathBuf::from("/tmp/oldhome"));
+        assert!(home.ends_with(".scuv"));
     }
 
     #[test]
@@ -416,13 +415,15 @@ mod tests {
         assert!(home.ends_with(".scuv"));
     }
 
-    /// `dirs::home_dir()` reads `$HOME` on Unix, so `env_guard` can steer it
-    /// at a tempdir. A leftover `~/.scoop` (and no `~/.scuv`) must not change
-    /// the answer: the directory fallback ended with 0.16.0.
+    /// `dirs::home_dir()` reads `$HOME` on Unix (not on Windows, hence the
+    /// cfg), so `env_guard` can steer it at a tempdir. A leftover `~/.scoop`
+    /// (and no `~/.scuv`) must not change the answer: the directory fallback
+    /// ended with 0.16.0.
     /// Fails if a `~/.scoop` fallback is reintroduced in `scoop_home()`.
+    #[cfg(unix)]
     #[test]
     #[serial]
-    fn legacy_home_dir_is_ignored_even_when_scuv_dir_is_missing() {
+    fn scoop_home_ignores_legacy_home_dir_even_when_scuv_dir_is_missing() {
         let tmp = tempfile::TempDir::new().unwrap();
         std::fs::create_dir(tmp.path().join(".scoop")).unwrap();
         let home_str = tmp.path().to_str().unwrap();
@@ -430,6 +431,7 @@ mod tests {
         assert_eq!(scoop_home().unwrap(), tmp.path().join(".scuv"));
     }
 
+    #[cfg(unix)]
     #[test]
     #[serial]
     fn default_home_when_neither_dir_exists() {

@@ -201,6 +201,24 @@ impl VersionService {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Put an environment variable back the way it was before a test
+    /// changed it. Used under `with_temp_scoop_home`, where `env_guard`
+    /// would deadlock on `ENV_LOCK`.
+    ///
+    /// # Safety
+    ///
+    /// Same contract as `std::env::set_var`: the caller must be the only
+    /// thread touching the environment (these tests are `#[serial]`).
+    unsafe fn restore_env(name: &str, prev: Option<String>) {
+        // SAFETY: forwarded from the caller.
+        unsafe {
+            match prev {
+                Some(v) => std::env::set_var(name, v),
+                None => std::env::remove_var(name),
+            }
+        }
+    }
     use crate::test_utils::with_temp_scoop_home;
     use serial_test::serial;
     use tempfile::TempDir;
@@ -315,7 +333,7 @@ mod tests {
     /// pin. Fails if a `.scoop-version` fallback is reintroduced in
     /// `get_local`.
     #[test]
-    fn legacy_version_file_is_ignored() {
+    fn get_local_ignores_legacy_version_file() {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join(".scoop-version"), "oldenv").unwrap();
         assert_eq!(VersionService::get_local(dir.path()), None);
@@ -504,6 +522,8 @@ mod tests {
             VersionService::set_local(&parent, "parentenv").unwrap();
             VersionService::set_global("globalenv").unwrap();
 
+            let prev_scuv = std::env::var("SCUV_RESOLVE_MAX_DEPTH").ok();
+            let prev_scoop = std::env::var("SCOOP_RESOLVE_MAX_DEPTH").ok();
             // SAFETY: serial test, no concurrent env access (env_guard would
             // deadlock here: with_temp_scoop_home already holds ENV_LOCK).
             unsafe {
@@ -511,11 +531,11 @@ mod tests {
                 std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "0");
             }
             let resolved = VersionService::resolve(&deep);
-            // Clean up before asserting so a failure cannot leak the
-            // variable into later tests.
-            // SAFETY: serial test, no concurrent env access.
+            // Restore before asserting so a failure cannot leak into later
+            // tests. SAFETY: serial test, no concurrent env access.
             unsafe {
-                std::env::remove_var("SCOOP_RESOLVE_MAX_DEPTH");
+                restore_env("SCUV_RESOLVE_MAX_DEPTH", prev_scuv);
+                restore_env("SCOOP_RESOLVE_MAX_DEPTH", prev_scoop);
             }
             assert_eq!(
                 resolved,
@@ -558,6 +578,8 @@ mod tests {
             let dir = temp.path();
             VersionService::set_local(dir, "fileenv").unwrap();
 
+            let prev_scuv = std::env::var("SCUV_VERSION").ok();
+            let prev_scoop = std::env::var("SCOOP_VERSION").ok();
             // SAFETY: serial test, no concurrent env access (env_guard would
             // deadlock here: with_temp_scoop_home already holds ENV_LOCK).
             unsafe {
@@ -565,11 +587,11 @@ mod tests {
                 std::env::set_var("SCOOP_VERSION", "legacyenv");
             }
             let resolved = VersionService::resolve(dir);
-            // Clean up before asserting so a failure cannot leak the
-            // variable into later tests.
-            // SAFETY: serial test, no concurrent env access.
+            // Restore before asserting so a failure cannot leak into later
+            // tests. SAFETY: serial test, no concurrent env access.
             unsafe {
-                std::env::remove_var("SCOOP_VERSION");
+                restore_env("SCUV_VERSION", prev_scuv);
+                restore_env("SCOOP_VERSION", prev_scoop);
             }
             assert_eq!(resolved, Some("fileenv".to_string()));
         });

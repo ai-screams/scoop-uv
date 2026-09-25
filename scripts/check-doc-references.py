@@ -126,7 +126,12 @@ for rel in ("llms.txt", "docs/src/llms.md"):
 
 # --- 4. Translation keys: locales/app.yml is the source of truth ---------
 keys = len(re.findall(r"^[a-z_][a-zA-Z0-9_.]*:$", read("locales/app.yml"), re.M))
-for rel in ("llms-full.txt", "CONTRIBUTING.md", "docs/src/development/translation.md"):
+for rel in (
+    "llms-full.txt",
+    "CONTRIBUTING.md",
+    "docs/src/development/translation.md",
+    "docs/src/development/docs-translation.md",
+):
     body = read(rel)
     wrong = [n for n in re.findall(r"(\d+) keys", body) if int(n) != keys]
     check(

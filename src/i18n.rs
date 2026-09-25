@@ -184,23 +184,28 @@ mod tests {
         }
     }
 
-    /// The scoop-era `SCOOP_LANG` is ignored. `SCUV_HOME` points at an empty
-    /// tempdir so no config file can answer either; only the system locale
-    /// remains, and it is not `pt-BR` on the machines this runs on.
-    /// Fails if a `SCOOP_LANG` fallback is reintroduced in `detect_locale`.
+    /// The scoop-era `SCOOP_LANG` is ignored: whatever the machine resolves
+    /// to without it must not change when it is set to a different supported
+    /// code. `SCUV_HOME` points at an empty tempdir so no config file can
+    /// answer either. Fails if a `SCOOP_LANG` fallback is reintroduced in
+    /// `detect_locale`.
     #[test]
     #[serial]
     fn test_detect_ignores_legacy_scoop_lang() {
         let home = tempfile::TempDir::new().unwrap();
         let _g = crate::test_utils::env_guard(&[
             ("SCUV_LANG", None),
-            ("SCOOP_LANG", Some("pt-BR")),
+            ("SCOOP_LANG", None),
             (
                 crate::paths::SCUV_HOME_ENV,
                 Some(home.path().to_str().unwrap()),
             ),
         ]);
-        assert_ne!(detect_locale(), "pt-BR");
+        let baseline = detect_locale();
+        let other = if baseline == "pt-BR" { "ja" } else { "pt-BR" };
+        // SAFETY: the guard above holds ENV_LOCK and restores SCOOP_LANG on drop.
+        unsafe { std::env::set_var("SCOOP_LANG", other) };
+        assert_eq!(detect_locale(), baseline);
     }
 
     #[test]

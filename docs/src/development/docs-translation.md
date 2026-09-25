@@ -1,6 +1,6 @@
 # Documentation Translation (mdBook)
 
-> For translating CLI strings (the 226 keys in `locales/app.yml`
+> For translating CLI strings (the 220 keys in `locales/app.yml`
 > consumed by the Rust binary), see [translation](translation.md)
 > instead. This page covers user-documentation translation only.
 
