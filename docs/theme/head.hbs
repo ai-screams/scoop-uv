@@ -18,6 +18,13 @@
   docs/book.toml — if the site moves, both must be edited
   together. There is no programmatic way to read book.toml from
   the rendered HTML; mdBook doesn't expose it to the theme.
+
+  The same locale paths also feed three SEO/navigation additions:
+  a per-page <link rel="canonical"> on https://ai-scream.ai,
+  hreflang alternates pairing each English page with its Korean
+  twin, and a "by Ai-Scream" link back to the Ai-Scream home. They
+  are set from script because mdBook gives the theme only the
+  source `.md` path (`{{ path }}`), not the rendered page URL.
 --}}
 <style>
   .locale-switcher {
@@ -35,6 +42,29 @@
     transition: opacity 0.15s ease;
   }
   .locale-switcher:hover { opacity: 1; }
+  /* Inside mdBook's menu bar: sits next to the print/git/edit buttons
+     instead of floating over them. */
+  .right-buttons .locale-switcher {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: 10px;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    opacity: 1;
+    white-space: nowrap;
+  }
+  /* Match the theme's menu-bar icons (light, rust, coal, navy, ayu). */
+  .right-buttons .locale-switcher,
+  .right-buttons .locale-switcher a { color: var(--icons); }
+  .right-buttons .locale-switcher a:hover { color: var(--icons-hover); }
+  .right-buttons .locale-switcher a[aria-current="true"] { color: var(--fg); }
+  @media (max-width: 620px) {
+    .right-buttons .locale-switcher .home-link,
+    .right-buttons .locale-switcher .sep { display: none; }
+  }
   .locale-switcher a { margin: 0 4px; text-decoration: none; }
   .locale-switcher a[aria-current="true"] {
     font-weight: bold;
@@ -49,8 +79,16 @@
     .locale-switcher a[aria-current="true"] { color: #999; }
   }
 </style>
+{{#if (eq path "404.md")}}
+<meta name="robots" content="noindex">
+{{/if}}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  (function () {
+    // Pages that must not join a canonical/hreflang cluster: the 404 page
+    // (GitHub Pages serves it for any missing URL, so location.pathname is
+    // arbitrary) and print.html (mdBook already marks it noindex).
+    var skipSeoLinks = {{#if (eq path "404.md")}}true{{else}}{{#if (eq path "print.md")}}true{{else}}false{{/if}}{{/if}};
+    var siteOrigin = 'https://ai-scream.ai';
     var siteRoot = '/scoop-uv';  // must match `site-url` in book.toml
     var path = location.pathname;
 
@@ -65,18 +103,46 @@
     var enPath = isKorean ? (rel.replace(/^\/ko/, '') || '/') : rel;
     var koPath = isKorean ? rel : ('/ko' + (rel === '/' ? '/' : rel));
 
-    // Preserve query and fragment so search highlights / deep-linked
-    // anchors survive a locale switch.
-    var suffix = location.search + location.hash;
-    var enHref = siteRoot + enPath + suffix;
-    var koHref = siteRoot + koPath + suffix;
+    // --- SEO: canonical + hreflang (runs in <head>, before first paint) ---
+    // `/x/index.html` and `/x/` are the same page; canonicalize to `/x/`.
+    function pageUrl(p) {
+      return siteOrigin + siteRoot + p.replace(/(^|\/)index\.html$/, '$1');
+    }
+    function addLink(relValue, href, hreflang) {
+      var link = document.createElement('link');
+      link.rel = relValue;
+      link.href = href;
+      if (hreflang) link.hreflang = hreflang;
+      document.head.appendChild(link);
+    }
+    if (!skipSeoLinks) {
+      addLink('canonical', pageUrl(isKorean ? koPath : enPath));
+      addLink('alternate', pageUrl(enPath), 'en');
+      addLink('alternate', pageUrl(koPath), 'ko');
+      addLink('alternate', pageUrl(enPath), 'x-default');
+    }
 
-    var div = document.createElement('div');
-    div.className = 'locale-switcher';
-    div.innerHTML =
-      '<a href="' + enHref + '"' + (isKorean ? '' : ' aria-current="true"') + '>English</a>'
-      + ' | '
-      + '<a href="' + koHref + '"' + (isKorean ? ' aria-current="true"' : '') + '>한국어</a>';
-    document.body.appendChild(div);
-  });
+    document.addEventListener('DOMContentLoaded', function () {
+      // Preserve query and fragment so search highlights / deep-linked
+      // anchors survive a locale switch.
+      var suffix = location.search + location.hash;
+      var enHref = siteRoot + enPath + suffix;
+      var koHref = siteRoot + koPath + suffix;
+      var home = siteOrigin + (isKorean ? '/ko/' : '/');
+
+      var div = document.createElement('div');
+      div.className = 'locale-switcher';
+      div.innerHTML =
+        '<a class="home-link" href="' + home + '">by Ai-Scream</a>'
+        + '<span class="sep"> · </span>'
+        + '<a href="' + enHref + '"' + (isKorean ? '' : ' aria-current="true"') + '>English</a>'
+        + ' | '
+        + '<a href="' + koHref + '"' + (isKorean ? ' aria-current="true"' : '') + '>한국어</a>';
+      // Prefer a slot in the menu bar so the print/git/edit buttons stay
+      // clickable; fall back to the floating overlay if the theme changes.
+      var buttons = document.querySelector('.menu-bar .right-buttons');
+      if (buttons) buttons.insertBefore(div, buttons.firstChild);
+      else document.body.appendChild(div);
+    });
+  })();
 </script>
