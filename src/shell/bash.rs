@@ -263,7 +263,7 @@ _scuv_complete() {
             ;;
         lang)
             # Complete language codes
-            COMPREPLY=($(compgen -W "en ko ja pt-BR" -- "$cur"))
+            COMPREPLY=($(compgen -W "en ko ja pt-BR es" -- "$cur"))
             ;;
         migrate)
             # Complete migrate subcommands

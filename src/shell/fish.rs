@@ -182,6 +182,7 @@ complete -c scuv -n "__fish_seen_subcommand_from lang" -a "en" -d "English"
 complete -c scuv -n "__fish_seen_subcommand_from lang" -a "ko" -d "Korean"
 complete -c scuv -n "__fish_seen_subcommand_from lang" -a "ja" -d "Japanese"
 complete -c scuv -n "__fish_seen_subcommand_from lang" -a "pt-BR" -d "Portuguese (Brazilian)"
+complete -c scuv -n "__fish_seen_subcommand_from lang" -a "es" -d "Spanish"
 
 # Subcommands for 'migrate'
 complete -c scuv -n "__fish_seen_subcommand_from migrate; and not __fish_seen_subcommand_from list all @env" -a "list" -d "List environments available for migration"

@@ -10,36 +10,42 @@ lang.current:
   ko: "현재: %{lang} (%{name})"
   pt-BR: "Atual: %{lang} (%{name})"
   ja: "現在: %{lang} (%{name})"
+  es: "Actual: %{lang} (%{name})"
 
 lang.set:
   en: "Language set to %{lang}"
   ko: "언어가 %{lang}(으)로 설정됨"
   pt-BR: "Idioma definido para %{lang}"
   ja: "%{lang} に設定しました"
+  es: "Idioma establecido a %{lang}"
 
 lang.reset:
   en: "Reset to system default: %{lang}"
   ko: "시스템 기본으로 리셋됨: %{lang}"
   pt-BR: "Redefinido para o padrão do sistema: %{lang}"
   ja: "システムデフォルトにリセットしました: %{lang}"
+  es: "Restablecido al idioma por defecto: %{lang}"
 
 lang.unsupported:
   en: "Unsupported language: %{lang}"
   ko: "지원하지 않는 언어: %{lang}"
   pt-BR: "Idioma não suportado: %{lang}"
   ja: "サポートされていない言語: %{lang}"
+  es: "Idioma no compatible: %{lang}"
 
 lang.list_header:
   en: "Supported languages:"
   ko: "지원 언어:"
   pt-BR: "Idiomas suportados:"
   ja: "対応言語:"
+  es: "Idiomas disponibles:"
 
 lang.hint:
   en: "Run 'scuv lang --list' to see supported languages"
   ko: "'scuv lang --list'로 지원 언어 확인"
   pt-BR: "Execute 'scuv lang --list' para ver os idiomas suportados"
   ja: "'scuv lang --list' を実行するとサポートされている言語を確認できます"
+  es: "Ejecutar 'scuv lang --list' para ver idiomas disponibles"
 
 # ============================================================================
 # Create command
@@ -49,42 +55,49 @@ create.removing_existing:
   ko: "기존 '%{name}' 삭제 중..."
   pt-BR: "Removendo '%{name}' existente..."
   ja: "既存の '%{name}' を削除中..."
+  es: "Eliminando '%{name}' existente..."
 
 create.creating:
   en: "Creating '%{name}' (Python %{python})..."
   ko: "'%{name}' 생성 중 (Python %{python})..."
   pt-BR: "Criando '%{name}' (Python %{python})..."
   ja: "'%{name}' を作成中 (Python %{python})..."
+  es: "Creando '%{name}' (Python %{python})..."
 
 create.success:
   en: "Created '%{name}' environment"
   ko: "'%{name}' 환경 생성됨"
   pt-BR: "Ambiente '%{name}' criado"
   ja: "'%{name}' 環境を作成しました"
+  es: "Entorno '%{name}' creado"
 
 create.path:
   en: "  Path: %{path}"
   ko: "  경로: %{path}"
   pt-BR: "  Caminho: %{path}"
   ja: "  パス: %{path}"
+  es: "  Ruta: %{path}"
 
 create.activate_hint:
   en: "  Activate: scuv use %{name}"
   ko: "  활성화: scuv use %{name}"
   pt-BR: "  Ativar: scuv use %{name}"
   ja: "  有効化: scuv use %{name}"
+  es: "  Activar: scuv use %{name}"
 
 create.creating_with_path:
   en: "Creating '%{name}' (Python: %{path})..."
   ko: "'%{name}' 생성 중 (Python: %{path})..."
   pt-BR: "Criando '%{name}' (Python: %{path})..."
   ja: "'%{name}' を作成中 (Python: %{path})..."
+  es: "Creando '%{name}' (Python: %{path})..."
 
 create.installing_python:
   en: "Python %{version} is not installed — installing now..."
   ko: "Python %{version}이(가) 설치되어 있지 않아 설치합니다..."
   pt-BR: "Python %{version} não está instalado — instalando agora..."
   ja: "Python %{version} は未インストール — 今インストールします..."
+  es: "Python %{version} no está instalado — instalando ahora..."
 
 # ============================================================================
 # Clone command
@@ -94,30 +107,35 @@ clone.cloning:
   ko: "'%{src}' → '%{dst}' 복제 중 (Python %{python})..."
   pt-BR: "Clonando '%{src}' → '%{dst}' (Python %{python})..."
   ja: "'%{src}' → '%{dst}' を複製中 (Python %{python})..."
+  es: "Clonando '%{src}' → '%{dst}' (Python %{python})..."
 
 clone.copying_packages:
   en: "Copying %{count} packages..."
   ko: "패키지 %{count}개 복사 중..."
   pt-BR: "Copiando %{count} pacotes..."
   ja: "パッケージ %{count} 個をコピー中..."
+  es: "Copiando %{count} paquetes..."
 
 clone.no_packages_skipped:
   en: "Package copy skipped (--no-packages)"
   ko: "패키지 복사를 건너뜀 (--no-packages)"
   pt-BR: "Cópia de pacotes ignorada (--no-packages)"
   ja: "パッケージのコピーをスキップ (--no-packages)"
+  es: "Copia de paquetes omitida (--no-packages)"
 
 clone.success:
   en: "Cloned '%{src}' → '%{dst}'"
   ko: "'%{src}' → '%{dst}' 복제 완료"
   pt-BR: "'%{src}' → '%{dst}' clonado"
   ja: "'%{src}' → '%{dst}' を複製しました"
+  es: "'%{src}' → '%{dst}' clonado"
 
 clone.self_clone_error:
   en: "Source and destination must differ"
   ko: "원본과 대상이 같을 수 없어요"
   pt-BR: "Origem e destino devem ser diferentes"
   ja: "コピー元とコピー先が同じです"
+  es: "El origen y el destino deben ser diferentes"
 
 # ============================================================================
 # Export / Import commands
@@ -127,42 +145,49 @@ export.written:
   ko: "'%{name}'을(를) %{path}에 내보냄"
   pt-BR: "'%{name}' exportado para %{path}"
   ja: "'%{name}' を %{path} にエクスポートしました"
+  es: "'%{name}' exportado a %{path}"
 
 import.creating:
   en: "Importing into '%{name}' (Python %{python})..."
   ko: "'%{name}'(으)로 가져오는 중 (Python %{python})..."
   pt-BR: "Importando para '%{name}' (Python %{python})..."
   ja: "'%{name}' へインポート中 (Python %{python})..."
+  es: "Importando a '%{name}' (Python %{python})..."
 
 import.installing:
   en: "Installing %{count} packages from export..."
   ko: "내보낸 파일에서 패키지 %{count}개 설치 중..."
   pt-BR: "Instalando %{count} pacotes do export..."
   ja: "エクスポートから %{count} 個のパッケージをインストール中..."
+  es: "Instalando %{count} paquetes desde la exportación..."
 
 import.success:
   en: "Imported '%{name}' with %{count} packages"
   ko: "'%{name}'을(를) 패키지 %{count}개와 함께 가져왔어요"
   pt-BR: "'%{name}' importado com %{count} pacotes"
   ja: "'%{name}' を %{count} 個のパッケージとともにインポートしました"
+  es: "Importado '%{name}' con %{count} paquetes"
 
 error.invalid_export_file:
   en: "Invalid export file '%{path}': %{reason}"
   ko: "잘못된 내보내기 파일 '%{path}': %{reason}"
   pt-BR: "Arquivo de exportação inválido '%{path}': %{reason}"
   ja: "無効なエクスポートファイル '%{path}': %{reason}"
+  es: "Archivo de exportación inválido '%{path}': %{reason}"
 
 error.unsupported_export_version:
   en: "Export file version '%{version}' is not supported (this binary speaks '%{supported}')"
   ko: "내보내기 파일 버전 '%{version}'은(는) 지원되지 않아요 (이 바이너리는 '%{supported}' 사용)"
   pt-BR: "Versão '%{version}' do arquivo de exportação não é suportada (este binário usa '%{supported}')"
   ja: "エクスポートファイルのバージョン '%{version}' は未対応です (このバイナリは '%{supported}')"
+  es: "La versión '%{version}' del archivo de exportación no es compatible (este binario usa '%{supported}')"
 
 suggestion.unsupported_export_version:
   en: "→ Upgrade scuv to a build that supports version '%{supported}' or higher, or re-export from a compatible source"
   ko: "→ '%{supported}' 이상을 지원하는 scuv로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
   pt-BR: "→ Atualize o scuv para uma versão que suporte '%{supported}' ou superior, ou re-exporte de uma fonte compatível"
   ja: "→ '%{supported}' 以降に対応する scuv にアップグレードするか、互換性のある環境から再エクスポートしてください"
+  es: "→ Actualizar scuv a una versión que soporte '%{supported}' o superior, o reexportar de una fuente compatible"
 
 # ============================================================================
 # Sync command (.scuv.toml)
@@ -172,54 +197,63 @@ sync.creating_env:
   ko: ".scuv.toml에 따라 '%{name}' 생성 중 (Python %{python})..."
   pt-BR: "Criando '%{name}' (Python %{python}) conforme .scuv.toml..."
   ja: ".scuv.toml に従って '%{name}' を作成中 (Python %{python})..."
+  es: "Creando '%{name}' (Python %{python}) según .scuv.toml..."
 
 sync.installing:
   en: "Installing %{count} packages..."
   ko: "패키지 %{count}개 설치 중..."
   pt-BR: "Instalando %{count} pacotes..."
   ja: "パッケージ %{count} 個をインストール中..."
+  es: "Instalando %{count} paquetes..."
 
 sync.up_to_date:
   en: "Nothing to install (no packages in the resolved groups)"
   ko: "설치할 항목 없음 (선택된 그룹에 패키지 없음)"
   pt-BR: "Nada a instalar (sem pacotes nos grupos selecionados)"
   ja: "インストールするものはありません (選択されたグループにパッケージなし)"
+  es: "Nada que instalar (no hay paquetes en los grupos seleccionados)"
 
 sync.success:
   en: "Synced %{count} packages into '%{name}'"
   ko: "'%{name}'에 패키지 %{count}개 동기화 완료"
   pt-BR: "%{count} pacotes sincronizados em '%{name}'"
   ja: "'%{name}' に %{count} 個のパッケージを同期しました"
+  es: "%{count} paquetes sincronizados en '%{name}'"
 
 sync.dry_run_header:
   en: "Dry-run plan:"
   ko: "Dry-run 계획:"
   pt-BR: "Plano dry-run:"
   ja: "Dry-run 計画:"
+  es: "Plan dry-run:"
 
 sync.python_mismatch_warn:
   en: "'%{name}' uses Python %{actual} but .scuv.toml asks for %{wanted} — syncing packages anyway"
   ko: "'%{name}'은 Python %{actual} 사용 중이지만 .scuv.toml은 %{wanted} 요청 — 패키지 동기화는 계속 진행"
   pt-BR: "'%{name}' usa Python %{actual} mas .scuv.toml pede %{wanted} — sincronizando pacotes mesmo assim"
   ja: "'%{name}' は Python %{actual} を使用していますが .scuv.toml は %{wanted} を要求 — パッケージ同期は続行"
+  es: "'%{name}' usa Python %{actual} pero .scuv.toml pide %{wanted} — sincronizando paquetes igualmente"
 
 sync.unknown_group_error:
   en: "Group '%{group}' is not defined in .scuv.toml (available: %{groups})"
   ko: "'%{group}' 그룹이 .scuv.toml에 정의되어 있지 않음 (사용 가능: %{groups})"
   pt-BR: "Grupo '%{group}' não está definido em .scuv.toml (disponíveis: %{groups})"
   ja: ".scuv.toml にグループ '%{group}' が定義されていません (利用可能: %{groups})"
+  es: "Grupo '%{group}' no está definido en .scuv.toml (disponibles: %{groups})"
 
 error.manifest_not_found:
   en: "No .scuv.toml found in '%{path}' or any parent directory"
   ko: "'%{path}' 또는 상위 디렉터리 어디에도 .scuv.toml이 없어요"
   pt-BR: "Nenhum .scuv.toml encontrado em '%{path}' ou nos diretórios pai"
   ja: "'%{path}' またはその上位ディレクトリに .scuv.toml が見つかりません"
+  es: "No se encontró .scuv.toml en '%{path}' ni en los directorios padre"
 
 suggestion.manifest_not_found:
   en: "→ Create one at the project root (see https://ai-scream.ai/scoop-uv/commands/sync.html)"
   ko: "→ 프로젝트 루트에 만들어 주세요 (https://ai-scream.ai/scoop-uv/commands/sync.html 참고)"
   pt-BR: "→ Crie um na raiz do projeto (veja https://ai-scream.ai/scoop-uv/commands/sync.html)"
   ja: "→ プロジェクトルートに作成してください (https://ai-scream.ai/scoop-uv/commands/sync.html 参照)"
+  es: "→ Crear uno en la raíz del proyecto (ver https://ai-scream.ai/scoop-uv/commands/sync.html)"
 
 # ============================================================================
 # Run command
@@ -229,6 +263,7 @@ run.empty_command:
   ko: "scuv run은 실행할 명령이 필요해요"
   pt-BR: "scuv run requer um comando para executar"
   ja: "scuv run には実行するコマンドが必要です"
+  es: "scuv run requiere un comando para ejecutar"
 
 # ============================================================================
 # Remove command
@@ -238,30 +273,35 @@ remove.path:
   ko: "경로: %{path}"
   pt-BR: "Caminho: %{path}"
   ja: "パス: %{path}"
+  es: "Ruta: %{path}"
 
 remove.confirm:
   en: "Remove '%{name}'?"
   ko: "'%{name}' 삭제?"
   pt-BR: "Remover '%{name}'?"
   ja: "'%{name}' を削除しますか?"
+  es: "¿Eliminar '%{name}'?"
 
 remove.cancelled:
   en: "Cancelled"
   ko: "취소됨"
   pt-BR: "Cancelado"
   ja: "キャンセルしました"
+  es: "Cancelado"
 
 remove.removing:
   en: "Removing '%{name}'..."
   ko: "'%{name}' 삭제 중..."
   pt-BR: "Removendo '%{name}'..."
   ja: "'%{name}' を削除中..."
+  es: "Eliminando '%{name}'..."
 
 remove.success:
   en: "Removed '%{name}'"
   ko: "'%{name}' 삭제됨"
   pt-BR: "'%{name}' removido"
   ja: "'%{name}' を削除しました"
+  es: "'%{name}' eliminado"
 
 # ============================================================================
 # List command
@@ -271,36 +311,42 @@ list.no_envs:
   ko: "환경 없음"
   pt-BR: "Nenhum ambiente ainda"
   ja: "環境がまだありません"
+  es: "Aún no hay entornos"
 
 list.no_envs_hint:
   en: "→ Create one: scuv create myenv 3.12"
   ko: "→ 생성: scuv create myenv 3.12"
   pt-BR: "→ Criar um: scuv create myenv 3.12"
   ja: "→ 新規作成: scuv create myenv 3.12"
+  es: "→ Crear uno: scuv create myenv 3.12"
 
 list.filtered_no_envs:
   en: "No environments using Python %{version}"
   ko: "Python %{version}을 사용하는 환경 없음"
   pt-BR: "Nenhum ambiente usando Python %{version}"
   ja: "Python %{version} を使用している環境はありません"
+  es: "No hay entornos que usen Python %{version}"
 
 list.filtered_hint:
   en: "→ See all: scuv list"
   ko: "→ 전체 보기: scuv list"
   pt-BR: "→ Ver todos: scuv list"
   ja: "→ 全件表示: scuv list"
+  es: "→ Ver todos: scuv list"
 
 list.no_pythons:
   en: "No Python versions installed"
   ko: "설치된 Python 없음"
   pt-BR: "Nenhuma versão do Python instalada"
   ja: "インストール済みの Python バージョンがありません"
+  es: "No hay versiones de Python instaladas"
 
 list.no_pythons_hint:
   en: "→ Install one: scuv install 3.12"
   ko: "→ 설치: scuv install 3.12"
   pt-BR: "→ Instalar um: scuv install 3.12"
   ja: "→ インストール: scuv install 3.12"
+  es: "→ Instalar una: scuv install 3.12"
 
 # ============================================================================
 # Use command
@@ -310,48 +356,56 @@ use.set_global:
   ko: "'%{name}' 전역 환경으로 설정됨"
   pt-BR: "'%{name}' definido como ambiente global"
   ja: "'%{name}' をグローバル環境に設定しました"
+  es: "'%{name}' establecido como entorno global"
 
 use.set_local:
   en: "Set '%{name}' as local environment"
   ko: "'%{name}' 로컬 환경으로 설정됨"
   pt-BR: "'%{name}' definido como ambiente local"
   ja: "'%{name}' をローカル環境に設定しました"
+  es: "'%{name}' establecido como entorno local"
 
 use.venv_not_symlink:
   en: ".venv exists but isn't a symlink, skipping"
   ko: ".venv가 심볼릭 링크가 아님, 건너뜀"
   pt-BR: ".venv existe mas não é um symlink, pulando"
   ja: ".venv は存在しますがシンボリックリンクではないため、スキップします"
+  es: ".venv existe pero no es un enlace simbólico, omitiendo"
 
 use.linked:
   en: "Linked .venv -> %{path}"
   ko: ".venv -> %{path} 링크됨"
   pt-BR: ".venv -> %{path} vinculado"
   ja: ".venv -> %{path} にリンクしました"
+  es: ".venv enlazado -> %{path}"
 
 use.system_local:
   en: "Using system Python in current directory"
   ko: "현재 디렉토리에서 시스템 Python 사용"
   pt-BR: "Usando Python do sistema no diretório atual"
   ja: "現在のディレクトリでシステムPythonを使用します"
+  es: "Usando el Python del sistema en el directorio actual"
 
 use.system_global:
   en: "Using system Python globally"
   ko: "전역으로 시스템 Python 사용"
   pt-BR: "Usando Python do sistema globalmente"
   ja: "グローバルでシステムPythonを使用します"
+  es: "Usando el Python del sistema de forma global"
 
 use.local_unset:
   en: "Removed local environment setting"
   ko: "로컬 환경 설정 제거됨"
   pt-BR: "Configuração de ambiente local removida"
   ja: "ローカル環境設定を削除しました"
+  es: "Configuración de entorno local eliminada"
 
 use.global_unset:
   en: "Removed global environment setting"
   ko: "전역 환경 설정 제거됨"
   pt-BR: "Configuração de ambiente global removida"
   ja: "グローバル環境設定を削除しました"
+  es: "Configuración de entorno global eliminada"
 
 # ============================================================================
 # Shell command
@@ -361,18 +415,22 @@ shell.set:
   ko: "쉘 환경 설정됨: %{name}"
   pt-BR: "Ambiente do shell definido para: %{name}"
   ja: "シェル環境を設定しました: %{name}"
+  es: "Entorno del shell establecido a: %{name}"
 
 shell.system:
   en: "Shell environment set to system Python"
   ko: "쉘 환경이 시스템 Python으로 설정됨"
   pt-BR: "Ambiente do shell definido para Python do sistema"
   ja: "シェル環境をシステムPythonに設定しました"
+  es: "Entorno del shell establecido al Python del sistema"
 
 shell.unset:
   en: "Shell environment unset"
   ko: "쉘 환경 설정 해제됨"
   pt-BR: "Ambiente do shell não definido"
   ja: "シェル環境設定を解除しました"
+  es: "Configuración del entorno del shell eliminada"
+
 
 # ============================================================================
 # Install command
@@ -382,12 +440,14 @@ install.installing:
   ko: "Python %{version} 설치 중..."
   pt-BR: "Instalando Python %{version}..."
   ja: "Python %{version} をインストール中..."
+  es: "Instalando Python %{version}..."
 
 install.success:
   en: "Python %{version} installed"
   ko: "Python %{version} 설치됨"
   pt-BR: "Python %{version} instalado"
   ja: "Python %{version} をインストールしました"
+  es: "Python %{version} instalado"
 
 # ============================================================================
 # Uninstall command
@@ -397,54 +457,63 @@ uninstall.uninstalling:
   ko: "Python %{version} 삭제 중..."
   pt-BR: "Desinstalando Python %{version}..."
   ja: "Python %{version} をアンインストール中..."
+  es: "Desinstalando Python %{version}..."
 
 uninstall.success:
   en: "Python %{version} uninstalled"
   ko: "Python %{version} 삭제됨"
   pt-BR: "Python %{version} desinstalado"
   ja: "Python %{version} をアンインストールしました"
+  es: "Python %{version} desinstalado"
 
 uninstall.cascade_found:
   en: "Found %{count} environment(s) using Python %{version}:"
   ko: "Python %{version}을 사용하는 %{count}개 환경 발견:"
   pt-BR: "Encontrado(s) %{count} ambiente(s) usando Python %{version}:"
   ja: "Python %{version} を使用している %{count}個の環境が見つかりました:"
+  es: "Se encontraron %{count} entorno(s) que usan Python %{version}:"
 
 uninstall.cascade_env:
   en: "  - %{name}"
   ko: "  - %{name}"
   pt-BR: "  - %{name}"
   ja: "  - %{name}"
+  es: "  - %{name}"
 
 uninstall.cascade_confirm:
   en: "Remove these environments and uninstall Python %{version}?"
   ko: "이 환경들을 삭제하고 Python %{version}을 삭제?"
   pt-BR: "Remover estes ambientes e desinstalar Python %{version}?"
   ja: "これらの環境を削除して Python %{version} をアンインストールしますか?"
+  es: "¿Eliminar estos entornos y desinstalar Python %{version}?"
 
 uninstall.cascade_removing:
   en: "Removing '%{name}'..."
   ko: "'%{name}' 삭제 중..."
   pt-BR: "Removendo '%{name}'..."
   ja: "'%{name}' を削除中..."
+  es: "Eliminando '%{name}'..."
 
 uninstall.cascade_removed:
   en: "Removed %{count} environment(s)"
   ko: "%{count}개 환경 삭제됨"
   pt-BR: "%{count} ambiente(s) removido(s)"
   ja: "%{count}個の環境を削除しました"
+  es: "%{count} entorno(s) eliminado(s)"
 
 uninstall.cascade_none:
   en: "No environments using Python %{version}"
   ko: "Python %{version}을 사용하는 환경 없음"
   pt-BR: "Nenhum ambiente usando Python %{version}"
   ja: "Python %{version} を使用している環境はありません"
+  es: "No hay entornos que usen Python %{version}"
 
 uninstall.cascade_cancelled:
   en: "Cancelled"
   ko: "취소됨"
   pt-BR: "Cancelado"
   ja: "キャンセルしました"
+  es: "Cancelado"
 
 # ============================================================================
 # Migrate command - scan/list
@@ -454,30 +523,35 @@ migrate.scanning:
   ko: "%{source}에서 환경 검색 중..."
   pt-BR: "Procurando ambientes em %{source}..."
   ja: "%{source} から環境をスキャン中..."
+  es: "Buscando entornos en %{source}..."
 
 migrate.no_envs:
   en: "No %{source} environments found."
   ko: "%{source} 환경을 찾지 못함."
   pt-BR: "Nenhum ambiente %{source} encontrado."
   ja: "%{source} 環境が見つかりませんでした"
+  es: "No se encontraron entornos de %{source}."
 
 migrate.found:
   en: "Found %{count} environment(s):"
   ko: "%{count}개 환경 발견:"
   pt-BR: "%{count} ambiente(s) encontrado(s):"
   ja: "%{count}個の環境が見つかりました:"
+  es: "Se encontraron %{count} entorno(s):"
 
 migrate.hint_single:
   en: "To migrate: scuv migrate @env <name>"
   ko: "마이그레이션: scuv migrate @env <name>"
   pt-BR: "Para migrar: scuv migrate @env <name>"
   ja: "移行: scuv migrate @env <name>"
+  es: "Para migrar: scuv migrate @env <name>"
 
 migrate.hint_preview:
   en: "To preview: scuv migrate @env <name> --dry-run"
   ko: "미리보기: scuv migrate @env <name> --dry-run"
   pt-BR: "Para pré-visualizar: scuv migrate @env <name> --dry-run"
   ja: "プレビュー: scuv migrate @env <name> --dry-run"
+  es: "Para previsualizar: scuv migrate @env <name> --dry-run"
 
 # ============================================================================
 # Migrate command - single
@@ -487,144 +561,168 @@ migrate.dry_run_header:
   ko: "[DRY-RUN] 마이그레이션 미리보기:"
   pt-BR: "[DRY-RUN] Prévia da migração:"
   ja: "[DRY-RUN] 移行プレビュー:"
+  es: "[DRY-RUN] Vista previa de la migración:"
 
 migrate.from:
   en: "  From: %{path}"
   ko: "  원본: %{path}"
   pt-BR: "  De: %{path}"
   ja: "  移行元: %{path}"
+  es: "  Desde: %{path}"
 
 migrate.to:
   en: "  To: %{path}"
   ko: "  대상: %{path}"
   pt-BR: "  Para: %{path}"
   ja: "  移行先: %{path}"
+  es: "  Hacia: %{path}"
 
 migrate.python:
   en: "  Python: %{version}"
   ko: "  Python: %{version}"
   pt-BR: "  Python: %{version}"
   ja: "  Python: %{version}"
+  es: "  Python: %{version}"
 
 migrate.packages:
   en: "  Packages: %{count}"
   ko: "  패키지: %{count}개"
   pt-BR: "  Pacotes: %{count}"
   ja: "  パッケージ: %{count}"
+  es: "  Paquetes: %{count}"
 
 migrate.failed_packages:
   en: "  Failed packages (%{count}):"
   ko: "  실패한 패키지 (%{count}개):"
   pt-BR: "  Pacotes com falha (%{count}):"
   ja: "  失敗したパッケージ (%{count}):"
+  es: "  Paquetes fallidos (%{count}):"
 
 migrate.dry_run_hint:
   en: "→ Run without --dry-run to migrate"
   ko: "→ --dry-run 없이 실행하면 마이그레이션 진행"
   pt-BR: "→ Execute sem --dry-run para migrar"
   ja: "→ --dry-run なしで実行すると移行を開始します"
+  es: "→ Ejecutar sin --dry-run para migrar"
 
 migrate.success:
   en: "Migrated '%{name}'"
   ko: "'%{name}' 마이그레이션 완료"
   pt-BR: "'%{name}' migrado"
   ja: "'%{name}' を移行しました"
+  es: "'%{name}' migrado"
 
 migrate.activate_hint:
   en: "→ Activate: scuv use %{name}"
   ko: "→ 활성화: scuv use %{name}"
   pt-BR: "→ Ativar: scuv use %{name}"
   ja: "→ 有効化: scuv use %{name}"
+  es: "→ Activar: scuv use %{name}"
 
 migrate.source_path:
   en: "  Source: %{path}"
   ko: "  원본: %{path}"
   pt-BR: "  Origem: %{path}"
   ja: "  ソース: %{path}"
+  es: "  Origen: %{path}"
 
 migrate.size:
   en: "  Size: %{size} MB"
   ko: "  크기: %{size} MB"
   pt-BR: "  Tamanho: %{size} MB"
   ja: "  サイズ: %{size} MB"
+  es: "  Tamaño: %{size} MB"
 
 migrate.auto_rename:
   en: "Auto-renaming to '%{name}'"
   ko: "'%{name}'(으)로 자동 이름 변경"
   pt-BR: "Renomeando automaticamente para '%{name}'"
   ja: "'%{name}' に自動リネーム中"
+  es: "Renombrando automáticamente a '%{name}'"
 
 migrate.will_overwrite:
   en: "Will overwrite existing environment"
   ko: "기존 환경 덮어쓰기"
   pt-BR: "Irá sobrescrever o ambiente existente"
   ja: "既存の環境に上書きします"
+  es: "Se sobrescribirá el entorno existente"
 
 migrate.will_migrate_as:
   en: "Will migrate as '%{name}'"
   ko: "'%{name}'(으)로 마이그레이션"
   pt-BR: "Será migrado como '%{name}'"
   ja: "'%{name}' に移行します"
+  es: "Se migrará como '%{name}'"
 
 migrate.skipped:
   en: "Skipped"
   ko: "건너뜀"
   pt-BR: "Ignorado"
   ja: "スキップしました"
+  es: "Omitido"
 
 migrate.name_exists:
   en: "'%{name}' already exists"
   ko: "'%{name}'이(가) 이미 존재"
   pt-BR: "'%{name}' já existe"
   ja: "'%{name}' はすでに存在します"
+  es: "'%{name}' ya existe"
 
 migrate.use_flags:
   en: "→ Use --force, --rename, or --auto-rename"
   ko: "→ --force, --rename, --auto-rename 사용"
   pt-BR: "→ Use --force, --rename ou --auto-rename"
   ja: "→ --force, --rename, --auto-rename を使用してください"
+  es: "→ Usar --force, --rename o --auto-rename"
 
 migrate.overwriting:
   en: "Overwriting existing environment"
   ko: "기존 환경 덮어쓰기"
   pt-BR: "Sobrescrevendo ambiente existente"
   ja: "既存の環境を上書きしています"
+  es: "Sobrescribiendo el entorno existente"
 
 migrate.eol_warning:
   en: "Python %{version} reached end-of-life"
   ko: "Python %{version}은 지원 종료됨"
   pt-BR: "Python %{version} chegou ao fim do suporte"
   ja: "Python %{version} はサポートが終了しています (EOL)"
+  es: "Python %{version} ha llegado al fin de su ciclo de vida (EOL)"
 
 migrate.eol_force_hint:
   en: "→ Use --force to proceed anyway"
   ko: "→ --force로 강제 진행"
   pt-BR: "→ Use --force para prosseguir mesmo assim"
   ja: "→ --force で強制的に続行します"
+  es: "→ Usar --force para continuar de todos modos"
 
 migrate.eol_proceeding:
   en: "Python %{version} is EOL, proceeding anyway"
   ko: "Python %{version} EOL이지만 계속 진행"
   pt-BR: "Python %{version} está EOL (fim de suporte), continuando mesmo assim"
   ja: "Python %{version} はEOLですが、強制的に続行します"
+  es: "Python %{version} está en EOL, continuando de todos modos"
 
 migrate.corrupted:
   en: "Corrupted: %{reason}"
   ko: "손상됨: %{reason}"
   pt-BR: "Corrompido: %{reason}"
   ja: "破損: %{reason}"
+  es: "Dañado: %{reason}"
 
 migrate.simulating:
   en: "[DRY-RUN] Simulating..."
   ko: "[DRY-RUN] 시뮬레이션 중..."
   pt-BR: "[DRY-RUN] Simulando..."
   ja: "[DRY-RUN] シミュレート中..."
+  es: "[DRY-RUN] Simulando..."
 
 migrate.migrating:
   en: "Migrating..."
   ko: "마이그레이션 중..."
   pt-BR: "Migrando..."
   ja: "移行中..."
+  es: "Migrando..."
 
 # ============================================================================
 # Migrate command - batch
@@ -634,84 +732,98 @@ migrate.no_eligible:
   ko: "마이그레이션 가능한 환경 없음."
   pt-BR: "Nenhum ambiente elegível para migração."
   ja: "移行対象の環境が見つかりません"
+  es: "No hay entornos aptos para migrar."
 
 migrate.ready_count:
   en: "  %{count} ready to migrate"
   ko: "  %{count}개 마이그레이션 준비됨"
   pt-BR: "  %{count} pronto(s) para migrar"
   ja: "  %{count}個が移行準備完了"
+  es: "  %{count} listo(s) para migrar"
 
 migrate.skipped_count:
   en: "  %{count} skipped (name conflicts)"
   ko: "  %{count}개 건너뜀 (이름 충돌)"
   pt-BR: "  %{count} ignorado(s) (conflito de nome)"
   ja: "  %{count}個スキップしました(名前の競合)"
+  es: "  %{count} omitido(s) (conflictos de nombre)"
 
 migrate.conflict_hint:
   en: "  → Use --auto-rename or migrate individually"
   ko: "  → --auto-rename 또는 개별 마이그레이션"
   pt-BR: "  → Use --auto-rename ou migre individualmente"
   ja: "  → --auto-rename を使用または個別に移行してください"
+  es: "  → Usar --auto-rename o migrar individualmente"
 
 migrate.batch_cancelled:
   en: "Migration cancelled."
   ko: "마이그레이션 취소됨."
   pt-BR: "Migração cancelada."
   ja: "移行がキャンセルされました"
+  es: "Migración cancelada."
 
 migrate.batch_dry_run:
   en: "[DRY-RUN] Simulating migration of all environments..."
   ko: "[DRY-RUN] 전체 환경 마이그레이션 시뮬레이션..."
   pt-BR: "[DRY-RUN] Simulando migração de todos os ambientes..."
   ja: "[DRY-RUN] 全環境の移行をシミュレーション中..."
+  es: "[DRY-RUN] Simulando la migración de todos los entornos..."
 
 migrate.batch_start:
   en: "Starting batch migration..."
   ko: "일괄 마이그레이션 시작..."
   pt-BR: "Iniciando migração em lote..."
   ja: "一括移行を開始中..."
+  es: "Iniciando migración por lotes..."
 
 migrate.batch_item:
   en: "Migrating '%{name}'..."
   ko: "'%{name}' 마이그레이션 중..."
   pt-BR: "Migrando '%{name}'..."
   ja: "'%{name}' を移行中..."
+  es: "Migrando '%{name}'..."
 
 migrate.batch_item_success:
   en: "  '%{name}' migrated successfully"
   ko: "  '%{name}' 마이그레이션 성공"
   pt-BR: "  '%{name}' migrado com sucesso"
   ja: "  '%{name}' の移行に成功しました"
+  es: "  '%{name}' migrado correctamente"
 
 migrate.batch_item_failed:
   en: "  Failed: %{error}"
   ko: "  실패: %{error}"
   pt-BR: "  Falha: %{error}"
   ja: "  失敗: %{error}"
+  es: "  Fallo: %{error}"
 
 migrate.batch_summary_dry:
   en: "[DRY-RUN] Would migrate %{count} environment(s)"
   ko: "[DRY-RUN] %{count}개 환경 마이그레이션 예정"
   pt-BR: "[DRY-RUN] Migraria %{count} ambiente(s)"
   ja: "[DRY-RUN] %{count}個の環境が移行対象です"
+  es: "[DRY-RUN] Se migrarían %{count} entorno(s)"
 
 migrate.batch_no_changes:
   en: "No changes made. Run without --dry-run to migrate."
   ko: "변경 없음. --dry-run 없이 실행하면 마이그레이션 진행."
   pt-BR: "Nenhuma alteração feita. Execute sem --dry-run para migrar."
   ja: "変更はありません。 --dry-run なしで実行すると移行を開始します。"
+  es: "No se realizaron cambios. Ejecutar sin --dry-run para migrar."
 
 migrate.batch_summary:
   en: "Migration complete: %{success}/%{total} succeeded"
   ko: "마이그레이션 완료: %{success}/%{total} 성공"
   pt-BR: "Migração concluída: %{success}/%{total} com sucesso"
   ja: "移行完了: %{success}/%{total} 成功"
+  es: "Migración completada: %{success}/%{total} correctas"
 
 migrate.batch_failed_list:
   en: "Failed environments: %{names}"
   ko: "실패한 환경: %{names}"
   pt-BR: "Ambientes com falha: %{names}"
   ja: "失敗した環境: %{names}"
+  es: "Entornos fallidos: %{names}"
 
 # ============================================================================
 # Migrate command - conflict
@@ -721,6 +833,7 @@ migrate.conflict_warning:
   ko: "'%{name}' 환경이 이미 존재: %{path}"
   pt-BR: "Ambiente '%{name}' já existe em %{path}"
   ja: "環境 '%{name}' はすでに存在します: %{path}"
+  es: "El entorno '%{name}' ya existe en %{path}"
 
 # ============================================================================
 # Error messages
@@ -730,168 +843,196 @@ error.virtualenv_not_found:
   ko: "'%{name}' 환경을 찾을 수 없음"
   pt-BR: "Não foi possível encontrar o ambiente '%{name}'"
   ja: "'%{name}' 環境が見つかりません"
+  es: "No se encuentra el entorno '%{name}'"
 
 error.virtualenv_exists:
   en: "'%{name}' already exists"
   ko: "'%{name}'이(가) 이미 존재"
   pt-BR: "'%{name}' já existe"
   ja: "'%{name}' はすでに存在します"
+  es: "'%{name}' ya existe"
 
 error.invalid_env_name:
   en: "Invalid name '%{name}': %{reason}"
   ko: "잘못된 이름 '%{name}': %{reason}"
   pt-BR: "Nome inválido '%{name}': %{reason}"
   ja: "無効な名前 '%{name}': %{reason}"
+  es: "Nombre inválido '%{name}': %{reason}"
 
 error.invalid_python_version:
   en: "Invalid Python version: %{version}"
   ko: "잘못된 Python 버전: %{version}"
   pt-BR: "Versão do Python inválida: %{version}"
   ja: "無効な Python バージョン: %{version}"
+  es: "Versión de Python inválida: %{version}"
 
 error.uv_not_found:
   en: "uv not found (scuv's core engine)"
   ko: "uv를 찾을 수 없음 (scuv 핵심 엔진)"
   pt-BR: "uv não encontrado (engine principal do scuv)"
   ja: "uv が見つかりません (scuv のコアエンジン)"
+  es: "uv no encontrado (el motor principal de scuv)"
 
 error.uv_command_failed:
   en: "uv %{command} failed: %{message}"
   ko: "uv %{command} 실패: %{message}"
   pt-BR: "uv %{command} falhou: %{message}"
   ja: "uv %{command} 失敗: %{message}"
+  es: "uv %{command} falló: %{message}"
 
 error.path_error:
   en: "Path error: %{message}"
   ko: "경로 오류: %{message}"
   pt-BR: "Erro de caminho: %{message}"
   ja: "パスエラー: %{message}"
+  es: "Error de ruta: %{message}"
 
 error.home_not_found:
   en: "Can't find home directory"
   ko: "홈 디렉토리를 찾을 수 없음"
   pt-BR: "Não foi possível encontrar o diretório home"
   ja: "ホームディレクトリが見つかりません"
+  es: "No se encuentra el directorio home"
 
 error.io:
   en: "IO error: %{message}"
   ko: "IO 오류: %{message}"
   pt-BR: "Erro de IO: %{message}"
   ja: "IO エラー: %{message}"
+  es: "Error de IO: %{message}"
 
 error.json:
   en: "JSON error: %{message}"
   ko: "JSON 오류: %{message}"
   pt-BR: "Erro de JSON: %{message}"
   ja: "JSON エラー: %{message}"
+  es: "Error de JSON: %{message}"
 
 error.version_file_not_found:
   en: "No version file in %{path} or parent directories"
   ko: "%{path} 또는 상위 디렉토리에 버전 파일 없음"
   pt-BR: "Nenhum arquivo de versão em %{path} ou diretórios superiores"
   ja: "%{path} または親ディレクトリにバージョンファイルがありません"
+  es: "No hay archivo de versión en %{path} ni en los directorios superiores"
 
 error.unsupported_shell:
   en: "Shell '%{shell}' not supported"
   ko: "'%{shell}' 셸은 지원하지 않음"
   pt-BR: "Shell '%{shell}' não suportado"
   ja: "シェル '%{shell}' がサポートされていません"
+  es: "El shell '%{shell}' no es compatible"
 
 error.python_not_installed:
   en: "Python %{version} not installed"
   ko: "Python %{version} 미설치"
   pt-BR: "Python %{version} não instalado"
   ja: "Python %{version} がインストールされていません"
+  es: "Python %{version} no está instalado"
 
 error.python_install_failed:
   en: "Couldn't install Python %{version}: %{message}"
   ko: "Python %{version} 설치 실패: %{message}"
   pt-BR: "Não foi possível instalar o Python %{version}: %{message}"
   ja: "Python %{version} がインストールできませんでした: %{message}"
+  es: "No se pudo instalar Python %{version}: %{message}"
 
 error.python_uninstall_failed:
   en: "Couldn't uninstall Python %{version}: %{message}"
   ko: "Python %{version} 삭제 실패: %{message}"
   pt-BR: "Não foi possível desinstalar o Python %{version}: %{message}"
   ja: "Python %{version} がアンインストールできませんでした: %{message}"
+  es: "No se pudo desinstalar Python %{version}: %{message}"
 
 error.no_python_versions:
   en: "No Python versions matching '%{pattern}'"
   ko: "'%{pattern}'와 일치하는 Python 버전 없음"
   pt-BR: "Nenhuma versão do Python correspondente a '%{pattern}'"
   ja: "'%{pattern}' にマッチする Python バージョンがありません"
+  es: "No hay versiones de Python que coincidan con '%{pattern}'"
 
 error.invalid_argument:
   en: "%{message}"
   ko: "%{message}"
   pt-BR: "%{message}"
   ja: "%{message}"
+  es: "%{message}"
 
 error.pyenv_not_found:
   en: "pyenv not found"
   ko: "pyenv를 찾을 수 없음"
   pt-BR: "pyenv não encontrado"
   ja: "pyenv が見つかりません"
+  es: "pyenv no encontrado"
 
 error.pyenv_env_not_found:
   en: "pyenv environment '%{name}' not found"
   ko: "pyenv 환경 '%{name}'을(를) 찾을 수 없음"
   pt-BR: "Ambiente pyenv '%{name}' não encontrado"
   ja: "pyenv 環境 '%{name}' が見つかりません"
+  es: "Entorno pyenv '%{name}' no encontrado"
 
 error.venvwrapper_env_not_found:
   en: "virtualenvwrapper environment '%{name}' not found"
   ko: "virtualenvwrapper 환경 '%{name}'을(를) 찾을 수 없음"
   pt-BR: "Ambiente virtualenvwrapper '%{name}' não encontrado"
   ja: "virtualenvwrapper 環境 '%{name}' が見つかりません"
+  es: "Entorno virtualenvwrapper '%{name}' no encontrado"
 
 error.conda_env_not_found:
   en: "conda environment '%{name}' not found"
   ko: "conda 환경 '%{name}'을(를) 찾을 수 없음"
   pt-BR: "Ambiente conda '%{name}' não encontrado"
   ja: "conda 環境 '%{name}' が見つかりません"
+  es: "Entorno conda '%{name}' no encontrado"
 
 error.corrupted_environment:
   en: "'%{name}' is corrupted: %{reason}"
   ko: "'%{name}' 손상됨: %{reason}"
   pt-BR: "'%{name}' está corrompido: %{reason}"
   ja: "'%{name}' が破損しています: %{reason}"
+  es: "'%{name}' está dañado: %{reason}"
 
 error.package_extraction_failed:
   en: "Couldn't extract packages: %{reason}"
   ko: "패키지 추출 실패: %{reason}"
   pt-BR: "Não foi possível extrair pacotes: %{reason}"
   ja: "パッケージを抽出できませんでした: %{reason}"
+  es: "No se pudieron extraer los paquetes: %{reason}"
 
 error.migration_failed:
   en: "Migration failed: %{reason} (rolled back)"
   ko: "마이그레이션 실패: %{reason} (롤백됨)"
   pt-BR: "Falha na migração: %{reason} (revertido)"
   ja: "移行に失敗しました: %{reason} (ロールバック済み)"
+  es: "La migración falló: %{reason} (revertida)"
 
 error.migration_name_conflict:
   en: "'%{name}' already exists at %{path}"
   ko: "'%{name}'이(가) %{path}에 이미 존재"
   pt-BR: "'%{name}' já existe em %{path}"
   ja: "'%{name}' はすでに存在します: %{path}"
+  es: "'%{name}' ya existe en %{path}"
 
 error.cascade_aborted:
   en: "Cascade uninstall cancelled by user"
   ko: "연쇄 삭제가 사용자에 의해 취소됨"
   pt-BR: "Desinstalação em cascata cancelada pelo usuário"
   ja: "連鎖アンインストールがユーザーによりキャンセルされました"
+  es: "Desinstalación en cascada cancelada por el usuario"
 
 error.use_missing_name:
   en: "Environment name required (use --unset to remove setting)"
   ko: "환경 이름 필요 (설정 제거는 --unset 사용)"
   pt-BR: "Nome do ambiente necessário (use --unset para remover configuração)"
   ja: "環境名が必要です (設定を削除するには --unset を使用)"
+  es: "Se requiere el nombre del entorno (usar --unset para quitar la configuración)"
 
 error.shell_missing_name:
   en: "Environment name required (use --unset to clear)"
   ko: "환경 이름 필요 (해제는 --unset 사용)"
   pt-BR: "Nome do ambiente necessário (use --unset para limpar)"
   ja: "環境名が必要です (解除は --unset を使用)"
+  es: "Se requiere el nombre del entorno (usar --unset para limpiar)"
 
 # ============================================================================
 # Error suggestions
@@ -901,60 +1042,70 @@ suggestion.virtualenv_not_found:
   ko: "→ 생성: scuv create %{name} 3.12"
   pt-BR: "→ Criar: scuv create %{name} 3.12"
   ja: "→ 作成: scuv create %{name} 3.12"
+  es: "→ Crear: scuv create %{name} 3.12"
 
 suggestion.virtualenv_exists:
   en: "→ Use --force to overwrite"
   ko: "→ --force로 덮어쓰기"
   pt-BR: "→ Use --force para sobrescrever"
   ja: "→ --force で上書き"
+  es: "→ Usar --force para sobrescribir"
 
 suggestion.invalid_env_name:
   en: "→ Names must start with a letter: [a-zA-Z][a-zA-Z0-9_-]*"
   ko: "→ 이름은 문자로 시작: [a-zA-Z][a-zA-Z0-9_-]*"
   pt-BR: "→ Nomes devem começar com uma letra: [a-zA-Z][a-zA-Z0-9_-]*"
   ja: "→ 名前は英字から始めてください: [a-zA-Z][a-zA-Z0-9_-]*"
+  es: "→ Los nombres deben empezar por una letra: [a-zA-Z][a-zA-Z0-9_-]*"
 
 suggestion.uv_not_found:
   en: "→ Install: curl -LsSf https://astral.sh/uv/install.sh | sh"
   ko: "→ 설치: curl -LsSf https://astral.sh/uv/install.sh | sh"
   pt-BR: "→ Instalar: curl -LsSf https://astral.sh/uv/install.sh | sh"
   ja: "→ インストール: curl -LsSf https://astral.sh/uv/install.sh | sh"
+  es: "→ Instalar: curl -LsSf https://astral.sh/uv/install.sh | sh"
 
 suggestion.run_doctor:
   en: "→ Run `scuv doctor` to diagnose (e.g. uv missing or below the minimum version)"
   ko: "→ `scuv doctor`로 진단해 보세요 (예: uv 미설치 또는 최소 버전 미달)"
   pt-BR: "→ Execute `scuv doctor` para diagnosticar (ex: uv ausente ou abaixo da versão mínima)"
   ja: "→ `scuv doctor` を実行して診断してください (例: uv 未インストールまたは最小バージョン未満)"
+  es: "→ Ejecutar `scuv doctor` para diagnosticar (p. ej. uv ausente o por debajo de la versión mínima)"
 
 suggestion.python_not_installed:
   en: "→ Install: scuv install %{version}"
   ko: "→ 설치: scuv install %{version}"
   pt-BR: "→ Instalar: scuv install %{version}"
   ja: "→ インストール: scuv install %{version}"
+  es: "→ Instalar: scuv install %{version}"
 
 suggestion.no_python_versions:
   en: "→ See versions: scuv list --pythons"
   ko: "→ 버전 목록: scuv list --pythons"
   pt-BR: "→ Ver versões: scuv list --pythons"
   ja: "→ バージョン一覧: scuv list --pythons"
+  es: "→ Ver versiones: scuv list --pythons"
 
 suggestion.pyenv_not_found:
   en: "→ Check PYENV_ROOT or ~/.pyenv directory\n→ Install: https://github.com/pyenv/pyenv#installation"
   ko: "→ PYENV_ROOT 또는 ~/.pyenv 확인\n→ 설치: https://github.com/pyenv/pyenv#installation"
   pt-BR: "→ Verifique PYENV_ROOT ou o diretório ~/.pyenv\n→ Instalar: https://github.com/pyenv/pyenv#installation"
   ja: "→ PYENV_ROOT または ~/.pyenv を確認\n→ インストール: https://github.com/pyenv/pyenv#installation"
+  es: "→ Comprobar PYENV_ROOT o el directorio ~/.pyenv\n→ Instalar: https://github.com/pyenv/pyenv#installation"
 
 suggestion.source_env_not_found:
   en: "→ See available: scuv migrate list"
   ko: "→ 목록 확인: scuv migrate list"
   pt-BR: "→ Ver disponíveis: scuv migrate list"
   ja: "→ 利用可能一覧: scuv migrate list"
+  es: "→ Ver disponibles: scuv migrate list"
 
 suggestion.migration_name_conflict:
   en: "→ Use --force to overwrite, or pick a different name"
   ko: "→ --force로 덮어쓰기, 또는 다른 이름 사용"
   pt-BR: "→ Use --force para sobrescrever ou escolha outro nome"
   ja: "→ --force で上書き、または別の名前を指定してください"
+  es: "→ Usar --force para sobrescribir, o elegir otro nombre"
 
 # ============================================================================
 # Create command - python path
@@ -964,12 +1115,14 @@ error.invalid_python_path:
   ko: "잘못된 Python 경로 '%{path}': %{reason}"
   pt-BR: "Caminho do Python inválido '%{path}': %{reason}"
   ja: "無効な Python パス '%{path}': %{reason}"
+  es: "Ruta de Python inválida '%{path}': %{reason}"
 
 suggestion.invalid_python_path:
   en: "→ Provide a path to a valid Python executable (e.g., /usr/bin/python3)"
   ko: "→ 유효한 Python 실행 파일 경로 지정 (예: /usr/bin/python3)"
   pt-BR: "→ Forneça um caminho para um executável Python válido (ex: /usr/bin/python3)"
   ja: "→ 有効な Python 実行ファイルのパスを指定してください (例: /usr/bin/python3)"
+  es: "→ Indicar la ruta a un ejecutable de Python válido (p. ej. /usr/bin/python3)"
 
 # ============================================================================
 # Status command
@@ -979,18 +1132,21 @@ status.no_env:
   ko: "설정된 환경이 없어요"
   pt-BR: "Nenhum ambiente configurado"
   ja: "設定された環境がありません"
+  es: "No hay ningún entorno configurado"
 
 status.hint_use:
   en: "→ Activate one: scuv use <name>"
   ko: "→ 활성화: scuv use <이름>"
   pt-BR: "→ Ative um: scuv use <nome>"
   ja: "→ 有効化: scuv use <名前>"
+  es: "→ Activar uno: scuv use <nombre>"
 
 status.system_python:
   en: "Using system Python (no virtualenv active)"
   ko: "시스템 Python 사용 중 (가상환경 비활성)"
   pt-BR: "Usando Python do sistema (nenhum virtualenv ativo)"
   ja: "システム Python を使用中 (仮想環境は無効)"
+  es: "Usando el Python del sistema (ningún virtualenv activo)"
 
 # ============================================================================
 # Which command
@@ -1000,24 +1156,28 @@ error.no_active_environment:
   ko: "활성화된 환경이 없어요"
   pt-BR: "Nenhum ambiente ativo"
   ja: "アクティブな環境がありません"
+  es: "No hay ningún entorno activo"
 
 suggestion.no_active_environment:
   en: "→ Activate one (scuv use <name>) or pass --env <name>"
   ko: "→ 환경을 활성화하거나(scuv use <이름>) --env <이름>를 지정해 주세요"
   pt-BR: "→ Ative um (scuv use <nome>) ou use --env <nome>"
   ja: "→ 環境を有効化する (scuv use <名前>) か --env <名前> を指定してください"
+  es: "→ Activar uno (scuv use <nombre>) o indicar --env <nombre>"
 
 error.executable_not_found:
   en: "'%{exe}' not found in '%{env}'"
   ko: "'%{env}'에서 '%{exe}'를 찾을 수 없어요"
   pt-BR: "'%{exe}' não encontrado em '%{env}'"
   ja: "'%{env}' に '%{exe}' が見つかりません"
+  es: "'%{exe}' no encontrado en '%{env}'"
 
 suggestion.executable_not_found:
   en: "→ List installed packages: scuv info %{env}"
   ko: "→ 설치된 패키지 확인: scuv info %{env}"
   pt-BR: "→ Listar pacotes instalados: scuv info %{env}"
   ja: "→ インストール済みパッケージを確認: scuv info %{env}"
+  es: "→ Listar los paquetes instalados: scuv info %{env}"
 
 # ============================================================================
 # Self-update command (`scuv self update`)
@@ -1027,60 +1187,70 @@ selfupdate.checking_latest:
   ko: "crates.io에서 최신 버전 확인 중..."
   pt-BR: "Verificando a versão mais recente no crates.io..."
   ja: "crates.io で最新バージョンを確認中..."
+  es: "Comprobando la última versión en crates.io..."
 
 selfupdate.already_latest:
   en: "Already on the latest version (%{version})"
   ko: "이미 최신 버전이에요 (%{version})"
   pt-BR: "Já está na versão mais recente (%{version})"
   ja: "すでに最新バージョンです (%{version})"
+  es: "Ya está instalada la última versión (%{version})"
 
 selfupdate.already_on_requested:
   en: "Already on the requested version (%{version})"
   ko: "이미 요청하신 버전이에요 (%{version})"
   pt-BR: "Já está na versão solicitada (%{version})"
   ja: "すでに指定されたバージョンです (%{version})"
+  es: "Ya está instalada la versión solicitada (%{version})"
 
 selfupdate.installing:
   en: "Updating scuv %{from} → %{to}..."
   ko: "scuv %{from} → %{to} 업데이트 중..."
   pt-BR: "Atualizando scuv %{from} → %{to}..."
   ja: "scuv %{from} → %{to} を更新中..."
+  es: "Actualizando scuv %{from} → %{to}..."
 
 selfupdate.installed:
   en: "Updated to %{version}"
   ko: "%{version}(으)로 업데이트 완료"
   pt-BR: "Atualizado para %{version}"
   ja: "%{version} に更新しました"
+  es: "Actualizado a %{version}"
 
 selfupdate.verifying:
   en: "Verifying environment with the new binary..."
   ko: "새 바이너리로 환경을 검증하는 중..."
   pt-BR: "Verificando o ambiente com o novo binário..."
   ja: "新しいバイナリで環境を検証中..."
+  es: "Verificando el entorno con el nuevo binario..."
 
 selfupdate.verify_doctor_warnings:
   en: "Update complete, but `scuv doctor` reported warnings. Please review the output above."
   ko: "업데이트는 완료했지만 `scuv doctor`가 경고를 알려줬어요. 위 출력을 확인해 주세요."
   pt-BR: "Atualização concluída, mas `scuv doctor` reportou avisos. Verifique a saída acima."
   ja: "更新は完了しましたが、`scuv doctor` が警告を報告しました。上の出力を確認してください。"
+  es: "Actualización completada, pero `scuv doctor` reportó avisos. Revisar la salida anterior."
 
 selfupdate.verify_doctor_errors:
   en: "Update complete, but `scuv doctor` reported errors (e.g. uv below the new minimum). Please review the output above."
   ko: "업데이트는 완료했지만 `scuv doctor`가 오류를 알려줬어요 (예: uv가 새 최소 버전 미달). 위 출력을 확인해 주세요."
   pt-BR: "Atualização concluída, mas `scuv doctor` reportou erros (ex: uv abaixo do novo mínimo). Verifique a saída acima."
   ja: "更新は完了しましたが、`scuv doctor` がエラーを報告しました (例: uv が新しい最小バージョン未満)。上の出力を確認してください。"
+  es: "Actualización completada, pero `scuv doctor` reportó errores (p. ej. uv por debajo del nuevo mínimo). Revisar la salida anterior."
 
 selfupdate.verify_launch_failed:
   en: "Verification skipped — could not run doctor: %{error}"
   ko: "검증을 건너뛰었어요 — doctor 실행 실패: %{error}"
   pt-BR: "Verificação ignorada — não foi possível executar o doctor: %{error}"
   ja: "検証をスキップ — doctor の実行に失敗: %{error}"
+  es: "Verificación omitida — no se pudo ejecutar doctor: %{error}"
 
 error.self_update_failed:
   en: "Self-update failed: %{message}"
   ko: "자체 업데이트 실패: %{message}"
   pt-BR: "Falha na auto-atualização: %{message}"
   ja: "セルフアップデート失敗: %{message}"
+  es: "La autoactualización falló: %{message}"
 
 # ============================================================================
 # Prune command (uv cache cleanup)
@@ -1090,6 +1260,7 @@ prune.success:
   ko: "uv 캐시를 정리했어요"
   pt-BR: "Cache do uv limpo"
   ja: "uv キャッシュを整理しました"
+  es: "Caché de uv limpiada"
 
 # ============================================================================
 # Gc command (orphan virtualenv cleanup)
@@ -1099,72 +1270,84 @@ gc.nothing_to_remove:
   ko: "정리할 게 없어요 — 모든 환경이 정상이에요"
   pt-BR: "Nada para limpar — todos os ambientes estão saudáveis"
   ja: "片付けるものはありません — すべての環境は正常です"
+  es: "Nada que limpiar — todos los entornos están en buen estado"
 
 gc.envs_header:
   en: "Orphan virtualenvs (%{count}):"
   ko: "고아 가상환경 %{count}개:"
   pt-BR: "Ambientes virtuais órfãos (%{count}):"
   ja: "孤立した仮想環境 %{count} 件:"
+  es: "Entornos virtuales huérfanos (%{count}):"
 
 gc.pythons_header:
   en: "Unused Python versions (%{count}):"
   ko: "사용 안 하는 Python 버전 %{count}개:"
   pt-BR: "Versões Python não usadas (%{count}):"
   ja: "使用されていない Python バージョン %{count} 件:"
+  es: "Versiones de Python sin usar (%{count}):"
 
 gc.reason_missing_metadata:
   en: "no .scoop-metadata.json"
   ko: ".scoop-metadata.json 없음"
   pt-BR: "sem .scoop-metadata.json"
   ja: ".scoop-metadata.json なし"
+  es: "sin .scoop-metadata.json"
 
 gc.reason_broken_python:
   en: "Python interpreter missing"
   ko: "Python 인터프리터 없음"
   pt-BR: "interpretador Python ausente"
   ja: "Python インタプリタが見つかりません"
+  es: "falta el intérprete de Python"
 
 gc.reason_stale:
   en: "stale (%{days} days idle)"
   ko: "오래 사용 안 함 (%{days}일)"
   pt-BR: "obsoleto (%{days} dias sem uso)"
   ja: "未使用 (%{days} 日)"
+  es: "obsoleto (%{days} días sin uso)"
 
 gc.dry_run_hint:
   en: "(dry run — pass `--yes` to actually remove)"
   ko: "(미리보기 — 실제로 삭제하려면 `--yes` 를 붙여주세요)"
   pt-BR: "(simulação — passe `--yes` para remover de verdade)"
   ja: "(プレビューのみ — 実際に削除するには `--yes` を指定してください)"
+  es: "(simulación — usar `--yes` para eliminar de verdad)"
 
 gc.removed_env:
   en: "Removed environment '%{name}'"
   ko: "환경 '%{name}' 을(를) 삭제했어요"
   pt-BR: "Ambiente '%{name}' removido"
   ja: "環境 '%{name}' を削除しました"
+  es: "Entorno '%{name}' eliminado"
 
 gc.remove_env_failed:
   en: "Failed to remove '%{name}': %{error}"
   ko: "'%{name}' 삭제 실패: %{error}"
   pt-BR: "Falha ao remover '%{name}': %{error}"
   ja: "'%{name}' の削除に失敗: %{error}"
+  es: "No se pudo eliminar '%{name}': %{error}"
 
 gc.removed_python:
   en: "Removed Python %{version}"
   ko: "Python %{version} 을(를) 삭제했어요"
   pt-BR: "Python %{version} removido"
   ja: "Python %{version} を削除しました"
+  es: "Python %{version} eliminado"
 
 gc.remove_python_failed:
   en: "Failed to remove Python %{version}: %{error}"
   ko: "Python %{version} 삭제 실패: %{error}"
   pt-BR: "Falha ao remover Python %{version}: %{error}"
   ja: "Python %{version} の削除に失敗: %{error}"
+  es: "No se pudo eliminar Python %{version}: %{error}"
 
 gc.done:
   en: "Cleanup complete"
   ko: "정리 완료"
   pt-BR: "Limpeza concluída"
   ja: "整理が完了しました"
+  es: "Limpieza completada"
 
 # ============================================================================
 # Man command (clap_mangen output)
@@ -1177,228 +1360,266 @@ verify.no_envs:
   ko: "검사할 환경이 없어요"
   pt-BR: "Nenhum ambiente para verificar"
   ja: "確認する環境がありません"
+  es: "No hay entornos que comprobar"
 
 verify.summary:
   en: "%{total} env(s) checked: %{healthy} healthy, %{issues} with issues"
   ko: "환경 %{total}개 검사: 정상 %{healthy}개, 문제 있음 %{issues}개"
   pt-BR: "%{total} ambiente(s) verificado(s): %{healthy} saudáveis, %{issues} com problemas"
   ja: "環境 %{total} 件を確認: 正常 %{healthy} 件、問題あり %{issues} 件"
+  es: "%{total} entorno(s) comprobado(s): %{healthy} en buen estado, %{issues} con problemas"
 
 verify.metadata_missing:
   en: ".scoop-metadata.json not found"
   ko: ".scoop-metadata.json 파일이 없어요"
   pt-BR: ".scoop-metadata.json não encontrado"
   ja: ".scoop-metadata.json が見つかりません"
+  es: ".scoop-metadata.json no encontrado"
 
 verify.metadata_unreadable:
   en: ".scoop-metadata.json exists but failed to parse"
   ko: ".scoop-metadata.json 파일이 있지만 읽지 못했어요"
   pt-BR: ".scoop-metadata.json existe mas não pôde ser lido"
   ja: ".scoop-metadata.json は存在しますが読み込めませんでした"
+  es: ".scoop-metadata.json existe pero no se pudo leer"
 
 verify.file_missing:
   en: "%{path} not found"
   ko: "%{path} 가 없어요"
   pt-BR: "%{path} não encontrado"
   ja: "%{path} が見つかりません"
+  es: "%{path} no encontrado"
 
 verify.manifest_drift:
   en: "env Python %{env} does not match .scuv.toml (%{manifest})"
   ko: "환경의 Python %{env} 가 .scuv.toml (%{manifest}) 과 달라요"
   pt-BR: "Python do ambiente %{env} não corresponde ao .scuv.toml (%{manifest})"
   ja: "環境の Python %{env} は .scuv.toml (%{manifest}) と一致しません"
+  es: "el Python del entorno %{env} no coincide con .scuv.toml (%{manifest})"
 
 verify.python_unknown:
   en: "Python version unknown"
   ko: "Python 버전 알 수 없음"
   pt-BR: "Versão do Python desconhecida"
   ja: "Python バージョン不明"
+  es: "Versión de Python desconocida"
 
 verify.check_metadata:
   en: "metadata"
   ko: "메타데이터"
   pt-BR: "metadados"
   ja: "メタデータ"
+  es: "metadatos"
 
 verify.check_python_binary:
   en: "Python binary"
   ko: "Python 바이너리"
   pt-BR: "binário Python"
   ja: "Python バイナリ"
+  es: "binario de Python"
 
 verify.check_pyvenv_cfg:
   en: "pyvenv.cfg"
   ko: "pyvenv.cfg"
   pt-BR: "pyvenv.cfg"
   ja: "pyvenv.cfg"
+  es: "pyvenv.cfg"
 
 verify.check_activate_script:
   en: "activate script"
   ko: "activate 스크립트"
   pt-BR: "script activate"
   ja: "activate スクリプト"
+  es: "script activate"
 
 verify.check_python_executes:
   en: "Python executes"
   ko: "Python 실행"
   pt-BR: "execução do Python"
   ja: "Python 実行"
+  es: "ejecución de Python"
 
 verify.check_manifest_match:
   en: "matches .scuv.toml"
   ko: ".scuv.toml 일치"
   pt-BR: "corresponde a .scuv.toml"
   ja: ".scuv.toml と一致"
+  es: "coincide con .scuv.toml"
 
 verify.summary_with_warnings:
   en: "%{total} env(s) checked: %{healthy} healthy, %{warnings} with warnings, %{issues} with issues"
   ko: "환경 %{total}개 검사: 정상 %{healthy}개, 경고 %{warnings}개, 문제 있음 %{issues}개"
   pt-BR: "%{total} ambiente(s) verificado(s): %{healthy} saudáveis, %{warnings} com avisos, %{issues} com problemas"
   ja: "環境 %{total} 件を確認: 正常 %{healthy} 件、警告 %{warnings} 件、問題あり %{issues} 件"
+  es: "%{total} entorno(s) comprobado(s): %{healthy} en buen estado, %{warnings} con avisos, %{issues} con problemas"
 
 error.verify_failed:
   en: "Verification found %{issues} environment(s) with failing checks"
   ko: "검증 결과 %{issues}개 환경에서 실패한 검사가 있어요"
   pt-BR: "Verificação encontrou %{issues} ambiente(s) com checagens falhando"
   ja: "検証の結果、%{issues} 件の環境で失敗したチェックがあります"
+  es: "La verificación encontró %{issues} entorno(s) con comprobaciones fallidas"
 
 error.site_packages_not_found:
   en: "Could not find site-packages in virtualenv: %{venv}"
   ko: "가상환경에서 site-packages를 찾을 수 없어요: %{venv}"
   pt-BR: "Não foi possível encontrar site-packages no ambiente virtual: %{venv}"
   ja: "仮想環境で site-packages が見つかりません: %{venv}"
+  es: "No se encontró site-packages en el virtualenv: %{venv}"
 
 error.migration_sources_not_found:
   en: "No migration source tools (pyenv, virtualenvwrapper, conda) detected on this system"
   ko: "이 시스템에서 마이그레이션 소스 도구(pyenv, virtualenvwrapper, conda)를 찾지 못했어요"
   pt-BR: "Nenhuma ferramenta de origem de migração (pyenv, virtualenvwrapper, conda) detectada neste sistema"
   ja: "このシステムで移行元ツール (pyenv, virtualenvwrapper, conda) が見つかりませんでした"
+  es: "No se detectaron herramientas de origen para migrar (pyenv, virtualenvwrapper, conda) en este sistema"
 
 error.migration_sources_not_found_filtered:
   en: "No %{source} installation detected for migration"
   ko: "마이그레이션할 %{source} 설치를 찾지 못했어요"
   pt-BR: "Nenhuma instalação do %{source} detectada para migração"
   ja: "移行対象の %{source} インストールが見つかりませんでした"
+  es: "No se detectó ninguna instalación de %{source} para migrar"
 
 error.migration_batch_failed:
   en: "Migration finished with %{failed} failure(s) and %{conflicts} name conflict(s)"
   ko: "마이그레이션 완료 — 실패 %{failed}건, 이름 충돌 %{conflicts}건"
   pt-BR: "Migração concluída com %{failed} falha(s) e %{conflicts} conflito(s) de nome"
   ja: "移行完了 — %{failed} 件の失敗、%{conflicts} 件の名前衝突あり"
+  es: "Migración finalizada con %{failed} fallo(s) y %{conflicts} conflicto(s) de nombre"
 
 error.diff_mismatch:
   en: "'%{a}' and '%{b}' differ (%{n} difference(s))"
   ko: "'%{a}' 와(과) '%{b}' 가 달라요 (%{n}건 차이)"
   pt-BR: "'%{a}' e '%{b}' diferem (%{n} diferença(s))"
   ja: "'%{a}' と '%{b}' は異なります (%{n} 件)"
+  es: "'%{a}' y '%{b}' son diferentes (%{n} diferencia(s))"
 
 diff.identical_summary:
   en: "Environments are identical"
   ko: "두 환경이 동일해요"
   pt-BR: "Os ambientes são idênticos"
   ja: "両環境は同じです"
+  es: "Los entornos son idénticos"
 
 diff.section_python:
   en: "Python"
   ko: "Python"
   pt-BR: "Python"
   ja: "Python"
+  es: "Python"
 
 diff.section_packages:
   en: "Packages (%{n} differences)"
   ko: "패키지 (차이 %{n}건)"
   pt-BR: "Pacotes (%{n} diferenças)"
   ja: "パッケージ (差分 %{n} 件)"
+  es: "Paquetes (%{n} diferencias)"
 
 diff.section_metadata:
   en: "Metadata"
   ko: "메타데이터"
   pt-BR: "Metadados"
   ja: "メタデータ"
+  es: "Metadatos"
 
 diff.hint_strict:
   en: "→ exit 1: differences detected under --strict"
   ko: "→ exit 1: --strict 옵션에서 차이가 감지되었어요"
   pt-BR: "→ exit 1: diferenças detectadas com --strict"
   ja: "→ exit 1: --strict で差分が検出されました"
+  es: "→ exit 1: se detectaron diferencias con --strict"
 
 suggestion.migration_sources_not_found:
   en: "→ Install at least one of: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, or conda"
   ko: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda 중 하나 이상 설치하세요"
   pt-BR: "→ Instale pelo menos um de: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper ou conda"
   ja: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda のいずれかをインストールしてください"
+  es: "→ Instalar al menos uno de: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper o conda"
 
 migrate.batch_no_migratable_conflicts:
   en: "No environments migrated — %{count} name conflict(s) without --force:"
   ko: "마이그레이션된 환경 없음 — --force 없는 이름 충돌 %{count}건:"
   pt-BR: "Nenhum ambiente migrado — %{count} conflito(s) de nome sem --force:"
   ja: "移行された環境はありません — --force なしの名前衝突 %{count} 件:"
+  es: "Ningún entorno migrado — %{count} conflicto(s) de nombre sin --force:"
 
 migrate.batch_conflict_line:
   en: "  - %{name} (%{source}) conflicts with %{existing}"
   ko: "  - %{name} (%{source}) → %{existing} 와(과) 충돌"
   pt-BR: "  - %{name} (%{source}) entra em conflito com %{existing}"
   ja: "  - %{name} (%{source}) は %{existing} と衝突"
+  es: "  - %{name} (%{source}) entra en conflicto con %{existing}"
 
 migrate.batch_other_skipped:
   en: "%{count} other environment(s) skipped (corrupted / EOL)"
   ko: "다른 환경 %{count}건 건너뜀 (손상 / EOL)"
   pt-BR: "%{count} outro(s) ambiente(s) pulado(s) (corrompido / EOL)"
   ja: "他 %{count} 件の環境をスキップ (破損 / EOL)"
+  es: "%{count} entorno(s) más omitido(s) (dañados / EOL)"
 
 migrate.batch_force_hint:
   en: "→ Pass --force to overwrite existing scuv environments"
   ko: "→ --force 로 기존 scuv 환경 덮어쓰기"
   pt-BR: "→ Use --force para sobrescrever ambientes scuv existentes"
   ja: "→ --force で既存の scuv 環境を上書きできます"
+  es: "→ Usar --force para sobrescribir los entornos scuv existentes"
 
 migrate.batch_conflicts_header:
   en: "%{count} name conflict(s) skipped (use --force):"
   ko: "이름 충돌 %{count}건 건너뜀 (--force 사용):"
   pt-BR: "%{count} conflito(s) de nome pulado(s) (use --force):"
   ja: "名前衝突 %{count} 件をスキップ (--force を使用):"
+  es: "%{count} conflicto(s) de nombre omitido(s) (usar --force):"
 
 gc.skipped_now_healthy:
   en: "Skipped '%{name}' — became healthy between scan and remove"
   ko: "'%{name}' 건너뜀 — 스캔과 삭제 사이에 정상 상태가 됨"
   pt-BR: "Pulado '%{name}' — tornou-se saudável entre escaneamento e remoção"
   ja: "'%{name}' をスキップ — スキャンと削除の間に正常状態になりました"
+  es: "'%{name}' omitido — pasó a estar en buen estado entre el escaneo y la eliminación"
 
 gc.skipped_python_now_in_use:
   en: "Skipped Python %{version} — became referenced by an env between scan and uninstall"
   ko: "Python %{version} 건너뜀 — 스캔과 삭제 사이에 환경이 참조하기 시작함"
   pt-BR: "Python %{version} pulado — tornou-se referenciado por um ambiente entre escaneamento e desinstalação"
   ja: "Python %{version} をスキップ — スキャンとアンインストールの間に環境から参照されました"
+  es: "Python %{version} omitido — pasó a estar referenciado por un entorno entre el escaneo y la desinstalación"
 
 gc.skipped_recently_used:
   en: "Skipped env '%{name}' — touched between scan and remove (no longer past --older-than cutoff)"
   ko: "환경 '%{name}' 건너뜀 — 스캔과 삭제 사이에 다시 활성화되어 --older-than 기준에 더 이상 해당하지 않아요"
   pt-BR: "Ambiente '%{name}' pulado — foi usado entre escaneamento e remoção (não atende mais a --older-than)"
   ja: "環境 '%{name}' をスキップ — スキャンと削除の間に活性化され、--older-than の対象外になりました"
+  es: "Entorno '%{name}' omitido — se usó entre el escaneo y la eliminación (ya no supera el límite de --older-than)"
 
 gc.skipped_no_data:
   en: "Skipped env '%{name}' — metadata became unreadable between scan and remove; refusing to delete blindly"
   ko: "환경 '%{name}' 건너뜀 — 스캔과 삭제 사이에 메타데이터가 읽을 수 없게 되어 안전을 위해 삭제하지 않을게요"
   pt-BR: "Ambiente '%{name}' pulado — metadados ficaram ilegíveis entre escaneamento e remoção; não deletando às cegas"
   ja: "環境 '%{name}' をスキップ — スキャンと削除の間にメタデータが読み込めなくなったため、安全のため削除しません"
+  es: "Entorno '%{name}' omitido — los metadatos dejaron de poder leerse entre el escaneo y la eliminación; no se elimina a ciegas"
 
 gc.unreadable_metadata_warn:
   en: "%{count} env(s) have unreadable metadata; skipping Python cleanup to be safe"
   ko: "환경 %{count}개의 메타데이터를 읽을 수 없어요. 안전을 위해 Python 정리는 건너뛸게요"
   pt-BR: "%{count} ambiente(s) com metadados ilegíveis; pulando limpeza de Python por segurança"
   ja: "%{count} 件の環境のメタデータを読み込めません。安全のため Python のクリーンアップをスキップします"
+  es: "%{count} entorno(s) tienen metadatos ilegibles; se omite la limpieza de Python por seguridad"
 
 man.refuse_symlink:
   en: "Refusing to write into symlinked directory: %{path}"
   ko: "심볼릭 링크 디렉토리에는 쓰지 않을게요: %{path}"
   pt-BR: "Recusando escrever em diretório com link simbólico: %{path}"
   ja: "シンボリックリンクのディレクトリには書き込みません: %{path}"
+  es: "No se escribirá en un directorio que es un enlace simbólico: %{path}"
 
 man.written:
   en: "Wrote %{count} top-level man page(s) to %{dir} (nested subcommands are inlined into their parent page)"
   ko: "%{dir} 에 최상위 매뉴얼 페이지 %{count}개 생성 (서브-서브커맨드는 부모 페이지에 포함됨)"
   pt-BR: "Escritas %{count} man page(s) de nível superior em %{dir} (subcomandos aninhados são incluídos na página pai)"
   ja: "%{dir} に最上位 man ページ %{count} 件を書き出しました (ネストされたサブコマンドは親ページに含まれます)"
+  es: "Se escribieron %{count} página(s) de manual de nivel superior en %{dir} (los subcomandos anidados se incluyen en su página padre)"
 
 # ============================================================================
 # Doctor command - legacy scoop remnants (scoop -> scuv rename, removed in v0.16.0)
@@ -1408,12 +1629,14 @@ doctor.legacy_found:
   ko: "레거시 scoop 설정이 남아 있어요: %{items}"
   pt-BR: "Configurações legadas do scoop encontradas: %{items}"
   ja: "レガシーな scoop の設定が見つかりました: %{items}"
+  es: "Se encontraron configuraciones heredadas de scoop: %{items}"
 
 doctor.legacy_suggestion:
   en: "Rename SCOOP_* environment variables to SCUV_*, run `mv ~/.scoop ~/.scuv`, and rename .scoop-version/.scoop.toml to the new names (support ends in v0.16.0)"
   ko: "SCOOP_* 환경 변수를 SCUV_*(으)로 바꾸고, `mv ~/.scoop ~/.scuv`를 실행하고, .scoop-version/.scoop.toml도 새 이름으로 바꿔주세요 (v0.16.0에서 지원 종료)"
   pt-BR: "Renomeie as variáveis SCOOP_* para SCUV_*, execute `mv ~/.scoop ~/.scuv` e renomeie .scoop-version/.scoop.toml para os novos nomes (suporte encerra na v0.16.0)"
   ja: "SCOOP_* 環境変数を SCUV_* にリネームし、`mv ~/.scoop ~/.scuv` を実行し、.scoop-version/.scoop.toml も新しい名前にリネームしてください (v0.16.0でサポート終了)"
+  es: "Renombrar las variables de entorno SCOOP_* a SCUV_*, ejecutar `mv ~/.scoop ~/.scuv` y renombrar .scoop-version/.scoop.toml a los nuevos nombres (el soporte termina en v0.16.0)"
 
 # ============================================================================
 # Deprecation warnings (scoop -> scuv rename, removed in v0.16.0)
@@ -1423,21 +1646,25 @@ deprecation.env_var:
   ko: "%{old}은(는) 사용 중단되었습니다 — %{new}을(를) 사용하세요 (v0.16.0에서 지원 종료)"
   pt-BR: "%{old} está obsoleto; use %{new} (suporte encerra na v0.16.0)"
   ja: "%{old} は非推奨です。%{new} を使用してください (v0.16.0でサポート終了)"
+  es: "%{old} está obsoleto; usar %{new} (el soporte termina en v0.16.0)"
 
 deprecation.version_file:
   en: ".scoop-version is deprecated; rename it to .scuv-version (support ends in v0.16.0)"
   ko: ".scoop-version은 사용 중단되었습니다 — .scuv-version으로 이름을 바꿔주세요 (v0.16.0에서 지원 종료)"
   pt-BR: ".scoop-version está obsoleto; renomeie para .scuv-version (suporte encerra na v0.16.0)"
   ja: ".scoop-version は非推奨です。.scuv-version にリネームしてください (v0.16.0でサポート終了)"
+  es: ".scoop-version está obsoleto; renombrarlo a .scuv-version (el soporte termina en v0.16.0)"
 
 deprecation.manifest_file:
   en: ".scoop.toml is deprecated; rename it to .scuv.toml (support ends in v0.16.0)"
   ko: ".scoop.toml은 사용 중단되었습니다 — .scuv.toml로 이름을 바꿔주세요 (v0.16.0에서 지원 종료)"
   pt-BR: ".scoop.toml está obsoleto; renomeie para .scuv.toml (suporte encerra na v0.16.0)"
   ja: ".scoop.toml は非推奨です。.scuv.toml にリネームしてください (v0.16.0でサポート終了)"
+  es: ".scoop.toml está obsoleto; renombrarlo a .scuv.toml (el soporte termina en v0.16.0)"
 
 deprecation.home_dir:
   en: "~/.scoop is deprecated; run `mv ~/.scoop ~/.scuv` (support ends in v0.16.0)"
   ko: "~/.scoop은 사용 중단되었습니다 — `mv ~/.scoop ~/.scuv` 명령을 실행해 주세요 (v0.16.0에서 지원 종료)"
   pt-BR: "~/.scoop está obsoleto; execute `mv ~/.scoop ~/.scuv` (suporte encerra na v0.16.0)"
   ja: "~/.scoop は非推奨です。`mv ~/.scoop ~/.scuv` を実行してください (v0.16.0でサポート終了)"
+  es: "~/.scoop está obsoleto; ejecutar `mv ~/.scoop ~/.scuv` (el soporte termina en v0.16.0)"

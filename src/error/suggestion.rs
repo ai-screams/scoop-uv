@@ -128,9 +128,9 @@ mod tests {
         // user still needs to install at least one tool.
         assert!(err_filtered.suggestion_in("en").is_some());
 
-        // All four supported locales must render a non-empty hint so a
+        // Every supported locale must render a non-empty hint so a
         // locale-specific msgstr regression is caught at unit level.
-        for locale in ["en", "ko", "ja", "pt-BR"] {
+        for locale in ["en", "ko", "ja", "pt-BR", "es"] {
             let s = err_any
                 .suggestion_in(locale)
                 .unwrap_or_else(|| panic!("locale {locale} returned None"));
