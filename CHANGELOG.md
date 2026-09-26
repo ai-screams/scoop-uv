@@ -11,11 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **i18n:** Add Spanish translation ([#190](https://github.com/ai-screams/scoop-uv/pull/190)) ([#190](https://github.com/ai-screams/scoop-uv/pull/190)) (by [@sayam-1](https://github.com/sayam-1))
+- **i18n:** Add Spanish translation ([#190](https://github.com/ai-screams/scoop-uv/pull/190)) (by [@sayam-1](https://github.com/sayam-1))
 
 ### Changed
 
 - **compat:** Drop the scoop-era legacy fallbacks ([#196](https://github.com/ai-screams/scoop-uv/pull/196))
+- **BREAKING**: the scoop-era names are no longer read. `SCOOP_HOME`, `SCOOP_VERSION`, `SCOOP_LANG`,
+  `SCOOP_RESOLVE_MAX_DEPTH` and `SCOOP_NO_AUTO` are ignored (use `SCUV_*`); `~/.scoop`, `.scoop-version`
+  and `.scoop.toml` are ignored (`mv ~/.scoop ~/.scuv`, rename the files). `scuv use --unset` removes only
+  `.scuv-version`; `scuv shell` exports and clears `SCUV_VERSION` only.
+- **BREAKING**: bash/zsh/fish `scuv init` no longer defines the transitional `scoop` forwarding function.
+  PowerShell never did (scoop.sh coexistence).
+- **BREAKING**: `SCUV_SUPPRESS_DEPRECATION` is no longer recognised; the one-shot deprecation warnings it
+  silenced are gone with the fallbacks.
+- `scuv doctor` keeps a warn-only `legacy scoop remnants` check: leftover `SCOOP_*` variables, an orphaned
+  `~/.scoop`, or `.scoop-version` / `.scoop.toml` in the working directory are reported as not read since
+  v0.16.0, so an incomplete upgrade is not silent.
+- Unchanged on purpose (on-disk format compatibility): `.scoop-metadata.json`, export-schema field
+  `scoop_export_version`.
 
 ### Documentation
 
