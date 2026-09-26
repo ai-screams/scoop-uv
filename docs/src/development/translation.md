@@ -29,6 +29,8 @@ create.success:
   en: "Created '%{name}' environment"
   ko: "'%{name}' 환경 생성됨"
   pt-BR: "Ambiente '%{name}' criado"
+  ja: "'%{name}' 環境を作成しました"
+  es: "Entorno '%{name}' creado"
   { lang }: "Your translation here"  # Add your language code and translation
 ```
 
@@ -52,8 +54,8 @@ Edit `src/i18n.rs` and add your language to `SUPPORTED_LANGS`:
 pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
     ("en", "English"),
     ("ko", "한국어"),
-    ("ja", "日本語"),
     ("pt-BR", "Português (Brasil)"),
+    ("ja", "日本語"),
     ("es", "Español"),
     ("{lang}", "Your Language Name"),  // Add your language
 ];
@@ -75,8 +77,7 @@ const LOCALES: &[&str] = &["en", "ko", "ja", "pt-BR", "es", "{lang}"];
 
 This is the CI gate that checks every key exists in every locale. If your
 language is missing from this list, CI passes while your translation goes
-completely unverified. It is the only step in this guide that fails silently
-— everything else tells you what is wrong.
+completely unverified — nothing tells you it was skipped.
 
 **2. Shell completions** — the `scuv lang` candidate lists are hand-written
 in all four shells:
@@ -86,8 +87,9 @@ in all four shells:
 - `src/shell/bash.rs` — the `compgen -W "en ko ja pt-BR es"` list under `lang)`
 - `src/shell/powershell.rs` — the `@('en', 'ko', 'ja', 'pt-BR', 'es')` array
 
-Nothing checks these lists against `SUPPORTED_LANGS`, so a shell you miss only
-shows up when a user presses Tab.
+Each shell module has a test (`lang_completion_list_matches_supported_langs`)
+that compares its list with `SUPPORTED_LANGS`, so a shell you miss fails
+`cargo test` instead of surfacing when a user presses Tab.
 
 **3. Locale loops in tests (optional)** — `src/error/mod.rs` and
 `src/error/suggestion.rs` iterate the supported locales. Adding yours gives

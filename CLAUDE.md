@@ -34,6 +34,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - A general instruction like "fix this", "handle it", "해결해줘", or "가장 타당하게 진행해줘" does **NOT** authorize PR creation or merge. When in doubt, stop and ask.
 - Closing/reopening PRs, force-push, and other externally visible or hard-to-reverse git actions also require explicit confirmation.
 
+### Merging
+
+- Squash external PRs with `gh pr merge --squash --match-head-commit <sha> --subject "<PR title>"` and no `(#N)` in the subject: `cliff.toml`'s GitHub remote link already adds the PR number, and a `(#N)` in the message doubles it in CHANGELOG (#190). Internal and release PRs use merge commits (precedent #183, #189, #194).
+- First-time fork PRs: every workflow sits in `action_required` and `gh pr checks` says "no checks reported" — approve the runs (`gh api -X POST repos/ai-screams/scoop-uv/actions/runs/<id>/approve`) or run the gates in a scratch worktree (`git fetch origin pull/<n>/head:refs/pr/<n>`). CI Lint has no whitespace hook (prek is local-only), so also run `git diff --check` on external diffs.
+- Contributors table: comment `@all-contributors please add @<login> for translation` on the PR. The bot's PR carries `[skip ci]`, so the required checks never run and it stays BLOCKED — push one empty commit to its `all-contributors/add-<login>` branch.
+
 ## Build & Development Commands
 
 ```bash
@@ -76,7 +82,10 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 
 - Dependabot does not read `rust-version`: it will raise a dep past the MSRV, and resolution then fails before anything compiles (every job dies on one error — #173). Block those in `.github/dependabot.yml` `ignore`; entries there are debt markers to drop when the MSRV catches up.
 - Dependabot-triggered runs get the **Dependabot** secret store, not Actions'. A secret needed by both (e.g. `CODECOV_TOKEN`) must be registered twice: `gh secret set NAME --app dependabot`.
-- release-plz bumps `Cargo.toml` only; a step in `release-plz.yml` then commits `check-doc-references.py --fix` onto the release branch, so the release PR carries an extra `docs: sync version samples` commit. That is expected, not drift.
+- release-plz bumps `Cargo.toml` and, with `dependencies_update = true`, runs `cargo update` on `Cargo.lock` (the 0.16.0 release PR moved ~20 crates); a step in `release-plz.yml` then commits `check-doc-references.py --fix` onto the release branch, so the release PR carries an extra `docs: sync version samples` commit. That is expected, not drift.
+- That `cargo update` supersedes open Dependabot PRs — Dependabot closes them as "no longer updatable" once the release merges. Before merging a release PR, check each bumped crate's `rust_version` against the MSRV: `curl -s -A scuv https://crates.io/api/v1/crates/<name>/<ver> | jq .version.rust_version`.
+- release-plz regenerates the release PR's changelog section on every push to `main` and drops hand-written bullets (`4a24eab`); `cliff.toml` renders commit subjects only, so a `BREAKING CHANGE:` footer never reaches CHANGELOG. For a breaking release, push the BREAKING bullets onto the `release-plz-*` branch right before merging it, and merge before anything else lands on `main`.
+- A `feat` on `main` opens the next minor release PR at once (`features_always_increment_minor`). Before merging that PR, check whether the version was promised anywhere (`git grep 'DEPRECATION(' src; grep -c 'v<ver>' locales/app.yml`).
 - `--fix` rewrites `docs/po/ko.po` alongside the four doc files, because two of them live in the mdBook and changing them moves the gettext msgids. Without it the release automation fixes the Lint gate and breaks the docs gate on the same commit. Entry-scoped and version-string-only: api.md's msgstr reads `**scuv 버전:**`, so matching on the English `scuv <version>` pattern alone would leave the Korean page on the previous release.
 
 ## MSRV Policy
@@ -371,11 +380,11 @@ t!("error.virtualenv_not_found", name = name)
 
 **Translation file**: `locales/app.yml`
 - 222 keys total (error.* 41, suggestion.* 16); parity across all 5 locales enforced by tests/i18n_completeness.rs
-- Adding a locale touches 7 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the hand-written `scuv lang` completion lists in all four shells (`src/shell/{bash,zsh,fish,powershell}.rs`). Missing `LOCALES` is the only one that fails silently — CI passes with that locale unverified; a missed completion list only shows up on Tab. Contributor guide: `docs/src/development/translation.md`.
+- Adding a locale touches 7 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the hand-written `scuv lang` completion lists in all four shells (`src/shell/{bash,zsh,fish,powershell}.rs`). Missing `LOCALES` fails silently — CI passes with that locale unverified. A missed completion list fails `lang_completion_list_matches_supported_langs` in that shell's module, and a doc that still enumerates the old list fails `check-doc-references.py`. Contributor guide: `docs/src/development/translation.md`.
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
 - `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical. Install the versions `docs.yml` pins (mdbook 0.5.3, mdbook-i18n-helpers 0.4.0) — latest produces a different `.pot`. `messages.pot` is untracked; only `ko.po` is committed.
   - Reproducing that guard locally also needs: restore `POT-Creation-Date`/`PO-Revision-Date` from the pre-merge copy (msgmerge rewrites both to "now" → phantom diff), and `msgcat --width=79` any hand-written msgstr (unwrapped lines are gettext-version-sensitive; CI's gettext may differ from Homebrew's). Done when two consecutive runs leave the file byte-identical with 0 fuzzy.
-- `.github/workflows/docs.yml` (mdbook build + ko.po staleness guard) runs only on `v*` tags, so docs/po breakage isn't caught on PRs — only `msgfmt --check` in the CI Lint job is.
+- The ko.po staleness guard runs in two places: `docs-check.yml` ("Documentation checks") on PRs that touch the docs paths it lists, and `docs.yml` (build + deploy) on `v*` tags. A PR outside those paths only gets `msgfmt --check` from the CI Lint job.
 - `docs.yml`'s `deploy` job has no branch guard — a `workflow_dispatch` from any branch publishes that branch to production Pages. Verify on `main` only.
 
 ## Docker Development

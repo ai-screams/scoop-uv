@@ -3,7 +3,7 @@
 //! Used by `status` / `info` / `list` to render `last_used` as
 //! "3 hours ago" instead of a raw RFC 3339 timestamp. English-only on
 //! purpose: the per-bucket plural/singular rules don't generalise across
-//! the five locales we support (en/ko/ja/pt-BR/es) without per-locale
+//! every locale in `SUPPORTED_LANGS` without per-locale
 //! grammar work, and the existing decision (see plan v2) is that
 //! short-form age labels are not worth per-locale translation overhead.
 //!

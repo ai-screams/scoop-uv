@@ -55,33 +55,37 @@ scuv lang --reset
 
 ```bash
 $ scuv lang
-Current language: en (English)
+Current: en (English)
 ```
 
 ### Set Korean
 
 ```bash
 $ scuv lang ko
-✓ Language set to Korean (한국어)
+✓ 언어가 ko(으)로 설정됨
 ```
+
+The confirmation is printed in the language you just selected.
 
 ### List Languages
 
 ```bash
 $ scuv lang --list
 Supported languages:
-  en - English
-  ko - 한국어 (Korean)
-  ja - 日本語 (Japanese)
-  pt-BR - Português (Brazilian Portuguese)
-  es - Español (Spanish)
+  * en	English
+    ko	한국어
+    pt-BR	Português (Brasil)
+    ja	日本語
+    es	Español
 ```
+
+The `*` marks the current language.
 
 ### Reset to System Default
 
 ```bash
 $ scuv lang --reset
-✓ Language reset to system default
+✓ Reset to system default: en
 ```
 
 ### JSON Output
@@ -93,8 +97,7 @@ $ scuv lang --json
   "command": "lang",
   "data": {
     "current": "ko",
-    "name": "한국어",
-    "source": "config"
+    "name": "한국어"
   }
 }
 ```
