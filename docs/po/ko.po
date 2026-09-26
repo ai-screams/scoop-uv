@@ -33,7 +33,7 @@ msgid "Quick Start"
 msgstr "빠른 시작"
 
 #: src/SUMMARY.md:11 src/shell-integration.md:1
-#: src/development/contributing.md:135 src/api.md:449 src/llms.md:169
+#: src/development/contributing.md:135 src/api.md:450 src/llms.md:169
 msgid "Shell Integration"
 msgstr "셸 통합"
 
@@ -93,7 +93,7 @@ msgid "status"
 msgstr "status"
 
 #: src/SUMMARY.md:29 src/commands/which.md:1
-#: src/development/architecture.md:330
+#: src/development/architecture.md:333
 msgid "which"
 msgstr "which"
 
@@ -213,7 +213,7 @@ msgstr "LLM 레퍼런스"
 #: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:45
 #: src/commands/create.md:27 src/commands/use.md:58 src/commands/remove.md:26
 #: src/commands/install.md:56 src/commands/uninstall.md:25
-#: src/commands/doctor.md:30 src/commands/info.md:75 src/commands/status.md:97
+#: src/commands/doctor.md:31 src/commands/info.md:75 src/commands/status.md:97
 #: src/commands/which.md:36 src/commands/run.md:42 src/commands/sync.md:65
 #: src/commands/import.md:39 src/commands/clone.md:39
 #: src/commands/migrate.md:117 src/commands/gc.md:84 src/commands/prune.md:25
@@ -496,12 +496,12 @@ msgstr "# 환경 디렉터리 이동\n"
 msgid ""
 "Then update your shell rc file — replace `eval \"$(scoop init <shell>)\"` "
 "with `eval \"$(scuv init <shell>)\"` (fish: `scuv init fish | source`), "
-"restart your shell, and run `scuv doctor` to confirm the new layout and "
-"shell hook."
+"restart your shell, and run `scuv doctor` to confirm nothing scoop-era is "
+"left over."
 msgstr ""
 "그다음 셸 rc 파일을 갱신하세요 — `eval \"$(scoop init <shell>)\"`를 `eval \"$"
 "(scuv init <shell>)\"`로 바꾸고(fish는 `scuv init fish | source`), 셸을 재시"
-"작한 뒤 `scuv doctor`를 실행해 새 레이아웃과 셸 훅을 확인합니다."
+"작한 뒤 `scuv doctor`를 실행해 scoop 시절 잔재가 남지 않았는지 확인합니다."
 
 #: src/installation.md:50
 msgid ""
@@ -693,7 +693,7 @@ msgid "Task"
 msgstr "작업"
 
 #: src/quick-start.md:93 src/commands/index.md:7 src/commands/migrate.md:306
-#: src/commands/verify.md:42 src/api.md:717 src/llms.md:19
+#: src/commands/verify.md:42 src/api.md:718 src/llms.md:19
 msgid "Command"
 msgstr "명령어"
 
@@ -891,7 +891,7 @@ msgstr "설정 방법"
 #: src/shell-integration.md:107 src/shell-integration.md:133
 #: src/shell-integration.md:141 src/faq.md:141 src/commands/which.md:49
 #: src/commands/sync.md:116 src/commands/export.md:72 src/commands/import.md:75
-#: src/commands/clone.md:74 src/api.md:717 src/llms.md:111
+#: src/commands/clone.md:74 src/api.md:718 src/llms.md:111
 msgid "1"
 msgstr "1"
 
@@ -903,7 +903,7 @@ msgstr "`SCUV_VERSION` 환경 변수"
 msgid "`scuv shell`"
 msgstr "`scuv shell`"
 
-#: src/shell-integration.md:108 src/api.md:717
+#: src/shell-integration.md:108 src/api.md:718
 msgid "2"
 msgstr "2"
 
@@ -915,7 +915,7 @@ msgstr "`.scuv-version` 파일"
 msgid "`scuv use` (walks parent directories)"
 msgstr "`scuv use` (부모 디렉터리를 순서대로 탐색)"
 
-#: src/shell-integration.md:109 src/shell-integration.md:178 src/api.md:717
+#: src/shell-integration.md:109 src/shell-integration.md:178 src/api.md:718
 msgid "3"
 msgstr "3"
 
@@ -1113,7 +1113,7 @@ msgstr "# 현재 디렉터리만 확인 (가장 빠름)\n"
 
 #: src/shell-integration.md:181 src/commands/which.md:48
 #: src/commands/sync.md:115 src/commands/export.md:71 src/commands/import.md:74
-#: src/commands/clone.md:73 src/api.md:717
+#: src/commands/clone.md:73 src/api.md:718
 msgid "0"
 msgstr "0"
 
@@ -1989,8 +1989,8 @@ msgstr ""
 msgid "Extras"
 msgstr ""
 
-#: src/faq.md:38 src/commands/list.md:29 src/api.md:719 src/api.md:720
-#: src/api.md:721 src/api.md:722 src/api.md:723
+#: src/faq.md:38 src/commands/list.md:29 src/api.md:720 src/api.md:721
+#: src/api.md:722 src/api.md:723 src/api.md:724
 msgid "—"
 msgstr "—"
 
@@ -2918,7 +2918,7 @@ msgid "Location"
 msgstr "위치"
 
 #: src/commands/index.md:60 src/development/architecture.md:85
-#: src/development/architecture.md:319 src/development/ci-cd.md:221
+#: src/development/architecture.md:322 src/development/ci-cd.md:221
 msgid "Purpose"
 msgstr "용도"
 
@@ -3194,7 +3194,7 @@ msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링�
 
 #: src/commands/list.md:99 src/commands/remove.md:40
 #: src/commands/uninstall.md:113 src/commands/uninstall.md:160
-#: src/commands/doctor.md:50 src/commands/doctor.md:59
+#: src/commands/doctor.md:51 src/commands/doctor.md:60
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
@@ -4141,8 +4141,8 @@ msgid ""
 "If you uninstalled a Python version without cleaning up environments first:"
 msgstr "환경을 먼저 정리하지 않고 Python 버전을 제거한 경우:"
 
-#: src/commands/uninstall.md:162 src/commands/doctor.md:54
-#: src/commands/doctor.md:61 src/commands/migrate.md:137
+#: src/commands/uninstall.md:162 src/commands/doctor.md:55
+#: src/commands/doctor.md:62 src/commands/migrate.md:137
 msgid "'myproject'"
 msgstr "'myproject'"
 
@@ -4238,31 +4238,44 @@ msgstr "**버전 파일**"
 msgid "`.scuv-version` entries reference environments that exist"
 msgstr "`.scuv-version` 항목이 존재하는 환경을 참조함"
 
-#: src/commands/doctor.md:33
+#: src/commands/doctor.md:29
+msgid "**legacy scoop remnants**"
+msgstr "**레거시 scoop 잔여물**"
+
+#: src/commands/doctor.md:29
+msgid ""
+"Leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or `.scoop-version` / "
+"`.scoop.toml` in the current directory — none of them read since v0.16.0, so "
+"the check only warns"
+msgstr ""
+"남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 또는 현재 디렉터리의 `.scoop-"
+"version` / `.scoop.toml` — v0.16.0부터 어느 것도 읽지 않으므로 경고만 합니다"
+
+#: src/commands/doctor.md:34
 msgid "# Quick health check\n"
 msgstr "# 빠른 상태 점검\n"
 
-#: src/commands/doctor.md:34
+#: src/commands/doctor.md:35
 msgid "# Verbose diagnostics\n"
 msgstr "# 상세 진단\n"
 
-#: src/commands/doctor.md:35
+#: src/commands/doctor.md:36
 msgid "# Fix what can be fixed\n"
 msgstr "# 수정 가능한 항목 수정\n"
 
-#: src/commands/doctor.md:36
+#: src/commands/doctor.md:37
 msgid "# JSON output for scripting\n"
 msgstr "# 스크립팅을 위한 JSON 출력\n"
 
-#: src/commands/doctor.md:39
+#: src/commands/doctor.md:40
 msgid "Environment Integrity"
 msgstr "환경 무결성"
 
-#: src/commands/doctor.md:41
+#: src/commands/doctor.md:42
 msgid "The doctor checks each virtual environment for:"
 msgstr "doctor 명령은 각 가상 환경에 대해 다음 항목을 검사합니다:"
 
-#: src/commands/doctor.md:43
+#: src/commands/doctor.md:44
 msgid ""
 "**Python symlink** — Does the `python` binary in the environment point to a "
 "valid Python installation?"
@@ -4270,7 +4283,7 @@ msgstr ""
 "**Python 심볼릭 링크** — 환경 내 `python` 바이너리가 유효한 Python 설치를 가"
 "리키고 있습니까?"
 
-#: src/commands/doctor.md:44
+#: src/commands/doctor.md:45
 msgid ""
 "**pyvenv.cfg** — Does the environment's configuration file exist and "
 "reference a valid Python?"
@@ -4278,7 +4291,7 @@ msgstr ""
 "**pyvenv.cfg** — 환경의 설정 파일이 존재하고 유효한 Python을 참조하고 있습니"
 "까?"
 
-#: src/commands/doctor.md:46
+#: src/commands/doctor.md:47
 msgid ""
 "Environments can become broken when their underlying Python version is "
 "uninstalled. Use `scuv doctor` to detect these issues:"
@@ -4286,27 +4299,27 @@ msgstr ""
 "기반 Python 버전이 제거되면 환경이 손상될 수 있습니다. `scuv doctor`를 사용하"
 "여 이러한 문제를 감지하세요:"
 
-#: src/commands/doctor.md:49
+#: src/commands/doctor.md:50
 msgid "# After accidentally uninstalling Python 3.12:\n"
 msgstr "# Python 3.12를 실수로 제거한 후:\n"
 
-#: src/commands/doctor.md:52
+#: src/commands/doctor.md:53
 msgid "#   ✓ Shell: zsh integration active\n"
 msgstr "#   ✓ Shell: zsh 통합 활성화됨\n"
 
-#: src/commands/doctor.md:54
+#: src/commands/doctor.md:55
 msgid "#   ⚠ Environment 'webapp': Python symlink broken\n"
 msgstr "#   ⚠ 환경 'webapp': Python 심볼릭 링크 손상됨\n"
 
-#: src/commands/doctor.md:56
+#: src/commands/doctor.md:57
 msgid "# Auto-fix by recreating symlinks (requires Python to be reinstalled)\n"
 msgstr "# 심볼릭 링크 재생성으로 자동 수정 (Python 재설치 필요)\n"
 
-#: src/commands/doctor.md:61
+#: src/commands/doctor.md:62
 msgid "#   ✓ Fixed 'webapp': Python symlink restored\n"
 msgstr "#   ✓ 'webapp' 수정됨: Python 심볼릭 링크 복원됨\n"
 
-#: src/commands/doctor.md:65
+#: src/commands/doctor.md:66
 msgid ""
 "**Tip:** Run `scuv doctor` periodically or after uninstalling Python "
 "versions to catch broken environments early. See [uninstall command]"
@@ -4578,7 +4591,7 @@ msgstr "값"
 
 #: src/commands/status.md:31 src/commands/which.md:46 src/commands/sync.md:113
 #: src/commands/export.md:69 src/commands/import.md:72 src/commands/clone.md:71
-#: src/development/translation.md:248 src/api.md:708
+#: src/development/translation.md:248 src/api.md:709
 msgid "Meaning"
 msgstr "의미"
 
@@ -4781,7 +4794,7 @@ msgstr "종료 코드"
 #: src/commands/which.md:46 src/commands/sync.md:113 src/commands/export.md:69
 #: src/commands/import.md:72 src/commands/clone.md:71
 #: src/commands/migrate.md:56 src/commands/migrate.md:64
-#: src/commands/diff.md:51 src/commands/lang.md:37 src/api.md:708
+#: src/commands/diff.md:51 src/commands/lang.md:37 src/api.md:709
 msgid "Code"
 msgstr "코드"
 
@@ -5772,7 +5785,7 @@ msgid "Returned when"
 msgstr "반환 조건"
 
 #: src/commands/migrate.md:58 src/commands/migrate.md:66
-#: src/commands/diff.md:53 src/api.md:710
+#: src/commands/diff.md:53 src/api.md:711
 msgid "`0`"
 msgstr "`0`"
 
@@ -5786,7 +5799,7 @@ msgstr ""
 "어 있음, 또는 (c) 충돌 없는 건너뜀만 발생(건너뛴 버킷의 EOL / 손상된 환경, 사"
 "전 점검 이름 충돌 없음, 환경별 실패 없음)"
 
-#: src/commands/migrate.md:59 src/commands/migrate.md:67 src/api.md:712
+#: src/commands/migrate.md:59 src/commands/migrate.md:67 src/api.md:713
 msgid "`2`"
 msgstr "`2`"
 
@@ -5798,7 +5811,7 @@ msgstr ""
 "하나 이상의 환경별 실패 **또는** `--force` 없이 하나 이상의 사전 점검 이름 충"
 "돌. `MigrationBatchFailed`를 통해 반환됩니다"
 
-#: src/commands/migrate.md:60 src/commands/migrate.md:68 src/api.md:713
+#: src/commands/migrate.md:60 src/commands/migrate.md:68 src/api.md:714
 msgid "`3`"
 msgstr "`3`"
 
@@ -6397,7 +6410,7 @@ msgstr ""
 "source`를 사용하면 원본이 제거됩니다."
 
 #: src/commands/migrate.md:336 src/commands/lang.md:122
-#: src/development/architecture.md:413
+#: src/development/architecture.md:416
 msgid "Notes"
 msgstr "참고 사항"
 
@@ -7027,7 +7040,7 @@ msgstr "범위"
 msgid "Action"
 msgstr "동작"
 
-#: src/commands/verify.md:44 src/development/architecture.md:87 src/api.md:722
+#: src/commands/verify.md:44 src/development/architecture.md:87 src/api.md:723
 msgid "`doctor`"
 msgstr "`doctor`"
 
@@ -7039,7 +7052,7 @@ msgstr "시스템 (uv 설치, shell wrapper, 경로)"
 msgid "Diagnose + optional `--fix`"
 msgstr "진단 + 선택적 `--fix`"
 
-#: src/commands/verify.md:45 src/api.md:719
+#: src/commands/verify.md:45 src/api.md:720
 msgid "`verify`"
 msgstr "`verify`"
 
@@ -7274,7 +7287,7 @@ msgstr ""
 msgid "Default — diff reported (even if envs differ)"
 msgstr "기본값 — diff 결과 출력 (환경이 달라도)"
 
-#: src/commands/diff.md:54 src/api.md:711
+#: src/commands/diff.md:54 src/api.md:712
 msgid "`1`"
 msgstr "`1`"
 
@@ -8323,7 +8336,7 @@ msgstr "**Hook 함수** - 디렉터리 변경 시 자동 활성화"
 msgid "**Completion function** - Tab completion"
 msgstr "**자동 완성 함수** - Tab 자동 완성"
 
-#: src/development/contributing.md:148 src/api.md:601
+#: src/development/contributing.md:148 src/api.md:602
 msgid "Adding a New Command"
 msgstr "새 명령 추가하기"
 
@@ -8341,7 +8354,7 @@ msgstr "// ...\n"
 msgid "Create handler in `src/cli/commands/my_command.rs`:"
 msgstr "`src/cli/commands/my_command.rs`에 핸들러를 생성합니다:"
 
-#: src/development/contributing.md:167 src/api.md:621
+#: src/development/contributing.md:167 src/api.md:622
 msgid "// Implementation\n"
 msgstr "// Implementation\n"
 
@@ -8544,8 +8557,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:37
-msgid "Add translations to all 220 keys"
-msgstr "모든 220개 키에 번역을 추가합니다"
+msgid "Add translations to all 222 keys"
+msgstr "모든 222개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:38
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -8718,8 +8731,8 @@ msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
 #: src/development/translation.md:115
-msgid "`locales/app.yml` - All 220 keys translated"
-msgstr "`locales/app.yml` - 220개 키 모두 번역"
+msgid "`locales/app.yml` - All 222 keys translated"
+msgstr "`locales/app.yml` - 222개 키 모두 번역"
 
 #: src/development/translation.md:116
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
@@ -8851,7 +8864,7 @@ msgstr "\"Installing...\""
 msgid "Use progressive/ongoing form"
 msgstr "진행형을 사용합니다"
 
-#: src/development/translation.md:164 src/api.md:710
+#: src/development/translation.md:164 src/api.md:711
 msgid "Success"
 msgstr "완료"
 
@@ -9156,7 +9169,7 @@ msgid "Your language's term for file path"
 msgstr "해당 언어에서 파일 경로에 해당하는 표현"
 
 #: src/development/translation.md:239 src/development/translation.md:308
-#: src/api.md:722
+#: src/api.md:723
 msgid "error"
 msgstr "error"
 
@@ -9164,7 +9177,7 @@ msgstr "error"
 msgid "Your language's term for \"error\""
 msgstr "해당 언어에서 \"error\"에 해당하는 표현"
 
-#: src/development/translation.md:240 src/api.md:721 src/api.md:723
+#: src/development/translation.md:240 src/api.md:722 src/api.md:724
 msgid "success"
 msgstr "success"
 
@@ -9405,8 +9418,8 @@ msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
 #: src/development/translation.md:344
-msgid "All 220 keys translated"
-msgstr "220개 키 전체 번역 완료"
+msgid "All 222 keys translated"
+msgstr "222개 키 전체 번역 완료"
 
 #: src/development/translation.md:345
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
@@ -9461,11 +9474,11 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the 220 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 222 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 220개 키) 번역에 대"
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 222개 키) 번역에 대"
 "해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
 "역만 다룹니다."
 
@@ -9870,7 +9883,7 @@ msgstr "\"$(command scuv activate myenv)\""
 msgid "This pattern is used by pyenv, rbenv, and other version managers."
 msgstr "이 패턴은 pyenv, rbenv 및 기타 버전 관리자에서 사용됩니다."
 
-#: src/development/architecture.md:138 src/api.md:317
+#: src/development/architecture.md:138 src/api.md:318
 #: src/development/code-quality.md:301
 msgid "Error Handling"
 msgstr "에러 처리"
@@ -9953,11 +9966,11 @@ msgstr ""
 msgid "Health Check Flow"
 msgstr "상태 확인 흐름"
 
-#: src/development/architecture.md:277
+#: src/development/architecture.md:280
 msgid "Migration Architecture"
 msgstr "마이그레이션 아키텍처"
 
-#: src/development/architecture.md:279
+#: src/development/architecture.md:282
 msgid ""
 "scuv supports migrating environments from pyenv-virtualenv, "
 "virtualenvwrapper, and conda."
@@ -9965,167 +9978,167 @@ msgstr ""
 "scuv는 pyenv-virtualenv, virtualenvwrapper, conda에서 환경 마이그레이션을 지"
 "원합니다."
 
-#: src/development/architecture.md:317
+#: src/development/architecture.md:320
 msgid "Dependencies"
 msgstr "의존성"
 
-#: src/development/architecture.md:319
+#: src/development/architecture.md:322
 msgid "Crate"
 msgstr "Crate"
 
-#: src/development/architecture.md:321
+#: src/development/architecture.md:324
 msgid "clap"
 msgstr "clap"
 
-#: src/development/architecture.md:321
+#: src/development/architecture.md:324
 msgid "Argument parsing & completion"
 msgstr "인수 파싱 및 완성"
 
-#: src/development/architecture.md:322
+#: src/development/architecture.md:325
 msgid "clap_complete"
 msgstr "clap_complete"
 
-#: src/development/architecture.md:322
+#: src/development/architecture.md:325
 msgid "Shell completion generation"
 msgstr "Shell 완성 생성"
 
-#: src/development/architecture.md:323
+#: src/development/architecture.md:326
 msgid "serde"
 msgstr "serde"
 
-#: src/development/architecture.md:323
+#: src/development/architecture.md:326
 msgid "JSON serialization"
 msgstr "JSON 직렬화"
 
-#: src/development/architecture.md:324
+#: src/development/architecture.md:327
 msgid "serde_json"
 msgstr "serde_json"
 
-#: src/development/architecture.md:324
+#: src/development/architecture.md:327
 msgid "Metadata persistence"
 msgstr "메타데이터 지속성"
 
-#: src/development/architecture.md:325
+#: src/development/architecture.md:328
 msgid "thiserror"
 msgstr "thiserror"
 
-#: src/development/architecture.md:325
+#: src/development/architecture.md:328
 msgid "Error type definitions"
 msgstr "에러 타입 정의"
 
-#: src/development/architecture.md:326
+#: src/development/architecture.md:329
 msgid "owo-colors"
 msgstr "owo-colors"
 
-#: src/development/architecture.md:326
+#: src/development/architecture.md:329
 msgid "Terminal colors"
 msgstr "터미널 색상"
 
-#: src/development/architecture.md:327
+#: src/development/architecture.md:330
 msgid "indicatif"
 msgstr "indicatif"
 
-#: src/development/architecture.md:327
+#: src/development/architecture.md:330
 msgid "Progress bars & spinners"
 msgstr "진행 표시줄 및 스피너"
 
-#: src/development/architecture.md:328
+#: src/development/architecture.md:331
 msgid "dialoguer"
 msgstr "dialoguer"
 
-#: src/development/architecture.md:328
+#: src/development/architecture.md:331
 msgid "Interactive prompts"
 msgstr "인터랙티브 프롬프트"
 
-#: src/development/architecture.md:329
+#: src/development/architecture.md:332
 msgid "dirs"
 msgstr "dirs"
 
-#: src/development/architecture.md:329
+#: src/development/architecture.md:332
 msgid "Home directory resolution"
 msgstr "홈 디렉토리 결정"
 
-#: src/development/architecture.md:330
+#: src/development/architecture.md:333
 msgid "Binary lookup (uv, python)"
 msgstr "바이너리 조회 (uv, python)"
 
-#: src/development/architecture.md:331
+#: src/development/architecture.md:334
 msgid "regex"
 msgstr "regex"
 
-#: src/development/architecture.md:331
+#: src/development/architecture.md:334
 msgid "Version parsing & validation"
 msgstr "버전 파싱 및 검증"
 
-#: src/development/architecture.md:332
+#: src/development/architecture.md:335
 msgid "walkdir"
 msgstr "walkdir"
 
-#: src/development/architecture.md:332
+#: src/development/architecture.md:335
 msgid "Directory traversal"
 msgstr "디렉토리 순회"
 
-#: src/development/architecture.md:333
+#: src/development/architecture.md:336
 msgid "rust-i18n"
 msgstr "rust-i18n"
 
-#: src/development/architecture.md:333
+#: src/development/architecture.md:336
 msgid "Internationalization (en, ko, ja, pt-BR)"
 msgstr "국제화 (en, ko, ja, pt-BR)"
 
-#: src/development/architecture.md:334
+#: src/development/architecture.md:337
 msgid "sys-locale"
 msgstr "sys-locale"
 
-#: src/development/architecture.md:334
+#: src/development/architecture.md:337
 msgid "System locale detection"
 msgstr "시스템 로케일 감지"
 
-#: src/development/architecture.md:335
+#: src/development/architecture.md:338
 msgid "chrono"
 msgstr "chrono"
 
-#: src/development/architecture.md:335
+#: src/development/architecture.md:338
 msgid "Timestamp generation"
 msgstr "타임스탬프 생성"
 
-#: src/development/architecture.md:336
+#: src/development/architecture.md:339
 msgid "rayon"
 msgstr "rayon"
 
-#: src/development/architecture.md:336
+#: src/development/architecture.md:339
 msgid "Parallel `scuv migrate all`"
 msgstr "`scuv migrate all` 병렬 실행"
 
-#: src/development/architecture.md:337
+#: src/development/architecture.md:340
 msgid "toml"
 msgstr "toml"
 
-#: src/development/architecture.md:337
+#: src/development/architecture.md:340
 msgid "`.scuv.toml` manifest parsing (`scuv sync`)"
 msgstr "`.scuv.toml` 매니페스트 파싱 (`scuv sync`)"
 
-#: src/development/architecture.md:338
+#: src/development/architecture.md:341
 msgid "clap_mangen"
 msgstr "clap_mangen"
 
-#: src/development/architecture.md:338
+#: src/development/architecture.md:341
 msgid "Man page generation (`scuv man`)"
 msgstr "man 페이지 생성 (`scuv man`)"
 
-#: src/development/architecture.md:340
+#: src/development/architecture.md:343
 msgid "Extension Points"
 msgstr "확장 포인트"
 
-#: src/development/architecture.md:342
+#: src/development/architecture.md:345
 msgid "Adding a New Shell"
 msgstr "새 Shell 추가"
 
-#: src/development/architecture.md:344
+#: src/development/architecture.md:347
 msgid "Create `shell/myshell.rs`:"
 msgstr "`shell/myshell.rs` 생성:"
 
-#: src/development/architecture.md:347
+#: src/development/architecture.md:350
 msgid ""
 "// Return shell-specific initialization code as static string\n"
 "    r#\"\n"
@@ -10139,7 +10152,7 @@ msgstr ""
 "    scuv() { ... }\n"
 "    \"#"
 
-#: src/development/architecture.md:355
+#: src/development/architecture.md:358
 msgid ""
 "**Note**: `scuv completions <shell>` is generated by clap via "
 "`clap_complete`, but the completions built into the init scripts are hand-"
@@ -10152,55 +10165,55 @@ msgstr ""
 "`_scuv_complete()`, `fish.rs`의 `complete -c scuv` 줄, `zsh.rs`의 `langs` 배"
 "열). 서브커맨드나 옵션이 바뀌면 이쪽은 손으로 갱신해야 합니다."
 
-#: src/development/architecture.md:360
+#: src/development/architecture.md:363
 msgid "Add to `ShellType` enum in `cli/mod.rs`:"
 msgstr "`cli/mod.rs`의 `ShellType` 열거형에 추가:"
 
-#: src/development/architecture.md:363 src/development/architecture.md:402
+#: src/development/architecture.md:366 src/development/architecture.md:405
 msgid "// ... existing\n"
 msgstr "// ... 기존 항목\n"
 
-#: src/development/architecture.md:368
+#: src/development/architecture.md:371
 msgid "Add detection to `shell::detect_shell()` in `src/shell/mod.rs`:"
 msgstr "`src/shell/mod.rs`의 `shell::detect_shell()`에 감지 로직 추가:"
 
-#: src/development/architecture.md:371
+#: src/development/architecture.md:374
 msgid "\"MYSHELL_VERSION\""
 msgstr "\"MYSHELL_VERSION\""
 
-#: src/development/architecture.md:374 src/api.md:661
+#: src/development/architecture.md:377 src/api.md:662
 msgid "// ... existing checks\n"
 msgstr "// ... 기존 검사 항목\n"
 
-#: src/development/architecture.md:378
+#: src/development/architecture.md:381
 msgid "Adding a New Migration Source"
 msgstr "새 마이그레이션 소스 추가"
 
-#: src/development/architecture.md:380
+#: src/development/architecture.md:383
 msgid "Create `core/migrate/mysource.rs`:"
 msgstr "`core/migrate/mysource.rs` 생성:"
 
-#: src/development/architecture.md:386
+#: src/development/architecture.md:389
 msgid "// Check if source is available\n"
 msgstr "// 소스가 사용 가능한지 확인\n"
 
-#: src/development/architecture.md:390
+#: src/development/architecture.md:393
 msgid "// Return list of environments\n"
 msgstr "// 환경 목록 반환\n"
 
-#: src/development/architecture.md:394
+#: src/development/architecture.md:397
 msgid "// Perform migration\n"
 msgstr "// 마이그레이션 수행\n"
 
-#: src/development/architecture.md:399
+#: src/development/architecture.md:402
 msgid "Register in `cli/commands/migrate/` (its `mod.rs`):"
 msgstr "`cli/commands/migrate/`(의 `mod.rs`)에 등록:"
 
-#: src/development/architecture.md:407
+#: src/development/architecture.md:410
 msgid "Adding a New Doctor Check"
 msgstr "새 Doctor 점검 항목 추가"
 
-#: src/development/architecture.md:409
+#: src/development/architecture.md:412
 msgid ""
 "See [API Reference - Adding a New Health Check](../api.md#adding-a-new-"
 "health-check) for details."
@@ -10208,86 +10221,86 @@ msgstr ""
 "자세한 내용은 [API 레퍼런스 - 새 상태 점검 추가](../api.md#adding-a-new-"
 "health-check)를 참고하세요."
 
-#: src/development/architecture.md:411
+#: src/development/architecture.md:414
 msgid "Performance Characteristics"
 msgstr "성능 특성"
 
-#: src/development/architecture.md:413
+#: src/development/architecture.md:416
 msgid "Operation"
 msgstr "작업"
 
-#: src/development/architecture.md:413
+#: src/development/architecture.md:416
 msgid "Time Complexity"
 msgstr "시간 복잡도"
 
-#: src/development/architecture.md:415
+#: src/development/architecture.md:418
 msgid "List envs"
 msgstr "환경 목록 조회"
 
-#: src/development/architecture.md:415 src/development/architecture.md:419
+#: src/development/architecture.md:418 src/development/architecture.md:422
 msgid "O(n)"
 msgstr "O(n)"
 
-#: src/development/architecture.md:415
+#: src/development/architecture.md:418
 msgid "n = number of virtualenvs"
 msgstr "n = virtualenv 수"
 
-#: src/development/architecture.md:416
+#: src/development/architecture.md:419
 msgid "Create env"
 msgstr "환경 생성"
 
-#: src/development/architecture.md:416
+#: src/development/architecture.md:419
 msgid "O(1)\\*"
 msgstr "O(1)\\*"
 
-#: src/development/architecture.md:416
+#: src/development/architecture.md:419
 msgid "\\*Depends on uv performance"
 msgstr "\\*uv 성능에 따라 다름"
 
-#: src/development/architecture.md:417
+#: src/development/architecture.md:420
 msgid "Delete env"
 msgstr "환경 삭제"
 
-#: src/development/architecture.md:417
+#: src/development/architecture.md:420
 msgid "O(1)"
 msgstr "O(1)"
 
-#: src/development/architecture.md:417
+#: src/development/architecture.md:420
 msgid "Simple directory removal"
 msgstr "단순 디렉토리 제거"
 
-#: src/development/architecture.md:418
+#: src/development/architecture.md:421
 msgid "Version resolution"
 msgstr "버전 결정"
 
-#: src/development/architecture.md:418
+#: src/development/architecture.md:421
 msgid "O(d)"
 msgstr "O(d)"
 
-#: src/development/architecture.md:418
+#: src/development/architecture.md:421
 msgid "d = directory depth (walks parents)"
 msgstr "d = 디렉토리 깊이 (상위 디렉토리 탐색)"
 
-#: src/development/architecture.md:419
+#: src/development/architecture.md:422
 msgid "Doctor checks"
 msgstr "Doctor 점검"
 
-#: src/development/architecture.md:419
+#: src/development/architecture.md:422
 msgid "n = number of checks (fixed)"
 msgstr "n = 점검 항목 수 (고정)"
 
-#: src/development/architecture.md:421
+#: src/development/architecture.md:424
 msgid "Thread Safety"
 msgstr "스레드 안전성"
 
-#: src/development/architecture.md:423
+#: src/development/architecture.md:426
 msgid ""
 "scuv is a single-threaded CLI application. No concurrent operations are "
 "performed."
 msgstr ""
 "scuv는 단일 스레드 CLI 애플리케이션입니다. 동시 작업은 수행되지 않습니다."
 
-#: src/development/architecture.md:425
+#: src/development/architecture.md:428
 msgid ""
 "**File locking:** Not implemented. Assumes single user on single machine. "
 "Concurrent operations (e.g., two terminals creating the same env) may result "
@@ -10297,11 +10310,11 @@ msgstr ""
 "고 가정합니다. 동시 작업(예: 두 터미널에서 동일한 환경 생성)은 레이스 컨디션"
 "을 유발할 수 있습니다."
 
-#: src/development/architecture.md:427 src/development/code-quality.md:347
+#: src/development/architecture.md:430 src/development/code-quality.md:347
 msgid "Security Considerations"
 msgstr "보안 고려 사항"
 
-#: src/development/architecture.md:429
+#: src/development/architecture.md:432
 msgid ""
 "**Path Traversal:** All user-provided names are validated via regex before "
 "use in filesystem operations."
@@ -10309,7 +10322,7 @@ msgstr ""
 "**경로 순회 공격:** 사용자가 제공한 모든 이름은 파일시스템 작업에 사용되기 전"
 "에 regex로 검증됩니다."
 
-#: src/development/architecture.md:430
+#: src/development/architecture.md:433
 msgid ""
 "**Command Injection:** uv commands are constructed using typed arguments, "
 "not string concatenation."
@@ -10317,33 +10330,33 @@ msgstr ""
 "**커맨드 인젝션:** uv 커맨드는 문자열 연결이 아닌 타입 안전한 인수를 사용하"
 "여 구성됩니다."
 
-#: src/development/architecture.md:431
+#: src/development/architecture.md:434
 msgid ""
 "**Symlink Safety:** Doctor checks detect and warn about broken symlinks."
 msgstr ""
 "**심볼릭 링크 안전성:** Doctor 점검이 끊어진 심볼릭 링크를 감지하고 경고합니"
 "다."
 
-#: src/development/architecture.md:432
+#: src/development/architecture.md:435
 msgid ""
 "**Metadata Integrity:** JSON parsing errors are gracefully handled without "
 "panics."
 msgstr ""
 "**메타데이터 무결성:** JSON 파싱 오류는 패닉 없이 정상적으로 처리됩니다."
 
-#: src/development/architecture.md:434 src/api.md:671
+#: src/development/architecture.md:437 src/api.md:672
 msgid "Related Documentation"
 msgstr "관련 문서"
 
-#: src/development/architecture.md:436
+#: src/development/architecture.md:439
 msgid "[API Reference](../api.md) - Detailed API documentation"
 msgstr "[API 레퍼런스](../api.md) - 상세 API 문서"
 
-#: src/development/architecture.md:437
+#: src/development/architecture.md:440
 msgid "[Testing](testing.md) - Testing strategies"
 msgstr "[테스팅](testing.md) - 테스팅 전략"
 
-#: src/development/architecture.md:438
+#: src/development/architecture.md:441
 msgid "[Contributing](contributing.md) - Development guide"
 msgstr "[기여하기](contributing.md) - 개발 가이드"
 
@@ -10654,179 +10667,187 @@ msgstr "`ShellCheck` - shell 통합을 확인합니다"
 msgid "`VersionCheck` - Validates version files"
 msgstr "`VersionCheck` - 버전 파일을 검증합니다"
 
-#: src/api.md:191
+#: src/api.md:188
+msgid ""
+"`LegacyCheck` - Warns about leftover `SCOOP_*` vars, an orphaned `~/.scoop`, "
+"or `.scoop-version` / `.scoop.toml` (not read since v0.16.0)"
+msgstr ""
+"`LegacyCheck` - 남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, `.scoop-version` / "
+"`.scoop.toml`을 경고합니다 (v0.16.0부터 읽지 않음)"
+
+#: src/api.md:192
 msgid "`CheckStatus`"
 msgstr "`CheckStatus`"
 
-#: src/api.md:193
+#: src/api.md:194
 msgid "Result status for health checks."
 msgstr "상태 점검의 결과 상태입니다."
 
-#: src/api.md:197
+#: src/api.md:198
 msgid "// ✅ Check passed\n"
 msgstr "// ✅ 점검 통과\n"
 
-#: src/api.md:198
+#: src/api.md:199
 msgid "// ⚠️  Issue found, but not critical\n"
 msgstr "// ⚠️  문제가 발견되었으나 심각하지 않음\n"
 
-#: src/api.md:199
+#: src/api.md:200
 msgid "// ❌ Critical issue\n"
 msgstr "// ❌ 심각한 문제\n"
 
-#: src/api.md:205
+#: src/api.md:206
 msgid "`CheckResult`"
 msgstr "`CheckResult`"
 
-#: src/api.md:207
+#: src/api.md:208
 msgid "Detailed result from a health check."
 msgstr "상태 점검의 상세 결과입니다."
 
-#: src/api.md:219
+#: src/api.md:220
 msgid "/// Creates an OK result\n"
 msgstr "/// OK 결과를 생성합니다\n"
 
-#: src/api.md:222
+#: src/api.md:223
 msgid "/// Creates a warning result\n"
 msgstr "/// 경고 결과를 생성합니다\n"
 
-#: src/api.md:225
+#: src/api.md:226
 msgid "/// Creates an error result\n"
 msgstr "/// 오류 결과를 생성합니다\n"
 
-#: src/api.md:228
+#: src/api.md:229
 msgid "/// Adds a suggestion for fixing the issue\n"
 msgstr "/// 문제 해결을 위한 제안을 추가합니다\n"
 
-#: src/api.md:231
+#: src/api.md:232
 msgid "/// Adds detailed information\n"
 msgstr "/// 상세 정보를 추가합니다\n"
 
-#: src/api.md:234
+#: src/api.md:235
 msgid "// Status checks\n"
 msgstr "// 상태 확인\n"
 
-#: src/api.md:241
+#: src/api.md:242
 msgid "**Example - Implementing a Custom Check:**"
 msgstr "**예시 - 커스텀 점검 구현:**"
 
-#: src/api.md:247 src/api.md:643
+#: src/api.md:248 src/api.md:644
 msgid "\"my_check\""
 msgstr "\"my_check\""
 
-#: src/api.md:251 src/api.md:647
+#: src/api.md:252 src/api.md:648
 msgid "\"My Custom Check\""
 msgstr "\"My Custom Check\""
 
-#: src/api.md:258
+#: src/api.md:259
 msgid "\"Error message here\""
 msgstr "\"Error message here\""
 
-#: src/api.md:259
+#: src/api.md:260
 msgid "\"Run: scuv fix-it\""
 msgstr "\"Run: scuv fix-it\""
 
-#: src/api.md:260
+#: src/api.md:261
 msgid "\"Expected X, found Y\""
 msgstr "\"Expected X, found Y\""
 
-#: src/api.md:268
+#: src/api.md:269
 msgid "`Doctor`"
 msgstr "`Doctor`"
 
-#: src/api.md:270
+#: src/api.md:271
 msgid "Orchestrates all health checks."
 msgstr "모든 상태 점검을 조율합니다."
 
-#: src/api.md:278
+#: src/api.md:279
 msgid "/// Creates a doctor with default checks\n"
 msgstr "/// 기본 점검 항목으로 doctor를 생성합니다\n"
 
-#: src/api.md:281
+#: src/api.md:282
 msgid "/// Runs all checks without fixing\n"
 msgstr "/// 수정 없이 모든 점검을 실행합니다\n"
 
-#: src/api.md:284
+#: src/api.md:285
 msgid "/// Runs checks and attempts to fix issues\n"
 msgstr "/// 점검을 실행하고 문제 수정을 시도합니다\n"
 
-#: src/api.md:295
+#: src/api.md:296
 msgid "**Usage:**"
 msgstr "**사용법:**"
 
-#: src/api.md:298
+#: src/api.md:299
 msgid "// Run diagnostics\n"
 msgstr "// 진단 실행\n"
 
-#: src/api.md:303
+#: src/api.md:304
 msgid "\"❌ {}: {}\""
 msgstr "\"❌ {}: {}\""
 
-#: src/api.md:304
+#: src/api.md:305
 msgid "\"⚠️  {}: {}\""
 msgstr "\"⚠️  {}: {}\""
 
-#: src/api.md:305
+#: src/api.md:306
 msgid "\"✅ {}\""
 msgstr "\"✅ {}\""
 
-#: src/api.md:308
+#: src/api.md:309
 msgid "// Auto-fix issues (requires Output for progress display)\n"
 msgstr "// 문제 자동 수정 (진행 상황 표시를 위해 Output 필요)\n"
 
-#: src/api.md:319
+#: src/api.md:320
 msgid "`ScoopError` (`error/` module)"
 msgstr "`ScoopError` (`error/` 모듈)"
 
-#: src/api.md:321
+#: src/api.md:322
 msgid "Primary error type for all scuv operations."
 msgstr "모든 scuv 작업에 대한 기본 에러 타입입니다."
 
-#: src/api.md:326
+#: src/api.md:327
 msgid "// Virtualenv errors\n"
 msgstr "// Virtualenv 에러\n"
 
-#: src/api.md:331
+#: src/api.md:332
 msgid "// Python errors\n"
 msgstr "// Python 에러\n"
 
-#: src/api.md:338
+#: src/api.md:339
 msgid "// uv errors\n"
 msgstr "// uv 에러\n"
 
-#: src/api.md:342
+#: src/api.md:343
 msgid "// Path/IO errors\n"
 msgstr "// 경로/IO 에러\n"
 
-#: src/api.md:343
+#: src/api.md:344
 msgid "// Tuple variant\n"
 msgstr "// 튜플 변형\n"
 
-#: src/api.md:345 src/api.md:346
+#: src/api.md:346 src/api.md:347
 msgid "// Tuple variant with From\n"
 msgstr "// From이 있는 튜플 변형\n"
 
-#: src/api.md:348
+#: src/api.md:349
 msgid "// Config errors\n"
 msgstr "// 설정 에러\n"
 
-#: src/api.md:352
+#: src/api.md:353
 msgid "// CLI errors\n"
 msgstr "// CLI 에러\n"
 
-#: src/api.md:355
+#: src/api.md:356
 msgid "// Migration errors\n"
 msgstr "// 마이그레이션 에러\n"
 
-#: src/api.md:365
+#: src/api.md:366
 msgid "// Python path errors\n"
 msgstr "// Python 경로 에러\n"
 
-#: src/api.md:368
+#: src/api.md:369
 msgid "// Cascade errors\n"
 msgstr "// 연쇄 에러\n"
 
-#: src/api.md:371
+#: src/api.md:372
 msgid ""
 "// Abridged: 38 variants in total. See src/error/mod.rs for the full set,\n"
 "    // including SelfUpdateFailed, NoActiveEnvironment, ExecutableNotFound,\n"
@@ -10835,7 +10856,7 @@ msgid ""
 "    // MigrationBatchFailed and DiffMismatch.\n"
 msgstr ""
 
-#: src/api.md:379
+#: src/api.md:380
 msgid ""
 "/// Returns error code string (e.g., \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")\n"
@@ -10843,7 +10864,7 @@ msgstr ""
 "/// 에러 코드 문자열을 반환합니다 (예: \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")\n"
 
-#: src/api.md:382
+#: src/api.md:383
 msgid ""
 "/// Localized message in an explicit locale (bypasses the process-global\n"
 "    /// current locale). `Display` delegates to this with the current "
@@ -10853,12 +10874,12 @@ msgstr ""
 "    /// 현재 로케일을 우회합니다). `Display`는 현재 로케일로 이를 위임합니"
 "다.\n"
 
-#: src/api.md:386
+#: src/api.md:387
 msgid ""
 "/// Returns user-friendly suggestion in the current locale (if available)\n"
 msgstr "/// 현재 로케일에서 사용자 친화적인 제안을 반환합니다 (가능한 경우)\n"
 
-#: src/api.md:389
+#: src/api.md:390
 msgid ""
 "/// Locale-explicit sibling of `suggestion()` — useful for deterministic,\n"
 "    /// parallel tests that must not depend on the global locale.\n"
@@ -10866,11 +10887,11 @@ msgstr ""
 "/// `suggestion()`의 로케일 명시 버전 — 전역 로케일에 의존하지 않아야 하는\n"
 "    /// 결정적 병렬 테스트에 유용합니다.\n"
 
-#: src/api.md:393
+#: src/api.md:394
 msgid "/// Returns migration-specific exit code\n"
 msgstr "/// 마이그레이션 전용 종료 코드를 반환합니다\n"
 
-#: src/api.md:398
+#: src/api.md:399
 msgid ""
 "The `*_in(locale)` accessors pass `locale =` to rust-i18n's `t!`, which "
 "bypasses the process-global current locale — this lets tests assert messages "
@@ -10880,52 +10901,52 @@ msgstr ""
 "프로세스 전역 현재 로케일을 우회합니다. 덕분에 테스트에서 `#[serial]` 없이도 "
 "메시지를 결정적으로 검증할 수 있습니다."
 
-#: src/api.md:402
+#: src/api.md:403
 msgid "**Error Code String Prefixes:**"
 msgstr "**에러 코드 문자열 접두사:**"
 
-#: src/api.md:403
+#: src/api.md:404
 msgid ""
 "`ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)"
 msgstr "`ENV_*` - 환경 에러 (예: `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)"
 
-#: src/api.md:404
+#: src/api.md:405
 msgid "`PYTHON_*` - Python version errors (e.g., `PYTHON_NOT_INSTALLED`)"
 msgstr "`PYTHON_*` - Python 버전 에러 (예: `PYTHON_NOT_INSTALLED`)"
 
-#: src/api.md:405
+#: src/api.md:406
 msgid "`UV_*` - uv errors (e.g., `UV_NOT_INSTALLED`, `UV_COMMAND_FAILED`)"
 msgstr "`UV_*` - uv 에러 (예: `UV_NOT_INSTALLED`, `UV_COMMAND_FAILED`)"
 
-#: src/api.md:406
+#: src/api.md:407
 msgid "`IO_*` - Path/IO errors (e.g., `IO_ERROR`, `PATH_ERROR`)"
 msgstr "`IO_*` - 경로/IO 에러 (예: `IO_ERROR`, `PATH_ERROR`)"
 
-#: src/api.md:407
+#: src/api.md:408
 msgid "`CONFIG_*` - Config errors (e.g., `CONFIG_VERSION_FILE_NOT_FOUND`)"
 msgstr "`CONFIG_*` - 설정 에러 (예: `CONFIG_VERSION_FILE_NOT_FOUND`)"
 
-#: src/api.md:408
+#: src/api.md:409
 msgid "`SHELL_*` - Shell errors (e.g., `SHELL_NOT_SUPPORTED`)"
 msgstr "`SHELL_*` - Shell 에러 (예: `SHELL_NOT_SUPPORTED`)"
 
-#: src/api.md:409
+#: src/api.md:410
 msgid "`ARG_*` - CLI argument errors (e.g., `ARG_INVALID`)"
 msgstr "`ARG_*` - CLI 인수 에러 (예: `ARG_INVALID`)"
 
-#: src/api.md:410
+#: src/api.md:411
 msgid "`SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)"
 msgstr "`SOURCE_*` - 마이그레이션 소스 에러 (예: `SOURCE_PYENV_NOT_FOUND`)"
 
-#: src/api.md:411
+#: src/api.md:412
 msgid "`MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)"
 msgstr "`MIGRATE_*` - 마이그레이션 프로세스 에러 (예: `MIGRATE_FAILED`)"
 
-#: src/api.md:412
+#: src/api.md:413
 msgid "`UNINSTALL_*` - Uninstall errors (e.g., `UNINSTALL_CASCADE_ABORTED`)"
 msgstr "`UNINSTALL_*` - 제거 에러 (예: `UNINSTALL_CASCADE_ABORTED`)"
 
-#: src/api.md:413
+#: src/api.md:414
 msgid ""
 "Plus `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`, "
 "`VERIFY_*` and `DIFF_*` — see `src/error/code.rs` for the authoritative list"
@@ -10934,51 +10955,51 @@ msgstr ""
 "`VERIFY_*`, `DIFF_*`가 있습니다 — 정확한 목록은 `src/error/code.rs`를 참고하"
 "세요"
 
-#: src/api.md:416
+#: src/api.md:417
 msgid "**Example Error Handling:**"
 msgstr "**에러 처리 예시:**"
 
-#: src/api.md:424
+#: src/api.md:425
 msgid "\"Must start with a letter\""
 msgstr "\"Must start with a letter\""
 
-#: src/api.md:428
+#: src/api.md:429
 msgid "// ... operation\n"
 msgstr "// ... 작업\n"
 
-#: src/api.md:432
+#: src/api.md:433
 msgid "// Usage\n"
 msgstr "// 사용 예시\n"
 
-#: src/api.md:434
+#: src/api.md:435
 msgid "\"123invalid\""
 msgstr "\"123invalid\""
 
-#: src/api.md:435
+#: src/api.md:436
 msgid "\"Success\""
 msgstr "\"Success\""
 
-#: src/api.md:437
+#: src/api.md:438
 msgid "\"Error: {}\""
 msgstr "\"Error: {}\""
 
-#: src/api.md:439
+#: src/api.md:440
 msgid "\"Suggestion: {}\""
 msgstr "\"Suggestion: {}\""
 
-#: src/api.md:441
+#: src/api.md:442
 msgid "\"Error code: {}\""
 msgstr "\"Error code: {}\""
 
-#: src/api.md:442
+#: src/api.md:443
 msgid "// Non-zero exit for error\n"
 msgstr "// 에러 시 0이 아닌 종료 코드\n"
 
-#: src/api.md:451
+#: src/api.md:452
 msgid "Shell Types (`cli/mod.rs`)"
 msgstr "Shell 타입 (`cli/mod.rs`)"
 
-#: src/api.md:460
+#: src/api.md:461
 msgid ""
 "// Note: ShellType is a plain enum without methods\n"
 "// Shell operations are handled by module-level functions:\n"
@@ -10996,96 +11017,96 @@ msgstr ""
 "// - shell::fish::init_script() -> &'static str\n"
 "// - shell::powershell::init_script() -> &'static str\n"
 
-#: src/api.md:470
+#: src/api.md:471
 msgid "**Auto-detection Priority:**"
 msgstr "**자동 감지 우선순위:**"
 
-#: src/api.md:471
+#: src/api.md:472
 msgid "`FISH_VERSION` → Fish"
 msgstr "`FISH_VERSION` → Fish"
 
-#: src/api.md:472
+#: src/api.md:473
 msgid "`PSModulePath` → PowerShell"
 msgstr "`PSModulePath` → PowerShell"
 
-#: src/api.md:473
+#: src/api.md:474
 msgid "`ZSH_VERSION` → Zsh"
 msgstr "`ZSH_VERSION` → Zsh"
 
-#: src/api.md:474
+#: src/api.md:475
 msgid "Default → Bash"
 msgstr "기본값 → Bash"
 
-#: src/api.md:478
+#: src/api.md:479
 msgid "Path Utilities (`paths.rs`)"
 msgstr "경로 유틸리티 (`paths.rs`)"
 
-#: src/api.md:481
+#: src/api.md:482
 msgid "/// Returns scuv home directory (SCUV_HOME or ~/.scuv)\n"
 msgstr "/// scuv 홈 디렉토리를 반환합니다 (SCUV_HOME 또는 ~/.scuv)\n"
 
-#: src/api.md:483
+#: src/api.md:484
 msgid "/// Returns virtualenvs directory\n"
 msgstr "/// virtualenvs 디렉토리를 반환합니다\n"
 
-#: src/api.md:486
+#: src/api.md:487
 msgid "/// Returns global version file path (~/.scuv/version)\n"
 msgstr "/// 전역 버전 파일 경로를 반환합니다 (~/.scuv/version)\n"
 
-#: src/api.md:489
+#: src/api.md:490
 msgid "/// Returns local version file path in the given directory\n"
 msgstr "/// 지정된 디렉토리의 로컬 버전 파일 경로를 반환합니다\n"
 
-#: src/api.md:496
+#: src/api.md:497
 msgid "Version Resolution (`core/version.rs`)"
 msgstr "버전 결정 (`core/version.rs`)"
 
-#: src/api.md:498
+#: src/api.md:499
 msgid "`VersionService`"
 msgstr "`VersionService`"
 
-#: src/api.md:500
+#: src/api.md:501
 msgid "Service for managing version files."
 msgstr "버전 파일을 관리하는 서비스입니다."
 
-#: src/api.md:506
+#: src/api.md:507
 msgid "/// Set the local version for a directory\n"
 msgstr "/// 디렉토리의 로컬 버전을 설정합니다\n"
 
-#: src/api.md:509
+#: src/api.md:510
 msgid "/// Set the global version\n"
 msgstr "/// 전역 버전을 설정합니다\n"
 
-#: src/api.md:512
+#: src/api.md:513
 msgid "/// Get the local version for a directory\n"
 msgstr "/// 디렉토리의 로컬 버전을 가져옵니다\n"
 
-#: src/api.md:515
+#: src/api.md:516
 msgid "/// Get the global version\n"
 msgstr "/// 전역 버전을 가져옵니다\n"
 
-#: src/api.md:518
+#: src/api.md:519
 msgid ""
 "/// Resolve the version for a directory (local -> parent walk -> global)\n"
 msgstr "/// 디렉토리의 버전을 결정합니다 (로컬 → 상위 디렉토리 탐색 → 전역)\n"
 
-#: src/api.md:521
+#: src/api.md:522
 msgid "/// Resolve from current directory\n"
 msgstr "/// 현재 디렉토리에서 결정합니다\n"
 
-#: src/api.md:524
+#: src/api.md:525
 msgid "/// Unset local version (removes .scuv-version)\n"
 msgstr "/// 로컬 버전을 해제합니다 (.scuv-version 제거)\n"
 
-#: src/api.md:527
+#: src/api.md:528
 msgid "/// Unset global version (removes ~/.scuv/version)\n"
 msgstr "/// 전역 버전을 해제합니다 (~/.scuv/version 제거)\n"
 
-#: src/api.md:532
+#: src/api.md:533
 msgid "**CLI Equivalent (User Workflow):**"
 msgstr "**동등한 CLI 명령어 (사용자 워크플로우):**"
 
-#: src/api.md:534
+#: src/api.md:535
 msgid ""
 "`VersionService::set_global()` is exposed by the `scuv use <name> --global` "
 "command. To set Python 3.11.0 as the global default in practice:"
@@ -11093,7 +11114,7 @@ msgstr ""
 "`VersionService::set_global()`은 `scuv use <name> --global` 명령어로 노출됩니"
 "다. 실제로 Python 3.11.0을 전역 기본값으로 설정하려면:"
 
-#: src/api.md:543
+#: src/api.md:544
 msgid ""
 "This writes `py311` to `~/.scuv/version`. The global value is used when no "
 "local `.scuv-version` or `SCUV_VERSION` override is present."
@@ -11101,11 +11122,11 @@ msgstr ""
 "이 명령어는 `py311`을 `~/.scuv/version`에 기록합니다. 로컬 `.scuv-version`이"
 "나 `SCUV_VERSION` 재정의가 없을 때 전역 값이 사용됩니다."
 
-#: src/api.md:546
+#: src/api.md:547
 msgid "**Resolution Priority Order:**"
 msgstr "**결정 우선순위 순서:**"
 
-#: src/api.md:547
+#: src/api.md:548
 msgid ""
 "`SCUV_VERSION` environment variable (checked at shell hook level, not in "
 "VersionService)"
@@ -11113,167 +11134,167 @@ msgstr ""
 "`SCUV_VERSION` 환경 변수 (shell hook 수준에서 확인, VersionService 내부에서"
 "는 확인하지 않음)"
 
-#: src/api.md:548
+#: src/api.md:549
 msgid "`.scuv-version` in current directory"
 msgstr "현재 디렉토리의 `.scuv-version`"
 
-#: src/api.md:549
+#: src/api.md:550
 msgid "`.scuv-version` in parent directories (walks up)"
 msgstr "상위 디렉토리의 `.scuv-version` (상위로 탐색)"
 
-#: src/api.md:550 src/llms.md:167
+#: src/api.md:551 src/llms.md:167
 msgid "`~/.scuv/version` (global default)"
 msgstr "`~/.scuv/version` (전역 기본값)"
 
-#: src/api.md:552
+#: src/api.md:553
 msgid "**Note**: `.python-version` is not supported."
 msgstr "**참고**: `.python-version`은 지원되지 않습니다."
 
-#: src/api.md:556
+#: src/api.md:557
 msgid "Testing Patterns"
 msgstr "테스트 패턴"
 
-#: src/api.md:558
+#: src/api.md:559
 msgid "Property-Based Testing"
 msgstr "속성 기반 테스트"
 
-#: src/api.md:560
+#: src/api.md:561
 msgid "scuv uses `proptest` for property-based testing of critical logic:"
 msgstr "scuv는 중요 로직의 속성 기반 테스트를 위해 `proptest`를 사용합니다:"
 
-#: src/api.md:576
+#: src/api.md:577
 msgid "Integration Testing"
 msgstr "통합 테스트"
 
-#: src/api.md:578
+#: src/api.md:579
 msgid "Test files follow the pattern:"
 msgstr "테스트 파일은 다음 패턴을 따릅니다:"
 
-#: src/api.md:586
+#: src/api.md:587
 msgid "// Test setup\n"
 msgstr "// 테스트 설정\n"
 
-#: src/api.md:592
+#: src/api.md:593
 msgid "// Test logic\n"
 msgstr "// 테스트 로직\n"
 
-#: src/api.md:599
+#: src/api.md:600
 msgid "Extending scuv"
 msgstr "scuv 확장"
 
-#: src/api.md:603
+#: src/api.md:604
 msgid "**Define command in `cli/mod.rs`:**"
 msgstr "**`cli/mod.rs`에서 명령어 정의:**"
 
-#: src/api.md:607
+#: src/api.md:608
 msgid "// ... existing commands\n"
 msgstr "// ... 기존 명령어\n"
 
-#: src/api.md:609
+#: src/api.md:610
 msgid "\"Argument description\""
 msgstr "\"Argument description\""
 
-#: src/api.md:615
+#: src/api.md:616
 msgid "**Create handler in `cli/commands/`:**"
 msgstr "**`cli/commands/`에 핸들러 생성:**"
 
-#: src/api.md:617
+#: src/api.md:618
 msgid "// cli/commands/my_command.rs\n"
 msgstr "// cli/commands/my_command.rs\n"
 
-#: src/api.md:626
+#: src/api.md:627
 msgid "**Wire up in `main.rs`:**"
 msgstr "**`main.rs`에서 연결:**"
 
-#: src/api.md:635
+#: src/api.md:636
 msgid "Adding a New Health Check"
 msgstr "새 상태 점검 추가"
 
-#: src/api.md:638
+#: src/api.md:639
 msgid "// In core/doctor/checks/\n"
 msgstr "// core/doctor/checks/ 에서\n"
 
-#: src/api.md:651
+#: src/api.md:652
 msgid "// Check logic\n"
 msgstr "// 점검 로직\n"
 
-#: src/api.md:655
+#: src/api.md:656
 msgid "// Register in Doctor::new()\n"
 msgstr "// Doctor::new()에 등록\n"
 
-#: src/api.md:673
+#: src/api.md:674
 msgid ""
 "[Architecture](development/architecture.md) - System design and patterns"
 msgstr "[아키텍처](development/architecture.md) - 시스템 설계와 패턴"
 
-#: src/api.md:674
+#: src/api.md:675
 msgid "[Commands](commands/README.md) - CLI reference"
 msgstr "[명령어](commands/README.md) - CLI 참조"
 
-#: src/api.md:675
+#: src/api.md:676
 msgid "[Contributing](development/contributing.md) - Development guide"
 msgstr "[기여하기](development/contributing.md) - 개발 가이드"
 
-#: src/api.md:676
+#: src/api.md:677
 msgid "[Testing](development/testing.md) - Testing strategies"
 msgstr "[테스트](development/testing.md) - 테스트 전략"
 
-#: src/api.md:680
+#: src/api.md:681
 msgid "For AI/LLM Tools"
 msgstr "AI/LLM 도구를 위한 안내"
 
-#: src/api.md:682
+#: src/api.md:683
 msgid "When analyzing or modifying this codebase:"
 msgstr "이 코드베이스를 분석하거나 수정할 때:"
 
-#: src/api.md:684
+#: src/api.md:685
 msgid "**Use symbolic tools** for precise navigation:"
 msgstr "**심볼 도구를 활용하세요** — 정확한 탐색을 위해:"
 
-#: src/api.md:685
+#: src/api.md:686
 msgid "`find_symbol` to locate specific functions/types"
 msgstr "`find_symbol` — 특정 함수/타입 위치 파악"
 
-#: src/api.md:686
+#: src/api.md:687
 msgid "`find_referencing_symbols` to understand usage"
 msgstr "`find_referencing_symbols` — 사용처 파악"
 
-#: src/api.md:687
+#: src/api.md:688
 msgid "`get_symbols_overview` for module structure"
 msgstr "`get_symbols_overview` — 모듈 구조 파악"
 
-#: src/api.md:689
+#: src/api.md:690
 msgid "**Follow existing patterns**:"
 msgstr "**기존 패턴을 따르세요**:"
 
-#: src/api.md:690
+#: src/api.md:691
 msgid "Error handling: Always return `Result<T>` with `ScoopError`"
 msgstr "에러 처리: 항상 `ScoopError`와 함께 `Result<T>`를 반환합니다"
 
-#: src/api.md:691
+#: src/api.md:692
 msgid "Shell output: CLI outputs shell code, wrapper evals it"
 msgstr "Shell 출력: CLI가 shell 코드를 출력하면 래퍼가 eval로 실행합니다"
 
-#: src/api.md:692
+#: src/api.md:693
 msgid "Testing: Unit tests + integration tests + property tests"
 msgstr "테스트: 단위 테스트 + 통합 테스트 + 속성 테스트"
 
-#: src/api.md:693
+#: src/api.md:694
 msgid "i18n: Use `t!()` macro for all user-facing strings"
 msgstr "i18n: 사용자 대상 문자열에는 모두 `t!()` 매크로를 사용합니다"
 
-#: src/api.md:695
+#: src/api.md:696
 msgid "**Preserve conventions**:"
 msgstr "**관례를 유지하세요**:"
 
-#: src/api.md:696
+#: src/api.md:697
 msgid ""
 "Error codes are string constants (e.g., \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")"
 msgstr ""
 "에러 코드는 문자열 상수입니다 (예: \"ENV_NOT_FOUND\", \"UV_COMMAND_FAILED\")"
 
-#: src/api.md:697
+#: src/api.md:698
 msgid ""
 "Process exit codes follow a layered contract (see **Process exit codes** "
 "below)"
@@ -11281,7 +11302,7 @@ msgstr ""
 "프로세스 종료 코드는 계층적 계약을 따릅니다 (아래 **프로세스 종료 코드** 참"
 "조)"
 
-#: src/api.md:698
+#: src/api.md:699
 msgid ""
 "Path handling via `paths.rs` utilities (cross-platform — Unix `bin/` vs "
 "Windows `Scripts/`)"
@@ -11289,15 +11310,15 @@ msgstr ""
 "경로 처리는 `paths.rs` 유틸리티를 통해 수행합니다 (크로스 플랫폼 — Unix `bin/"
 "` vs Windows `Scripts/`)"
 
-#: src/api.md:699
+#: src/api.md:700
 msgid "Shell detection via `shell::detect_shell()` function"
 msgstr "Shell 감지는 `shell::detect_shell()` 함수를 통해 수행합니다"
 
-#: src/api.md:701
+#: src/api.md:702
 msgid "Process exit codes"
 msgstr "프로세스 종료 코드"
 
-#: src/api.md:703
+#: src/api.md:704
 msgid ""
 "scuv centralises exit-code policy in `src/error/exit.rs` via "
 "`ScoopError::exit_code()`. Commands that already render their own report "
@@ -11309,13 +11330,13 @@ msgstr ""
 "`ErrorRenderPolicy::Quiet`를 선택하여 `main.rs`가 중복 `error:` 줄을 추가하"
 "지 않도록 합니다."
 
-#: src/api.md:711
+#: src/api.md:712
 msgid ""
 "Generic failure or semantic finding (verify failed, generic operational "
 "error)"
 msgstr "일반적인 실패 또는 의미론적 결과 (verify 실패, 일반 작업 오류)"
 
-#: src/api.md:712
+#: src/api.md:713
 msgid ""
 "Migration failure / `MigrationNameConflict` (and reserved for future probe/"
 "tool failures)"
@@ -11323,77 +11344,77 @@ msgstr ""
 "마이그레이션 실패 / `MigrationNameConflict` (및 향후 프로브/도구 실패를 위한 "
 "예약)"
 
-#: src/api.md:713
+#: src/api.md:714
 msgid ""
 "Migration source-discovery error (pyenv/conda/venvwrapper missing or "
 "corrupted)"
 msgstr "마이그레이션 소스 검색 오류 (pyenv/conda/venvwrapper 없음 또는 손상됨)"
 
-#: src/api.md:715
+#: src/api.md:716
 msgid "Per-command exit code table:"
 msgstr "명령어별 종료 코드 표:"
 
-#: src/api.md:719
+#: src/api.md:720
 msgid "always (informational)"
 msgstr "항상 (정보성)"
 
-#: src/api.md:720
+#: src/api.md:721
 msgid "`verify --strict`"
 msgstr "`verify --strict`"
 
-#: src/api.md:720 src/api.md:722
+#: src/api.md:721 src/api.md:723
 msgid "clean"
 msgstr "정상"
 
-#: src/api.md:720
+#: src/api.md:721
 msgid "any Fail check"
 msgstr "Fail 점검 발생 시"
 
-#: src/api.md:721
+#: src/api.md:722
 msgid "`migrate @env` / `migrate all`"
 msgstr "`migrate @env` / `migrate all`"
 
-#: src/api.md:721
+#: src/api.md:722
 msgid "failure / conflict"
 msgstr "실패 / 충돌"
 
-#: src/api.md:721
+#: src/api.md:722
 msgid "source tool not found"
 msgstr "소스 도구 없음"
 
-#: src/api.md:722
+#: src/api.md:723
 msgid "warning"
 msgstr "경고"
 
-#: src/api.md:723
+#: src/api.md:724
 msgid "Other commands"
 msgstr "기타 명령어"
 
-#: src/api.md:723
+#: src/api.md:724
 msgid "failure"
 msgstr "실패"
 
-#: src/api.md:725
+#: src/api.md:726
 msgid "**Documentation requirements**:"
 msgstr "**문서화 요구사항**:"
 
-#: src/api.md:726
+#: src/api.md:727
 msgid "All `pub fn` must have doc comments"
 msgstr "모든 `pub fn`에는 doc 주석이 있어야 합니다"
 
-#: src/api.md:727
+#: src/api.md:728
 msgid "Examples in doctests where applicable"
 msgstr "해당하는 경우 doctest에 예시 포함"
 
-#: src/api.md:728
+#: src/api.md:729
 msgid "Error conditions documented"
 msgstr "에러 조건 문서화"
 
-#: src/api.md:729
+#: src/api.md:730
 msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
-#: src/api.md:733
+#: src/api.md:734
 msgid "**scuv Version:** 0.15.5"
 msgstr "**scuv 버전:** 0.15.5"
 
@@ -14708,25 +14729,8 @@ msgstr ""
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
 
-#~ msgid "**legacy scoop remnants**"
-#~ msgstr "**레거시 scoop 잔여물**"
-
-#~ msgid ""
-#~ "Leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or legacy `.scoop-"
-#~ "version` / `.scoop.toml` from the rename"
-#~ msgstr ""
-#~ "rename 이후 남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 또는 레거시 `.scoop-"
-#~ "version` / `.scoop.toml`"
-
 #~ msgid "`SCUV_VERSION` (or the legacy `SCOOP_VERSION`)"
 #~ msgstr "`SCUV_VERSION` (또는 레거시 `SCOOP_VERSION`)"
-
-#~ msgid ""
-#~ "`LegacyCheck` - Warns about leftover `SCOOP_*` vars, an orphaned "
-#~ "`~/.scoop`, or legacy `.scoop-version` / `.scoop.toml` from the rename"
-#~ msgstr ""
-#~ "`LegacyCheck` - rename 이후 남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 레거"
-#~ "시 `.scoop-version` / `.scoop.toml`을 경고합니다"
 
 #~ msgid ""
 #~ "**No coverage threshold.** Uploads work again, but there is no "

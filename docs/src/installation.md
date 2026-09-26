@@ -45,7 +45,7 @@ mv ~/.scoop ~/.scuv      # move your environments
 
 Then update your shell rc file — replace `eval "$(scoop init <shell>)"` with
 `eval "$(scuv init <shell>)"` (fish: `scuv init fish | source`), restart your
-shell, and run `scuv doctor` to confirm the new layout and shell hook.
+shell, and run `scuv doctor` to confirm nothing scoop-era is left over.
 
 Since v0.16.0 the legacy `SCOOP_*` env vars and `.scoop-version` /
 `.scoop.toml` files are no longer read, so rename them as part of the

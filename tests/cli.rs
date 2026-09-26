@@ -254,6 +254,7 @@ fn test_resolve_ignores_legacy_version_file() {
         .arg("resolve")
         .current_dir(fixture.temp_dir.path())
         .assert()
+        .success()
         .stdout(predicate::str::contains("testenv").not());
 }
 

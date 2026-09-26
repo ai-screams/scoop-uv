@@ -181,7 +181,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 220 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 222 keys
 ```
 
 ### Design Principles
@@ -461,7 +461,7 @@ impl Doctor {
 }
 ```
 
-Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck
+Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck, LegacyCheck
 
 #### UvClient
 

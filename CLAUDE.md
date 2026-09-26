@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Rename & Legacy Compatibility (since v0.15.0)
 
-- Legacy names (`SCOOP_*` env, `~/.scoop`, `.scoop-version`, `.scoop.toml`) stopped being read in v0.16.0; the 0.15.x read-only fallbacks, the `scoop` shell forwarder, the doctor `legacy` check and the `deprecation.*` i18n keys are gone. Tests named `*ignores_legacy*`, `doctor_does_not_register_legacy_check` and `init_script_never_defines_scoop` (all four shells) pin that no fallback comes back.
+- Legacy names (`SCOOP_*` env, `~/.scoop`, `.scoop-version`, `.scoop.toml`) stopped being read in v0.16.0; the 0.15.x read-only fallbacks, the `scoop` shell forwarder and the `deprecation.*` i18n keys are gone. The doctor `legacy` check stays as a warn-only diagnostic (no fallback reads) so an incomplete upgrade is not silent. Tests named `*ignores_legacy*`, `doctor_does_not_register_legacy_check` and `init_script_never_defines_scoop` (all four shells) pin that no fallback comes back.
 - **PowerShell must NEVER define a `scoop` function/alias** (would shadow scoop.sh, the Windows package manager — the reason for the rename). Enforced by `init_script_never_defines_scoop` test.
 - fish init/shell idiom is `scuv init fish | source` — `eval (...)` does NOT work in fish (splits multi-line output).
 - Deliberately KEPT legacy identifiers (on-disk/serialized format compat): `.scoop-metadata.json`, export-schema field `scoop_export_version`. Do not "fix" these.
@@ -66,7 +66,7 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 ### Testing Gotchas
 
 - **After editing `locales/app.yml`, run `touch src/lib.rs` before `cargo test`** — rust_i18n's proc-macro isn't cargo-tracked; a yml-only edit reuses the stale binary and reports false-green.
-- Env-var tests MUST use `env_guard` (src/test_utils.rs) + `#[serial]` (and control `HOME` when dirs are inspected) — the dev machine has a real `~/.scoop`. Never call `env_guard` inside `with_temp_scoop_home`: both take `ENV_LOCK` and the test deadlocks; use raw `set_var`/`remove_var` there, saving any prior value first and restoring it before asserting.
+- Env-var tests MUST use `env_guard` (src/test_utils.rs) + `#[serial]` (and control `HOME` when dirs are inspected) — the dev machine has a real `~/.scoop`. Never nest `env_guard` inside `with_temp_scoop_home`: both take `ENV_LOCK` and the test deadlocks. A test that needs an isolated home plus other variables uses `env_guard` alone with `SCUV_HOME` pointed at a `TempDir` (see `resolve_env_ignores_legacy_scoop_version`).
 - PR CI runs `cargo-mutants --in-diff`: new `Check`-trait impls and thin wrappers need direct dispatch tests or the Mutants gate fails.
 - `.cargo/mutants.toml` `exclude_re` matches the full mutant description, not the function name — a bare `"foo"` silently drops every mutant in `foo`, including ones the tests kill. Exclude the exact description (`"delete match arm \\[major\\] in foo"`); verify the delta with `cargo mutants --config <alt>.toml --list --file '<glob>'` + `comm`.
 - A green `Mutants (diff)` proves little on a test-only PR — no production lines changed — and `Mutants (full)` is skipped on PRs. Verify mutation claims locally with `cargo mutants --file '<glob>'`.
@@ -370,7 +370,7 @@ t!("error.virtualenv_not_found", name = name)
 ```
 
 **Translation file**: `locales/app.yml`
-- 220 keys total (error.* 41, suggestion.* 16); parity across all 5 locales enforced by tests/i18n_completeness.rs
+- 222 keys total (error.* 41, suggestion.* 16); parity across all 5 locales enforced by tests/i18n_completeness.rs
 - Adding a locale touches 5 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the `scuv lang` completion lists in `src/shell/fish.rs` + `src/shell/zsh.rs`. Missing `LOCALES` is the only one that fails silently — CI passes with that locale unverified. Contributor guide: `docs/src/development/translation.md`.
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
 - `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical. Install the versions `docs.yml` pins (mdbook 0.5.3, mdbook-i18n-helpers 0.4.0) — latest produces a different `.pot`. `messages.pot` is untracked; only `ko.po` is committed.

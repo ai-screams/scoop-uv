@@ -284,7 +284,7 @@ rm -f ~/.cargo/bin/scoop
 mv ~/.scoop ~/.scuv
 
 # 5. Restart your shell, then verify
-scuv doctor              # checks the new ~/.scuv layout and shell hook
+scuv doctor              # warns about anything scoop-era left over
 ```
 
 Since v0.16.0 the legacy `SCOOP_*` env vars, the `.scoop-version` /

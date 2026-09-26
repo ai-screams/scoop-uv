@@ -201,24 +201,6 @@ impl VersionService {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    /// Put an environment variable back the way it was before a test
-    /// changed it. Used under `with_temp_scoop_home`, where `env_guard`
-    /// would deadlock on `ENV_LOCK`.
-    ///
-    /// # Safety
-    ///
-    /// Same contract as `std::env::set_var`: the caller must be the only
-    /// thread touching the environment (these tests are `#[serial]`).
-    unsafe fn restore_env(name: &str, prev: Option<String>) {
-        // SAFETY: forwarded from the caller.
-        unsafe {
-            match prev {
-                Some(v) => std::env::set_var(name, v),
-                None => std::env::remove_var(name),
-            }
-        }
-    }
     use crate::test_utils::with_temp_scoop_home;
     use serial_test::serial;
     use tempfile::TempDir;
@@ -509,40 +491,31 @@ mod tests {
 
     /// The scoop-era `SCOOP_RESOLVE_MAX_DEPTH` is ignored: with only the
     /// legacy name set to `0`, the walk still reaches the parent directory.
+    /// `env_guard` alone isolates the home (SCUV_HOME at a tempdir) and
+    /// restores every variable on drop.
     /// Fails if a `SCOOP_RESOLVE_MAX_DEPTH` fallback is reintroduced.
     #[test]
     #[serial]
     fn test_resolve_max_depth_ignores_legacy_env() {
-        with_temp_scoop_home(|_temp_dir| {
-            let temp = TempDir::new().unwrap();
-            let parent = temp.path().join("a").join("b");
-            let deep = parent.join("c");
-            std::fs::create_dir_all(&deep).unwrap();
+        let home = TempDir::new().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::SCUV_HOME_ENV, Some(home.path().to_str().unwrap())),
+            ("SCUV_RESOLVE_MAX_DEPTH", None),
+            ("SCOOP_RESOLVE_MAX_DEPTH", Some("0")),
+        ]);
+        let temp = TempDir::new().unwrap();
+        let parent = temp.path().join("a").join("b");
+        let deep = parent.join("c");
+        std::fs::create_dir_all(&deep).unwrap();
 
-            VersionService::set_local(&parent, "parentenv").unwrap();
-            VersionService::set_global("globalenv").unwrap();
+        VersionService::set_local(&parent, "parentenv").unwrap();
+        VersionService::set_global("globalenv").unwrap();
 
-            let prev_scuv = std::env::var("SCUV_RESOLVE_MAX_DEPTH").ok();
-            let prev_scoop = std::env::var("SCOOP_RESOLVE_MAX_DEPTH").ok();
-            // SAFETY: serial test, no concurrent env access (env_guard would
-            // deadlock here: with_temp_scoop_home already holds ENV_LOCK).
-            unsafe {
-                std::env::remove_var("SCUV_RESOLVE_MAX_DEPTH");
-                std::env::set_var("SCOOP_RESOLVE_MAX_DEPTH", "0");
-            }
-            let resolved = VersionService::resolve(&deep);
-            // Restore before asserting so a failure cannot leak into later
-            // tests. SAFETY: serial test, no concurrent env access.
-            unsafe {
-                restore_env("SCUV_RESOLVE_MAX_DEPTH", prev_scuv);
-                restore_env("SCOOP_RESOLVE_MAX_DEPTH", prev_scoop);
-            }
-            assert_eq!(
-                resolved,
-                Some("parentenv".to_string()),
-                "SCOOP_RESOLVE_MAX_DEPTH=0 must not limit the walk"
-            );
-        });
+        assert_eq!(
+            VersionService::resolve(&deep),
+            Some("parentenv".to_string()),
+            "SCOOP_RESOLVE_MAX_DEPTH=0 must not limit the walk"
+        );
     }
 
     #[test]
@@ -567,34 +540,24 @@ mod tests {
     }
 
     /// The scoop-era `SCOOP_VERSION` is ignored: with only the legacy name
-    /// set, resolution falls through to the version file.
+    /// set, resolution falls through to the version file. `env_guard` alone
+    /// isolates the home and restores every variable on drop.
     /// Fails if a `SCOOP_VERSION` fallback is reintroduced in
     /// `resolve_env_version`.
     #[test]
     #[serial]
     fn resolve_env_ignores_legacy_scoop_version() {
-        with_temp_scoop_home(|_temp_dir| {
-            let temp = TempDir::new().unwrap();
-            let dir = temp.path();
-            VersionService::set_local(dir, "fileenv").unwrap();
+        let home = TempDir::new().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            (paths::SCUV_HOME_ENV, Some(home.path().to_str().unwrap())),
+            ("SCUV_VERSION", None),
+            ("SCOOP_VERSION", Some("legacyenv")),
+        ]);
+        let temp = TempDir::new().unwrap();
+        let dir = temp.path();
+        VersionService::set_local(dir, "fileenv").unwrap();
 
-            let prev_scuv = std::env::var("SCUV_VERSION").ok();
-            let prev_scoop = std::env::var("SCOOP_VERSION").ok();
-            // SAFETY: serial test, no concurrent env access (env_guard would
-            // deadlock here: with_temp_scoop_home already holds ENV_LOCK).
-            unsafe {
-                std::env::remove_var("SCUV_VERSION");
-                std::env::set_var("SCOOP_VERSION", "legacyenv");
-            }
-            let resolved = VersionService::resolve(dir);
-            // Restore before asserting so a failure cannot leak into later
-            // tests. SAFETY: serial test, no concurrent env access.
-            unsafe {
-                restore_env("SCUV_VERSION", prev_scuv);
-                restore_env("SCOOP_VERSION", prev_scoop);
-            }
-            assert_eq!(resolved, Some("fileenv".to_string()));
-        });
+        assert_eq!(VersionService::resolve(dir), Some("fileenv".to_string()));
     }
 
     #[test]

@@ -175,11 +175,15 @@ mod tests {
         assert!(!doctor.checks.is_empty());
     }
 
-    /// The scoop-era `legacy` remnant check went with 0.16.0.
-    /// Fails if a check with id `legacy` is registered again.
+    /// The warn-only remnant check must stay registered: it is what makes an
+    /// incomplete 0.15 → 0.16 upgrade visible. Fails if it is dropped from
+    /// `default_checks`.
     #[test]
-    fn doctor_does_not_register_legacy_check() {
+    fn doctor_registers_legacy_check() {
         let doctor = Doctor::new();
-        assert!(doctor.checks.iter().all(|c| c.id() != "legacy"));
+        assert!(
+            doctor.checks.iter().any(|c| c.id() == "legacy"),
+            "Doctor::new() must register the legacy check"
+        );
     }
 }
