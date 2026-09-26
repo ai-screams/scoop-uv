@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790384654097,
+  "lastUpdate": 1790389062949,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6179,6 +6179,90 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 188,
             "range": "± 1",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "12817f5f64c22b18118c63172aef98e2189a8032",
+          "message": "docs(i18n): fix the add-a-locale checklist and guard the language lists\n\nFixes the add-a-locale guidance that skipped the bash and PowerShell completion lists (#190), lists Spanish everywhere the supported languages are enumerated, pins each shell's completion list to SUPPORTED_LANGS with a test, guards the doc lists in check-doc-references.py, transcribes the lang command examples from the binary, brings ci-cd.md up to date with docs-check.yml, and records the merge and release conventions in CLAUDE.md.",
+          "timestamp": "2026-09-26T11:13:43+09:00",
+          "tree_id": "0a3662872ad0836d6b47a1676397124516bbcce5",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/12817f5f64c22b18118c63172aef98e2189a8032"
+        },
+        "date": 1790389061889,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 81193,
+            "range": "± 1354",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 93314,
+            "range": "± 540",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3064,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 775,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 92,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 95,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 90,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 80,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 21,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 186,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
