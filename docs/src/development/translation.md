@@ -54,6 +54,7 @@ pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
     ("ko", "한국어"),
     ("ja", "日本語"),
     ("pt-BR", "Português (Brasil)"),
+    ("es", "Español"),
     ("{lang}", "Your Language Name"),  // Add your language
 ];
 ```
@@ -69,7 +70,7 @@ pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
 **1. `tests/i18n_completeness.rs`** — add your code to the `LOCALES` const:
 
 ```rust
-const LOCALES: &[&str] = &["en", "ko", "ja", "pt-BR", "{lang}"];
+const LOCALES: &[&str] = &["en", "ko", "ja", "pt-BR", "es", "{lang}"];
 ```
 
 This is the CI gate that checks every key exists in every locale. If your
@@ -78,13 +79,15 @@ completely unverified. It is the only step in this guide that fails silently
 — everything else tells you what is wrong.
 
 **2. Shell completions** — the `scuv lang` candidate lists are hand-written
-in two shells:
+in all four shells:
 
 - `src/shell/fish.rs` — the `complete -c scuv ... from lang` lines
 - `src/shell/zsh.rs` — the `langs=(...)` array
+- `src/shell/bash.rs` — the `compgen -W "en ko ja pt-BR es"` list under `lang)`
+- `src/shell/powershell.rs` — the `@('en', 'ko', 'ja', 'pt-BR', 'es')` array
 
-bash and PowerShell do not enumerate locales, so there is nothing to change
-there.
+Nothing checks these lists against `SUPPORTED_LANGS`, so a shell you miss only
+shows up when a user presses Tab.
 
 **3. Locale loops in tests (optional)** — `src/error/mod.rs` and
 `src/error/suggestion.rs` iterate the supported locales. Adding yours gives
@@ -115,13 +118,16 @@ SCUV_LANG={lang} ./target/debug/scuv lang
 - [ ] `locales/app.yml` - All 222 keys translated
 - [ ] `src/i18n.rs` - Language registered in SUPPORTED_LANGS
 - [ ] `tests/i18n_completeness.rs` - Language added to LOCALES
-- [ ] `src/shell/fish.rs`, `src/shell/zsh.rs` - Completion lists updated
+- [ ] `src/shell/bash.rs`, `src/shell/zsh.rs`, `src/shell/fish.rs`, `src/shell/powershell.rs` - Completion lists updated
 
 **PR Title Format:**
 
 ```
-docs(i18n): add {Language Name} translation
+feat(i18n): add {Language Name} translation
 ```
+
+`feat`, not `docs`: a new language is a user-visible feature, and the
+changelog generator files it under "Added" only for `feat` commits.
 
 ---
 
@@ -345,7 +351,7 @@ Before submitting PR:
 - [ ] All placeholders preserved (`%{name}`, `%{version}`, etc.)
 - [ ] Language registered in SUPPORTED_LANGS
 - [ ] Language added to LOCALES in `tests/i18n_completeness.rs`
-- [ ] Shell completion lists updated (fish, zsh)
+- [ ] Shell completion lists updated (bash, zsh, fish, PowerShell)
 - [ ] `cargo build` succeeds
 - [ ] `touch src/lib.rs` run, then `cargo test` passes
 - [ ] `SCUV_LANG={code} scuv lang` shows your language

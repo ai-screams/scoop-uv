@@ -237,4 +237,4 @@ See `.docs/` for internal technical references:
 - Keep functions small and focused
 - Document public APIs with `///` comments
 - Use `thiserror` for error types
-- Translated error messages with solutions (en, ko, ja, pt-BR)
+- Translated error messages with solutions (en, ko, ja, pt-BR, es)

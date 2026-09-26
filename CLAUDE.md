@@ -13,16 +13,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Language**: Rust (Edition 2024, MSRV 1.89)
 - **License**: MIT OR Apache-2.0
 - **Version**: scuv 0.16.0 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
-- **Tests**: 1029 passed (957 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings — these drift; `cargo test` is the source of truth
+- **Tests**: 1018 passed (948 unit + 44 integration + 2 i18n + 24 doctest), 0 clippy warnings — these drift; `cargo test` is the source of truth
 - **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
 - **CI/CD design**: `docs/src/development/ci-cd.md` documents what each of the 11 workflows guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
 - **Test tooling**: rstest (table tests), proptest, cargo-mutants (mutation), cargo-fuzz (nightly `fuzz/` workspace); see `.docs/dev/testing-strategy.md`
-- **i18n**: English, Korean, Japanese, Portuguese-BR (rust-i18n)
+- **i18n**: English, Korean, Japanese, Portuguese-BR, Spanish (rust-i18n)
 - **Shells**: bash, zsh, fish, PowerShell
 
 ## Rename & Legacy Compatibility (since v0.15.0)
 
-- Legacy names (`SCOOP_*` env, `~/.scoop`, `.scoop-version`, `.scoop.toml`) stopped being read in v0.16.0; the 0.15.x read-only fallbacks, the `scoop` shell forwarder and the `deprecation.*` i18n keys are gone. The doctor `legacy` check stays as a warn-only diagnostic (no fallback reads) so an incomplete upgrade is not silent. Tests named `*ignores_legacy*`, `doctor_does_not_register_legacy_check` and `init_script_never_defines_scoop` (all four shells) pin that no fallback comes back.
+- Legacy names (`SCOOP_*` env, `~/.scoop`, `.scoop-version`, `.scoop.toml`) stopped being read in v0.16.0; the 0.15.x read-only fallbacks, the `scoop` shell forwarder and the `deprecation.*` i18n keys are gone. The doctor `legacy` check stays as a warn-only diagnostic (no fallback reads) so an incomplete upgrade is not silent. Tests named `*ignores_legacy*`, `doctor_registers_legacy_check` and `init_script_never_defines_scoop` (all four shells) pin that no fallback comes back and the diagnostic stays.
 - **PowerShell must NEVER define a `scoop` function/alias** (would shadow scoop.sh, the Windows package manager — the reason for the rename). Enforced by `init_script_never_defines_scoop` test.
 - fish init/shell idiom is `scuv init fish | source` — `eval (...)` does NOT work in fish (splits multi-line output).
 - Deliberately KEPT legacy identifiers (on-disk/serialized format compat): `.scoop-metadata.json`, export-schema field `scoop_export_version`. Do not "fix" these.
@@ -161,7 +161,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR)
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es)
 ```
 
 Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/shell/, src/uv/, locales/, tests/, ...).
@@ -204,7 +204,7 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 | `scuv run <ENV> -- <CMD>` | - | Run a command inside an env without activating |
 | `scuv init <SHELL>` | - | Shell init script |
 | `scuv completions <SHELL>` | - | Completion script |
-| `scuv lang [CODE]` | - | Get/set language (en, ko, ja, pt-BR) |
+| `scuv lang [CODE]` | - | Get/set language (en, ko, ja, pt-BR, es) |
 | `scuv migrate list` | - | List migratable environments |
 | `scuv migrate @env <NAME>` | - | Migrate single environment |
 | `scuv migrate all` | - | Migrate all environments (parallel via rayon) |
@@ -371,7 +371,7 @@ t!("error.virtualenv_not_found", name = name)
 
 **Translation file**: `locales/app.yml`
 - 222 keys total (error.* 41, suggestion.* 16); parity across all 5 locales enforced by tests/i18n_completeness.rs
-- Adding a locale touches 5 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the `scuv lang` completion lists in `src/shell/fish.rs` + `src/shell/zsh.rs`. Missing `LOCALES` is the only one that fails silently — CI passes with that locale unverified. Contributor guide: `docs/src/development/translation.md`.
+- Adding a locale touches 7 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the hand-written `scuv lang` completion lists in all four shells (`src/shell/{bash,zsh,fish,powershell}.rs`). Missing `LOCALES` is the only one that fails silently — CI passes with that locale unverified; a missed completion list only shows up on Tab. Contributor guide: `docs/src/development/translation.md`.
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
 - `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical. Install the versions `docs.yml` pins (mdbook 0.5.3, mdbook-i18n-helpers 0.4.0) — latest produces a different `.pot`. `messages.pot` is untracked; only `ko.po` is committed.
   - Reproducing that guard locally also needs: restore `POT-Creation-Date`/`PO-Revision-Date` from the pre-merge copy (msgmerge rewrites both to "now" → phantom diff), and `msgcat --width=79` any hand-written msgstr (unwrapped lines are gettext-version-sensitive; CI's gettext may differ from Homebrew's). Done when two consecutive runs leave the file byte-identical with 0 fuzzy.

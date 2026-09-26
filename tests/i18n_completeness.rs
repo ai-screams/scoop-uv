@@ -1,7 +1,7 @@
 //! Locale completeness checks.
 //!
 //! 1. Every translation key in `locales/app.yml` must exist in every supported
-//!    locale (en/ko/ja/pt-BR).
+//!    locale (en/ko/ja/pt-BR/es).
 //! 2. Every `t!("...")` key used in `src/` must have a translation.
 //!
 //! Both are pure file reads — no process-global locale is touched, so they run

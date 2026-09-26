@@ -333,7 +333,7 @@ graph TD
 | which | Binary lookup (uv, python) |
 | regex | Version parsing & validation |
 | walkdir | Directory traversal |
-| rust-i18n | Internationalization (en, ko, ja, pt-BR) |
+| rust-i18n | Internationalization (en, ko, ja, pt-BR, es) |
 | sys-locale | System locale detection |
 | chrono | Timestamp generation |
 | rayon | Parallel `scuv migrate all` |

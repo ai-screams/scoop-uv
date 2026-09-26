@@ -40,6 +40,7 @@ scuv lang --reset
 | `ko` | 한국어 (Korean) |
 | `ja` | 日本語 (Japanese) |
 | `pt-BR` | Português (Brazilian Portuguese) |
+| `es` | Español (Spanish) |
 
 ## Language Detection Priority
 
@@ -73,6 +74,7 @@ Supported languages:
   ko - 한국어 (Korean)
   ja - 日本語 (Japanese)
   pt-BR - Português (Brazilian Portuguese)
+  es - Español (Spanish)
 ```
 
 ### Reset to System Default

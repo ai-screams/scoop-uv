@@ -3,9 +3,9 @@
 //! Used by `status` / `info` / `list` to render `last_used` as
 //! "3 hours ago" instead of a raw RFC 3339 timestamp. English-only on
 //! purpose: the per-bucket plural/singular rules don't generalise across
-//! the four locales we support (en/ko/ja/pt-BR) without per-locale
+//! the five locales we support (en/ko/ja/pt-BR/es) without per-locale
 //! grammar work, and the existing decision (see plan v2) is that
-//! short-form age labels are not worth four-way translation overhead.
+//! short-form age labels are not worth per-locale translation overhead.
 //!
 //! JSON output sticks with RFC 3339 — machine consumers parse the real
 //! timestamp themselves. This module is for human eyes only.
