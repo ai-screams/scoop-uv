@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790389064598,
+  "lastUpdate": 1790409323232,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6263,6 +6263,90 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 186,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "df7ad0a5c6798541102f1436d5cefa33c2a77628",
+          "message": "ci(cache): write caches only from main and tolerate export failures\n\nThe Actions cache reached 10.49 GB against the 10 GB allowance and LRU eviction failed a green Docker build during a BuildKit export (error writing layer blob: not_found). rust-cache steps now save only from main, BuildKit cache-to is emitted only off pull_request with ignore-error=true, and cache-cleanup.yml deletes a PR's caches when it closes.",
+          "timestamp": "2026-09-26T16:51:33+09:00",
+          "tree_id": "2eb9867cd0abf499e0a81c5f7169cf81a9914844",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/df7ad0a5c6798541102f1436d5cefa33c2a77628"
+        },
+        "date": 1790409322561,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 78903,
+            "range": "± 1590",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 92450,
+            "range": "± 1129",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3093,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 758,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 91,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 93,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 89,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 79,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 21,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 186,
+            "range": "± 1",
             "unit": "ns/iter"
           }
         ]
