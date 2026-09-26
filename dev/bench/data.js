@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790362832592,
+  "lastUpdate": 1790383900711,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6011,6 +6011,90 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 218,
             "range": "± 1",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1fc3e917acf73edfc709d6dca1a68de6023b3b5",
+          "message": "refactor(compat)!: drop the scoop-era legacy fallbacks\n\nThe 0.15.0 rename kept the scoop-era names readable behind one-shot\nwarnings that promised removal in 0.16.0. This is that removal: the\nSCOOP_* environment variables, ~/.scoop, .scoop-version and .scoop.toml\nare no longer read, the bash/zsh/fish `scoop` forwarder is gone, and\n`scuv shell` exports SCUV_VERSION only. The doctor `legacy` check stays\nas a warn-only diagnostic so an incomplete upgrade is not silent.\n.scoop-metadata.json and scoop_export_version are unchanged (on-disk\nformats).\n\nBREAKING CHANGE: SCOOP_HOME, SCOOP_VERSION, SCOOP_LANG,\nSCOOP_RESOLVE_MAX_DEPTH and SCOOP_NO_AUTO are ignored, as are ~/.scoop,\n.scoop-version and .scoop.toml. Rename them to the SCUV_* / .scuv names\nand run `mv ~/.scoop ~/.scuv`. SCUV_SUPPRESS_DEPRECATION is no longer\nrecognised.",
+          "timestamp": "2026-09-26T09:47:37+09:00",
+          "tree_id": "e44f9e574d14fe3a3575fdef690b9c772909030e",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/c1fc3e917acf73edfc709d6dca1a68de6023b3b5"
+        },
+        "date": 1790383899878,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 75105,
+            "range": "± 903",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 87536,
+            "range": "± 705",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3225,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 790,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 95,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 99,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 90,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 83,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 22,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 203,
+            "range": "± 0",
             "unit": "ns/iter"
           }
         ]
