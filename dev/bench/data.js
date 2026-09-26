@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790409565434,
+  "lastUpdate": 1790409567099,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -7513,6 +7513,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1114,
             "range": "± 12",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9334a55a2f165a23705a596d8caa740f8ff04a43",
+          "message": "fix(fish): source activation output with an explicit --shell fish\n\nActivation never worked from fish: the wrapper and hook ran eval (command scuv activate ...), which rejoins a multi-line script with spaces (Missing end), and never passed --shell fish although fish does not export FISH_VERSION, so the binary printed bash syntax. Every call site now runs command scuv <cmd> --shell fish ... | source. The pass-through arm respects a user-supplied --shell, help flags match whole arguments only, and use system deactivates. A fish integration test runs in the Test and MSRV jobs, which install fish and set SCUV_REQUIRE_FISH.",
+          "timestamp": "2026-09-26T16:51:37+09:00",
+          "tree_id": "9da8a08c9e322328537d60c0065a6da1420c65ee",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/9334a55a2f165a23705a596d8caa740f8ff04a43"
+        },
+        "date": 1790409566982,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1689,
+            "range": "± 36",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1116,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
