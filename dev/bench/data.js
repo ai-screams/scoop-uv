@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790389062949,
+  "lastUpdate": 1790389064598,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -7273,6 +7273,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1130,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "12817f5f64c22b18118c63172aef98e2189a8032",
+          "message": "docs(i18n): fix the add-a-locale checklist and guard the language lists\n\nFixes the add-a-locale guidance that skipped the bash and PowerShell completion lists (#190), lists Spanish everywhere the supported languages are enumerated, pins each shell's completion list to SUPPORTED_LANGS with a test, guards the doc lists in check-doc-references.py, transcribes the lang command examples from the binary, brings ci-cd.md up to date with docs-check.yml, and records the merge and release conventions in CLAUDE.md.",
+          "timestamp": "2026-09-26T11:13:43+09:00",
+          "tree_id": "0a3662872ad0836d6b47a1676397124516bbcce5",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/12817f5f64c22b18118c63172aef98e2189a8032"
+        },
+        "date": 1790389064486,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1690,
+            "range": "± 25",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1122,
+            "range": "± 11",
             "unit": "ns/iter"
           }
         ]
