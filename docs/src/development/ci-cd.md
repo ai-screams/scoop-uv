@@ -17,6 +17,7 @@ that shaped them.
 | `msrv-check.yml` | `Cargo.toml`/`Cargo.lock` changes | A declared MSRV that no longer compiles |
 | `docker-build.yml` | `docker/**` changes, weekly | Broken published images, vulnerable image contents |
 | `fuzz.yml` | Weekly | Parser crashes on hostile input |
+| `docs-check.yml` | PR touching `docs/src/**`, `docs/po/**`, `docs/book.toml`, `docs/theme/**` | A docs edit that breaks the mdBook build or leaves `ko.po` stale reaching a release tag |
 | `docs.yml` | `v*` tags | Broken documentation site |
 | `release-plz.yml` | main | Manual release mistakes |
 
@@ -197,12 +198,16 @@ Without `set -o pipefail` the step exits with `tee`'s status, so a
 genuinely failing `cargo bench` reports success and resurfaces one step
 later as a confusing parse error.
 
-### Docs guards only run on release tags
+### Docs guards run on PRs only for docs paths
 
-`docs.yml` — the mdBook build and the `ko.po` staleness round-trip —
-triggers only on `v*` tags. Nothing about the documentation site is
-verified on a PR. Two checks were moved into the `ci.yml` Lint job to
-close the worst of that gap:
+`docs.yml` — the mdBook build, the `ko.po` staleness round-trip and the
+Pages deploy — triggers only on `v*` tags. `docs-check.yml` runs the same
+build and the same round-trip on pull requests, but only when the PR
+touches `docs/src/**`, `docs/po/**`, `docs/book.toml` or `docs/theme/**`.
+It is a separate workflow rather than a trigger on `docs.yml` so a PR run
+needs neither `pages: write` nor `id-token: write` and never enters the
+`pages` concurrency group. Two checks in the `ci.yml` Lint job cover the
+facts that live outside those paths:
 
 - `scripts/check-doc-references.py` compares facts copied into
   `README.md`, `CONTRIBUTING.md`, `llms.txt`, `llms-full.txt` and the
@@ -286,14 +291,6 @@ any of these being fixed.
   `.cargo/mutants.toml` with a rationale, but each needs checking rather
   than assuming. The next completed weekly run supersedes that artifact;
   until the triage happens the job tolerates exit 2.
-- **Docs are only verified on release tags.** `docs.yml` still runs
-  nowhere else, so an mdBook build failure or a stale `ko.po` surfaces at
-  release time. The two cheapest checks were moved into the Lint job; the
-  build itself was not. This is no longer hypothetical: the MSRV 1.89 bump
-  edited pages under `docs/src/`, its PR went green, and the `v0.15.4` tag
-  then failed at the `ko.po` round-trip. The crate published and the tag was
-  fine — only the Pages deploy stopped, which is the quiet half of the
-  failure and the reason it went unnoticed until someone opened the site.
 - **The coverage floor is absolute, not relative.** `--fail-under-lines 80`
   is measured against llvm-cov, which reads 80.97% where Codecov reads 78.5%;
   the two count different things, so a number taken from the Codecov
@@ -309,6 +306,13 @@ any of these being fixed.
 Left here because the reasoning is worth keeping, not because anything is
 outstanding.
 
+- Docs were only verified on release tags: the MSRV 1.89 bump edited pages
+  under `docs/src/`, its PR went green, and the `v0.15.4` tag then failed at
+  the `ko.po` round-trip. The crate published and the tag was fine — only
+  the Pages deploy stopped, which is the quiet half of the failure and the
+  reason it went unnoticed until someone opened the site. Closed by
+  `docs-check.yml`, which runs the build and the round-trip on PRs that
+  touch the docs paths.
 - Coverage uploads were rejected for months with
   `Token required because branch is protected` while the job reported
   success, because `fail_ci_if_error: false` hid it. The org allows
