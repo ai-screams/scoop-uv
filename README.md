@@ -67,7 +67,7 @@
 | pyenv-virtualenv is slow            | uv-powered, 100x+ faster             |
 | Which Python? Which venv? Chaos.    | `scuv doctor` checks everything     |
 | Migrating envs? Manual nightmare.   | `scuv migrate all` does it all      |
-| English-only CLI                    | Multi-language support (en, ko, ja, pt-BR) |
+| English-only CLI                    | Multi-language support (en, ko, ja, pt-BR, es) |
 
 ---
 
@@ -498,7 +498,7 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 | Command               | Description                        |
 |-----------------------|------------------------------------|
 | `scuv lang`          | Show current language              |
-| `scuv lang <code>`   | Set language (en, ko, ja, pt-BR)   |
+| `scuv lang <code>`   | Set language (en, ko, ja, pt-BR, es) |
 | `scuv lang --list`   | List supported languages           |
 | `scuv lang --reset`  | Reset to system default            |
 
@@ -611,7 +611,7 @@ src/
 ├── shell/         # 🐚 Shell integration (bash, zsh, fish, powershell)
 ├── uv/            # ⚡ uv CLI wrapper
 ├── output/        # 🎨 Terminal UI & JSON output
-├── i18n.rs        # 🌏 Internationalization (en, ko, ja, pt-BR)
+├── i18n.rs        # 🌏 Internationalization (en, ko, ja, pt-BR, es)
 ├── config.rs      # ⚙️ User configuration
 └── error, paths, validate  # Utilities
 ```

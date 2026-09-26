@@ -140,7 +140,48 @@ for rel in (
         f"stale counts: {', '.join(sorted(set(wrong)))} -- app.yml has {keys}",
     )
 
-# --- 5. uv floor: src/uv/version.rs is the source of truth ----------------
+# --- 5. Supported languages: src/i18n.rs is the source of truth ----------
+# Every doc that enumerates the locales must name each code in SUPPORTED_LANGS.
+# The Spanish locale (#190) landed in code with all of these still saying
+# "(en, ko, ja, pt-BR)" and nothing failed.
+langs_block = re.search(r"SUPPORTED_LANGS[^=]*=\s*&\[(.*?)\];", read("src/i18n.rs"), re.S)
+lang_codes = re.findall(r'\("([A-Za-z-]+)",\s*"', langs_block.group(1)) if langs_block else []
+check("src/i18n.rs SUPPORTED_LANGS parsed", len(lang_codes) >= 2, "could not parse SUPPORTED_LANGS")
+for rel in (
+    "README.md",
+    "CLAUDE.md",
+    "llms.txt",
+    "llms-full.txt",
+    "context7.json",
+    "docs/src/commands/lang.md",
+    "docs/src/commands/README.md",
+    "docs/src/llms.md",
+    "docs/src/development/architecture.md",
+    "docs/src/development/contributing.md",
+    "docs/src/development/translation.md",
+):
+    body = read(rel)
+
+    def has(code, text):
+        return re.search(rf"(?<![\w-]){re.escape(code)}(?![\w-])", text) is not None
+
+    missing = [c for c in lang_codes if not has(c, body)]
+    # A line that already enumerates the list (it names both ko and pt-BR)
+    # must name every code -- one stale "(en, ko, ja, pt-BR)" in a file that
+    # mentions the new code elsewhere would otherwise slip through.
+    stale = [
+        n
+        for n, line in enumerate(body.splitlines(), 1)
+        if has("ko", line) and has("pt-BR", line) and any(not has(c, line) for c in lang_codes)
+    ]
+    check(
+        f"{rel} lists every supported language",
+        not missing and not stale,
+        f"missing: {', '.join(missing) or '-'}; stale enumeration on line(s): "
+        f"{', '.join(map(str, stale)) or '-'} -- SUPPORTED_LANGS has {', '.join(lang_codes)}",
+    )
+
+# --- 6. uv floor: src/uv/version.rs is the source of truth ----------------
 # The floor named 0.5.14 for months while the code required 0.5.19, so
 # `scuv doctor` passed installations that then failed on the first command
 # that lists Python versions. Keep every copy pointing at the constant.

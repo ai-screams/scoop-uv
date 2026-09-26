@@ -58,7 +58,7 @@ msgid "list"
 msgstr "list"
 
 #: src/SUMMARY.md:21 src/commands/create.md:1
-#: src/development/translation.md:230
+#: src/development/translation.md:238
 msgid "create"
 msgstr "create"
 
@@ -71,12 +71,12 @@ msgid "remove"
 msgstr "remove"
 
 #: src/SUMMARY.md:24 src/commands/install.md:1
-#: src/development/translation.md:232
+#: src/development/translation.md:240
 msgid "install"
 msgstr "install"
 
 #: src/SUMMARY.md:25 src/commands/uninstall.md:1
-#: src/development/translation.md:233
+#: src/development/translation.md:241
 msgid "uninstall"
 msgstr "uninstall"
 
@@ -120,7 +120,7 @@ msgid "clone"
 msgstr "clone"
 
 #: src/SUMMARY.md:35 src/commands/migrate.md:1
-#: src/development/translation.md:236
+#: src/development/translation.md:244
 msgid "migrate"
 msgstr "migrate"
 
@@ -140,7 +140,7 @@ msgstr "verify"
 msgid "diff"
 msgstr "diff"
 
-#: src/SUMMARY.md:40 src/commands/lang.md:1 src/development/translation.md:32
+#: src/SUMMARY.md:40 src/commands/lang.md:1 src/development/translation.md:34
 msgid "lang"
 msgstr "lang"
 
@@ -217,7 +217,7 @@ msgstr "LLM 레퍼런스"
 #: src/commands/which.md:36 src/commands/run.md:42 src/commands/sync.md:65
 #: src/commands/import.md:39 src/commands/clone.md:39
 #: src/commands/migrate.md:117 src/commands/gc.md:84 src/commands/prune.md:25
-#: src/commands/verify.md:50 src/commands/diff.md:60 src/commands/lang.md:51
+#: src/commands/verify.md:50 src/commands/diff.md:60 src/commands/lang.md:52
 #: src/commands/self.md:28 src/commands/init.md:45 src/commands/shell.md:53
 #: src/commands/completions.md:17 src/examples.md:1
 msgid "Examples"
@@ -1933,7 +1933,7 @@ msgstr ""
 msgid "uv `centralized-project-envs`"
 msgstr ""
 
-#: src/faq.md:32 src/development/translation.md:250
+#: src/faq.md:32 src/development/translation.md:258
 msgid "scuv"
 msgstr ""
 
@@ -2875,8 +2875,8 @@ msgid "`SCUV_LANG`"
 msgstr "`SCUV_LANG`"
 
 #: src/commands/index.md:52
-msgid "Display language (en, ko, ja, pt-BR)"
-msgstr "표시 언어 (en, ko, ja, pt-BR)"
+msgid "Display language (en, ko, ja, pt-BR, es)"
+msgstr "표시 언어 (en, ko, ja, pt-BR, es)"
 
 #: src/commands/index.md:52
 msgid "System locale"
@@ -2918,7 +2918,7 @@ msgid "Location"
 msgstr "위치"
 
 #: src/commands/index.md:60 src/development/architecture.md:85
-#: src/development/architecture.md:322 src/development/ci-cd.md:221
+#: src/development/architecture.md:322 src/development/ci-cd.md:226
 msgid "Purpose"
 msgstr "용도"
 
@@ -4019,7 +4019,7 @@ msgstr "# {\n"
 #: src/commands/verify.md:76 src/commands/verify.md:77
 #: src/commands/verify.md:78 src/commands/verify.md:79
 #: src/commands/verify.md:80 src/commands/verify.md:81 src/commands/diff.md:108
-#: src/commands/diff.md:142 src/commands/lang.md:90 src/commands/self.md:48
+#: src/commands/diff.md:142 src/commands/lang.md:96 src/commands/self.md:48
 #: src/commands/self.md:54
 msgid "\"status\""
 msgstr "\"status\""
@@ -4029,7 +4029,7 @@ msgstr "\"status\""
 #: src/commands/clone.md:56 src/commands/migrate.md:175
 #: src/commands/migrate.md:220 src/commands/migrate.md:238
 #: src/commands/migrate.md:286 src/commands/gc.md:109 src/commands/verify.md:67
-#: src/commands/diff.md:108 src/commands/lang.md:90 src/commands/self.md:48
+#: src/commands/diff.md:108 src/commands/lang.md:96 src/commands/self.md:48
 msgid "\"success\""
 msgstr "\"success\""
 
@@ -4042,7 +4042,7 @@ msgstr "#   \"command\": \"uninstall\",\n"
 #: src/commands/clone.md:58 src/commands/migrate.md:177
 #: src/commands/migrate.md:222 src/commands/migrate.md:266
 #: src/commands/gc.md:111 src/commands/verify.md:69 src/commands/diff.md:110
-#: src/commands/diff.md:151 src/commands/lang.md:92 src/commands/self.md:50
+#: src/commands/diff.md:151 src/commands/lang.md:98 src/commands/self.md:50
 msgid "\"data\""
 msgstr "\"data\""
 
@@ -4375,7 +4375,7 @@ msgstr ""
 "표시되며, 디스크에 메타데이터가 전혀 없는 경우에는 행 자체가 생략됩니다."
 
 #: src/commands/info.md:48 src/commands/status.md:65 src/commands/import.md:55
-#: src/commands/clone.md:52 src/commands/migrate.md:160 src/commands/lang.md:85
+#: src/commands/clone.md:52 src/commands/migrate.md:160 src/commands/lang.md:91
 #: src/commands/self.md:44
 msgid "JSON Output"
 msgstr "JSON 출력"
@@ -4384,7 +4384,7 @@ msgstr "JSON 출력"
 #: src/commands/import.md:60 src/commands/clone.md:57
 #: src/commands/migrate.md:176 src/commands/migrate.md:221
 #: src/commands/migrate.md:259 src/commands/gc.md:110 src/commands/verify.md:68
-#: src/commands/diff.md:109 src/commands/diff.md:143 src/commands/lang.md:91
+#: src/commands/diff.md:109 src/commands/diff.md:143 src/commands/lang.md:97
 #: src/commands/self.md:49
 msgid "\"command\""
 msgstr "\"command\""
@@ -4404,7 +4404,7 @@ msgstr "\"info\""
 #: src/commands/verify.md:77 src/commands/verify.md:78
 #: src/commands/verify.md:79 src/commands/verify.md:80
 #: src/commands/verify.md:81 src/commands/diff.md:116 src/commands/diff.md:117
-#: src/commands/diff.md:118 src/commands/lang.md:94 src/api.md:155
+#: src/commands/diff.md:118 src/commands/lang.md:100 src/api.md:155
 msgid "\"name\""
 msgstr "\"name\""
 
@@ -4591,7 +4591,7 @@ msgstr "값"
 
 #: src/commands/status.md:31 src/commands/which.md:46 src/commands/sync.md:113
 #: src/commands/export.md:69 src/commands/import.md:72 src/commands/clone.md:71
-#: src/development/translation.md:248 src/api.md:709
+#: src/development/translation.md:256 src/api.md:709
 msgid "Meaning"
 msgstr "의미"
 
@@ -4665,7 +4665,7 @@ msgid "\"myenv\""
 msgstr "\"myenv\""
 
 #: src/commands/status.md:74 src/commands/import.md:65
-#: src/commands/migrate.md:178 src/commands/lang.md:95
+#: src/commands/migrate.md:178
 msgid "\"source\""
 msgstr "\"source\""
 
@@ -4856,7 +4856,7 @@ msgstr "환경의 절대 경로"
 msgid "`<env>`"
 msgstr "`<env>`"
 
-#: src/commands/run.md:30 src/development/translation.md:208
+#: src/commands/run.md:30 src/development/translation.md:216
 msgid "`PATH`"
 msgstr "`PATH`"
 
@@ -5009,7 +5009,7 @@ msgstr ""
 "로 실패합니다."
 
 #: src/commands/sync.md:52 src/commands/import.md:26 src/commands/clone.md:27
-#: src/development/ci-cd.md:67
+#: src/development/ci-cd.md:68
 msgid "Behaviour"
 msgstr "동작 방식"
 
@@ -6409,7 +6409,7 @@ msgstr ""
 "**정리**: 원본은 기본적으로 보존됩니다. 마이그레이션 성공 후 `--delete-"
 "source`를 사용하면 원본이 제거됩니다."
 
-#: src/commands/migrate.md:336 src/commands/lang.md:122
+#: src/commands/migrate.md:336 src/commands/lang.md:127
 #: src/development/architecture.md:416
 msgid "Notes"
 msgstr "참고 사항"
@@ -7663,97 +7663,109 @@ msgstr "`pt-BR`"
 msgid "Português (Brazilian Portuguese)"
 msgstr "Português (Brazilian Portuguese)"
 
-#: src/commands/lang.md:44
+#: src/commands/lang.md:43
+msgid "`es`"
+msgstr "`es`"
+
+#: src/commands/lang.md:43
+msgid "Español (Spanish)"
+msgstr "Español (Spanish)"
+
+#: src/commands/lang.md:45
 msgid "Language Detection Priority"
 msgstr "언어 감지 우선순위"
 
-#: src/commands/lang.md:46
+#: src/commands/lang.md:47
 msgid "`SCUV_LANG` environment variable"
 msgstr "`SCUV_LANG` 환경 변수"
 
-#: src/commands/lang.md:47
+#: src/commands/lang.md:48
 msgid "`~/.scuv/config.json` setting"
 msgstr "`~/.scuv/config.json` 설정"
 
-#: src/commands/lang.md:48
+#: src/commands/lang.md:49
 msgid "System locale (via `sys-locale`)"
 msgstr "시스템 로케일 (`sys-locale` 경유)"
 
-#: src/commands/lang.md:49
+#: src/commands/lang.md:50
 msgid "Default: `en`"
 msgstr "기본값: `en`"
 
-#: src/commands/lang.md:53
+#: src/commands/lang.md:54
 msgid "Show Current Language"
 msgstr "현재 언어 표시"
 
-#: src/commands/lang.md:60
+#: src/commands/lang.md:61
 msgid "Set Korean"
 msgstr "한국어 설정"
 
-#: src/commands/lang.md:67
+#: src/commands/lang.md:68
+msgid "The confirmation is printed in the language you just selected."
+msgstr "확인 메시지는 방금 선택한 언어로 출력됩니다."
+
+#: src/commands/lang.md:70
 msgid "List Languages"
 msgstr "언어 목록"
 
-#: src/commands/lang.md:78
+#: src/commands/lang.md:82
+msgid "The `*` marks the current language."
+msgstr "`*`가 현재 언어를 표시합니다."
+
+#: src/commands/lang.md:84
 msgid "Reset to System Default"
 msgstr "시스템 기본값으로 초기화"
 
-#: src/commands/lang.md:91 src/commands/lang.md:109
+#: src/commands/lang.md:97 src/commands/lang.md:114
 msgid "\"lang\""
 msgstr "\"lang\""
 
-#: src/commands/lang.md:93
+#: src/commands/lang.md:99
 msgid "\"current\""
 msgstr "\"current\""
 
-#: src/commands/lang.md:93 src/commands/lang.md:109
-#: src/development/translation.md:54 src/development/translation.md:72
+#: src/commands/lang.md:99 src/commands/lang.md:114
+#: src/development/translation.md:56 src/development/translation.md:75
 msgid "\"ko\""
 msgstr "\"ko\""
 
-#: src/commands/lang.md:94 src/development/translation.md:54
+#: src/commands/lang.md:100 src/development/translation.md:56
 msgid "\"한국어\""
 msgstr "\"한국어\""
 
-#: src/commands/lang.md:95
-msgid "\"config\""
-msgstr "\"config\""
-
-#: src/commands/lang.md:100 src/development/code-quality.md:23
+#: src/commands/lang.md:105 src/development/code-quality.md:23
 #: src/development/code-quality.md:150 src/llms.md:194
 msgid "Configuration"
 msgstr "설정"
 
-#: src/commands/lang.md:102
+#: src/commands/lang.md:107
 msgid "Language preference is stored in:"
 msgstr "언어 설정은 다음 위치에 저장됩니다:"
 
-#: src/commands/lang.md:112
+#: src/commands/lang.md:117
 msgid "Environment Variable Override"
 msgstr "환경 변수 덮어쓰기"
 
-#: src/commands/lang.md:115
+#: src/commands/lang.md:120
 msgid "# Temporarily use English regardless of config\n"
 msgstr "# 설정과 관계없이 일시적으로 영어 사용\n"
 
-#: src/commands/lang.md:116 src/development/translation.md:29
+#: src/commands/lang.md:121 src/development/translation.md:29
 msgid "en"
 msgstr "en"
 
-#: src/commands/lang.md:117
+#: src/commands/lang.md:122
 msgid "# Set for current session\n"
 msgstr "# 현재 세션에 설정\n"
 
-#: src/commands/lang.md:124
+#: src/commands/lang.md:129
 msgid "CLI help text (`--help`) remains in English (industry standard)"
 msgstr "CLI 도움말 텍스트(`--help`)는 영어로 유지됩니다 (업계 표준)"
 
-#: src/commands/lang.md:125
+#: src/commands/lang.md:130
 msgid "JSON output keys remain in English (machine-readable)"
 msgstr "JSON 출력 키는 영어로 유지됩니다 (기계 판독용)"
 
-#: src/commands/lang.md:126
+#: src/commands/lang.md:131
 msgid "Error messages, success messages, and prompts are translated"
 msgstr "오류 메시지, 성공 메시지, 프롬프트는 번역됩니다"
 
@@ -7864,7 +7876,7 @@ msgid "Output shell initialization script."
 msgstr "shell 초기화 스크립트를 출력합니다."
 
 #: src/commands/init.md:15 src/commands/completions.md:15
-#: src/development/translation.md:206
+#: src/development/translation.md:214
 msgid "`shell`"
 msgstr "`shell`"
 
@@ -8476,8 +8488,8 @@ msgid "Use `thiserror` for error types"
 msgstr "오류 타입에는 `thiserror`를 사용합니다"
 
 #: src/development/contributing.md:240
-msgid "Translated error messages with solutions (en, ko, ja, pt-BR)"
-msgstr "다국어 오류 메시지와 해결 방법 (en, ko, ja, pt-BR)"
+msgid "Translated error messages with solutions (en, ko, ja, pt-BR, es)"
+msgstr "다국어 오류 메시지와 해결 방법 (en, ko, ja, pt-BR, es)"
 
 #: src/development/translation.md:1
 msgid "Translation Guide"
@@ -8549,142 +8561,182 @@ msgid "\"Ambiente '%{name}' criado\""
 msgstr "\"Ambiente '%{name}' criado\""
 
 #: src/development/translation.md:32
+msgid "ja"
+msgstr "ja"
+
+#: src/development/translation.md:32
+msgid "\"'%{name}' 環境を作成しました\""
+msgstr "\"'%{name}' 環境を作成しました\""
+
+#: src/development/translation.md:33
+msgid "es"
+msgstr "es"
+
+#: src/development/translation.md:33
+msgid "\"Entorno '%{name}' creado\""
+msgstr "\"Entorno '%{name}' creado\""
+
+#: src/development/translation.md:34
 msgid "\"Your translation here\"  # Add your language code and translation\n"
 msgstr "\"Your translation here\"  # Add your language code and translation\n"
 
-#: src/development/translation.md:35
+#: src/development/translation.md:37
 msgid "**Important:**"
 msgstr "**중요:**"
 
-#: src/development/translation.md:37
+#: src/development/translation.md:39
 msgid "Add translations to all 222 keys"
 msgstr "모든 222개 키에 번역을 추가합니다"
 
-#: src/development/translation.md:38
+#: src/development/translation.md:40
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
 msgstr "플레이스홀더 문법을 정확히 유지합니다: `%{name}`, `%{version}` 등"
 
-#: src/development/translation.md:39
+#: src/development/translation.md:41
 msgid "Preserve special characters: `→`, quotes, backticks"
 msgstr "특수 문자를 그대로 유지합니다: `→`, 따옴표, 백틱"
 
-#: src/development/translation.md:41
+#: src/development/translation.md:43
 msgid "The key count grows between releases. For the current number:"
 msgstr "키 개수는 릴리스마다 늘어납니다. 현재 개수는 다음으로 확인합니다:"
 
-#: src/development/translation.md:44
+#: src/development/translation.md:46
 msgid "'^[a-z_][a-zA-Z0-9_.]*:$'"
 msgstr "'^[a-z_][a-zA-Z0-9_.]*:$'"
 
-#: src/development/translation.md:47
+#: src/development/translation.md:49
 msgid "Step 3: Register Language"
 msgstr "3단계: 언어 등록"
 
-#: src/development/translation.md:49
+#: src/development/translation.md:51
 msgid "Edit `src/i18n.rs` and add your language to `SUPPORTED_LANGS`:"
 msgstr "`src/i18n.rs`를 편집하여 `SUPPORTED_LANGS`에 언어를 추가합니다:"
 
-#: src/development/translation.md:53 src/development/translation.md:72
-#: src/development/translation.md:286
+#: src/development/translation.md:55 src/development/translation.md:75
+#: src/development/translation.md:294
 msgid "\"en\""
 msgstr "\"en\""
 
-#: src/development/translation.md:53 src/development/translation.md:286
+#: src/development/translation.md:55 src/development/translation.md:294
 msgid "\"English\""
 msgstr "\"English\""
 
-#: src/development/translation.md:55 src/development/translation.md:72
-msgid "\"ja\""
-msgstr "\"ja\""
-
-#: src/development/translation.md:55
-msgid "\"日本語\""
-msgstr "\"日本語\""
-
-#: src/development/translation.md:56 src/development/translation.md:72
+#: src/development/translation.md:57 src/development/translation.md:75
 msgid "\"pt-BR\""
 msgstr "\"pt-BR\""
 
-#: src/development/translation.md:56
+#: src/development/translation.md:57
 msgid "\"Português (Brasil)\""
 msgstr "\"Português (Brasil)\""
 
-#: src/development/translation.md:57 src/development/translation.md:72
+#: src/development/translation.md:58 src/development/translation.md:75
+msgid "\"ja\""
+msgstr "\"ja\""
+
+#: src/development/translation.md:58
+msgid "\"日本語\""
+msgstr "\"日本語\""
+
+#: src/development/translation.md:59 src/development/translation.md:75
+msgid "\"es\""
+msgstr "\"es\""
+
+#: src/development/translation.md:59
+msgid "\"Español\""
+msgstr "\"Español\""
+
+#: src/development/translation.md:60 src/development/translation.md:75
 msgid "\"{lang}\""
 msgstr "\"{lang}\""
 
-#: src/development/translation.md:57
+#: src/development/translation.md:60
 msgid "\"Your Language Name\""
 msgstr "\"Your Language Name\""
 
-#: src/development/translation.md:57
+#: src/development/translation.md:60
 msgid "// Add your language\n"
 msgstr "// Add your language\n"
 
-#: src/development/translation.md:61
+#: src/development/translation.md:64
 msgid "**Language Code Format:**"
 msgstr "**언어 코드 형식:**"
 
-#: src/development/translation.md:63
+#: src/development/translation.md:66
 msgid "Use [BCP 47](https://en.wikipedia.org/wiki/IETF_language_tag) format"
 msgstr ""
 "[BCP 47](https://en.wikipedia.org/wiki/IETF_language_tag) 형식을 사용합니다"
 
-#: src/development/translation.md:64
+#: src/development/translation.md:67
 msgid "Simple languages: `ja`, `fr`, `es`, `de`, `it`"
 msgstr "단순 언어: `ja`, `fr`, `es`, `de`, `it`"
 
-#: src/development/translation.md:65
+#: src/development/translation.md:68
 msgid "Regional variants: `pt-BR`, `zh-CN`, `zh-TW`, `es-MX`"
 msgstr "지역 변형: `pt-BR`, `zh-CN`, `zh-TW`, `es-MX`"
 
-#: src/development/translation.md:67
+#: src/development/translation.md:70
 msgid ""
 "**Three more places list the supported locales.** The first one matters most."
 msgstr ""
 "**지원 로케일 목록은 세 곳에 더 있습니다.** 그중 첫 번째가 가장 중요합니다."
 
-#: src/development/translation.md:69
+#: src/development/translation.md:72
 msgid ""
 "**1. `tests/i18n_completeness.rs`** — add your code to the `LOCALES` const:"
 msgstr ""
 "**1. `tests/i18n_completeness.rs`** — `LOCALES` 상수에 언어 코드를 추가합니"
 "다:"
 
-#: src/development/translation.md:75
+#: src/development/translation.md:78
 msgid ""
 "This is the CI gate that checks every key exists in every locale. If your "
 "language is missing from this list, CI passes while your translation goes "
-"completely unverified. It is the only step in this guide that fails silently "
-"— everything else tells you what is wrong."
+"completely unverified — nothing tells you it was skipped."
 msgstr ""
 "모든 키가 모든 로케일에 존재하는지 확인하는 CI 게이트입니다. 이 목록에 언어"
-"가 빠져 있으면 CI는 통과하지만 번역은 전혀 검증되지 않습니다. 이 가이드에서 "
-"조용히 실패하는 유일한 단계이며 — 나머지는 모두 무엇이 잘못됐는지 알려줍니다."
+"가 빠져 있으면 CI는 통과하지만 번역은 전혀 검증되지 않으며, 건너뛰었다는 사실"
+"을 아무것도 알려주지 않습니다."
 
-#: src/development/translation.md:80
+#: src/development/translation.md:82
 msgid ""
 "**2. Shell completions** — the `scuv lang` candidate lists are hand-written "
-"in two shells:"
+"in all four shells:"
 msgstr ""
-"**2. 셸 자동완성** — `scuv lang`의 후보 목록은 두 셸에 직접 작성되어 있습니"
-"다:"
+"**2. 셸 자동완성** — `scuv lang`의 후보 목록은 네 셸 모두에 직접 작성되어 있"
+"습니다:"
 
-#: src/development/translation.md:83
+#: src/development/translation.md:85
 msgid "`src/shell/fish.rs` — the `complete -c scuv ... from lang` lines"
 msgstr "`src/shell/fish.rs` — `complete -c scuv ... from lang` 줄"
 
-#: src/development/translation.md:84
+#: src/development/translation.md:86
 msgid "`src/shell/zsh.rs` — the `langs=(...)` array"
 msgstr "`src/shell/zsh.rs` — `langs=(...)` 배열"
 
-#: src/development/translation.md:86
+#: src/development/translation.md:87
 msgid ""
-"bash and PowerShell do not enumerate locales, so there is nothing to change "
-"there."
-msgstr "bash와 PowerShell은 로케일을 나열하지 않으므로 손댈 것이 없습니다."
+"`src/shell/bash.rs` — the `compgen -W \"en ko ja pt-BR es\"` list under "
+"`lang)`"
+msgstr ""
+"`src/shell/bash.rs` — `lang)` 아래의 `compgen -W \"en ko ja pt-BR es\"` 목록"
 
-#: src/development/translation.md:89
+#: src/development/translation.md:88
+msgid ""
+"`src/shell/powershell.rs` — the `@('en', 'ko', 'ja', 'pt-BR', 'es')` array"
+msgstr "`src/shell/powershell.rs` — `@('en', 'ko', 'ja', 'pt-BR', 'es')` 배열"
+
+#: src/development/translation.md:90
+msgid ""
+"Each shell module has a test "
+"(`lang_completion_list_matches_supported_langs`) that compares its list with "
+"`SUPPORTED_LANGS`, so a shell you miss fails `cargo test` instead of "
+"surfacing when a user presses Tab."
+msgstr ""
+"각 셸 모듈에는 그 목록을 `SUPPORTED_LANGS`와 대조하는 테스트"
+"(`lang_completion_list_matches_supported_langs`)가 있어서, 빠뜨린 셸은 사용자"
+"가 Tab을 누를 때가 아니라 `cargo test`에서 실패합니다."
+
+#: src/development/translation.md:94
 msgid ""
 "**3. Locale loops in tests (optional)** — `src/error/mod.rs` and `src/error/"
 "suggestion.rs` iterate the supported locales. Adding yours gives your "
@@ -8696,11 +8748,11 @@ msgstr ""
 "닛 레벨 커버리지까지 확보합니다. Rust를 건드리고 싶지 않다면 건너뛰어도 되"
 "며, 리뷰 과정에서 메인테이너가 추가할 수 있습니다."
 
-#: src/development/translation.md:94
+#: src/development/translation.md:99
 msgid "Step 4: Test Locally"
 msgstr "4단계: 로컬 테스트"
 
-#: src/development/translation.md:96
+#: src/development/translation.md:101
 msgid ""
 "`rust-i18n`'s proc macro is not tracked by cargo, so editing `locales/"
 "app.yml` on its own does not trigger a rebuild. `cargo test` reuses the "
@@ -8710,68 +8762,80 @@ msgstr ""
 "쳐서는 재빌드가 일어나지 않습니다. `cargo test`가 예전 바이너리를 그대로 재사"
 "용해 거짓 통과를 보고합니다. 항상 `touch src/lib.rs`를 먼저 실행하세요."
 
-#: src/development/translation.md:101
+#: src/development/translation.md:106
 msgid "# Build and test (the touch is required — see the note above)\n"
 msgstr "# 빌드 및 테스트 (touch는 필수입니다 — 위 설명 참고)\n"
 
-#: src/development/translation.md:105
+#: src/development/translation.md:110
 msgid "# Test your language (replace {lang} with your language code)\n"
 msgstr "# 언어 테스트 ({lang}을 언어 코드로 교체)\n"
 
-#: src/development/translation.md:108
+#: src/development/translation.md:113
 msgid "{lang}"
 msgstr "{lang}"
 
-#: src/development/translation.md:111
+#: src/development/translation.md:116
 msgid "Step 5: Create Pull Request"
 msgstr "5단계: Pull Request 생성"
 
-#: src/development/translation.md:113
+#: src/development/translation.md:118
 msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
-#: src/development/translation.md:115
+#: src/development/translation.md:120
 msgid "`locales/app.yml` - All 222 keys translated"
 msgstr "`locales/app.yml` - 222개 키 모두 번역"
 
-#: src/development/translation.md:116
+#: src/development/translation.md:121
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
 msgstr "`src/i18n.rs` - SUPPORTED_LANGS에 언어 등록"
 
-#: src/development/translation.md:117
+#: src/development/translation.md:122
 msgid "`tests/i18n_completeness.rs` - Language added to LOCALES"
 msgstr "`tests/i18n_completeness.rs` - LOCALES에 언어 추가"
 
-#: src/development/translation.md:118
-msgid "`src/shell/fish.rs`, `src/shell/zsh.rs` - Completion lists updated"
-msgstr "`src/shell/fish.rs`, `src/shell/zsh.rs` - 자동완성 목록 갱신"
+#: src/development/translation.md:123
+msgid ""
+"`src/shell/bash.rs`, `src/shell/zsh.rs`, `src/shell/fish.rs`, `src/shell/"
+"powershell.rs` - Completion lists updated"
+msgstr ""
+"`src/shell/bash.rs`, `src/shell/zsh.rs`, `src/shell/fish.rs`, `src/shell/"
+"powershell.rs` - 자동완성 목록 갱신"
 
-#: src/development/translation.md:120
+#: src/development/translation.md:125
 msgid "**PR Title Format:**"
 msgstr "**PR 제목 형식:**"
 
-#: src/development/translation.md:128
+#: src/development/translation.md:131
+msgid ""
+"`feat`, not `docs`: a new language is a user-visible feature, and the "
+"changelog generator files it under \"Added\" only for `feat` commits."
+msgstr ""
+"`docs`가 아니라 `feat`입니다: 새 언어는 사용자에게 보이는 기능이고, "
+"changelog 생성기는 `feat` 커밋만 \"Added\" 아래에 넣습니다."
+
+#: src/development/translation.md:136
 msgid "Style Guidelines"
 msgstr "스타일 가이드라인"
 
-#: src/development/translation.md:130
+#: src/development/translation.md:138
 msgid "Philosophy: Your Language, Your Style"
 msgstr "철학: 내 언어, 내 스타일"
 
-#: src/development/translation.md:132
+#: src/development/translation.md:140
 msgid "**We trust translators.** You know your language and community best."
 msgstr ""
 "**번역자를 신뢰합니다.** 본인의 언어와 커뮤니티를 가장 잘 아는 분은 번역자 자"
 "신입니다."
 
-#: src/development/translation.md:134
+#: src/development/translation.md:142
 msgid ""
 "**Word choice is yours** — Pick terms that feel natural to native speakers"
 msgstr ""
 "**단어 선택은 번역자의 몫입니다** — 원어민에게 자연스럽게 느껴지는 표현을 선"
 "택하세요"
 
-#: src/development/translation.md:135
+#: src/development/translation.md:143
 msgid ""
 "**Creativity welcome** — Witty expressions are fine if they're clear and "
 "widely understood"
@@ -8779,38 +8843,38 @@ msgstr ""
 "**창의성을 환영합니다** — 의미가 명확하고 널리 이해되는 재치 있는 표현도 좋습"
 "니다"
 
-#: src/development/translation.md:136
+#: src/development/translation.md:144
 msgid ""
 "**Casual over formal** — scuv is a friendly CLI tool, not enterprise software"
 msgstr ""
 "**격식보다 친근함** — scuv는 친근한 CLI 도구이지, 기업용 소프트웨어가 아닙니"
 "다"
 
-#: src/development/translation.md:138
+#: src/development/translation.md:146
 msgid "General Principles"
 msgstr "기본 원칙"
 
-#: src/development/translation.md:140
+#: src/development/translation.md:148
 msgid "**Concise**: CLI messages should be short and clear"
 msgstr "**간결함**: CLI 메시지는 짧고 명확해야 합니다"
 
-#: src/development/translation.md:141
+#: src/development/translation.md:149
 msgid "**Natural**: Use natural phrasing, not word-for-word translation"
 msgstr "**자연스러움**: 단어 대 단어 번역이 아닌 자연스러운 표현을 사용합니다"
 
-#: src/development/translation.md:142
+#: src/development/translation.md:150
 msgid "**Casual**: Friendly, approachable tone — like talking to a colleague"
 msgstr "**친근함**: 동료에게 말하듯 친근하고 편안한 어조"
 
-#: src/development/translation.md:143
+#: src/development/translation.md:151
 msgid "**Clear**: Wit is great, but clarity comes first"
 msgstr "**명확함**: 재치도 좋지만 명확함이 우선입니다"
 
-#: src/development/translation.md:145
+#: src/development/translation.md:153
 msgid "Tone Examples"
 msgstr "어조 예시"
 
-#: src/development/translation.md:147
+#: src/development/translation.md:155
 msgid ""
 "```\n"
 "# Too formal (avoid)\n"
@@ -8836,122 +8900,122 @@ msgstr ""
 "\"'myenv' is ready\"\n"
 "```"
 
-#: src/development/translation.md:159
+#: src/development/translation.md:167
 msgid "Message Types"
 msgstr "메시지 유형"
 
-#: src/development/translation.md:161
+#: src/development/translation.md:169
 msgid "Type"
 msgstr "유형"
 
-#: src/development/translation.md:161
+#: src/development/translation.md:169
 msgid "English Example"
 msgstr "영어 예시"
 
-#: src/development/translation.md:161 src/development/translation.md:248
+#: src/development/translation.md:169 src/development/translation.md:256
 msgid "Guidance"
 msgstr "안내"
 
-#: src/development/translation.md:163
+#: src/development/translation.md:171
 msgid "Progress"
 msgstr "진행 중"
 
-#: src/development/translation.md:163
+#: src/development/translation.md:171
 msgid "\"Installing...\""
 msgstr "\"Installing...\""
 
-#: src/development/translation.md:163
+#: src/development/translation.md:171
 msgid "Use progressive/ongoing form"
 msgstr "진행형을 사용합니다"
 
-#: src/development/translation.md:164 src/api.md:711
+#: src/development/translation.md:172 src/api.md:711
 msgid "Success"
 msgstr "완료"
 
-#: src/development/translation.md:164
+#: src/development/translation.md:172
 msgid "\"Created 'myenv'\""
 msgstr "\"Created 'myenv'\""
 
-#: src/development/translation.md:164
+#: src/development/translation.md:172
 msgid "Completion — feel free to add flair"
 msgstr "완료 — 자유롭게 개성을 더해도 좋습니다"
 
-#: src/development/translation.md:165
+#: src/development/translation.md:173
 msgid "Error"
 msgstr "오류"
 
-#: src/development/translation.md:165
+#: src/development/translation.md:173
 msgid "\"Can't find 'myenv'\""
 msgstr "\"Can't find 'myenv'\""
 
-#: src/development/translation.md:165
+#: src/development/translation.md:173
 msgid "Clear and actionable"
 msgstr "명확하고 조치 가능해야 합니다"
 
-#: src/development/translation.md:166
+#: src/development/translation.md:174
 msgid "Hint"
 msgstr "힌트"
 
-#: src/development/translation.md:166
+#: src/development/translation.md:174
 msgid "\"→ Create: scuv create...\""
 msgstr "\"→ Create: scuv create...\""
 
-#: src/development/translation.md:166
+#: src/development/translation.md:174
 msgid "Helpful, not lecturing"
 msgstr "도움이 되되 설교하지 않습니다"
 
-#: src/development/translation.md:168
+#: src/development/translation.md:176
 msgid "Translator's Discretion"
 msgstr "번역자의 재량"
 
-#: src/development/translation.md:170
+#: src/development/translation.md:178
 msgid "These decisions are **up to you**:"
 msgstr "다음 사항들은 **번역자에게 달려 있습니다**:"
 
-#: src/development/translation.md:172
+#: src/development/translation.md:180
 msgid "**Vocabulary**: Choose words that resonate with your community"
 msgstr "**어휘**: 커뮤니티에 잘 맞는 단어를 선택합니다"
 
-#: src/development/translation.md:173
+#: src/development/translation.md:181
 msgid "**Idioms**: Use local expressions if they fit naturally"
 msgstr "**관용구**: 자연스럽게 맞는 경우 현지 표현을 사용합니다"
 
-#: src/development/translation.md:174
+#: src/development/translation.md:182
 msgid "**Humor**: Light wit is welcome (e.g., ice cream puns if appropriate)"
 msgstr ""
 "**유머**: 가벼운 재치는 환영합니다 (예: 적절하다면 아이스크림 말장난도 좋습니"
 "다)"
 
-#: src/development/translation.md:175
+#: src/development/translation.md:183
 msgid "**Formality level**: Lean casual, but match your culture's CLI norms"
 msgstr ""
 "**격식 수준**: 친근한 어조를 유지하되, 언어/문화권의 CLI 관행에 맞게 조정합니"
 "다"
 
-#: src/development/translation.md:177
+#: src/development/translation.md:185
 msgid "**Only requirement**: The meaning must be clear to users."
 msgstr "**유일한 필수 요건**: 사용자에게 의미가 명확해야 합니다."
 
-#: src/development/translation.md:179
+#: src/development/translation.md:187
 msgid "Technical Terms"
 msgstr "기술 용어"
 
-#: src/development/translation.md:181
+#: src/development/translation.md:189
 msgid "For technical vocabulary:"
 msgstr "기술 용어에 대해:"
 
-#: src/development/translation.md:183
+#: src/development/translation.md:191
 msgid ""
 "**Check your community** — What do Python developers in your language use?"
 msgstr ""
 "**커뮤니티를 확인하세요** — 해당 언어권의 Python 개발자들이 어떤 용어를 사용"
 "하나요?"
 
-#: src/development/translation.md:184
+#: src/development/translation.md:192
 msgid "**Consistency** — Pick one term and stick with it throughout"
 msgstr "**일관성** — 한 가지 용어를 선택하고 일관되게 사용합니다"
 
-#: src/development/translation.md:185
+#: src/development/translation.md:193
 msgid ""
 "**Loanwords OK** — If your community uses English terms (e.g., \"install\"), "
 "that's fine"
@@ -8959,7 +9023,7 @@ msgstr ""
 "**외래어 허용** — 커뮤니티에서 영어 용어를 사용한다면 (예: \"install\"), 그대"
 "로 사용해도 됩니다"
 
-#: src/development/translation.md:187
+#: src/development/translation.md:195
 msgid ""
 "**Tip:** Study existing translations in `locales/app.yml` for reference, but "
 "don't feel bound by them."
@@ -8967,101 +9031,101 @@ msgstr ""
 "**팁:** `locales/app.yml`의 기존 번역을 참고로 살펴보되, 그대로 따를 필요는 "
 "없습니다."
 
-#: src/development/translation.md:191
+#: src/development/translation.md:199
 msgid "Glossary"
 msgstr "용어 설명"
 
-#: src/development/translation.md:193
+#: src/development/translation.md:201
 msgid "Do NOT Translate"
 msgstr "번역하지 않는 항목"
 
-#: src/development/translation.md:195
+#: src/development/translation.md:203
 msgid "These terms should remain in English in all languages:"
 msgstr "다음 용어는 모든 언어에서 영어 그대로 유지합니다:"
 
-#: src/development/translation.md:197 src/development/translation.md:248
+#: src/development/translation.md:205 src/development/translation.md:256
 msgid "Term"
 msgstr "용어"
 
-#: src/development/translation.md:197
+#: src/development/translation.md:205
 msgid "Reason"
 msgstr "이유"
 
-#: src/development/translation.md:199
+#: src/development/translation.md:207
 msgid "`scuv`"
 msgstr ""
 
-#: src/development/translation.md:199
+#: src/development/translation.md:207
 msgid "Brand name"
 msgstr "브랜드 이름"
 
-#: src/development/translation.md:200
+#: src/development/translation.md:208
 msgid "`uv`"
 msgstr "`uv`"
 
-#: src/development/translation.md:200 src/development/translation.md:201
-#: src/development/translation.md:202 src/development/translation.md:204
-#: src/development/translation.md:209
+#: src/development/translation.md:208 src/development/translation.md:209
+#: src/development/translation.md:210 src/development/translation.md:212
+#: src/development/translation.md:217
 msgid "Tool name"
 msgstr "도구 이름"
 
-#: src/development/translation.md:201
+#: src/development/translation.md:209
 msgid "`pyenv`"
 msgstr "`pyenv`"
 
-#: src/development/translation.md:202
+#: src/development/translation.md:210
 msgid "`conda`"
 msgstr "`conda`"
 
-#: src/development/translation.md:203 src/development/architecture.md:90
+#: src/development/translation.md:211 src/development/architecture.md:90
 msgid "`virtualenv`"
 msgstr "`virtualenv`"
 
-#: src/development/translation.md:203
+#: src/development/translation.md:211
 msgid "Technical term"
 msgstr "기술 용어"
 
-#: src/development/translation.md:204
+#: src/development/translation.md:212
 msgid "`virtualenvwrapper`"
 msgstr "`virtualenvwrapper`"
 
-#: src/development/translation.md:205
+#: src/development/translation.md:213
 msgid "`Python`"
 msgstr "`Python`"
 
-#: src/development/translation.md:205
+#: src/development/translation.md:213
 msgid "Language name"
 msgstr "언어 이름"
 
-#: src/development/translation.md:206
+#: src/development/translation.md:214
 msgid "Technical term (bash, zsh, fish)"
 msgstr "기술 용어 (bash, zsh, fish)"
 
-#: src/development/translation.md:207
+#: src/development/translation.md:215
 msgid "`JSON`"
 msgstr "`JSON`"
 
-#: src/development/translation.md:207
+#: src/development/translation.md:215
 msgid "Format name"
 msgstr "형식 이름"
 
-#: src/development/translation.md:208
+#: src/development/translation.md:216
 msgid "Environment variable"
 msgstr "환경 변수"
 
-#: src/development/translation.md:209
+#: src/development/translation.md:217
 msgid "`pip`"
 msgstr "`pip`"
 
-#: src/development/translation.md:211
+#: src/development/translation.md:219
 msgid "Commands - Never Translate"
 msgstr "명령어 - 절대 번역하지 않음"
 
-#: src/development/translation.md:213
+#: src/development/translation.md:221
 msgid "All commands and code examples must stay in English:"
 msgstr "모든 명령어와 코드 예시는 반드시 영어로 유지합니다:"
 
-#: src/development/translation.md:216 src/development/translation.md:315
+#: src/development/translation.md:224 src/development/translation.md:323
 msgid ""
 "# WRONG - Command translated\n"
 "hint"
@@ -9069,170 +9133,170 @@ msgstr ""
 "# 잘못된 예 - 명령어가 번역된 경우\n"
 "hint"
 
-#: src/development/translation.md:217
+#: src/development/translation.md:225
 msgid "\"→ Create: {translated_command} myenv 3.12\""
 msgstr "\"→ Create: {translated_command} myenv 3.12\""
 
-#: src/development/translation.md:219
+#: src/development/translation.md:227
 msgid "CORRECT - Only description translated"
 msgstr "올바른 예 - 설명 부분만 번역"
 
-#: src/development/translation.md:219 src/development/translation.md:318
+#: src/development/translation.md:227 src/development/translation.md:326
 msgid "hint"
 msgstr "hint"
 
-#: src/development/translation.md:220
+#: src/development/translation.md:228
 msgid "\"→ {translated_word}: scuv create myenv 3.12\""
 msgstr "\"→ {translated_word}: scuv create myenv 3.12\""
 
-#: src/development/translation.md:223
+#: src/development/translation.md:231
 msgid "Common Terms to Translate"
 msgstr "번역해야 할 일반 용어"
 
-#: src/development/translation.md:225
+#: src/development/translation.md:233
 msgid ""
 "These are core concepts you'll need to translate. Reference existing "
 "translations for consistency:"
 msgstr ""
 "다음은 번역이 필요한 핵심 개념들입니다. 일관성을 위해 기존 번역을 참고하세요:"
 
-#: src/development/translation.md:227
+#: src/development/translation.md:235
 msgid "English"
 msgstr "영어"
 
-#: src/development/translation.md:227
+#: src/development/translation.md:235
 msgid "What to look for"
 msgstr "찾아야 할 표현"
 
-#: src/development/translation.md:229
+#: src/development/translation.md:237
 msgid "environment"
 msgstr "environment"
 
-#: src/development/translation.md:229
+#: src/development/translation.md:237
 msgid "Your language's term for \"environment\""
 msgstr "해당 언어에서 \"environment\"에 해당하는 표현"
 
-#: src/development/translation.md:230
+#: src/development/translation.md:238
 msgid "Common verb for \"make/create\""
 msgstr "\"만들다/생성하다\"에 해당하는 일반적인 동사"
 
-#: src/development/translation.md:231
+#: src/development/translation.md:239
 msgid "remove/delete"
 msgstr "remove/delete"
 
-#: src/development/translation.md:231
+#: src/development/translation.md:239
 msgid "Common verb for \"delete/remove\""
 msgstr "\"삭제/제거\"에 해당하는 일반적인 동사"
 
-#: src/development/translation.md:232
+#: src/development/translation.md:240
 msgid "Standard software installation term"
 msgstr "소프트웨어 설치를 나타내는 표준 용어"
 
-#: src/development/translation.md:233
+#: src/development/translation.md:241
 msgid "Standard software removal term"
 msgstr "소프트웨어 제거를 나타내는 표준 용어"
 
-#: src/development/translation.md:234
+#: src/development/translation.md:242
 msgid "activate"
 msgstr "activate"
 
-#: src/development/translation.md:234
+#: src/development/translation.md:242
 msgid "Term for \"enable/turn on\""
 msgstr "\"활성화/켜다\"에 해당하는 표현"
 
-#: src/development/translation.md:235
+#: src/development/translation.md:243
 msgid "deactivate"
 msgstr "deactivate"
 
-#: src/development/translation.md:235
+#: src/development/translation.md:243
 msgid "Term for \"disable/turn off\""
 msgstr "\"비활성화/끄다\"에 해당하는 표현"
 
-#: src/development/translation.md:236
+#: src/development/translation.md:244
 msgid "IT term for migration (often kept as loanword)"
 msgstr "마이그레이션을 나타내는 IT 용어 (외래어로 그대로 사용하는 경우가 많음)"
 
-#: src/development/translation.md:237
+#: src/development/translation.md:245
 msgid "version"
 msgstr "version"
 
-#: src/development/translation.md:237
+#: src/development/translation.md:245
 msgid "Your language's term for \"version\""
 msgstr "해당 언어에서 \"version\"에 해당하는 표현"
 
-#: src/development/translation.md:238
+#: src/development/translation.md:246
 msgid "path"
 msgstr "path"
 
-#: src/development/translation.md:238
+#: src/development/translation.md:246
 msgid "Your language's term for file path"
 msgstr "해당 언어에서 파일 경로에 해당하는 표현"
 
-#: src/development/translation.md:239 src/development/translation.md:308
+#: src/development/translation.md:247 src/development/translation.md:316
 #: src/api.md:723
 msgid "error"
 msgstr "error"
 
-#: src/development/translation.md:239
+#: src/development/translation.md:247
 msgid "Your language's term for \"error\""
 msgstr "해당 언어에서 \"error\"에 해당하는 표현"
 
-#: src/development/translation.md:240 src/api.md:722 src/api.md:724
+#: src/development/translation.md:248 src/api.md:722 src/api.md:724
 msgid "success"
 msgstr "success"
 
-#: src/development/translation.md:240
+#: src/development/translation.md:248
 msgid "Your language's term for \"success\""
 msgstr "해당 언어에서 \"success\"에 해당하는 표현"
 
-#: src/development/translation.md:242
+#: src/development/translation.md:250
 msgid ""
 "**Tip:** Check how these terms are translated in existing translations for "
 "reference."
 msgstr ""
 "**팁:** 참고로 기존 번역에서 이 용어들이 어떻게 번역되어 있는지 확인하세요."
 
-#: src/development/translation.md:244
+#: src/development/translation.md:252
 msgid "Ice Cream Metaphor (README only)"
 msgstr "아이스크림 은유 (README 전용)"
 
-#: src/development/translation.md:246
+#: src/development/translation.md:254
 msgid "scuv uses ice cream metaphors in documentation:"
 msgstr "scuv는 문서에서 아이스크림 은유를 사용합니다:"
 
-#: src/development/translation.md:250
+#: src/development/translation.md:258
 msgid "The tool"
 msgstr "도구"
 
-#: src/development/translation.md:250
+#: src/development/translation.md:258
 msgid "Always keep as \"scuv\""
 msgstr "항상 \"scuv\"으로 유지합니다"
 
-#: src/development/translation.md:251
+#: src/development/translation.md:259
 msgid "flavor"
 msgstr "flavor"
 
-#: src/development/translation.md:251
+#: src/development/translation.md:259
 msgid "virtualenv"
 msgstr "virtualenv"
 
-#: src/development/translation.md:251
+#: src/development/translation.md:259
 msgid "Translate if the metaphor works in your language"
 msgstr "해당 언어에서 은유가 자연스럽게 통한다면 번역해도 됩니다"
 
-#: src/development/translation.md:252
+#: src/development/translation.md:260
 msgid "freezer"
 msgstr "freezer"
 
-#: src/development/translation.md:252
+#: src/development/translation.md:260
 msgid "~/.scuv/ directory"
 msgstr "~/.scuv/ 디렉터리"
 
-#: src/development/translation.md:252
+#: src/development/translation.md:260
 msgid "Translate if the metaphor works"
 msgstr "은유가 자연스럽게 통한다면 번역해도 됩니다"
 
-#: src/development/translation.md:254
+#: src/development/translation.md:262
 msgid ""
 "**Note:** The metaphor is mainly in README.md, not in CLI messages (`locales/"
 "app.yml`)."
@@ -9240,63 +9304,63 @@ msgstr ""
 "**참고:** 이 은유는 주로 README.md에 사용되며, CLI 메시지(`locales/app.yml`)"
 "에는 사용되지 않습니다."
 
-#: src/development/translation.md:258
+#: src/development/translation.md:266
 msgid "File Structure"
 msgstr "파일 구조"
 
-#: src/development/translation.md:260
+#: src/development/translation.md:268
 msgid "locales/app.yml"
 msgstr "locales/app.yml"
 
-#: src/development/translation.md:263
+#: src/development/translation.md:271
 msgid "# Categories in order:\n"
 msgstr "# 카테고리 순서:\n"
 
-#: src/development/translation.md:264
+#: src/development/translation.md:272
 msgid "1. lang.*        - Language command messages"
 msgstr "1. lang.*        - 언어 명령 메시지"
 
-#: src/development/translation.md:265
+#: src/development/translation.md:273
 msgid "2. create.*      - Create command messages"
 msgstr "2. create.*      - create 명령 메시지"
 
-#: src/development/translation.md:266
+#: src/development/translation.md:274
 msgid "3. remove.*      - Remove command messages"
 msgstr "3. remove.*      - remove 명령 메시지"
 
-#: src/development/translation.md:267
+#: src/development/translation.md:275
 msgid "4. list.*        - List command messages"
 msgstr "4. list.*        - list 명령 메시지"
 
-#: src/development/translation.md:268
+#: src/development/translation.md:276
 msgid "5. use.*         - Use command messages"
 msgstr "5. use.*         - use 명령 메시지"
 
-#: src/development/translation.md:269
+#: src/development/translation.md:277
 msgid "6. install.*     - Install command messages"
 msgstr "6. install.*     - install 명령 메시지"
 
-#: src/development/translation.md:270
+#: src/development/translation.md:278
 msgid "7. uninstall.*   - Uninstall command messages"
 msgstr "7. uninstall.*   - uninstall 명령 메시지"
 
-#: src/development/translation.md:271
+#: src/development/translation.md:279
 msgid "8. migrate.*     - Migrate command messages"
 msgstr "8. migrate.*     - migrate 명령 메시지"
 
-#: src/development/translation.md:272
+#: src/development/translation.md:280
 msgid "9. error.*       - Error messages"
 msgstr "9. error.*       - 오류 메시지"
 
-#: src/development/translation.md:273
+#: src/development/translation.md:281
 msgid "10. suggestion.* - Suggestion/hint messages"
 msgstr "10. suggestion.* - 제안/힌트 메시지"
 
-#: src/development/translation.md:276
+#: src/development/translation.md:284
 msgid "src/i18n.rs"
 msgstr "src/i18n.rs"
 
-#: src/development/translation.md:279
+#: src/development/translation.md:287
 msgid ""
 "// Language detection priority:\n"
 "// 1. SCUV_LANG environment variable\n"
@@ -9310,7 +9374,7 @@ msgstr ""
 "// 3. 시스템 로케일\n"
 "// 4. 기본값: \"en\"\n"
 
-#: src/development/translation.md:287
+#: src/development/translation.md:295
 msgid ""
 "// ... existing languages\n"
 "    // Add new languages here\n"
@@ -9318,27 +9382,27 @@ msgstr ""
 "// ... 기존 언어\n"
 "    // 여기에 새 언어를 추가하세요\n"
 
-#: src/development/translation.md:294
+#: src/development/translation.md:302
 msgid "Common Mistakes"
 msgstr "자주 하는 실수"
 
-#: src/development/translation.md:296
+#: src/development/translation.md:304
 msgid "1. Missing `SUPPORTED_LANGS` Registration"
 msgstr "1. `SUPPORTED_LANGS` 등록 누락"
 
-#: src/development/translation.md:298
+#: src/development/translation.md:306
 msgid "**Symptom:** Translation exists but `scuv lang {code}` doesn't work"
 msgstr "**증상:** 번역은 존재하지만 `scuv lang {code}`가 동작하지 않음"
 
-#: src/development/translation.md:300
+#: src/development/translation.md:308
 msgid "**Fix:** Add language to `src/i18n.rs` SUPPORTED_LANGS"
 msgstr "**수정 방법:** `src/i18n.rs`의 SUPPORTED_LANGS에 언어를 추가하세요"
 
-#: src/development/translation.md:302
+#: src/development/translation.md:310
 msgid "2. Broken Placeholders"
 msgstr "2. 깨진 플레이스홀더"
 
-#: src/development/translation.md:305
+#: src/development/translation.md:313
 msgid ""
 "# WRONG - Missing placeholder\n"
 "error"
@@ -9346,125 +9410,125 @@ msgstr ""
 "# 잘못된 예 - 플레이스홀더 누락\n"
 "error"
 
-#: src/development/translation.md:306
+#: src/development/translation.md:314
 msgid "\"Cannot find environment\""
 msgstr "\"Cannot find environment\""
 
-#: src/development/translation.md:308
+#: src/development/translation.md:316
 msgid "CORRECT - Placeholder preserved"
 msgstr "올바른 예 - 플레이스홀더 유지"
 
-#: src/development/translation.md:309
+#: src/development/translation.md:317
 msgid "\"Cannot find '%{name}' environment\""
 msgstr "\"Cannot find '%{name}' environment\""
 
-#: src/development/translation.md:312
+#: src/development/translation.md:320
 msgid "3. Translating Commands"
 msgstr "3. 커맨드 번역 시 주의사항"
 
-#: src/development/translation.md:316
+#: src/development/translation.md:324
 msgid "\"→ List: {translated} list\""
 msgstr "\"→ List: {translated} list\""
 
-#: src/development/translation.md:318
+#: src/development/translation.md:326
 msgid "CORRECT - Only label translated"
 msgstr "올바른 예 - 레이블만 번역"
 
-#: src/development/translation.md:319
+#: src/development/translation.md:327
 msgid "\"→ {Translated Label}: scuv list\""
 msgstr "\"→ {Translated Label}: scuv list\""
 
-#: src/development/translation.md:322
+#: src/development/translation.md:330
 msgid "4. Inconsistent Key Coverage"
 msgstr "4. 일관성 없는 키 범위"
 
-#: src/development/translation.md:324
+#: src/development/translation.md:332
 msgid "All languages must have ALL keys. Missing keys fall back to English."
 msgstr "모든 언어는 모든 키를 가져야 합니다. 누락된 키는 영어로 대체됩니다."
 
-#: src/development/translation.md:326
+#: src/development/translation.md:334
 msgid "5. Missing `LOCALES` Registration"
 msgstr "5. `LOCALES` 등록 누락"
 
-#: src/development/translation.md:328
+#: src/development/translation.md:336
 msgid "**Symptom:** CI is green, but nothing ever checked your locale"
 msgstr "**증상:** CI는 초록불이지만 해당 로케일은 한 번도 검사되지 않음"
 
-#: src/development/translation.md:330
+#: src/development/translation.md:338
 msgid ""
 "**Fix:** Add your code to the `LOCALES` const in `tests/i18n_completeness.rs`"
 msgstr ""
 "**수정 방법:** `tests/i18n_completeness.rs`의 `LOCALES` 상수에 언어 코드를 추"
 "가하세요"
 
-#: src/development/translation.md:332
+#: src/development/translation.md:340
 msgid "6. Stale i18n Cache"
 msgstr "6. i18n 캐시 미갱신"
 
-#: src/development/translation.md:334
+#: src/development/translation.md:342
 msgid "**Symptom:** `cargo test` passes, but your new strings never show up"
 msgstr "**증상:** `cargo test`는 통과하지만 새로 넣은 문자열이 나타나지 않음"
 
-#: src/development/translation.md:336
+#: src/development/translation.md:344
 msgid "**Fix:** Run `touch src/lib.rs` before `cargo test`"
 msgstr "**수정 방법:** `cargo test` 전에 `touch src/lib.rs`를 실행하세요"
 
-#: src/development/translation.md:340
+#: src/development/translation.md:348
 msgid "Testing Checklist"
 msgstr "테스트 체크리스트"
 
-#: src/development/translation.md:342
+#: src/development/translation.md:350
 msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
-#: src/development/translation.md:344
+#: src/development/translation.md:352
 msgid "All 222 keys translated"
 msgstr "222개 키 전체 번역 완료"
 
-#: src/development/translation.md:345
+#: src/development/translation.md:353
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
 msgstr "모든 플레이스홀더 유지 (`%{name}`, `%{version}` 등)"
 
-#: src/development/translation.md:346
+#: src/development/translation.md:354
 msgid "Language registered in SUPPORTED_LANGS"
 msgstr "SUPPORTED_LANGS에 언어 등록 완료"
 
-#: src/development/translation.md:347
+#: src/development/translation.md:355
 msgid "Language added to LOCALES in `tests/i18n_completeness.rs`"
 msgstr "`tests/i18n_completeness.rs`의 LOCALES에 언어 추가 완료"
 
-#: src/development/translation.md:348
-msgid "Shell completion lists updated (fish, zsh)"
-msgstr "셸 자동완성 목록 갱신 완료 (fish, zsh)"
+#: src/development/translation.md:356
+msgid "Shell completion lists updated (bash, zsh, fish, PowerShell)"
+msgstr "셸 자동완성 목록 갱신 완료 (bash, zsh, fish, PowerShell)"
 
-#: src/development/translation.md:349
+#: src/development/translation.md:357
 msgid "`cargo build` succeeds"
 msgstr "`cargo build` 성공"
 
-#: src/development/translation.md:350
+#: src/development/translation.md:358
 msgid "`touch src/lib.rs` run, then `cargo test` passes"
 msgstr "`touch src/lib.rs` 실행 후 `cargo test` 통과"
 
-#: src/development/translation.md:351
+#: src/development/translation.md:359
 msgid "`SCUV_LANG={code} scuv lang` shows your language"
 msgstr "`SCUV_LANG={code} scuv lang` 실행 시 해당 언어가 표시됨"
 
-#: src/development/translation.md:352
+#: src/development/translation.md:360
 msgid "Messages display correctly in terminal"
 msgstr "터미널에서 메시지가 올바르게 표시됨"
 
-#: src/development/translation.md:356
+#: src/development/translation.md:364
 msgid "Questions?"
 msgstr "질문이 있으신가요?"
 
-#: src/development/translation.md:358
+#: src/development/translation.md:366
 msgid ""
 "Open an issue: [GitHub Issues](https://github.com/ai-screams/scoop-uv/issues)"
 msgstr ""
 "이슈를 열어보세요: [GitHub Issues](https://github.com/ai-screams/scoop-uv/"
 "issues)"
 
-#: src/development/translation.md:359
+#: src/development/translation.md:367
 msgid "See existing translations for reference: `locales/app.yml`"
 msgstr "참고용 기존 번역 파일: `locales/app.yml`"
 
@@ -10083,8 +10147,8 @@ msgid "rust-i18n"
 msgstr "rust-i18n"
 
 #: src/development/architecture.md:336
-msgid "Internationalization (en, ko, ja, pt-BR)"
-msgstr "국제화 (en, ko, ja, pt-BR)"
+msgid "Internationalization (en, ko, ja, pt-BR, es)"
+msgstr "국제화 (en, ko, ja, pt-BR, es)"
 
 #: src/development/architecture.md:337
 msgid "sys-locale"
@@ -12182,7 +12246,7 @@ msgstr "`validation`"
 msgid "`is_valid_env_name` across 6 representative inputs"
 msgstr "6가지 대표 입력에 대한 `is_valid_env_name`"
 
-#: src/development/testing.md:489 src/development/ci-cd.md:70
+#: src/development/testing.md:489 src/development/ci-cd.md:71
 msgid "`path_lookup`"
 msgstr "`path_lookup`"
 
@@ -13200,7 +13264,7 @@ msgstr "`integration-test.yml`"
 msgid "Migration breaking for pyenv / conda / virtualenvwrapper users"
 msgstr "pyenv / conda / virtualenvwrapper 사용자의 마이그레이션 실패"
 
-#: src/development/ci-cd.md:13 src/development/ci-cd.md:225
+#: src/development/ci-cd.md:13 src/development/ci-cd.md:230
 msgid "`coverage.yml`"
 msgstr "`coverage.yml`"
 
@@ -13208,7 +13272,7 @@ msgstr "`coverage.yml`"
 msgid "Untested code paths going unnoticed"
 msgstr "테스트되지 않은 코드 경로를 모르고 지나가는 것"
 
-#: src/development/ci-cd.md:14 src/development/ci-cd.md:143
+#: src/development/ci-cd.md:14 src/development/ci-cd.md:144
 msgid "`bench.yml`"
 msgstr "`bench.yml`"
 
@@ -13240,7 +13304,7 @@ msgstr "PR, main, 매주"
 msgid "Vulnerable dependencies, disallowed licences, untrusted sources"
 msgstr "취약한 의존성, 허용되지 않은 라이선스, 신뢰할 수 없는 출처"
 
-#: src/development/ci-cd.md:17 src/development/ci-cd.md:142
+#: src/development/ci-cd.md:17 src/development/ci-cd.md:143
 msgid "`msrv-check.yml`"
 msgstr "`msrv-check.yml`"
 
@@ -13277,63 +13341,81 @@ msgid "Parser crashes on hostile input"
 msgstr "악의적 입력에 대한 파서 크래시"
 
 #: src/development/ci-cd.md:20
+msgid "`docs-check.yml`"
+msgstr "`docs-check.yml`"
+
+#: src/development/ci-cd.md:20
+msgid ""
+"PR touching `docs/src/**`, `docs/po/**`, `docs/book.toml`, `docs/theme/**`"
+msgstr ""
+"`docs/src/**`, `docs/po/**`, `docs/book.toml`, `docs/theme/**`를 건드리는 PR"
+
+#: src/development/ci-cd.md:20
+msgid ""
+"A docs edit that breaks the mdBook build or leaves `ko.po` stale reaching a "
+"release tag"
+msgstr ""
+"mdBook 빌드를 깨뜨리거나 `ko.po`를 stale하게 남긴 문서 수정이 릴리스 태그까"
+"지 가는 것"
+
+#: src/development/ci-cd.md:21
 msgid "`docs.yml`"
 msgstr "`docs.yml`"
 
-#: src/development/ci-cd.md:20
+#: src/development/ci-cd.md:21
 msgid "`v*` tags"
 msgstr "`v*` 태그"
 
-#: src/development/ci-cd.md:20
+#: src/development/ci-cd.md:21
 msgid "Broken documentation site"
 msgstr "깨진 문서 사이트"
 
-#: src/development/ci-cd.md:21 src/development/ci-cd.md:223
-#: src/development/ci-cd.md:224
+#: src/development/ci-cd.md:22 src/development/ci-cd.md:228
+#: src/development/ci-cd.md:229
 msgid "`release-plz.yml`"
 msgstr "`release-plz.yml`"
 
-#: src/development/ci-cd.md:21
+#: src/development/ci-cd.md:22
 msgid "main"
 msgstr "main"
 
-#: src/development/ci-cd.md:21
+#: src/development/ci-cd.md:22
 msgid "Manual release mistakes"
 msgstr "수동 릴리스 실수"
 
-#: src/development/ci-cd.md:23
+#: src/development/ci-cd.md:24
 msgid "Cross-cutting decisions"
 msgstr "전반에 걸친 결정들"
 
-#: src/development/ci-cd.md:25
+#: src/development/ci-cd.md:26
 msgid "Cancel PR runs, never cancel main"
 msgstr "PR 실행은 취소하고 main은 절대 취소하지 않는다"
 
-#: src/development/ci-cd.md:27
+#: src/development/ci-cd.md:28
 msgid "Every workflow that runs on both uses the same concurrency block:"
 msgstr "둘 다에서 도는 워크플로는 모두 같은 concurrency 블록을 씁니다:"
 
-#: src/development/ci-cd.md:30
+#: src/development/ci-cd.md:31
 msgid "concurrency"
 msgstr "concurrency"
 
-#: src/development/ci-cd.md:31
+#: src/development/ci-cd.md:32
 msgid "group"
 msgstr "group"
 
-#: src/development/ci-cd.md:31
+#: src/development/ci-cd.md:32
 msgid "${{ github.workflow }}-${{ github.ref }}"
 msgstr "${{ github.workflow }}-${{ github.ref }}"
 
-#: src/development/ci-cd.md:32
+#: src/development/ci-cd.md:33
 msgid "cancel-in-progress"
 msgstr "cancel-in-progress"
 
-#: src/development/ci-cd.md:32
+#: src/development/ci-cd.md:33
 msgid "${{ github.ref != 'refs/heads/main' }}"
 msgstr "${{ github.ref != 'refs/heads/main' }}"
 
-#: src/development/ci-cd.md:35
+#: src/development/ci-cd.md:36
 msgid ""
 "Pushing a fixup to a PR should abandon the previous run — nobody needs "
 "results for a commit that no longer exists. A run on `main` is different: it "
@@ -13347,7 +13429,7 @@ msgstr ""
 "에 기록하는데, main 실행이 취소되면 다음 PR이 낡은 baseline과 비교하게 됩니"
 "다."
 
-#: src/development/ci-cd.md:41
+#: src/development/ci-cd.md:42
 msgid ""
 "`release-plz.yml` uses the same block with `cancel-in-progress: false`: a "
 "release must never be cancelled, but two releases must never run at once "
@@ -13357,11 +13439,11 @@ msgstr ""
 "리스는 절대 취소돼서는 안 되지만 두 릴리스가 동시에 돌아서도 안 되며, 그룹이 "
 "둘 다 해결해 줍니다."
 
-#: src/development/ci-cd.md:45
+#: src/development/ci-cd.md:46
 msgid "The MSRV is verified twice, deliberately"
 msgstr "MSRV는 의도적으로 두 번 검증한다"
 
-#: src/development/ci-cd.md:47
+#: src/development/ci-cd.md:48
 msgid ""
 "`ci.yml` has an `msrv` job that builds and tests on 1.89. `msrv-check.yml` "
 "separately runs `cargo msrv verify`. These answer different questions:"
@@ -13370,18 +13452,18 @@ msgstr ""
 "check.yml`은 별도로 `cargo msrv verify`를 실행합니다. 둘은 서로 다른 질문에 "
 "답합니다:"
 
-#: src/development/ci-cd.md:50
+#: src/development/ci-cd.md:51
 msgid "**`ci.yml`** — does the code work on the version we claim?"
 msgstr "**`ci.yml`** — 우리가 선언한 버전에서 코드가 실제로 동작하는가?"
 
-#: src/development/ci-cd.md:51
+#: src/development/ci-cd.md:52
 msgid ""
 "**`msrv-check.yml`** — is the version we claim still the _lowest_ one that "
 "works?"
 msgstr ""
 "**`msrv-check.yml`** — 우리가 선언한 버전이 여전히 동작하는 _최저_ 버전인가?"
 
-#: src/development/ci-cd.md:54
+#: src/development/ci-cd.md:55
 msgid ""
 "The second catches the case where a dependency bump silently raises the real "
 "floor while `Cargo.toml` still advertises the old one. It only runs when "
@@ -13393,7 +13475,7 @@ msgstr ""
 "`Cargo.lock`이 바뀔 때만 도는데, 답이 달라질 수 있는 경우가 그때뿐이기 때문입"
 "니다."
 
-#: src/development/ci-cd.md:59
+#: src/development/ci-cd.md:60
 msgid ""
 "`cargo-msrv` itself is pinned to `^0.18`: 0.19 requires rustc 1.91, which "
 "this project's own toolchain pin cannot satisfy."
@@ -13401,11 +13483,11 @@ msgstr ""
 "`cargo-msrv` 자체는 `^0.18`에 고정돼 있습니다. 0.19는 rustc 1.91을 요구하는"
 "데, 이 프로젝트의 툴체인 핀으로는 충족할 수 없습니다."
 
-#: src/development/ci-cd.md:62
+#: src/development/ci-cd.md:63
 msgid "Gate what is stable, track what is noisy"
 msgstr "안정적인 것은 게이트로, 불안정한 것은 추적으로"
 
-#: src/development/ci-cd.md:64
+#: src/development/ci-cd.md:65
 msgid ""
 "Not every measurement can be a gate. `bench.yml` splits its benchmarks by "
 "how reproducible they are on shared runners:"
@@ -13413,47 +13495,47 @@ msgstr ""
 "모든 측정이 게이트가 될 수 있는 것은 아닙니다. `bench.yml`은 공유 러너에서 얼"
 "마나 재현 가능한지를 기준으로 벤치마크를 나눕니다:"
 
-#: src/development/ci-cd.md:67
+#: src/development/ci-cd.md:68
 msgid "Group"
 msgstr "그룹"
 
-#: src/development/ci-cd.md:67
+#: src/development/ci-cd.md:68
 msgid "Benches"
 msgstr "벤치"
 
-#: src/development/ci-cd.md:67
+#: src/development/ci-cd.md:68
 msgid "Observed spread"
 msgstr "관측된 산포"
 
-#: src/development/ci-cd.md:69
+#: src/development/ci-cd.md:70
 msgid "CPU"
 msgstr "CPU"
 
-#: src/development/ci-cd.md:69
+#: src/development/ci-cd.md:70
 msgid "`parsing`, `validation`"
 msgstr "`parsing`, `validation`"
 
-#: src/development/ci-cd.md:69
+#: src/development/ci-cd.md:70
 msgid "1.71x-2.37x"
 msgstr ""
 
-#: src/development/ci-cd.md:69
+#: src/development/ci-cd.md:70
 msgid "Fails the build past 250%"
 msgstr "250%를 넘으면 빌드 실패"
 
-#: src/development/ci-cd.md:70
+#: src/development/ci-cd.md:71
 msgid "Filesystem"
 msgstr "파일시스템"
 
-#: src/development/ci-cd.md:70
+#: src/development/ci-cd.md:71
 msgid "~3.4x"
 msgstr "약 3.4배"
 
-#: src/development/ci-cd.md:70
+#: src/development/ci-cd.md:71
 msgid "Recorded, never fails"
 msgstr "기록만 하고 실패시키지 않음"
 
-#: src/development/ci-cd.md:72
+#: src/development/ci-cd.md:73
 msgid ""
 "`find_executable_in` calls `stat`. Across 38 runs of unchanged code on "
 "`main` it produced anywhere from 574 to 1931 ns depending on which runner "
@@ -13467,7 +13549,7 @@ msgstr ""
 "그룹은 추세 확인용으로 `gh-pages`에 기록만 하고 `fail-on-alert: false`로 게이"
 "트에서 빼두었습니다."
 
-#: src/development/ci-cd.md:78
+#: src/development/ci-cd.md:79
 msgid ""
 "This matters because a noisy gate is worse than no gate: it blocks unrelated "
 "work and trains reviewers to ignore red."
@@ -13475,7 +13557,7 @@ msgstr ""
 "이것이 중요한 이유는 노이즈가 심한 게이트가 게이트 없는 것보다 나쁘기 때문입"
 "니다. 무관한 작업을 막고, 리뷰어가 빨간불을 무시하도록 길들입니다."
 
-#: src/development/ci-cd.md:81
+#: src/development/ci-cd.md:82
 msgid ""
 "The CPU row was written as \"~1.4x, fails past 150%\", and the numbers did "
 "not hold. Measured across the 60 runs on `gh-pages`, the group swings 1.71x "
@@ -13490,11 +13572,11 @@ msgid ""
 "land far beyond 2.5x."
 msgstr ""
 
-#: src/development/ci-cd.md:93
+#: src/development/ci-cd.md:94
 msgid "Mutation testing runs at two scopes"
 msgstr "변이 테스트는 두 가지 범위로 돈다"
 
-#: src/development/ci-cd.md:95
+#: src/development/ci-cd.md:96
 msgid ""
 "`cargo test` proves a line executed. It does not prove a test would notice "
 "if that line were wrong. `cargo-mutants` injects deliberate defects — "
@@ -13506,14 +13588,14 @@ msgstr ""
 "`>`를 `>=`로 뒤집고, 반환값을 바꿔 — 테스트 스위트가 잡아내지 못하는 것을 보"
 "고합니다."
 
-#: src/development/ci-cd.md:100
+#: src/development/ci-cd.md:101
 msgid ""
 "**On PRs** (`--in-diff`): only the lines this PR changed. Fast enough to "
 "gate on."
 msgstr ""
 "**PR에서** (`--in-diff`): 이 PR이 바꾼 줄만. 게이트로 쓸 만큼 빠릅니다."
 
-#: src/development/ci-cd.md:102
+#: src/development/ci-cd.md:103
 msgid ""
 "**Weekly** (full): every candidate in scope. Tracked rather than gated for "
 "now — the step tolerates exit 2 (mutants missed) and nothing else, so a "
@@ -13525,7 +13607,7 @@ msgstr ""
 "은 여전히 크게 실패합니다. 그동안 [알려진 공백](#알려진-공백)의 backlog를 정"
 "리해 나갑니다."
 
-#: src/development/ci-cd.md:107
+#: src/development/ci-cd.md:108
 msgid ""
 "`.cargo/mutants.toml` carries the exclusions, each with a written rationale. "
 "Most exclude code whose mutations can only be killed by spawning a real `uv` "
@@ -13537,7 +13619,7 @@ msgstr ""
 "로, 테스트 구멍이 아니라 우리가 받아들이기로 한 공백입니다. 제외를 추가할 때"
 "는 이유와 함께 그 파일에 적고, 조용히 넣지 마세요."
 
-#: src/development/ci-cd.md:112
+#: src/development/ci-cd.md:113
 msgid ""
 "`exclude_re` matches the whole mutant description, not the function name. A "
 "bare `\"foo\"` therefore drops every mutant in `foo`, including the ones "
@@ -13553,11 +13635,11 @@ msgstr ""
 "(`\"delete match arm \\[major\\] in foo\"`), 두 설정의 목록을 뽑아 비교해 실"
 "제로 무엇이 게이트에서 빠졌는지 확인하십시오:"
 
-#: src/development/ci-cd.md:120 src/development/ci-cd.md:121
+#: src/development/ci-cd.md:121 src/development/ci-cd.md:122
 msgid "'<glob>'"
 msgstr ""
 
-#: src/development/ci-cd.md:125
+#: src/development/ci-cd.md:126
 msgid ""
 "Some mutants cannot be separated that way. Two `delete !` in one function "
 "produce a byte-identical description, so a whole-function exclusion is the "
@@ -13569,7 +13651,7 @@ msgstr ""
 "습니다 — 그것이 이유일 때는 주석에 그렇게 적고, 등가성 주장처럼 읽히게 두지 "
 "마십시오."
 
-#: src/development/ci-cd.md:130
+#: src/development/ci-cd.md:131
 msgid ""
 "New `Check` trait implementations and thin wrappers need direct dispatch "
 "tests, or the PR gate reports them as `MISSED`."
@@ -13577,11 +13659,11 @@ msgstr ""
 "새로운 `Check` 트레이트 구현체와 얇은 래퍼에는 직접 디스패치 테스트가 필요합"
 "니다. 없으면 PR 게이트가 `MISSED`로 보고합니다."
 
-#: src/development/ci-cd.md:133
+#: src/development/ci-cd.md:134
 msgid "One cache per toolchain, one writer per cache"
 msgstr "툴체인마다 캐시 하나, 캐시마다 writer 하나"
 
-#: src/development/ci-cd.md:135
+#: src/development/ci-cd.md:136
 msgid ""
 "`Swatinem/rust-cache` keys on `shared-key`, so jobs sharing a key share a "
 "cache:"
@@ -13589,39 +13671,39 @@ msgstr ""
 "`Swatinem/rust-cache`는 `shared-key`로 캐시를 구분하므로, 키를 공유하는 잡들"
 "은 캐시를 공유합니다:"
 
-#: src/development/ci-cd.md:138
+#: src/development/ci-cd.md:139
 msgid "`shared-key`"
 msgstr "`shared-key`"
 
-#: src/development/ci-cd.md:138
+#: src/development/ci-cd.md:139
 msgid "Jobs"
 msgstr "잡"
 
-#: src/development/ci-cd.md:140
+#: src/development/ci-cd.md:141
 msgid "`stable-ci`"
 msgstr "`stable-ci`"
 
-#: src/development/ci-cd.md:140
+#: src/development/ci-cd.md:141
 msgid "`ci.yml` lint / test / shellcheck, `coverage.yml`, `mutants.yml`"
 msgstr "`ci.yml`의 lint / test / shellcheck, `coverage.yml`, `mutants.yml`"
 
-#: src/development/ci-cd.md:141
+#: src/development/ci-cd.md:142
 msgid "`msrv`"
 msgstr "`msrv`"
 
-#: src/development/ci-cd.md:141
+#: src/development/ci-cd.md:142
 msgid "`ci.yml` msrv"
 msgstr "`ci.yml`의 msrv"
 
-#: src/development/ci-cd.md:142
+#: src/development/ci-cd.md:143
 msgid "`msrv-verify`"
 msgstr "`msrv-verify`"
 
-#: src/development/ci-cd.md:143
+#: src/development/ci-cd.md:144
 msgid "`bench`"
 msgstr "`bench`"
 
-#: src/development/ci-cd.md:145
+#: src/development/ci-cd.md:146
 msgid ""
 "MSRV artifacts are kept separate on purpose: a different compiler produces "
 "incompatible output, and sharing would mean both jobs permanently "
@@ -13630,7 +13712,7 @@ msgstr ""
 "MSRV 산출물을 분리해 둔 것은 의도적입니다. 컴파일러가 다르면 호환되지 않는 결"
 "과물이 나오고, 공유하면 두 잡이 서로의 캐시를 계속 무효화하게 됩니다."
 
-#: src/development/ci-cd.md:149
+#: src/development/ci-cd.md:150
 msgid ""
 "Within a shared key there is one writer. `ci.yml` marks lint and shellcheck "
 "`save-if: false` so only the test job — which produces the richest "
@@ -13642,7 +13724,7 @@ msgstr ""
 "만 캐시를 채우게 합니다. `mutants.yml`에서는 incremental 잡이 쓰고 주간 full "
 "잡이 읽습니다."
 
-#: src/development/ci-cd.md:154
+#: src/development/ci-cd.md:155
 msgid ""
 "Note that `rust-cache` folds workflow-level `env` into its key hash. Two "
 "jobs can declare the same `shared-key` and still land on different caches if "
@@ -13652,11 +13734,11 @@ msgstr ""
 "두 잡이 같은 `shared-key`를 선언해도 워크플로가 설정한 환경 변수가 다르면 서"
 "로 다른 캐시에 떨어질 수 있습니다."
 
-#: src/development/ci-cd.md:158
+#: src/development/ci-cd.md:159
 msgid "Failure modes worth remembering"
 msgstr "기억해 둘 만한 실패 양상"
 
-#: src/development/ci-cd.md:160
+#: src/development/ci-cd.md:161
 msgid ""
 "These cost real debugging time. They are recorded so the next person "
 "recognises them faster."
@@ -13664,11 +13746,11 @@ msgstr ""
 "아래는 실제로 디버깅 시간을 잡아먹은 것들입니다. 다음 사람이 더 빨리 알아보도"
 "록 기록해 둡니다."
 
-#: src/development/ci-cd.md:163
+#: src/development/ci-cd.md:164
 msgid "Criterion errors corrupt the benchmark parser output"
 msgstr "Criterion 에러가 벤치마크 파서 출력을 오염시킨다"
 
-#: src/development/ci-cd.md:165
+#: src/development/ci-cd.md:166
 msgid ""
 "`rust-cache` restores `target/` with the criterion tree present but its "
 "`sample.json` baselines pruned out. Criterion then fails to load a baseline "
@@ -13678,7 +13760,7 @@ msgstr ""
 "낸 상태로 `target/`을 복원합니다. 그러면 criterion은 있어야 마땅해 보이는 "
 "baseline을 읽지 못하고, 그 에러를 표준출력에 *줄 중간에* 씁니다:"
 
-#: src/development/ci-cd.md:170
+#: src/development/ci-cd.md:171
 msgid ""
 "```\n"
 "test clap_parse_create ... Criterion.rs ERROR: error: Failed to access file\n"
@@ -13692,7 +13774,7 @@ msgstr ""
 "bench:      41,347 ns/iter (+/- 2,364)\n"
 "```"
 
-#: src/development/ci-cd.md:176
+#: src/development/ci-cd.md:177
 msgid ""
 "`benchmark-action`'s parser needs `test NAME ... bench: N ns/iter` on one "
 "line. Split in two, it reports \"no benchmark result\" even though every "
@@ -13704,7 +13786,7 @@ msgstr ""
 "음\"으로 보고합니다. 콜드 캐시에서 통과하는 이유는 반쯤 읽을 트리 자체가 없"
 "기 때문입니다."
 
-#: src/development/ci-cd.md:181
+#: src/development/ci-cd.md:182
 msgid ""
 "Each bench step therefore starts with `rm -rf target/criterion`. The gate "
 "compares against `gh-pages` history and never against criterion's local "
@@ -13714,11 +13796,11 @@ msgstr ""
 "`gh-pages` 이력과 비교하지 criterion의 로컬 baseline과는 비교하지 않으므로, "
 "지워도 잃는 것이 없습니다."
 
-#: src/development/ci-cd.md:185
+#: src/development/ci-cd.md:186
 msgid "Two benchmark-action invocations collide on gh-pages"
 msgstr "benchmark-action을 두 번 호출하면 gh-pages에서 충돌한다"
 
-#: src/development/ci-cd.md:187
+#: src/development/ci-cd.md:188
 msgid ""
 "The first invocation fetches `gh-pages` into a local branch and commits its "
 "entry onto it — even on PRs, where it simply never pushes. A second "
@@ -13732,11 +13814,11 @@ msgstr ""
 "도 전에 스텝이 실패합니다. 두 번째 스텝에 `skip-fetch-gh-pages: true`를 주면 "
 "첫 번째가 가져온 것을 재사용합니다."
 
-#: src/development/ci-cd.md:194
+#: src/development/ci-cd.md:195
 msgid "`cargo bench | tee` swallows failures"
 msgstr "`cargo bench | tee`가 실패를 삼킨다"
 
-#: src/development/ci-cd.md:196
+#: src/development/ci-cd.md:197
 msgid ""
 "Without `set -o pipefail` the step exits with `tee`'s status, so a genuinely "
 "failing `cargo bench` reports success and resurfaces one step later as a "
@@ -13746,22 +13828,30 @@ msgstr ""
 "로 실패한 `cargo bench`가 성공으로 보고되고, 한 스텝 뒤에 알아보기 어려운 파"
 "싱 에러로 다시 나타납니다."
 
-#: src/development/ci-cd.md:200
-msgid "Docs guards only run on release tags"
-msgstr "문서 가드는 릴리스 태그에서만 돈다"
+#: src/development/ci-cd.md:201
+msgid "Docs guards run on PRs only for docs paths"
+msgstr "문서 가드는 PR에서는 문서 경로에 한해 돈다"
 
-#: src/development/ci-cd.md:202
+#: src/development/ci-cd.md:203
 msgid ""
-"`docs.yml` — the mdBook build and the `ko.po` staleness round-trip — "
-"triggers only on `v*` tags. Nothing about the documentation site is verified "
-"on a PR. Two checks were moved into the `ci.yml` Lint job to close the worst "
-"of that gap:"
+"`docs.yml` — the mdBook build, the `ko.po` staleness round-trip and the "
+"Pages deploy — triggers only on `v*` tags. `docs-check.yml` runs the same "
+"build and the same round-trip on pull requests, but only when the PR touches "
+"`docs/src/**`, `docs/po/**`, `docs/book.toml` or `docs/theme/**`. It is a "
+"separate workflow rather than a trigger on `docs.yml` so a PR run needs "
+"neither `pages: write` nor `id-token: write` and never enters the `pages` "
+"concurrency group. Two checks in the `ci.yml` Lint job cover the facts that "
+"live outside those paths:"
 msgstr ""
-"`docs.yml` — mdBook 빌드와 `ko.po` 최신성 왕복 검사 — 은 `v*` 태그에서만 트리"
-"거됩니다. 문서 사이트에 관한 어떤 것도 PR에서는 검증되지 않습니다. 그중 가장 "
-"큰 공백을 메우기 위해 두 가지 검사를 `ci.yml`의 Lint 잡으로 옮겼습니다:"
+"`docs.yml`은 mdBook 빌드, `ko.po` staleness 라운드트립, Pages 배포를 `v*` 태"
+"그에서만 돌린다. `docs-check.yml`은 같은 빌드와 같은 라운드트립을 pull "
+"request에서 돌리되, PR이 `docs/src/**`, `docs/po/**`, `docs/book.toml`, "
+"`docs/theme/**`를 건드릴 때만 돈다. `docs.yml`에 트리거를 더하지 않고 별도 "
+"workflow로 둔 것은 PR 실행에 `pages: write`도 `id-token: write`도 필요 없게 "
+"하고 `pages` concurrency group에 들어가지 않게 하기 위해서다. 그 경로 밖에 있"
+"는 사실은 `ci.yml` Lint 잡의 검사 두 개가 맡는다:"
 
-#: src/development/ci-cd.md:207
+#: src/development/ci-cd.md:212
 msgid ""
 "`scripts/check-doc-references.py` compares facts copied into `README.md`, "
 "`CONTRIBUTING.md`, `llms.txt`, `llms-full.txt` and the docs against the code "
@@ -13776,7 +13866,7 @@ msgstr ""
 "는 `locales/app.yml`에서 가져옵니다. 모든 검사가 문서 대 코드입니다. 세 "
 "`llms` 파일을 서로 비교하면 셋 다 틀렸을 때도 통과합니다."
 
-#: src/development/ci-cd.md:213
+#: src/development/ci-cd.md:218
 msgid ""
 "`msgfmt --check` on `docs/po/*.po` catches structural damage such as a "
 "`msgstr` whose trailing newline no longer matches its `msgid`."
@@ -13784,7 +13874,7 @@ msgstr ""
 "`docs/po/*.po`에 대한 `msgfmt --check`는 `msgstr`의 끝 개행이 `msgid`와 더 이"
 "상 맞지 않는 것 같은 구조적 손상을 잡습니다."
 
-#: src/development/ci-cd.md:216
+#: src/development/ci-cd.md:221
 msgid ""
 "Editing any page under `docs/src/` still requires regenerating `ko.po` in "
 "the same commit. See [Docs Translation](docs-translation.md)."
@@ -13792,55 +13882,55 @@ msgstr ""
 "`docs/src/` 아래 페이지를 수정할 때는 여전히 같은 커밋에서 `ko.po`를 재생성해"
 "야 합니다. [문서 번역](docs-translation.md)을 참고하세요."
 
-#: src/development/ci-cd.md:219
+#: src/development/ci-cd.md:224
 msgid "Secrets"
 msgstr "시크릿"
 
-#: src/development/ci-cd.md:221
+#: src/development/ci-cd.md:226
 msgid "Secret"
 msgstr "시크릿"
 
-#: src/development/ci-cd.md:221
+#: src/development/ci-cd.md:226
 msgid "Used by"
 msgstr "사용하는 곳"
 
-#: src/development/ci-cd.md:223
+#: src/development/ci-cd.md:228
 msgid "`RELEASE_PLZ_TOKEN`"
 msgstr "`RELEASE_PLZ_TOKEN`"
 
-#: src/development/ci-cd.md:223
+#: src/development/ci-cd.md:228
 msgid "Push release PRs and tags"
 msgstr "릴리스 PR과 태그 푸시"
 
-#: src/development/ci-cd.md:224
+#: src/development/ci-cd.md:229
 msgid "`CARGO_REGISTRY_TOKEN`"
 msgstr "`CARGO_REGISTRY_TOKEN`"
 
-#: src/development/ci-cd.md:224
+#: src/development/ci-cd.md:229
 msgid "Publish to crates.io"
 msgstr "crates.io 게시"
 
-#: src/development/ci-cd.md:225
+#: src/development/ci-cd.md:230
 msgid "`CODECOV_TOKEN`"
 msgstr "`CODECOV_TOKEN`"
 
-#: src/development/ci-cd.md:225
+#: src/development/ci-cd.md:230
 msgid "Upload coverage reports"
 msgstr "커버리지 리포트 업로드"
 
-#: src/development/ci-cd.md:226
+#: src/development/ci-cd.md:231
 msgid "`GITHUB_TOKEN`"
 msgstr "`GITHUB_TOKEN`"
 
-#: src/development/ci-cd.md:226
+#: src/development/ci-cd.md:231
 msgid "bench, docker"
 msgstr "bench, docker"
 
-#: src/development/ci-cd.md:226
+#: src/development/ci-cd.md:231
 msgid "Push `gh-pages`, publish to ghcr.io"
 msgstr "`gh-pages` 푸시, ghcr.io 게시"
 
-#: src/development/ci-cd.md:228
+#: src/development/ci-cd.md:233
 msgid ""
 "A workflow triggered by Dependabot reads the **Dependabot** secret store, "
 "not the Actions one. A secret both need has to be registered twice — `gh "
@@ -13852,7 +13942,7 @@ msgstr ""
 "CODECOV_TOKEN --app dependabot` — 그렇지 않으면 다른 곳에서는 통과하면서 "
 "Dependabot PR에서만 잡이 실패합니다."
 
-#: src/development/ci-cd.md:233
+#: src/development/ci-cd.md:238
 msgid ""
 "Default workflow permissions are `read`. Workflows that need more declare it "
 "explicitly — `bench.yml` needs `contents: write` for `gh-pages`, `docker-"
@@ -13862,11 +13952,11 @@ msgstr ""
 "다 — `bench.yml`은 `gh-pages`를 위해 `contents: write`가, `docker-build.yml`"
 "은 레지스트리를 위해 `packages: write`가 필요합니다."
 
-#: src/development/ci-cd.md:237
+#: src/development/ci-cd.md:242
 msgid "Releases"
 msgstr "릴리스"
 
-#: src/development/ci-cd.md:239
+#: src/development/ci-cd.md:244
 msgid ""
 "`release-plz` reads Conventional Commits on `main` and prepares the release; "
 "`release-plz.toml` holds the policy:"
@@ -13874,7 +13964,7 @@ msgstr ""
 "`release-plz`는 `main`의 Conventional Commits를 읽어 릴리스를 준비하며, 정책"
 "은 `release-plz.toml`에 있습니다:"
 
-#: src/development/ci-cd.md:242
+#: src/development/ci-cd.md:247
 msgid ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — documentation and "
 "chore commits do not trigger a release on their own."
@@ -13882,7 +13972,7 @@ msgstr ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — 문서와 잡무 커밋만"
 "으로는 릴리스가 생기지 않습니다."
 
-#: src/development/ci-cd.md:244
+#: src/development/ci-cd.md:249
 msgid ""
 "`features_always_increment_minor = true` — a `feat` bumps the minor version "
 "even in `0.x`, where cargo's default would only bump the patch."
@@ -13890,11 +13980,11 @@ msgstr ""
 "`features_always_increment_minor = true` — `0.x`에서도 `feat`이면 minor 버전"
 "이 올라갑니다. cargo 기본값이라면 patch만 올랐을 자리입니다."
 
-#: src/development/ci-cd.md:246
+#: src/development/ci-cd.md:251
 msgid "Changelog generation goes through `git-cliff` (`cliff.toml`)."
 msgstr "체인지로그 생성은 `git-cliff`(`cliff.toml`)를 거칩니다."
 
-#: src/development/ci-cd.md:248
+#: src/development/ci-cd.md:253
 msgid ""
 "`release-plz` only rewrites `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`. "
 "The `scuv <version>` samples in `README.md`, `CLAUDE.md`, `installation.md` "
@@ -13922,7 +14012,7 @@ msgstr ""
 "플로를 재실행시키지 않기 때문이고, 뒤이어 전체 가드를 다시 돌려서 `--fix`가 "
 "다루지 않는 참조가 어긋나 있으면 잡이 그대로 실패하게 합니다."
 
-#: src/development/ci-cd.md:261
+#: src/development/ci-cd.md:266
 msgid ""
 "Merging the release PR is what publishes: it creates the tag, the GitHub "
 "release, and the crates.io upload — and the `v*` tag is also what deploys "
@@ -13931,11 +14021,11 @@ msgstr ""
 "게시를 일으키는 것은 릴리스 PR의 머지입니다. 태그, GitHub 릴리스, crates.io "
 "업로드가 그때 만들어지며 — 그 `v*` 태그가 문서 사이트 배포까지 일으킵니다."
 
-#: src/development/ci-cd.md:265
+#: src/development/ci-cd.md:270
 msgid "Known gaps"
 msgstr "알려진 공백"
 
-#: src/development/ci-cd.md:267
+#: src/development/ci-cd.md:272
 msgid ""
 "Accurate as of the last revision of this page. Verify before relying on any "
 "of these being fixed."
@@ -13943,7 +14033,7 @@ msgstr ""
 "이 페이지를 마지막으로 고친 시점 기준입니다. 아래 항목이 해결됐다고 전제하기 "
 "전에 직접 확인하세요."
 
-#: src/development/ci-cd.md:270
+#: src/development/ci-cd.md:275
 msgid ""
 "**`codecov/project` has never posted.** `codecov.yml` states a target for "
 "it, and the config is live — setting `comment.require_changes` changed "
@@ -13957,7 +14047,7 @@ msgid ""
 "known to post would leave every PR waiting on a check that never arrives."
 msgstr ""
 
-#: src/development/ci-cd.md:280
+#: src/development/ci-cd.md:285
 msgid ""
 "**Unreviewed mutation escapes outside `migrate/`.** The last full-run "
 "artifact listed 55 mutants no test kills, 46 of them under `src/core/migrate/"
@@ -13977,27 +14067,7 @@ msgstr ""
 "라 확인해야 합니다. 다음으로 완주하는 주간 실행이 그 아티팩트를 대체합니다. "
 "그 분류가 끝날 때까지 이 잡은 exit 2를 허용합니다."
 
-#: src/development/ci-cd.md:289
-msgid ""
-"**Docs are only verified on release tags.** `docs.yml` still runs nowhere "
-"else, so an mdBook build failure or a stale `ko.po` surfaces at release "
-"time. The two cheapest checks were moved into the Lint job; the build itself "
-"was not. This is no longer hypothetical: the MSRV 1.89 bump edited pages "
-"under `docs/src/`, its PR went green, and the `v0.15.4` tag then failed at "
-"the `ko.po` round-trip. The crate published and the tag was fine — only the "
-"Pages deploy stopped, which is the quiet half of the failure and the reason "
-"it went unnoticed until someone opened the site."
-msgstr ""
-"**문서는 릴리스 태그에서만 검증됩니다.** `docs.yml`은 여전히 그 밖의 어디에서"
-"도 돌지 않아서, mdBook 빌드 실패나 stale한 `ko.po`가 릴리스 시점에야 드러납니"
-"다. 가장 값싼 검사 두 개는 Lint 잡으로 옮겼지만 빌드 자체는 옮기지 못했습니"
-"다. 이제는 가정이 아닙니다. MSRV 1.89 bump가 `docs/src/` 아래 페이지를 고쳤"
-"고 그 PR은 초록이었는데, `v0.15.4` 태그가 `ko.po` 라운드트립에서 실패했습니"
-"다. 크레이트는 배포됐고 태그도 정상이었으며 멈춘 것은 Pages 배포뿐이었는데, "
-"그것이 이 실패의 조용한 절반이자 누군가 사이트를 열어보기 전까지 아무도 몰랐"
-"던 이유입니다."
-
-#: src/development/ci-cd.md:297
+#: src/development/ci-cd.md:294
 msgid ""
 "**The coverage floor is absolute, not relative.** `--fail-under-lines 80` is "
 "measured against llvm-cov, which reads 80.97% where Codecov reads 78.5%; the "
@@ -14007,7 +14077,7 @@ msgid ""
 "above."
 msgstr ""
 
-#: src/development/ci-cd.md:303
+#: src/development/ci-cd.md:300
 msgid ""
 "**The cache sits near its limit.** 8.34 GB of the 10 GB allowance, of which "
 "`v0-rust-*` is only about 1 GB — the bulk is BuildKit blobs from the Docker "
@@ -14017,11 +14087,11 @@ msgstr ""
 "rust-*`는 약 1GB뿐입니다 — 대부분은 Docker 워크플로가 만드는 BuildKit blob입"
 "니다. 아직 실패하는 것은 없고, 축출은 LRU 방식입니다."
 
-#: src/development/ci-cd.md:307
+#: src/development/ci-cd.md:304
 msgid "Recently closed"
 msgstr "최근에 해결된 것"
 
-#: src/development/ci-cd.md:309
+#: src/development/ci-cd.md:306
 msgid ""
 "Left here because the reasoning is worth keeping, not because anything is "
 "outstanding."
@@ -14029,7 +14099,22 @@ msgstr ""
 "남겨 둔 이유는 그 판단 과정이 기록할 만해서이지, 아직 남은 문제가 있어서가 아"
 "닙니다."
 
-#: src/development/ci-cd.md:312
+#: src/development/ci-cd.md:309
+msgid ""
+"Docs were only verified on release tags: the MSRV 1.89 bump edited pages "
+"under `docs/src/`, its PR went green, and the `v0.15.4` tag then failed at "
+"the `ko.po` round-trip. The crate published and the tag was fine — only the "
+"Pages deploy stopped, which is the quiet half of the failure and the reason "
+"it went unnoticed until someone opened the site. Closed by `docs-check.yml`, "
+"which runs the build and the round-trip on PRs that touch the docs paths."
+msgstr ""
+"문서는 릴리스 태그에서만 검증됐다: MSRV 1.89 bump가 `docs/src/` 아래 페이지"
+"를 고쳤는데 PR은 초록으로 통과했고, `v0.15.4` 태그가 `ko.po` 라운드트립에서 "
+"실패했다. crate 게시와 태그는 멀쩡했고 Pages 배포만 멈췄는데, 이것이 실패의 "
+"조용한 절반이라 누군가 사이트를 열어 보기 전까지 아무도 몰랐다. 문서 경로를 "
+"건드리는 PR에서 빌드와 라운드트립을 돌리는 `docs-check.yml`로 닫음."
+
+#: src/development/ci-cd.md:316
 msgid ""
 "Coverage uploads were rejected for months with `Token required because "
 "branch is protected` while the job reported success, because "
@@ -14047,7 +14132,7 @@ msgstr ""
 "릿 저장소를 읽기 때문에, 그쪽에도 토큰을 등록하기 전까지 모든 Dependabot PR"
 "이 같은 방식으로 계속 실패했습니다."
 
-#: src/development/ci-cd.md:320
+#: src/development/ci-cd.md:324
 msgid ""
 "Every release PR failed the Lint job because release-plz bumps `Cargo.toml` "
 "without touching the version samples in prose. Hand-fixed at v0.15.3, hit "
@@ -14061,7 +14146,7 @@ msgstr ""
 "니다. v0.15.3의 수정이 요구한 방향 그대로입니다 — 검사를 느슨하게 하는 대신 "
 "릴리스가 예시를 갱신하도록 가르치는 것입니다."
 
-#: src/development/ci-cd.md:325
+#: src/development/ci-cd.md:329
 msgid ""
 "Dependabot does not read `rust-version`, so it raised `rust-i18n` past the "
 "MSRV and every job died at dependency resolution before a line compiled. The "
@@ -14077,7 +14162,7 @@ msgstr ""
 "rustc 1.93.1을 요구)에 대한 `ignore`를 갖고 있으며, MSRV가 따라잡으면 지울 부"
 "채로 표시해 두었습니다."
 
-#: src/development/ci-cd.md:331
+#: src/development/ci-cd.md:335
 msgid ""
 "The weekly full mutation run had never once completed — 60 minutes killed it "
 "every time, and GitHub reports a timed-out job as _cancelled_, which reads "
@@ -14088,7 +14173,7 @@ msgstr ""
 "GitHub은 타임아웃된 잡을 _cancelled_ 로 보고하는데 이는 별일 아닌 것처럼 읽힙"
 "니다. 60분에 385/446개로 측정돼 타임아웃을 90분으로 올렸습니다."
 
-#: src/development/ci-cd.md:335
+#: src/development/ci-cd.md:339
 msgid ""
 "`aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now "
 "pinned to release tags. Dependabot could not follow either: it cannot bump a "
@@ -14099,7 +14184,7 @@ msgstr ""
 "올릴 수 없고, setup-uv는 v8부터 움직이는 메이저 태그 발행을 중단했기 때문입니"
 "다."
 
-#: src/development/ci-cd.md:339
+#: src/development/ci-cd.md:343
 msgid ""
 "`stable-ci` had four writers and, because `rust-cache` hashes workflow-level "
 "`env`, was never actually shared with `coverage.yml` or `mutants.yml` at "
@@ -14109,7 +14194,7 @@ msgstr ""
 "시에 넣기 때문에 `coverage.yml`이나 `mutants.yml`과는 애초에 공유된 적조차 없"
 "었습니다. 이제 각자 실제로 쓰는 키를 이름으로 밝힙니다."
 
-#: src/development/ci-cd.md:342
+#: src/development/ci-cd.md:346
 msgid ""
 "`release-plz.yml` had no concurrency group. It has one now, with `cancel-in-"
 "progress: false` — which delivers the \"must always complete\" intent that "
@@ -14355,8 +14440,8 @@ msgid "`scuv lang [code]`"
 msgstr "`scuv lang [code]`"
 
 #: src/llms.md:48
-msgid "Get/set language (en, ko, ja, pt-BR)"
-msgstr "언어 조회/설정 (en, ko, ja, pt-BR)"
+msgid "Get/set language (en, ko, ja, pt-BR, es)"
+msgstr "언어 조회/설정 (en, ko, ja, pt-BR, es)"
 
 #: src/llms.md:49
 msgid "`scuv migrate list`"
@@ -14650,9 +14735,10 @@ msgstr "국제화"
 #: src/llms.md:190
 msgid ""
 "Supported languages: English (`en`), Korean (`ko`), Japanese (`ja`), "
-"Portuguese-BR (`pt-BR`)"
+"Portuguese-BR (`pt-BR`), Spanish (`es`)"
 msgstr ""
-"지원 언어: 영어 (`en`), 한국어 (`ko`), 일본어 (`ja`), 포르투갈어-BR (`pt-BR`)"
+"지원 언어: 영어 (`en`), 한국어 (`ko`), 일본어 (`ja`), 포르투갈어-BR (`pt-"
+"BR`), 스페인어 (`es`)"
 
 #: src/llms.md:192
 msgid ""
@@ -14728,6 +14814,32 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid ""
+#~ "`docs.yml` — the mdBook build and the `ko.po` staleness round-trip — "
+#~ "triggers only on `v*` tags. Nothing about the documentation site is "
+#~ "verified on a PR. Two checks were moved into the `ci.yml` Lint job to "
+#~ "close the worst of that gap:"
+#~ msgstr ""
+#~ "`docs.yml` — mdBook 빌드와 `ko.po` 최신성 왕복 검사 — 은 `v*` 태그에서만 "
+#~ "트리거됩니다. 문서 사이트에 관한 어떤 것도 PR에서는 검증되지 않습니다. 그"
+#~ "중 가장 큰 공백을 메우기 위해 두 가지 검사를 `ci.yml`의 Lint 잡으로 옮겼습"
+#~ "니다:"
+
+#~ msgid "\"config\""
+#~ msgstr "\"config\""
+
+#~ msgid ""
+#~ "Nothing checks these lists against `SUPPORTED_LANGS`, so a shell you miss "
+#~ "only shows up when a user presses Tab."
+#~ msgstr ""
+#~ "이 목록을 `SUPPORTED_LANGS`와 대조하는 검사가 없어서, 빠뜨린 셸은 사용자"
+#~ "가 Tab을 눌러야 드러납니다."
+
+#~ msgid ""
+#~ "bash and PowerShell do not enumerate locales, so there is nothing to "
+#~ "change there."
+#~ msgstr "bash와 PowerShell은 로케일을 나열하지 않으므로 손댈 것이 없습니다."
 
 #~ msgid "`SCUV_VERSION` (or the legacy `SCOOP_VERSION`)"
 #~ msgstr "`SCUV_VERSION` (또는 레거시 `SCOOP_VERSION`)"

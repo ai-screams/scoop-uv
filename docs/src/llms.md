@@ -45,7 +45,7 @@ All virtualenvs are stored in `~/.scuv/virtualenvs/`. Override with `SCUV_HOME` 
 | `scuv shell --unset` | Clear shell-specific setting |
 | `scuv init <shell>` | Output shell init script |
 | `scuv completions <shell>` | Generate completion script |
-| `scuv lang [code]` | Get/set language (en, ko, ja, pt-BR) |
+| `scuv lang [code]` | Get/set language (en, ko, ja, pt-BR, es) |
 | `scuv migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scuv migrate @env <name>` | Migrate single environment |
 | `scuv migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
@@ -187,7 +187,7 @@ Import environments from pyenv-virtualenv, virtualenvwrapper, and conda.
 
 ### Internationalization
 
-Supported languages: English (`en`), Korean (`ko`), Japanese (`ja`), Portuguese-BR (`pt-BR`)
+Supported languages: English (`en`), Korean (`ko`), Japanese (`ja`), Portuguese-BR (`pt-BR`), Spanish (`es`)
 
 Priority: `SCUV_LANG` env > `~/.scuv/config.json` > system locale > `en`
 

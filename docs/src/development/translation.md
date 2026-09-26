@@ -29,6 +29,8 @@ create.success:
   en: "Created '%{name}' environment"
   ko: "'%{name}' 환경 생성됨"
   pt-BR: "Ambiente '%{name}' criado"
+  ja: "'%{name}' 環境を作成しました"
+  es: "Entorno '%{name}' creado"
   { lang }: "Your translation here"  # Add your language code and translation
 ```
 
@@ -52,8 +54,9 @@ Edit `src/i18n.rs` and add your language to `SUPPORTED_LANGS`:
 pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
     ("en", "English"),
     ("ko", "한국어"),
-    ("ja", "日本語"),
     ("pt-BR", "Português (Brasil)"),
+    ("ja", "日本語"),
+    ("es", "Español"),
     ("{lang}", "Your Language Name"),  // Add your language
 ];
 ```
@@ -69,22 +72,24 @@ pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
 **1. `tests/i18n_completeness.rs`** — add your code to the `LOCALES` const:
 
 ```rust
-const LOCALES: &[&str] = &["en", "ko", "ja", "pt-BR", "{lang}"];
+const LOCALES: &[&str] = &["en", "ko", "ja", "pt-BR", "es", "{lang}"];
 ```
 
 This is the CI gate that checks every key exists in every locale. If your
 language is missing from this list, CI passes while your translation goes
-completely unverified. It is the only step in this guide that fails silently
-— everything else tells you what is wrong.
+completely unverified — nothing tells you it was skipped.
 
 **2. Shell completions** — the `scuv lang` candidate lists are hand-written
-in two shells:
+in all four shells:
 
 - `src/shell/fish.rs` — the `complete -c scuv ... from lang` lines
 - `src/shell/zsh.rs` — the `langs=(...)` array
+- `src/shell/bash.rs` — the `compgen -W "en ko ja pt-BR es"` list under `lang)`
+- `src/shell/powershell.rs` — the `@('en', 'ko', 'ja', 'pt-BR', 'es')` array
 
-bash and PowerShell do not enumerate locales, so there is nothing to change
-there.
+Each shell module has a test (`lang_completion_list_matches_supported_langs`)
+that compares its list with `SUPPORTED_LANGS`, so a shell you miss fails
+`cargo test` instead of surfacing when a user presses Tab.
 
 **3. Locale loops in tests (optional)** — `src/error/mod.rs` and
 `src/error/suggestion.rs` iterate the supported locales. Adding yours gives
@@ -115,13 +120,16 @@ SCUV_LANG={lang} ./target/debug/scuv lang
 - [ ] `locales/app.yml` - All 222 keys translated
 - [ ] `src/i18n.rs` - Language registered in SUPPORTED_LANGS
 - [ ] `tests/i18n_completeness.rs` - Language added to LOCALES
-- [ ] `src/shell/fish.rs`, `src/shell/zsh.rs` - Completion lists updated
+- [ ] `src/shell/bash.rs`, `src/shell/zsh.rs`, `src/shell/fish.rs`, `src/shell/powershell.rs` - Completion lists updated
 
 **PR Title Format:**
 
 ```
-docs(i18n): add {Language Name} translation
+feat(i18n): add {Language Name} translation
 ```
+
+`feat`, not `docs`: a new language is a user-visible feature, and the
+changelog generator files it under "Added" only for `feat` commits.
 
 ---
 
@@ -345,7 +353,7 @@ Before submitting PR:
 - [ ] All placeholders preserved (`%{name}`, `%{version}`, etc.)
 - [ ] Language registered in SUPPORTED_LANGS
 - [ ] Language added to LOCALES in `tests/i18n_completeness.rs`
-- [ ] Shell completion lists updated (fish, zsh)
+- [ ] Shell completion lists updated (bash, zsh, fish, PowerShell)
 - [ ] `cargo build` succeeds
 - [ ] `touch src/lib.rs` run, then `cargo test` passes
 - [ ] `SCUV_LANG={code} scuv lang` shows your language

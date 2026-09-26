@@ -133,7 +133,7 @@ Supported sources: pyenv-virtualenv, virtualenvwrapper, conda
 | Command | Description |
 |---------|-------------|
 | `scuv lang` | Show current language |
-| `scuv lang <code>` | Set language (en, ko, ja, pt-BR) |
+| `scuv lang <code>` | Set language (en, ko, ja, pt-BR, es) |
 | `scuv lang --list` | List supported languages |
 | `scuv lang --reset` | Reset to system default |
 
@@ -596,6 +596,7 @@ pub const SUPPORTED_LANGS: &[(&str, &str)] = &[
     ("ko", "한국어"),
     ("pt-BR", "Português (Brasil)"),
     ("ja", "日本語"),
+    ("es", "Español"),
 ];
 
 pub fn init();                           // Initialize locale on startup

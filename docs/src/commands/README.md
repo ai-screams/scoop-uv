@@ -49,7 +49,7 @@ Available for all commands:
 |----------|-------------|---------|
 | `SCUV_HOME` | Base directory for scuv | `~/.scuv` |
 | `SCUV_NO_AUTO` | Disable auto-activation | (unset) |
-| `SCUV_LANG` | Display language (en, ko, ja, pt-BR) | System locale |
+| `SCUV_LANG` | Display language (en, ko, ja, pt-BR, es) | System locale |
 | `NO_COLOR` | Disable colored output | (unset) |
 | `SCUV_VERSION` | Shell-session override; highest-priority version selector (set by `scuv shell`) | (unset) |
 | `SCUV_ACTIVE` | Name of the currently active environment (set by the activation script; read by `status`/`which`/`run`) | (unset) |
