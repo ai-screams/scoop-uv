@@ -56,7 +56,7 @@ migration. Don't skip the `rm` step: a leftover old binary keeps running
 
 ```bash
 scuv --version
-# scuv 0.15.5
+# scuv 0.16.0
 ```
 
 ## Troubleshooting
