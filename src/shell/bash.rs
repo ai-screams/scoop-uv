@@ -378,6 +378,29 @@ mod tests {
         assert!(!init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
+    /// The `scuv lang` completion candidates are hand-written in this script;
+    /// this pins them to `SUPPORTED_LANGS` so adding a locale cannot skip a
+    /// shell. Fails if a code is missing from (or extra in) the list.
+    #[test]
+    fn lang_completion_list_matches_supported_langs() {
+        let script = init_script();
+        let re = regex::Regex::new(
+            r#"# Complete language codes\s*\n\s*COMPREPLY=\(\$\(compgen -W "([^"]+)""#,
+        )
+        .unwrap();
+        let caps = re
+            .captures(script)
+            .expect("bash script must complete `lang` with compgen -W");
+        let mut found: Vec<&str> = caps.get(1).unwrap().as_str().split_whitespace().collect();
+        let mut expected: Vec<&str> = crate::i18n::SUPPORTED_LANGS
+            .iter()
+            .map(|(c, _)| *c)
+            .collect();
+        expected.sort_unstable();
+        found.sort_unstable();
+        assert_eq!(found, expected);
+    }
+
     /// The transitional `scoop` forwarder went with 0.16.0; the init script
     /// must not define a `scoop` function again (scoop.sh coexistence).
     /// Fails if a `scoop()` function is reintroduced.
