@@ -51,6 +51,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "coverage"
+          # Only main writes; a PR run restores this key but leaves no copy behind
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Generate coverage
         run: cargo llvm-cov --all-features --workspace --codecov --output-path codecov.json

@@ -46,6 +46,13 @@ jobs:
       # so the three matrix shards don't overwrite each other's cache.
       # mode=max exports every layer (not just the final image), which is
       # essential for our cargo-chef-style dependency layer reuse.
+      #
+      # Only pushes to main export: a PR run reads main's cache but writes
+      # nothing, so closed PRs stop leaving ~2 GB of blobs behind. And the
+      # export is ignore-error: with the repository at its 10 GB allowance,
+      # LRU eviction ran during an export and failed a green build with
+      # `error writing layer blob: not_found` (#198). A missed cache write
+      # costs the next run a rebuild; it must not fail this one.
       - name: Build ${{ matrix.source-env }}-test image
         uses: docker/build-push-action@v7
         with:
@@ -55,7 +62,7 @@ jobs:
           load: true
           tags: scuv:${{ matrix.source-env }}-test
           cache-from: type=gha,scope=integration-${{ matrix.source-env }}
-          cache-to: type=gha,mode=max,scope=integration-${{ matrix.source-env }}
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=gha,mode=max,scope=integration-{0},ignore-error=true', matrix.source-env) || '' }}
 
       - name: Run integration tests (${{ matrix.source-env }})
         # Use the image's normal entrypoint — it sets up pyenv / conda /
