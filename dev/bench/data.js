@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790383900711,
+  "lastUpdate": 1790383902444,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -7033,6 +7033,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1409,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c1fc3e917acf73edfc709d6dca1a68de6023b3b5",
+          "message": "refactor(compat)!: drop the scoop-era legacy fallbacks\n\nThe 0.15.0 rename kept the scoop-era names readable behind one-shot\nwarnings that promised removal in 0.16.0. This is that removal: the\nSCOOP_* environment variables, ~/.scoop, .scoop-version and .scoop.toml\nare no longer read, the bash/zsh/fish `scoop` forwarder is gone, and\n`scuv shell` exports SCUV_VERSION only. The doctor `legacy` check stays\nas a warn-only diagnostic so an incomplete upgrade is not silent.\n.scoop-metadata.json and scoop_export_version are unchanged (on-disk\nformats).\n\nBREAKING CHANGE: SCOOP_HOME, SCOOP_VERSION, SCOOP_LANG,\nSCOOP_RESOLVE_MAX_DEPTH and SCOOP_NO_AUTO are ignored, as are ~/.scoop,\n.scoop-version and .scoop.toml. Rename them to the SCUV_* / .scuv names\nand run `mv ~/.scoop ~/.scuv`. SCUV_SUPPRESS_DEPRECATION is no longer\nrecognised.",
+          "timestamp": "2026-09-26T09:47:37+09:00",
+          "tree_id": "e44f9e574d14fe3a3575fdef690b9c772909030e",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/c1fc3e917acf73edfc709d6dca1a68de6023b3b5"
+        },
+        "date": 1790383902331,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1885,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1327,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
