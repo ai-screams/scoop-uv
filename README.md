@@ -6,7 +6,7 @@
 
 > ⚠️ **Work in Progress** — Under active development. API may change.
 
-> 📢 **Renamed in v0.15.0:** the CLI command is now **`scuv`** (formerly `scoop`) — renamed to coexist with [Scoop](https://scoop.sh), the Windows package manager. The crate/repo keep the name `scoop-uv`. Legacy `SCOOP_*`/`.scoop-*` settings are still read (with a deprecation warning) until v0.16.0 — see the [CHANGELOG](CHANGELOG.md) for migration notes.
+> 📢 **Renamed in v0.15.0:** the CLI command is now **`scuv`** (formerly `scoop`) — renamed to coexist with [Scoop](https://scoop.sh), the Windows package manager. The crate/repo keep the name `scoop-uv`. Since v0.16.0 the legacy `SCOOP_*`/`.scoop-*` settings are no longer read — see the [CHANGELOG](CHANGELOG.md) for migration notes.
 
 **One scoop, endless envs — pyenv-style Python environment manager powered by uv**
 
@@ -284,14 +284,14 @@ rm -f ~/.cargo/bin/scoop
 mv ~/.scoop ~/.scuv
 
 # 5. Restart your shell, then verify
-scuv doctor              # flags anything left over
+scuv doctor              # warns about anything scoop-era left over
 ```
 
-Legacy `SCOOP_*` env vars and `.scoop-version` / `.scoop.toml` files keep
-working (with a one-shot deprecation warning) until v0.16.0, and typing
-`scoop` in bash/zsh/fish still works through a deprecated forwarder that
-warns and calls `scuv`. Skipping step 2 is the one dangerous gap: a
-leftover old binary keeps running 0.14.x silently, without any warning.
+Since v0.16.0 the legacy `SCOOP_*` env vars, the `.scoop-version` /
+`.scoop.toml` files and the `scoop` shell forwarder are gone: rename the
+files and variables to their `scuv` names as part of the move. Skipping
+step 2 is the one dangerous gap: a leftover old binary keeps running
+0.14.x silently, without any warning.
 
 ### Shell Setup
 

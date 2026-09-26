@@ -12,8 +12,7 @@
 /// Generate SCUV_VERSION priority check script for the auto-activate hook.
 ///
 /// This handles Priority 1 in the resolution order: the SCUV_VERSION
-/// environment variable set by the `scuv shell` command (falling back to the
-/// legacy SCOOP_VERSION, deprecated).
+/// environment variable set by the `scuv shell` command.
 ///
 /// # Usage
 ///
@@ -30,15 +29,13 @@ macro_rules! scoop_version_check {
     (bash) => {
         r#"
     # Priority 1: SCUV_VERSION environment variable (scuv shell)
-    # DEPRECATION(0.16.0): drop the legacy SCOOP_VERSION fallback read.
-    local _scuv_pin="${SCUV_VERSION:-$SCOOP_VERSION}"
-    if [[ -n "$_scuv_pin" ]]; then
-        if [[ "$_scuv_pin" == "system" ]]; then
+    if [[ -n "$SCUV_VERSION" ]]; then
+        if [[ "$SCUV_VERSION" == "system" ]]; then
             if [[ -n "$SCUV_ACTIVE" ]]; then
                 eval "$(command scuv deactivate)"
             fi
-        elif [[ "$_scuv_pin" != "$SCUV_ACTIVE" ]]; then
-            eval "$(command scuv activate "$_scuv_pin")"
+        elif [[ "$SCUV_VERSION" != "$SCUV_ACTIVE" ]]; then
+            eval "$(command scuv activate "$SCUV_VERSION")"
         fi
         return
     fi
@@ -50,18 +47,13 @@ macro_rules! scoop_version_check {
     (fish) => {
         r#"
     # Priority 1: SCUV_VERSION environment variable (scuv shell)
-    # DEPRECATION(0.16.0): drop the legacy SCOOP_VERSION fallback read.
-    if set -q SCUV_VERSION; or set -q SCOOP_VERSION
-        set -l _scuv_pin $SCUV_VERSION
-        if not set -q SCUV_VERSION
-            set _scuv_pin $SCOOP_VERSION
-        end
-        if test "$_scuv_pin" = "system"
+    if set -q SCUV_VERSION
+        if test "$SCUV_VERSION" = "system"
             if set -q SCUV_ACTIVE
                 eval (command scuv deactivate)
             end
-        else if test "$_scuv_pin" != "$SCUV_ACTIVE"
-            eval (command scuv activate "$_scuv_pin")
+        else if test "$SCUV_VERSION" != "$SCUV_ACTIVE"
+            eval (command scuv activate "$SCUV_VERSION")
         end
         return
     end
@@ -70,15 +62,13 @@ macro_rules! scoop_version_check {
     (powershell) => {
         r#"
     # Priority 1: SCUV_VERSION environment variable (scuv shell)
-    # DEPRECATION(0.16.0): drop the legacy SCOOP_VERSION fallback read.
-    $_scuvPin = if ($env:SCUV_VERSION) { $env:SCUV_VERSION } else { $env:SCOOP_VERSION }
-    if ($_scuvPin) {
-        if ($_scuvPin -eq 'system') {
+    if ($env:SCUV_VERSION) {
+        if ($env:SCUV_VERSION -eq 'system') {
             if ($env:SCUV_ACTIVE) {
                 Invoke-Expression (& $script:ScuvBin deactivate)
             }
-        } elseif ($_scuvPin -ne $env:SCUV_ACTIVE) {
-            Invoke-Expression (& $script:ScuvBin activate $_scuvPin)
+        } elseif ($env:SCUV_VERSION -ne $env:SCUV_ACTIVE) {
+            Invoke-Expression (& $script:ScuvBin activate $env:SCUV_VERSION)
         }
         return
     }
@@ -89,8 +79,8 @@ macro_rules! scoop_version_check {
 /// Generate file-based resolution script for the auto-activate hook.
 ///
 /// This handles Priority 2-3 in the resolution order:
-/// - .scuv-version in current directory (legacy .scoop-version fallback)
-/// - .scuv-version in parent directories (legacy .scoop-version fallback)
+/// - .scuv-version in current directory
+/// - .scuv-version in parent directories
 /// - Global ~/.scuv/version
 #[macro_export]
 macro_rules! file_resolution_check {
@@ -156,10 +146,9 @@ mod tests {
     fn test_scoop_version_check_bash_contains_priority_comment() {
         let script = scoop_version_check!(bash);
         assert!(script.contains("Priority 1"));
-        // SCUV_VERSION is the primary read; legacy SCOOP_VERSION is still
-        // honored as a fallback (deprecated).
         assert!(script.contains("SCUV_VERSION"));
-        assert!(script.contains("SCOOP_VERSION"));
+        // Fails if the scoop-era SCOOP_VERSION fallback read comes back.
+        assert!(!script.contains("SCOOP_VERSION"));
     }
 
     /// Verify fish hook uses fish syntax
@@ -167,7 +156,7 @@ mod tests {
     fn test_scoop_version_check_fish_uses_fish_syntax() {
         let script = scoop_version_check!(fish);
         assert!(script.contains("set -q SCUV_VERSION"));
-        assert!(script.contains("SCOOP_VERSION"));
+        assert!(!script.contains("SCOOP_VERSION"));
         assert!(script.contains("end"));
     }
 
@@ -198,7 +187,7 @@ mod tests {
     fn test_scoop_version_check_powershell_uses_powershell_syntax() {
         let script = scoop_version_check!(powershell);
         assert!(script.contains("$env:SCUV_VERSION"));
-        assert!(script.contains("$env:SCOOP_VERSION"));
+        assert!(!script.contains("SCOOP_VERSION"));
         assert!(script.contains("Invoke-Expression"));
         assert!(script.contains("$script:ScuvBin"));
     }

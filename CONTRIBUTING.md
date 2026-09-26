@@ -57,7 +57,7 @@ Docs can always be clearer. PRs welcome for:
 Help make scuv accessible to developers worldwide!
 
 **Quick start:**
-1. Add translations to `locales/app.yml` (226 keys)
+1. Add translations to `locales/app.yml` (222 keys)
 2. Register your language in `src/i18n.rs`
 3. Submit PR with title: `docs(i18n): add {Language} translation`
 
@@ -641,7 +641,7 @@ cargo test --all-features
 
 ### Test Environment
 
-Tests that modify `SCOOP_HOME` use isolation:
+Tests that modify `SCUV_HOME` use isolation:
 
 ```rust
 use crate::test_utils::with_temp_scoop_home;
@@ -649,7 +649,7 @@ use crate::test_utils::with_temp_scoop_home;
 #[test]
 fn test_with_isolated_home() {
     with_temp_scoop_home(|temp_dir| {
-        // temp_dir is isolated SCOOP_HOME
+        // temp_dir is isolated SCUV_HOME
         // Safe to create/delete environments
     });
 }

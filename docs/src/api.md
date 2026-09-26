@@ -185,7 +185,7 @@ pub trait Check: Send + Sync {
 - `SymlinkCheck` - Checks for broken virtualenv Python symlinks (e.g., `<env>/bin/python`)
 - `ShellCheck` - Verifies shell integration
 - `VersionCheck` - Validates version files
-- `LegacyCheck` - Warns about leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or legacy `.scoop-version` / `.scoop.toml` from the rename
+- `LegacyCheck` - Warns about leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or `.scoop-version` / `.scoop.toml` (not read since v0.16.0)
 
 ---
 

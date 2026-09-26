@@ -64,18 +64,13 @@ impl Check for ShellCheck {
 
         let shell_type = if shell_name == "zsh" { "zsh" } else { "bash" };
 
-        // Check if any config file contains scuv init. A legacy-only
-        // `scoop init` line does NOT count as configured: the deprecated
-        // `scoop` shell function is defined *inside* `scuv init`'s own
-        // output (see shell/bash.rs, shell/zsh.rs), so it only exists once
-        // that init line has already run successfully in the session. An rc
-        // file that still invokes `eval "$(scoop init ...)"` calls the
-        // `scoop` *binary* directly — which no longer ships after upgrade —
-        // so the eval fails at shell startup and integration never loads.
-        // That must be flagged as a warning, not treated as configured.
-        //
-        // DEPRECATION(0.16.0): drop the legacy branch once the shim window
-        // closes.
+        // Check if any config file contains scuv init. A stale `scoop init`
+        // line does NOT count as configured: `scoop` is not a command any
+        // more (renamed in 0.15.0, the transitional shell forwarder went in
+        // 0.16.0), so `eval "$(scoop init ...)"` fails at shell startup and
+        // integration never loads. That must be flagged as a warning, not
+        // treated as configured. This is a diagnostic for an old rc line,
+        // not a compatibility shim, so it stays.
         for (_shell_type, config_path) in &config_files {
             if config_path.exists() {
                 match std::fs::read_to_string(config_path) {
@@ -112,7 +107,7 @@ impl Check for ShellCheck {
             }
         }
 
-        // No scuv init (or legacy scoop init) found
+        // No scuv init found
         let config_file = if shell_name == "zsh" {
             "~/.zshrc"
         } else if cfg!(target_os = "macos") {
@@ -142,13 +137,11 @@ mod tests {
     use serial_test::serial;
 
     // ==========================================================================
-    // ShellCheck: scuv init vs. legacy scoop init in rc files
+    // ShellCheck: scuv init vs. a stale scoop init line in rc files
     //
-    // A legacy-only `scoop init` line must warn, not pass — the deprecated
-    // `scoop` shell function is defined by `scuv init`'s own output (see
-    // shell/bash.rs), so it doesn't exist yet when an rc file's
-    // `eval "$(scoop init ...)"` line runs at shell startup; that line
-    // invokes the (now-removed) `scoop` binary directly and fails.
+    // A stale `scoop init` line must warn, not pass — `scoop` is not a
+    // command any more, so an rc file's `eval "$(scoop init ...)"` fails at
+    // shell startup.
     // ==========================================================================
 
     /// Write `content` to both `.bash_profile` and `.bashrc` so the test is

@@ -650,7 +650,7 @@ mod tests {
         let data = UseData {
             name: "myenv".into(),
             mode: "local",
-            version_file: Some("/project/.scoop-version".into()),
+            version_file: Some("/project/.scuv-version".into()),
             symlink: None,
         };
         let json = serde_json::to_string(&data).unwrap();
@@ -679,7 +679,7 @@ mod tests {
         let data = UseData {
             name: "myenv".into(),
             mode: "local",
-            version_file: Some("/project/.scoop-version".into()),
+            version_file: Some("/project/.scuv-version".into()),
             symlink: Some("/project/.venv".into()),
         };
         let json = serde_json::to_string(&data).unwrap();

@@ -6,12 +6,12 @@
 use std::sync::{Mutex, MutexGuard};
 use tempfile::TempDir;
 
-use crate::paths::{LEGACY_HOME_ENV, SCUV_HOME_ENV};
+use crate::paths::SCUV_HOME_ENV;
 
-/// Global mutex to synchronize tests that manipulate SCOOP_HOME environment variable.
+/// Global mutex to synchronize tests that manipulate the SCUV_HOME environment variable.
 ///
 /// Environment variables are process-global state, so concurrent access causes race conditions.
-/// All tests that modify SCOOP_HOME must acquire this lock first.
+/// All tests that modify SCUV_HOME must acquire this lock first.
 pub static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 /// RAII guard that captures the current i18n locale and restores it on drop.
@@ -42,13 +42,11 @@ impl Drop for LocaleGuard {
     }
 }
 
-/// Execute a test function with SCUV_HOME and legacy SCOOP_HOME both unset.
+/// Execute a test function with SCUV_HOME unset.
 ///
-/// This helper ensures safe testing of default behavior when neither the
-/// current (`SCUV_HOME`) nor the legacy (`SCOOP_HOME`) env var is set —
-/// unsetting only one would let the other leak through `scoop_home()`'s
-/// fallback and mask the default-path behavior under test. Uses
-/// catch_unwind to guarantee cleanup even if the test panics.
+/// This helper ensures safe testing of default behavior when the `SCUV_HOME`
+/// env var is not set. Uses catch_unwind to guarantee cleanup even if the
+/// test panics.
 ///
 /// # Examples
 ///
@@ -58,9 +56,9 @@ impl Drop for LocaleGuard {
 /// #[test]
 /// fn test_default_home() {
 ///     with_no_scoop_home(|| {
-///         // SCUV_HOME and SCOOP_HOME are guaranteed to be unset here
+///         // SCUV_HOME is guaranteed to be unset here
 ///         let home = scoop_home().unwrap();
-///         assert!(home.ends_with(".scuv") || home.ends_with(".scoop"));
+///         assert!(home.ends_with(".scuv"));
 ///     });
 /// }
 /// ```
@@ -71,12 +69,10 @@ where
     // Recover from poisoned mutex if a previous test panicked
     let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let backup_new = std::env::var(SCUV_HOME_ENV).ok();
-    let backup_legacy = std::env::var(LEGACY_HOME_ENV).ok();
 
     // SAFETY: Protected by ENV_LOCK mutex - only one test modifies this at a time
     unsafe {
         std::env::remove_var(SCUV_HOME_ENV);
-        std::env::remove_var(LEGACY_HOME_ENV);
     }
 
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(f));
@@ -87,10 +83,6 @@ where
         match backup_new {
             Some(val) => std::env::set_var(SCUV_HOME_ENV, val),
             None => std::env::remove_var(SCUV_HOME_ENV),
-        }
-        match backup_legacy {
-            Some(val) => std::env::set_var(LEGACY_HOME_ENV, val),
-            None => std::env::remove_var(LEGACY_HOME_ENV),
         }
     }
 
@@ -108,10 +100,6 @@ where
 /// 3. Sets the SCUV_HOME environment variable
 /// 4. Runs the provided test function
 /// 5. Cleans up the environment variable (even on panic)
-///
-/// Sets `SCUV_HOME` (the current-priority var read by `scoop_home()`), not
-/// the legacy `SCOOP_HOME` — since `SCUV_HOME` wins whenever both are set,
-/// this is the isolation callers actually want by default.
 ///
 /// # Examples
 ///
@@ -163,8 +151,7 @@ where
 /// against [`with_temp_scoop_home`], [`with_no_scoop_home`], and each other —
 /// unlike the single-variable helpers above, this covers an arbitrary set of
 /// vars in one call, which is useful for tests that need precise control
-/// over more than one variable at once (e.g. asserting priority between a
-/// current and a legacy env var). `Some(value)` sets/overwrites the
+/// over more than one variable at once. `Some(value)` sets/overwrites the
 /// variable; `None` removes it. Restoration happens even if the caller's
 /// closure panics, since `Drop` still runs during unwind — but only within
 /// the same thread; a panic that unwinds past the guard on another thread
@@ -233,7 +220,7 @@ pub fn env_guard(vars: &[(&'static str, Option<&str>)]) -> EnvGuard {
 ///
 /// # Arguments
 ///
-/// * `temp_dir` - The temporary SCOOP_HOME directory
+/// * `temp_dir` - The temporary SCUV_HOME directory
 /// * `name` - Name of the virtual environment to create
 /// * `python_version` - Optional Python version to write in metadata
 ///
@@ -612,28 +599,21 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_with_no_scoop_home_unsets_both_vars() {
+    fn test_with_no_scoop_home_unsets_and_restores_var() {
         // SAFETY: serialized via #[serial]; env restored after test.
         unsafe {
             std::env::set_var(SCUV_HOME_ENV, "/tmp/should-not-leak-new");
-            std::env::set_var(LEGACY_HOME_ENV, "/tmp/should-not-leak-legacy");
         }
         with_no_scoop_home(|| {
             assert!(std::env::var(SCUV_HOME_ENV).is_err());
-            assert!(std::env::var(LEGACY_HOME_ENV).is_err());
         });
         assert_eq!(
             std::env::var(SCUV_HOME_ENV).as_deref(),
             Ok("/tmp/should-not-leak-new")
         );
-        assert_eq!(
-            std::env::var(LEGACY_HOME_ENV).as_deref(),
-            Ok("/tmp/should-not-leak-legacy")
-        );
         // SAFETY: serialized via #[serial]; cleanup.
         unsafe {
             std::env::remove_var(SCUV_HOME_ENV);
-            std::env::remove_var(LEGACY_HOME_ENV);
         }
     }
 

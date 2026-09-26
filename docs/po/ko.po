@@ -496,77 +496,79 @@ msgstr "# 환경 디렉터리 이동\n"
 msgid ""
 "Then update your shell rc file — replace `eval \"$(scoop init <shell>)\"` "
 "with `eval \"$(scuv init <shell>)\"` (fish: `scuv init fish | source`), "
-"restart your shell, and run `scuv doctor` to confirm nothing legacy is left "
-"over."
+"restart your shell, and run `scuv doctor` to confirm nothing scoop-era is "
+"left over."
 msgstr ""
 "그다음 셸 rc 파일을 갱신하세요 — `eval \"$(scoop init <shell>)\"`를 `eval \"$"
 "(scuv init <shell>)\"`로 바꾸고(fish는 `scuv init fish | source`), 셸을 재시"
-"작한 뒤 `scuv doctor`를 실행해 남은 레거시가 없는지 확인합니다."
+"작한 뒤 `scuv doctor`를 실행해 scoop 시절 잔재가 남지 않았는지 확인합니다."
 
 #: src/installation.md:50
 msgid ""
-"Legacy `SCOOP_*` env vars and `.scoop-version` / `.scoop.toml` files keep "
-"working with a one-shot deprecation warning until v0.16.0. Don't skip the "
-"`rm` step: a leftover old binary keeps running 0.14.x silently."
+"Since v0.16.0 the legacy `SCOOP_*` env vars and `.scoop-version` / "
+"`.scoop.toml` files are no longer read, so rename them as part of the "
+"migration. Don't skip the `rm` step: a leftover old binary keeps running "
+"0.14.x silently."
 msgstr ""
-"레거시 `SCOOP_*` 환경 변수와 `.scoop-version` / `.scoop.toml` 파일은 v0.16.0"
-"까지 일회성 사용 중단 경고와 함께 계속 동작합니다. `rm` 단계를 건너뛰지 마세"
-"요 — 남은 옛 바이너리는 아무 경고 없이 0.14.x를 계속 실행합니다."
+"v0.16.0부터 레거시 `SCOOP_*` 환경 변수와 `.scoop-version` / `.scoop.toml` 파"
+"일은 더 이상 읽지 않으므로 마이그레이션의 일부로 이름을 바꿔 주세요. `rm` 단"
+"계를 건너뛰지 마세요 — 남은 옛 바이너리는 아무 경고 없이 0.14.x를 계속 실행합"
+"니다."
 
-#: src/installation.md:54
+#: src/installation.md:55
 msgid "Verify Installation"
 msgstr "설치 확인"
 
-#: src/installation.md:57
+#: src/installation.md:58
 msgid "# scuv 0.15.5\n"
 msgstr "# scuv 0.15.5\n"
 
-#: src/installation.md:61 src/python-management.md:175
+#: src/installation.md:62 src/python-management.md:175
 #: src/development/testing.md:384 src/development/code-quality.md:425
 msgid "Troubleshooting"
 msgstr "문제 해결"
 
-#: src/installation.md:63
+#: src/installation.md:64
 msgid "`scuv: command not found`"
 msgstr "`scuv: command not found`"
 
-#: src/installation.md:65
+#: src/installation.md:66
 msgid "Ensure `~/.cargo/bin` is in your PATH:"
 msgstr "`~/.cargo/bin`이 PATH에 포함되어 있는지 확인하세요:"
 
-#: src/installation.md:68
+#: src/installation.md:69
 msgid "# Add to ~/.zshrc or ~/.bashrc\n"
 msgstr "# ~/.zshrc 또는 ~/.bashrc에 추가\n"
 
-#: src/installation.md:69
+#: src/installation.md:70
 msgid "\"$HOME/.cargo/bin:$PATH\""
 msgstr "\"$HOME/.cargo/bin:$PATH\""
 
-#: src/installation.md:72
+#: src/installation.md:73
 msgid "Then restart your terminal or run:"
 msgstr "이후 터미널을 재시작하거나 다음을 실행하세요:"
 
-#: src/installation.md:75
+#: src/installation.md:76
 msgid "# or ~/.bashrc\n"
 msgstr "# 또는 ~/.bashrc\n"
 
-#: src/installation.md:78
+#: src/installation.md:79
 msgid "uv not found"
 msgstr "uv를 찾을 수 없음"
 
-#: src/installation.md:80
+#: src/installation.md:81
 msgid "scuv requires uv to be installed and available in PATH. Verify:"
 msgstr "scuv는 uv가 설치되어 있고 PATH에서 사용 가능해야 합니다. 확인 방법:"
 
-#: src/installation.md:86
+#: src/installation.md:87
 msgid "If not installed, run:"
 msgstr "설치되어 있지 않다면 다음을 실행하세요:"
 
-#: src/installation.md:92 src/quick-start.md:111
+#: src/installation.md:93 src/quick-start.md:111
 msgid "Next Steps"
 msgstr "다음 단계"
 
-#: src/installation.md:94
+#: src/installation.md:95
 msgid ""
 "After installation, set up [Shell Integration](shell-integration.md) to "
 "enable auto-activation and tab completion."
@@ -992,6 +994,7 @@ msgid "`~/.scuv`"
 msgstr "`~/.scuv`"
 
 #: src/shell-integration.md:125 src/commands/index.md:54
+#: src/commands/status.md:34
 msgid "`SCUV_VERSION`"
 msgstr "`SCUV_VERSION`"
 
@@ -4241,11 +4244,12 @@ msgstr "**레거시 scoop 잔여물**"
 
 #: src/commands/doctor.md:29
 msgid ""
-"Leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or legacy `.scoop-"
-"version` / `.scoop.toml` from the rename"
+"Leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or `.scoop-version` / "
+"`.scoop.toml` in the current directory — none of them read since v0.16.0, so "
+"the check only warns"
 msgstr ""
-"rename 이후 남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 또는 레거시 `.scoop-"
-"version` / `.scoop.toml`"
+"남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 또는 현재 디렉터리의 `.scoop-"
+"version` / `.scoop.toml` — v0.16.0부터 어느 것도 읽지 않으므로 경고만 합니다"
 
 #: src/commands/doctor.md:34
 msgid "# Quick health check\n"
@@ -4602,10 +4606,6 @@ msgstr "`$SCUV_ACTIVE` — 셸이 활성화한 것"
 #: src/commands/status.md:34
 msgid "`env_var`"
 msgstr "`env_var`"
-
-#: src/commands/status.md:34
-msgid "`SCUV_VERSION` (or the legacy `SCOOP_VERSION`)"
-msgstr "`SCUV_VERSION` (또는 레거시 `SCOOP_VERSION`)"
 
 #: src/commands/status.md:35 src/development/code-quality.md:264
 msgid "`version_file`"
@@ -8557,8 +8557,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:37
-msgid "Add translations to all 226 keys"
-msgstr "모든 226개 키에 번역을 추가합니다"
+msgid "Add translations to all 222 keys"
+msgstr "모든 222개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:38
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -8731,8 +8731,8 @@ msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
 #: src/development/translation.md:115
-msgid "`locales/app.yml` - All 226 keys translated"
-msgstr "`locales/app.yml` - 226개 키 모두 번역"
+msgid "`locales/app.yml` - All 222 keys translated"
+msgstr "`locales/app.yml` - 222개 키 모두 번역"
 
 #: src/development/translation.md:116
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
@@ -9418,8 +9418,8 @@ msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
 #: src/development/translation.md:344
-msgid "All 226 keys translated"
-msgstr "226개 키 전체 번역 완료"
+msgid "All 222 keys translated"
+msgstr "222개 키 전체 번역 완료"
 
 #: src/development/translation.md:345
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
@@ -9474,15 +9474,13 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the 226 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 222 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 226개 키) 번역에 대"
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 222개 키) 번역에 대"
 "해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
-"역만 다룹니다.CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 약 "
-"115개 키) 번역에 대해서는 [translation](translation.md)을 참고하세요. 이 페이"
-"지는 사용자 문서 번역에 대해서만 다룹니다."
+"역만 다룹니다."
 
 #: src/development/docs-translation.md:7
 msgid ""
@@ -10672,10 +10670,10 @@ msgstr "`VersionCheck` - 버전 파일을 검증합니다"
 #: src/api.md:188
 msgid ""
 "`LegacyCheck` - Warns about leftover `SCOOP_*` vars, an orphaned `~/.scoop`, "
-"or legacy `.scoop-version` / `.scoop.toml` from the rename"
+"or `.scoop-version` / `.scoop.toml` (not read since v0.16.0)"
 msgstr ""
-"`LegacyCheck` - rename 이후 남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 레거시 "
-"`.scoop-version` / `.scoop.toml`을 경고합니다"
+"`LegacyCheck` - 남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, `.scoop-version` / "
+"`.scoop.toml`을 경고합니다 (v0.16.0부터 읽지 않음)"
 
 #: src/api.md:192
 msgid "`CheckStatus`"
@@ -14730,6 +14728,9 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "`SCUV_VERSION` (or the legacy `SCOOP_VERSION`)"
+#~ msgstr "`SCUV_VERSION` (또는 레거시 `SCOOP_VERSION`)"
 
 #~ msgid ""
 #~ "**No coverage threshold.** Uploads work again, but there is no "

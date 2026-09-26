@@ -29,10 +29,9 @@ const SOURCE_ENV_VAR: &str = "env_var";
 pub(crate) enum State {
     /// Shell-activated via `SCUV_ACTIVE`.
     Active(String),
-    /// Resolved from a version file (local or global; `.scuv-version`, with
-    /// legacy `.scoop-version` fallback).
+    /// Resolved from a version file (local or global `.scuv-version`).
     Configured(String),
-    /// Resolved from `SCUV_VERSION` (or the legacy `SCOOP_VERSION`).
+    /// Resolved from `SCUV_VERSION`.
     ConfiguredByEnv(String),
     /// `system` sentinel (system Python is in use, no virtualenv active).
     System,

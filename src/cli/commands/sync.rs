@@ -1,6 +1,6 @@
 //! Handler for the `scuv sync` command.
 //!
-//! Reads `.scuv.toml` (or legacy `.scoop.toml`, walking cwd → parents), creates the declared env if
+//! Reads `.scuv.toml` (walking cwd → parents), creates the declared env if
 //! it doesn't exist (with implicit lazy Python install), and installs the
 //! merged `default` + selected groups via uv pip. Idempotent — re-running on
 //! a clean env is a no-op past the pip resolve.
@@ -245,8 +245,8 @@ mod tests {
     #[serial]
     fn execute_returns_manifest_not_found_when_absent() {
         with_temp_scoop_home(|_| {
-            // Use a sandboxed working dir that has no .scuv.toml (or legacy
-            // .scoop.toml). The walk may still hit one in a parent of the
+            // Use a sandboxed working dir that has no .scuv.toml. The walk
+            // may still hit one in a parent of the
             // real cwd on dev machines, so isolate cwd inside a tempdir.
             let workdir = TempDir::new().unwrap();
             let prev = std::env::current_dir().ok();
@@ -259,7 +259,7 @@ mod tests {
                 std::env::set_current_dir(p).unwrap();
             }
 
-            // Some test machines may have .scuv.toml (or legacy .scoop.toml)
+            // Some test machines may have .scuv.toml
             // in /tmp's parents; we can't reliably assert ManifestNotFound
             // there. Only assert when no manifest exists anywhere along the
             // path.

@@ -175,6 +175,9 @@ mod tests {
         assert!(!doctor.checks.is_empty());
     }
 
+    /// The warn-only remnant check must stay registered: it is what makes an
+    /// incomplete 0.15 → 0.16 upgrade visible. Fails if it is dropped from
+    /// `default_checks`.
     #[test]
     fn doctor_registers_legacy_check() {
         let doctor = Doctor::new();

@@ -231,8 +231,8 @@ fn test_get_path_rejects_path_traversal() {
 fn test_touch_metadata_at_blocks_relative_path_escape() {
     // Real teeth on the validation guard: plant a metadata file at
     // the *exact* location `"../escape"` would resolve to without
-    // the guard (`<SCOOP_HOME>/virtualenvs/../escape` =
-    // `<SCOOP_HOME>/escape`). Without the guard, touch would read
+    // the guard (`<SCUV_HOME>/virtualenvs/../escape` =
+    // `<SCUV_HOME>/escape`). Without the guard, touch would read
     // this file, mutate last_used, and persist it back — so the
     // captured serialized bytes would change. With the guard, the
     // file is never opened and the bytes stay identical.

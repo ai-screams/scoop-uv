@@ -57,7 +57,7 @@ echo "6. Verifying activation..."
     eval "$(scuv init bash)"
 
     if [ -n "$VIRTUAL_ENV" ]; then
-        echo "✅ Environment is active: $SCOOP_ACTIVE"
+        echo "✅ Environment is active: $SCUV_ACTIVE"
         echo "   Python: $(python --version)"
         echo "   pip: $(pip --version)"
     else

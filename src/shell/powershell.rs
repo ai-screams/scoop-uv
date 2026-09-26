@@ -56,20 +56,7 @@ function scuv {
             if ($LASTEXITCODE -eq 0) {
                 $name = $Arguments | Where-Object { $_ -notmatch '^-' } | Select-Object -Skip 1 -First 1
                 if ($name) {
-                    # 'use' above already warned about any legacy config; don't warn twice.
-                    # Save/restore so a user-set suppression value survives this call.
-                    $hadSuppress = Test-Path Env:SCUV_SUPPRESS_DEPRECATION
-                    $prevSuppress = if ($hadSuppress) { $env:SCUV_SUPPRESS_DEPRECATION } else { $null }
-                    $env:SCUV_SUPPRESS_DEPRECATION = '1'
-                    try {
-                        Invoke-Expression (& $script:ScuvBin activate $name)
-                    } finally {
-                        if ($hadSuppress) {
-                            $env:SCUV_SUPPRESS_DEPRECATION = $prevSuppress
-                        } else {
-                            Remove-Item Env:SCUV_SUPPRESS_DEPRECATION -ErrorAction SilentlyContinue
-                        }
-                    }
+                    Invoke-Expression (& $script:ScuvBin activate $name)
                 }
             }
         }
@@ -95,8 +82,7 @@ function _scuv_hook {
 }
 
 # Override prompt to call hook
-# DEPRECATION(0.16.0): drop the legacy SCOOP_NO_AUTO fallback check.
-if ((-not $env:SCUV_NO_AUTO) -and (-not $env:SCOOP_NO_AUTO)) {
+if (-not $env:SCUV_NO_AUTO) {
     $global:_scuv_original_prompt = $function:prompt
     function global:prompt {
         _scuv_hook
@@ -273,11 +259,8 @@ mod tests {
             script.contains("SCUV_NO_AUTO"),
             "Script must check SCUV_NO_AUTO environment variable"
         );
-        // Legacy SCOOP_NO_AUTO must still gate auto-activation (deprecated fallback).
-        assert!(
-            script.contains("SCOOP_NO_AUTO"),
-            "Script must still honor legacy SCOOP_NO_AUTO"
-        );
+        // Fails if the scoop-era SCOOP_NO_AUTO read comes back.
+        assert!(!script.contains("SCOOP_NO_AUTO"));
     }
 
     #[test]
@@ -324,21 +307,12 @@ mod tests {
         );
     }
 
-    /// The chained use→activate call must suppress duplicate deprecation
-    /// warnings (each chained call is a fresh process), and must restore any
-    /// pre-existing user value rather than leak `1` into the session.
+    /// The one-shot deprecation warnings went with 0.16.0, and with them
+    /// the suppression variable the chained use→activate call used to set.
+    /// Fails if SCUV_SUPPRESS_DEPRECATION plumbing is reintroduced.
     #[test]
-    fn init_script_suppresses_duplicate_deprecation_in_use_chain() {
-        let s = init_script();
-        assert!(s.contains("SCUV_SUPPRESS_DEPRECATION"));
-        assert!(
-            s.contains("$env:SCUV_SUPPRESS_DEPRECATION = $prevSuppress"),
-            "must restore a user-set suppression value"
-        );
-        assert!(
-            s.contains("Remove-Item Env:SCUV_SUPPRESS_DEPRECATION"),
-            "must clear the variable when the user had not set it"
-        );
+    fn init_script_has_no_deprecation_suppression() {
+        assert!(!init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
     /// Safety-critical: scoop.sh (the Windows package manager) coexistence.

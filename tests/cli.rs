@@ -42,14 +42,8 @@ impl TestFixture {
 fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
     let mut cmd = Command::cargo_bin("scuv").unwrap();
     cmd.env("SCUV_HOME", scoop_home);
-    // 부모 환경의 레거시 변수가 fallback 경로로 새어들지 않게 차단
-    cmd.env_remove("SCOOP_HOME");
     // Force English locale for consistent test assertions
     cmd.env("SCUV_LANG", "en");
-    cmd.env_remove("SCOOP_LANG");
-    // A developer running the suite with this exported would otherwise
-    // silence the deprecation warnings the legacy-shim tests assert on.
-    cmd.env_remove("SCUV_SUPPRESS_DEPRECATION");
     cmd
 }
 
@@ -72,25 +66,6 @@ fn test_version_flag() {
         .assert()
         .success()
         .stdout(predicate::str::contains("scuv"));
-}
-
-/// Legacy-shim integration regression (the ONE end-to-end legacy-env test):
-/// the deprecated SCOOP_HOME/SCOOP_LANG names must still work through the
-/// real binary, emitting the deprecation warning on stderr.
-/// DEPRECATION(0.16.0): remove together with the legacy env-var shims.
-#[test]
-fn test_legacy_scoop_env_vars_still_work() {
-    let fixture = TestFixture::new();
-    let mut cmd = Command::cargo_bin("scuv").unwrap();
-    cmd.env_remove("SCUV_HOME");
-    cmd.env_remove("SCUV_LANG");
-    cmd.env_remove("SCUV_SUPPRESS_DEPRECATION");
-    cmd.env("SCOOP_HOME", &fixture.scoop_home);
-    cmd.env("SCOOP_LANG", "en");
-    cmd.arg("list")
-        .assert()
-        .success()
-        .stderr(predicate::str::contains("SCOOP_HOME is deprecated"));
 }
 
 #[test]
@@ -251,45 +226,36 @@ fn test_deactivate_when_not_active() {
         .success();
 }
 
-/// DEPRECATION(0.16.0): legacy-shim regression test — verifies `scoop
-/// resolve` still honors a legacy `.scoop-version` file end-to-end. Remove
-/// alongside the legacy fallback itself.
+/// `scuv resolve` reads `.scuv-version` end-to-end through the real binary.
 #[test]
 fn test_resolve_with_version_file() {
     let fixture = TestFixture::new();
 
-    // Create a legacy-named version file in the temp directory
-    std::fs::write(fixture.temp_dir.path().join(".scoop-version"), "testenv").unwrap();
+    std::fs::write(fixture.temp_dir.path().join(".scuv-version"), "testenv").unwrap();
 
-    // resolve should succeed, output the env name, and warn (once) that the
-    // legacy file name is deprecated
     scoop_cmd(&fixture.scoop_home)
         .arg("resolve")
         .current_dir(fixture.temp_dir.path())
         .assert()
         .success()
-        .stdout(predicate::str::contains("testenv"))
-        .stderr(predicate::str::contains(".scoop-version is deprecated"));
+        .stdout(predicate::str::contains("testenv"));
 }
 
-/// DEPRECATION(0.16.0): legacy-shim regression test — a legacy `.scoop.toml`
-/// manifest is still found by `scuv sync`, with a deprecation warning on
-/// stderr. No success assertion: the warning fires during manifest discovery,
-/// before any uv/env work that may fail in minimal environments.
+/// The scoop-era `.scoop-version` name is not a version file any more: with
+/// only that file present, `scuv resolve` finds nothing in the directory.
+/// Fails if a `.scoop-version` fallback is reintroduced.
 #[test]
-fn test_sync_warns_on_legacy_manifest() {
+fn test_resolve_ignores_legacy_version_file() {
     let fixture = TestFixture::new();
-    std::fs::write(
-        fixture.temp_dir.path().join(".scoop.toml"),
-        "[environment]\nname = \"synctest\"\npython = \"3.12\"\n",
-    )
-    .unwrap();
+
+    std::fs::write(fixture.temp_dir.path().join(".scoop-version"), "testenv").unwrap();
 
     scoop_cmd(&fixture.scoop_home)
-        .args(["sync", "--dry-run"])
+        .arg("resolve")
         .current_dir(fixture.temp_dir.path())
         .assert()
-        .stderr(predicate::str::contains(".scoop.toml is deprecated"));
+        .success()
+        .stdout(predicate::str::contains("testenv").not());
 }
 
 #[test]
@@ -701,7 +667,6 @@ mod shell_commands {
             .assert()
             .success()
             .stdout(predicate::str::contains("SCUV_VERSION"))
-            .stdout(predicate::str::contains("SCOOP_VERSION"))
             .stdout(predicate::str::contains("VIRTUAL_ENV"));
     }
 
@@ -716,7 +681,6 @@ mod shell_commands {
             .success()
             // Security: verify quotes are present to prevent shell injection
             .stdout(predicate::str::contains(r#"export SCUV_VERSION="system""#))
-            .stdout(predicate::str::contains(r#"export SCOOP_VERSION="system""#))
             .stdout(predicate::str::contains("unset VIRTUAL_ENV"));
     }
 
@@ -731,21 +695,22 @@ mod shell_commands {
             .success()
             // Security: double quotes prevent shell injection
             .stdout(predicate::str::contains(r#"export SCUV_VERSION="system""#))
-            .stdout(predicate::str::contains(r#"export SCOOP_VERSION="system""#));
+            // The scoop-era name is no longer exported alongside.
+            // Fails if `print_export_scoop_version` emits SCOOP_VERSION again.
+            .stdout(predicate::str::contains("SCOOP_VERSION").not());
     }
 
     #[test]
     fn test_shell_fish_uses_single_quotes() {
         let fixture = TestFixture::new();
 
-        // Fish shell should use single quotes for SCUV_VERSION/SCOOP_VERSION
+        // Fish shell should use single quotes for SCUV_VERSION
         scoop_cmd(&fixture.scoop_home)
             .args(["shell", "--shell", "fish", "system"])
             .assert()
             .success()
             // Fish uses single quotes which also prevent injection
-            .stdout(predicate::str::contains("set -gx SCUV_VERSION 'system'"))
-            .stdout(predicate::str::contains("set -gx SCOOP_VERSION 'system'"));
+            .stdout(predicate::str::contains("set -gx SCUV_VERSION 'system'"));
     }
 
     #[test]
@@ -758,7 +723,8 @@ mod shell_commands {
             .assert()
             .success()
             .stdout(predicate::str::contains("unset SCUV_VERSION"))
-            .stdout(predicate::str::contains("unset SCOOP_VERSION"));
+            // Fails if `print_unset_scoop_version` clears SCOOP_VERSION again.
+            .stdout(predicate::str::contains("SCOOP_VERSION").not());
     }
 
     #[test]
@@ -799,7 +765,6 @@ mod shell_commands {
             .assert()
             .success()
             .stdout(predicate::str::contains("set -gx SCUV_VERSION"))
-            .stdout(predicate::str::contains("set -gx SCOOP_VERSION"))
             .stdout(predicate::str::contains("set -gx VIRTUAL_ENV"));
     }
 }

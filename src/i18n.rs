@@ -1,13 +1,10 @@
 //! Internationalization support
 //!
 //! Locale detection priority:
-//! 1. `SCUV_LANG` environment variable (override), or legacy `SCOOP_LANG`
-//!    (deprecated; emits a one-shot warning)
-//! 2. `~/.scuv/config.json` (`scuv lang` command; legacy `~/.scoop` still read)
+//! 1. `SCUV_LANG` environment variable (override)
+//! 2. `~/.scuv/config.json` (`scuv lang` command)
 //! 3. System locale (sys-locale)
 //! 4. Fallback: "en"
-//!
-//! DEPRECATION(0.16.0): remove the legacy `SCOOP_LANG` branch.
 
 use crate::config::Config;
 
@@ -30,25 +27,12 @@ pub fn init() {
 }
 
 /// Detect locale based on priority:
-/// 1. SCUV_LANG env (or legacy SCOOP_LANG) → 2. config.json → 3. sys-locale → 4. "en"
-///
-/// DEPRECATION(0.16.0): remove the legacy `SCOOP_LANG` branch.
+/// 1. SCUV_LANG env → 2. config.json → 3. sys-locale → 4. "en"
 pub fn detect_locale() -> String {
-    // 1. SCUV_LANG environment variable (override for scripts/CI), falling
-    // back to the legacy SCOOP_LANG name (deprecated; one-shot warning).
+    // 1. SCUV_LANG environment variable (override for scripts/CI).
     if let Ok(lang) = std::env::var("SCUV_LANG")
         && let Some(code) = resolve_supported(&lang)
     {
-        return code.to_string();
-    }
-    if let Ok(lang) = std::env::var("SCOOP_LANG")
-        && let Some(code) = resolve_supported(&lang)
-    {
-        crate::output::deprecation::warn_once(&rust_i18n::t!(
-            "deprecation.env_var",
-            old = "SCOOP_LANG",
-            new = "SCUV_LANG"
-        ));
         return code.to_string();
     }
 
@@ -166,14 +150,12 @@ mod tests {
     #[serial]
     fn test_detect_with_env() {
         {
-            let _g =
-                crate::test_utils::env_guard(&[("SCUV_LANG", Some("ko")), ("SCOOP_LANG", None)]);
+            let _g = crate::test_utils::env_guard(&[("SCUV_LANG", Some("ko"))]);
             assert_eq!(detect_locale(), "ko");
         }
 
         {
-            let _g =
-                crate::test_utils::env_guard(&[("SCUV_LANG", Some("en")), ("SCOOP_LANG", None)]);
+            let _g = crate::test_utils::env_guard(&[("SCUV_LANG", Some("en"))]);
             assert_eq!(detect_locale(), "en");
         }
     }
@@ -182,7 +164,7 @@ mod tests {
     #[serial]
     fn test_detect_with_unsupported_env() {
         // Test with unsupported language - should fall through
-        let _g = crate::test_utils::env_guard(&[("SCUV_LANG", Some("fr")), ("SCOOP_LANG", None)]);
+        let _g = crate::test_utils::env_guard(&[("SCUV_LANG", Some("fr"))]);
         let locale = detect_locale();
         // Should either be "en" (fallback) or system locale
         assert!(is_supported(&locale) || locale == "en");
@@ -193,8 +175,7 @@ mod tests {
     fn test_detect_pt_br_from_env_variants() {
         // All of these spellings must resolve to the canonical "pt-BR".
         for input in ["pt-BR", "pt-br", "PT-BR", "pt_BR", "pt-BR.UTF-8"] {
-            let _g =
-                crate::test_utils::env_guard(&[("SCUV_LANG", Some(input)), ("SCOOP_LANG", None)]);
+            let _g = crate::test_utils::env_guard(&[("SCUV_LANG", Some(input))]);
             assert_eq!(
                 detect_locale(),
                 "pt-BR",
@@ -203,22 +184,28 @@ mod tests {
         }
     }
 
-    /// Legacy-regression coverage: `SCOOP_LANG` alone (no `SCUV_LANG`) still
-    /// resolves the locale, via the deprecated fallback branch.
+    /// The scoop-era `SCOOP_LANG` is ignored: whatever the machine resolves
+    /// to without it must not change when it is set to a different supported
+    /// code. `SCUV_HOME` points at an empty tempdir so no config file can
+    /// answer either. Fails if a `SCOOP_LANG` fallback is reintroduced in
+    /// `detect_locale`.
     #[test]
     #[serial]
-    fn test_detect_with_legacy_env_only() {
-        let _g = crate::test_utils::env_guard(&[("SCUV_LANG", None), ("SCOOP_LANG", Some("ja"))]);
-        assert_eq!(detect_locale(), "ja");
-    }
-
-    /// `SCUV_LANG` takes priority over the legacy `SCOOP_LANG` when both are set.
-    #[test]
-    #[serial]
-    fn test_detect_scuv_lang_wins_over_legacy() {
-        let _g =
-            crate::test_utils::env_guard(&[("SCUV_LANG", Some("ko")), ("SCOOP_LANG", Some("ja"))]);
-        assert_eq!(detect_locale(), "ko");
+    fn test_detect_ignores_legacy_scoop_lang() {
+        let home = tempfile::TempDir::new().unwrap();
+        let _g = crate::test_utils::env_guard(&[
+            ("SCUV_LANG", None),
+            ("SCOOP_LANG", None),
+            (
+                crate::paths::SCUV_HOME_ENV,
+                Some(home.path().to_str().unwrap()),
+            ),
+        ]);
+        let baseline = detect_locale();
+        let other = if baseline == "pt-BR" { "ja" } else { "pt-BR" };
+        // SAFETY: the guard above holds ENV_LOCK and restores SCOOP_LANG on drop.
+        unsafe { std::env::set_var("SCOOP_LANG", other) };
+        assert_eq!(detect_locale(), baseline);
     }
 
     #[test]

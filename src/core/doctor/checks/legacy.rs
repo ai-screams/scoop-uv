@@ -1,25 +1,26 @@
 //! Check for legacy scoop remnants (env vars, dirs, files) left over from
 //! the `scoop` → `scuv` rename.
-
-use crate::paths;
+//!
+//! Warn-only diagnostic: nothing has read these names since 0.16.0. The
+//! check exists so an incomplete upgrade is not silent — without it a user
+//! who skipped `mv ~/.scoop ~/.scuv` sees an empty `scuv list` and a doctor
+//! that reports everything healthy.
 
 use super::super::types::{Check, CheckResult};
 
-/// Check for leftover legacy `scoop` state during the `scoop` → `scuv`
-/// shim window: env vars, `~/.scoop` without a sibling `~/.scuv`, and
-/// legacy-named files in the current directory.
-///
-/// DEPRECATION(0.16.0): remove this check together with the shims.
+/// Check for leftover legacy `scoop` state: env vars, `~/.scoop` without a
+/// sibling `~/.scuv`, and legacy-named files in the current directory. None
+/// of these is read by scuv any more; the check only reports them.
 fn check_legacy_remnants() -> CheckResult {
     let mut found: Vec<String> = Vec::new();
 
     for var in [
-        paths::LEGACY_HOME_ENV,
+        "SCOOP_HOME",
         "SCOOP_VERSION",
         "SCOOP_LANG",
-        // No runtime warning for this one (it's read per prompt by the shell
-        // hook, warning there would spam) — this doctor hint is the only
-        // place a user learns to rename it.
+        "SCOOP_RESOLVE_MAX_DEPTH",
+        // This doctor hint is the only place a user learns the shell hook no
+        // longer honours this one.
         "SCOOP_NO_AUTO",
     ] {
         if std::env::var_os(var).is_some() {
@@ -35,10 +36,7 @@ fn check_legacy_remnants() -> CheckResult {
     }
 
     if let Ok(cwd) = std::env::current_dir() {
-        for f in [
-            paths::LEGACY_VERSION_FILE,
-            crate::core::manifest::LEGACY_MANIFEST_FILE,
-        ] {
+        for f in [".scoop-version", ".scoop.toml"] {
             if cwd.join(f).exists() {
                 found.push(f.to_string());
             }
@@ -79,12 +77,14 @@ impl Check for LegacyCheck {
 mod tests {
     use super::*;
 
+    use crate::paths;
+
     use crate::core::doctor::CheckStatus;
     use crate::core::doctor::checks::test_support::TempDirCwdGuard;
     use serial_test::serial;
 
     // ==========================================================================
-    // LegacyCheck / check_legacy_remnants: scoop -> scuv shim window
+    // LegacyCheck / check_legacy_remnants: warn-only remnant detection
     //
     // These tests override HOME (not just SCUV_HOME) because the legacy
     // check inspects `dirs::home_dir()` directly rather than going through
@@ -97,7 +97,7 @@ mod tests {
     fn legacy_check_is_ok_when_environment_is_clean() {
         let home_tmp = tempfile::tempdir().unwrap();
         let _g = crate::test_utils::env_guard(&[
-            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_HOME", None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
             ("SCOOP_NO_AUTO", None),
@@ -120,10 +120,7 @@ mod tests {
     fn legacy_check_warns_on_legacy_home_env_var() {
         let home_tmp = tempfile::tempdir().unwrap();
         let _g = crate::test_utils::env_guard(&[
-            (
-                paths::LEGACY_HOME_ENV,
-                Some("/tmp/legacy-home-doesnt-need-to-exist"),
-            ),
+            ("SCOOP_HOME", Some("/tmp/legacy-home-doesnt-need-to-exist")),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
             ("SCOOP_NO_AUTO", None),
@@ -155,7 +152,7 @@ mod tests {
     fn legacy_check_warns_on_scoop_version_and_scoop_lang_env_vars() {
         let home_tmp = tempfile::tempdir().unwrap();
         let _g = crate::test_utils::env_guard(&[
-            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_HOME", None),
             ("SCOOP_VERSION", Some("myenv")),
             ("SCOOP_LANG", Some("ko")),
             ("SCOOP_NO_AUTO", Some("1")),
@@ -183,7 +180,7 @@ mod tests {
         let home_tmp = tempfile::tempdir().unwrap();
         std::fs::create_dir(home_tmp.path().join(".scoop")).unwrap();
         let _g = crate::test_utils::env_guard(&[
-            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_HOME", None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
             ("SCOOP_NO_AUTO", None),
@@ -214,7 +211,7 @@ mod tests {
         std::fs::create_dir(home_tmp.path().join(".scoop")).unwrap();
         std::fs::create_dir(home_tmp.path().join(".scuv")).unwrap();
         let _g = crate::test_utils::env_guard(&[
-            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_HOME", None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
             ("SCOOP_NO_AUTO", None),
@@ -234,7 +231,7 @@ mod tests {
     fn legacy_check_warns_on_legacy_version_and_manifest_files_in_cwd() {
         let home_tmp = tempfile::tempdir().unwrap();
         let _g = crate::test_utils::env_guard(&[
-            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_HOME", None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
             ("SCOOP_NO_AUTO", None),
@@ -265,10 +262,7 @@ mod tests {
 
         let home_tmp = tempfile::tempdir().unwrap();
         let _g = crate::test_utils::env_guard(&[
-            (
-                paths::LEGACY_HOME_ENV,
-                Some("/tmp/legacy-home-doesnt-need-to-exist"),
-            ),
+            ("SCOOP_HOME", Some("/tmp/legacy-home-doesnt-need-to-exist")),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
             ("SCOOP_NO_AUTO", None),
@@ -287,7 +281,7 @@ mod tests {
         );
         assert!(
             suggestion.contains("v0.16.0"),
-            "suggestion should name the removal version, got: {suggestion}"
+            "suggestion should say since when the names are ignored, got: {suggestion}"
         );
     }
 
@@ -302,7 +296,7 @@ mod tests {
     fn legacy_check_trait_dispatch_reports_identity_and_runs() {
         let home_tmp = tempfile::tempdir().unwrap();
         let _g = crate::test_utils::env_guard(&[
-            (paths::LEGACY_HOME_ENV, None),
+            ("SCOOP_HOME", None),
             ("SCOOP_VERSION", None),
             ("SCOOP_LANG", None),
             ("SCOOP_NO_AUTO", None),

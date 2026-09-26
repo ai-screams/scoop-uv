@@ -171,8 +171,7 @@ src/
 │   ├── mod.rs     # Output struct
 │   ├── json.rs    # JSON response types
 │   ├── spinner.rs # Progress indicator
-│   ├── time.rs    # Fuzzy-age formatter (last_used display)
-│   └── deprecation.rs # One-shot legacy-name warnings
+│   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
 ├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
 ├── error/         # ScoopError enum (38 variants, i18n Display; code/display/exit/migrate/suggestion)
@@ -182,7 +181,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR) — 226 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 222 keys
 ```
 
 ### Design Principles

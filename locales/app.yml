@@ -1622,7 +1622,7 @@ man.written:
   es: "Se escribieron %{count} página(s) de manual de nivel superior en %{dir} (los subcomandos anidados se incluyen en su página padre)"
 
 # ============================================================================
-# Doctor command - legacy scoop remnants (scoop -> scuv rename, removed in v0.16.0)
+# Doctor command - legacy scoop remnants (warn-only; nothing reads these names since v0.16.0)
 # ============================================================================
 doctor.legacy_found:
   en: "Legacy scoop settings found: %{items}"
@@ -1632,39 +1632,8 @@ doctor.legacy_found:
   es: "Se encontraron configuraciones heredadas de scoop: %{items}"
 
 doctor.legacy_suggestion:
-  en: "Rename SCOOP_* environment variables to SCUV_*, run `mv ~/.scoop ~/.scuv`, and rename .scoop-version/.scoop.toml to the new names (support ends in v0.16.0)"
-  ko: "SCOOP_* 환경 변수를 SCUV_*(으)로 바꾸고, `mv ~/.scoop ~/.scuv`를 실행하고, .scoop-version/.scoop.toml도 새 이름으로 바꿔주세요 (v0.16.0에서 지원 종료)"
-  pt-BR: "Renomeie as variáveis SCOOP_* para SCUV_*, execute `mv ~/.scoop ~/.scuv` e renomeie .scoop-version/.scoop.toml para os novos nomes (suporte encerra na v0.16.0)"
-  ja: "SCOOP_* 環境変数を SCUV_* にリネームし、`mv ~/.scoop ~/.scuv` を実行し、.scoop-version/.scoop.toml も新しい名前にリネームしてください (v0.16.0でサポート終了)"
-  es: "Renombrar las variables de entorno SCOOP_* a SCUV_*, ejecutar `mv ~/.scoop ~/.scuv` y renombrar .scoop-version/.scoop.toml a los nuevos nombres (el soporte termina en v0.16.0)"
-
-# ============================================================================
-# Deprecation warnings (scoop -> scuv rename, removed in v0.16.0)
-# ============================================================================
-deprecation.env_var:
-  en: "%{old} is deprecated; use %{new} (support ends in v0.16.0)"
-  ko: "%{old}은(는) 사용 중단되었습니다 — %{new}을(를) 사용하세요 (v0.16.0에서 지원 종료)"
-  pt-BR: "%{old} está obsoleto; use %{new} (suporte encerra na v0.16.0)"
-  ja: "%{old} は非推奨です。%{new} を使用してください (v0.16.0でサポート終了)"
-  es: "%{old} está obsoleto; usar %{new} (el soporte termina en v0.16.0)"
-
-deprecation.version_file:
-  en: ".scoop-version is deprecated; rename it to .scuv-version (support ends in v0.16.0)"
-  ko: ".scoop-version은 사용 중단되었습니다 — .scuv-version으로 이름을 바꿔주세요 (v0.16.0에서 지원 종료)"
-  pt-BR: ".scoop-version está obsoleto; renomeie para .scuv-version (suporte encerra na v0.16.0)"
-  ja: ".scoop-version は非推奨です。.scuv-version にリネームしてください (v0.16.0でサポート終了)"
-  es: ".scoop-version está obsoleto; renombrarlo a .scuv-version (el soporte termina en v0.16.0)"
-
-deprecation.manifest_file:
-  en: ".scoop.toml is deprecated; rename it to .scuv.toml (support ends in v0.16.0)"
-  ko: ".scoop.toml은 사용 중단되었습니다 — .scuv.toml로 이름을 바꿔주세요 (v0.16.0에서 지원 종료)"
-  pt-BR: ".scoop.toml está obsoleto; renomeie para .scuv.toml (suporte encerra na v0.16.0)"
-  ja: ".scoop.toml は非推奨です。.scuv.toml にリネームしてください (v0.16.0でサポート終了)"
-  es: ".scoop.toml está obsoleto; renombrarlo a .scuv.toml (el soporte termina en v0.16.0)"
-
-deprecation.home_dir:
-  en: "~/.scoop is deprecated; run `mv ~/.scoop ~/.scuv` (support ends in v0.16.0)"
-  ko: "~/.scoop은 사용 중단되었습니다 — `mv ~/.scoop ~/.scuv` 명령을 실행해 주세요 (v0.16.0에서 지원 종료)"
-  pt-BR: "~/.scoop está obsoleto; execute `mv ~/.scoop ~/.scuv` (suporte encerra na v0.16.0)"
-  ja: "~/.scoop は非推奨です。`mv ~/.scoop ~/.scuv` を実行してください (v0.16.0でサポート終了)"
-  es: "~/.scoop está obsoleto; ejecutar `mv ~/.scoop ~/.scuv` (el soporte termina en v0.16.0)"
+  en: "Rename SCOOP_* environment variables to SCUV_*, run `mv ~/.scoop ~/.scuv`, and rename .scoop-version/.scoop.toml to the new names (scuv has not read the old names since v0.16.0)"
+  ko: "SCOOP_* 환경 변수를 SCUV_*(으)로 바꾸고, `mv ~/.scoop ~/.scuv`를 실행하고, .scoop-version/.scoop.toml도 새 이름으로 바꿔주세요 (v0.16.0부터 옛 이름은 읽지 않아요)"
+  pt-BR: "Renomeie as variáveis SCOOP_* para SCUV_*, execute `mv ~/.scoop ~/.scuv` e renomeie .scoop-version/.scoop.toml para os novos nomes (o scuv não lê os nomes antigos desde a v0.16.0)"
+  ja: "SCOOP_* 環境変数を SCUV_* にリネームし、`mv ~/.scoop ~/.scuv` を実行し、.scoop-version/.scoop.toml も新しい名前にリネームしてください (v0.16.0以降、古い名前は読み込まれません)"
+  es: "Renombrar las variables de entorno SCOOP_* a SCUV_*, ejecutar `mv ~/.scoop ~/.scuv` y renombrar .scoop-version/.scoop.toml a los nuevos nombres (scuv no lee los nombres antiguos desde v0.16.0)"
