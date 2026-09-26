@@ -47,9 +47,11 @@ fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
     cmd
 }
 
-/// Locate a fish binary: PATH first, then the usual install prefixes. In CI
-/// (`CI` set) a missing fish is a failure, not a skip — the Test and MSRV
-/// jobs install one, and a silently skipped test would look like a pass.
+/// Locate a fish binary: PATH first, then the usual install prefixes. When
+/// `SCUV_REQUIRE_FISH` is set a missing fish is a failure, not a skip: the CI
+/// Test and MSRV jobs install fish and set that variable, so a silently
+/// skipped test cannot look like a pass there. Jobs that run the suite
+/// without fish (coverage, mutants) leave it unset and skip.
 fn find_fish() -> Option<std::path::PathBuf> {
     let from_path = std::env::var_os("PATH").and_then(|paths| {
         std::env::split_paths(&paths)
@@ -66,8 +68,8 @@ fn find_fish() -> Option<std::path::PathBuf> {
         .map(std::path::PathBuf::from)
         .find(|p| p.is_file())
     });
-    if found.is_none() && std::env::var_os("CI").is_some() {
-        panic!("CI must install fish so the fish integration test runs");
+    if found.is_none() && std::env::var_os("SCUV_REQUIRE_FISH").is_some() {
+        panic!("SCUV_REQUIRE_FISH is set but no fish binary was found");
     }
     found
 }

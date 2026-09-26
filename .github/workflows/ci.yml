@@ -107,6 +107,10 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fish
 
       - name: Run tests
+        # SCUV_REQUIRE_FISH turns a missing fish into a failure here; jobs that
+        # do not install fish (coverage, mutants) leave it unset and skip.
+        env:
+          SCUV_REQUIRE_FISH: "1"
         run: cargo test --all-features --workspace
 
       - name: Run ignored tests (requires uv)
@@ -176,6 +180,8 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fish
 
       - name: Run tests on MSRV
+        env:
+          SCUV_REQUIRE_FISH: "1"
         run: cargo test --all-features --workspace
 
       # Step 4: Run tests that require uv installed
