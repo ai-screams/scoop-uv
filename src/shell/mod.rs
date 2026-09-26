@@ -9,7 +9,13 @@ pub mod fish;
 pub mod powershell;
 pub mod zsh;
 
-/// Detect current shell from environment variables
+/// Detect current shell from environment variables.
+///
+/// Best effort only: fish does not export `FISH_VERSION` and zsh does not
+/// export `ZSH_VERSION`, so a child process started from either shell sees
+/// neither and falls back to bash. That is harmless for zsh (bash syntax
+/// evaluates there) and fatal for fish, which is why the fish init script
+/// passes `--shell fish` on every call instead of relying on this.
 pub fn detect_shell() -> ShellType {
     // Check Fish first (has unique env var)
     if std::env::var("FISH_VERSION").is_ok() {

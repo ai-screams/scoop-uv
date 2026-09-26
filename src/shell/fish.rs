@@ -14,7 +14,11 @@ use crate::{file_resolution_check, scoop_version_check};
 /// `source` over `eval (...)`: fish's command substitution splits multi-line
 /// output into separate arguments, which `eval` then rejoins with spaces —
 /// collapsing the newlines this script's function/switch syntax relies on,
-/// so the `scuv` function silently fails to get defined.
+/// so the `scuv` function silently fails to get defined. The wrapper and the
+/// hook below use the same `| source` idiom for `scuv activate` /
+/// `deactivate` / `shell` output, and pass `--shell fish` explicitly: fish
+/// does not export `FISH_VERSION`, so the binary cannot detect fish from a
+/// child process and would print bash syntax.
 ///
 /// ```fish
 /// scuv init fish | source
@@ -49,7 +53,11 @@ function scuv
             if test $ret -eq 0
                 for arg in $argv[2..-1]
                     if not string match -q -- '-*' "$arg"
-                        eval (command scuv activate "$arg")
+                        if test "$arg" = system
+                            command scuv deactivate --shell fish | source
+                        else
+                            command scuv activate --shell fish "$arg" | source
+                        end
                         break
                     end
                 end
@@ -57,11 +65,15 @@ function scuv
             return $ret
 
         case activate deactivate shell
-            # Pass through help/version flags without eval
-            if string match -qr -- '(-h|--help|-V|--version)' $argv
+            # Pass through help/version flags without sourcing (whole-argument
+            # match: an env name such as data-hub must not count as -h)
+            if string match -qr -- '^(-h|--help|-V|--version)$' $argv
                 command scuv $argv
+            else if string match -q -- '--shell*' $argv
+                # The user chose the shell; a second --shell would be rejected
+                command scuv $argv | source
             else
-                eval (command scuv $argv)
+                command scuv $argv[1] --shell fish $argv[2..-1] | source
             end
 
         case '*'
@@ -335,6 +347,37 @@ mod tests {
             script.contains("scuv list --pythons --bare"),
             "Script must provide dynamic Python version completions"
         );
+    }
+
+    /// fish splits a command substitution on newlines and `eval` rejoins the
+    /// pieces with spaces, so `eval (command scuv activate ...)` collapses the
+    /// multi-line `if ... end` script and fails with "Missing end". Every
+    /// activation path must pipe the output to `source` instead, and must
+    /// pass `--shell fish` explicitly because fish does not export
+    /// FISH_VERSION, so `detect_shell` cannot see it from a child process.
+    /// Fails if any `eval (` comes back or a call site drops `--shell fish`.
+    #[test]
+    fn init_script_sources_activation_output_with_explicit_shell() {
+        let script = init_script();
+        assert!(
+            !script.contains("eval ("),
+            "fish script must not eval command substitutions"
+        );
+        assert!(script.contains(r#"command scuv activate --shell fish "$arg" | source"#));
+        assert!(script.contains("command scuv $argv[1] --shell fish $argv[2..-1] | source"));
+    }
+
+    /// The pass-through arm must not add a second `--shell` when the user
+    /// gave one (clap rejects duplicates), must treat only a whole argument
+    /// as a help/version flag, and `use system` must deactivate rather than
+    /// try to activate the reserved name. Fails if any of the three guards
+    /// is dropped.
+    #[test]
+    fn init_script_guards_explicit_shell_help_flags_and_use_system() {
+        let script = init_script();
+        assert!(script.contains("else if string match -q -- '--shell*' $argv"));
+        assert!(script.contains("string match -qr -- '^(-h|--help|-V|--version)$' $argv"));
+        assert!(script.contains("if test \"$arg\" = system\n                            command scuv deactivate --shell fish | source"));
     }
 
     /// The one-shot deprecation warnings went with 0.16.0, and with them

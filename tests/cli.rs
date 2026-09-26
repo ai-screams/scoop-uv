@@ -47,6 +47,112 @@ fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
     cmd
 }
 
+/// Locate a fish binary: PATH first, then the usual install prefixes. When
+/// `SCUV_REQUIRE_FISH` is set a missing fish is a failure, not a skip: the CI
+/// Test and MSRV jobs install fish and set that variable, so a silently
+/// skipped test cannot look like a pass there. Jobs that run the suite
+/// without fish (coverage, mutants) leave it unset and skip.
+fn find_fish() -> Option<std::path::PathBuf> {
+    let from_path = std::env::var_os("PATH").and_then(|paths| {
+        std::env::split_paths(&paths)
+            .map(|dir| dir.join("fish"))
+            .find(|p| p.is_file())
+    });
+    let found = from_path.or_else(|| {
+        [
+            "/opt/homebrew/bin/fish",
+            "/usr/local/bin/fish",
+            "/usr/bin/fish",
+        ]
+        .iter()
+        .map(std::path::PathBuf::from)
+        .find(|p| p.is_file())
+    });
+    if found.is_none() && std::env::var_os("SCUV_REQUIRE_FISH").is_some() {
+        panic!("SCUV_REQUIRE_FISH is set but no fish binary was found");
+    }
+    found
+}
+
+/// Runs the real fish integration end to end when a `fish` binary is
+/// installed (skipped otherwise; see `find_fish`). Every path here sources
+/// a multi-line fish script, which only works if the wrapper pipes it to
+/// `source` with an explicit `--shell fish`:
+///
+/// - sourcing `scuv init fish` runs the auto-activate hook once; with a
+///   stale activation in the environment it must deactivate it;
+/// - `scuv shell system` goes through the wrapper's
+///   activate/deactivate/shell arm (its output always carries the
+///   deactivation block);
+/// - `scuv shell --shell fish system` must not get a second `--shell`;
+/// - `scuv use system` must deactivate instead of activating the reserved
+///   name.
+///
+/// Fails if a call site evals the output (fish rejoins the lines with
+/// spaces and errors out), lets scuv guess the shell (fish does not export
+/// FISH_VERSION, so the guess is bash), duplicates `--shell`, or routes
+/// `use system` to `activate`.
+#[test]
+fn fish_wrapper_and_hook_source_multiline_scripts() {
+    let Some(fish) = find_fish() else {
+        eprintln!("skipping: no fish binary found");
+        return;
+    };
+    let fixture = TestFixture::new();
+    let bin = assert_cmd::cargo::cargo_bin("scuv");
+    let bin_dir = bin.parent().unwrap();
+    let path = format!(
+        "{}:{}",
+        bin_dir.display(),
+        std::env::var("PATH").unwrap_or_default()
+    );
+    // An empty config dir isolates fish from the developer's config.fish on
+    // every fish version (`--no-config` only exists from 3.4).
+    let config_home = fixture.temp_dir.path().join("xdg-config");
+    std::fs::create_dir_all(&config_home).unwrap();
+    let script = concat!(
+        "command scuv init fish | source; ",
+        "echo \"after-init SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"; ",
+        "scuv shell system; ",
+        "echo \"shell-status=$status SCUV_VERSION=[$SCUV_VERSION]\"; ",
+        "set -e SCUV_VERSION; ",
+        "scuv shell --shell fish system; ",
+        "echo \"explicit-status=$status SCUV_VERSION=[$SCUV_VERSION]\"; ",
+        "set -gx SCUV_ACTIVE stale2; set -gx VIRTUAL_ENV /stale2; ",
+        "scuv use system; ",
+        "echo \"use-system SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"",
+    );
+    let output = std::process::Command::new(fish)
+        .args(["-c", script])
+        .env("XDG_CONFIG_HOME", &config_home)
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("SCUV_LANG", "en")
+        .env("PATH", path)
+        .env_remove("SCUV_VERSION")
+        .env_remove("SCUV_NO_AUTO")
+        .env_remove("_SCUV_OLD_PATH")
+        .env_remove("_SCUV_OLD_PYTHONHOME")
+        // A stale activation the startup hook must clear.
+        .env("SCUV_ACTIVE", "stale")
+        .env("VIRTUAL_ENV", "/stale")
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("fish must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    for expected in [
+        "after-init SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+        "shell-status=0 SCUV_VERSION=[system]",
+        "explicit-status=0 SCUV_VERSION=[system]",
+        "use-system SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+    ] {
+        assert!(
+            stdout.contains(expected),
+            "missing {expected:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        );
+    }
+}
+
 #[test]
 fn test_help_flag() {
     Command::cargo_bin("scuv")
