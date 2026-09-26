@@ -103,6 +103,9 @@ jobs:
           shared-key: "stable-ci"
           # save-if defaults to true - this job writes the cache
 
+      - name: Install fish (fish integration test in tests/cli.rs)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish
+
       - name: Run tests
         run: cargo test --all-features --workspace
 

@@ -47,6 +47,71 @@ fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
     cmd
 }
 
+/// Runs the real fish integration end to end when a `fish` binary is
+/// installed (CI installs one; locally it is skipped otherwise). Two paths
+/// whose output is a multi-line fish script:
+///
+/// - sourcing `scuv init fish` runs the auto-activate hook once, and with a
+///   stale activation in the environment that hook must deactivate it;
+/// - `scuv shell system` then goes through the wrapper's
+///   activate/deactivate/shell arm.
+///
+/// Both only work if the script is piped to `source` with an explicit
+/// `--shell fish`. Fails if either evals the output (fish rejoins the lines
+/// with spaces and errors out, so the hook leaves SCUV_ACTIVE set and the
+/// wrapper call exits non-zero) or lets scuv guess the shell (fish does not
+/// export FISH_VERSION, so the guess is bash).
+#[test]
+fn fish_wrapper_and_hook_source_multiline_scripts() {
+    let Some(fish) = [
+        "/opt/homebrew/bin/fish",
+        "/usr/bin/fish",
+        "/usr/local/bin/fish",
+    ]
+    .iter()
+    .find(|p| std::path::Path::new(p).exists()) else {
+        eprintln!("skipping: no fish binary found");
+        return;
+    };
+    let fixture = TestFixture::new();
+    let bin = assert_cmd::cargo::cargo_bin("scuv");
+    let bin_dir = bin.parent().unwrap();
+    let path = format!(
+        "{}:{}",
+        bin_dir.display(),
+        std::env::var("PATH").unwrap_or_default()
+    );
+    let script = concat!(
+        "command scuv init fish | source; ",
+        "echo \"after-init SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"; ",
+        "scuv shell system; ",
+        "echo \"shell-status=$status SCUV_VERSION=[$SCUV_VERSION]\"",
+    );
+    let output = std::process::Command::new(fish)
+        .args(["--no-config", "-c", script])
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("SCUV_LANG", "en")
+        .env("PATH", path)
+        .env_remove("SCUV_VERSION")
+        // A stale activation: the startup hook must clear it, and it makes
+        // `shell system` emit the multi-line deactivation block too.
+        .env("SCUV_ACTIVE", "stale")
+        .env("VIRTUAL_ENV", "/stale")
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("fish must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stdout.contains("after-init SCUV_ACTIVE=[] VIRTUAL_ENV=[]"),
+        "startup hook did not deactivate the stale env.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(
+        stdout.contains("shell-status=0 SCUV_VERSION=[system]"),
+        "wrapper did not apply `shell system` cleanly.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+}
+
 #[test]
 fn test_help_flag() {
     Command::cargo_bin("scuv")
