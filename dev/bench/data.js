@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790409323232,
+  "lastUpdate": 1790409324864,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -7393,6 +7393,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1122,
             "range": "± 11",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "df7ad0a5c6798541102f1436d5cefa33c2a77628",
+          "message": "ci(cache): write caches only from main and tolerate export failures\n\nThe Actions cache reached 10.49 GB against the 10 GB allowance and LRU eviction failed a green Docker build during a BuildKit export (error writing layer blob: not_found). rust-cache steps now save only from main, BuildKit cache-to is emitted only off pull_request with ignore-error=true, and cache-cleanup.yml deletes a PR's caches when it closes.",
+          "timestamp": "2026-09-26T16:51:33+09:00",
+          "tree_id": "2eb9867cd0abf499e0a81c5f7169cf81a9914844",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/df7ad0a5c6798541102f1436d5cefa33c2a77628"
+        },
+        "date": 1790409324754,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1691,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1114,
+            "range": "± 12",
             "unit": "ns/iter"
           }
         ]
