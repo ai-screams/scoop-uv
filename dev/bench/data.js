@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790409324864,
+  "lastUpdate": 1790409565434,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -6347,6 +6347,90 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 186,
             "range": "± 1",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9334a55a2f165a23705a596d8caa740f8ff04a43",
+          "message": "fix(fish): source activation output with an explicit --shell fish\n\nActivation never worked from fish: the wrapper and hook ran eval (command scuv activate ...), which rejoins a multi-line script with spaces (Missing end), and never passed --shell fish although fish does not export FISH_VERSION, so the binary printed bash syntax. Every call site now runs command scuv <cmd> --shell fish ... | source. The pass-through arm respects a user-supplied --shell, help flags match whole arguments only, and use system deactivates. A fish integration test runs in the Test and MSRV jobs, which install fish and set SCUV_REQUIRE_FISH.",
+          "timestamp": "2026-09-26T16:51:37+09:00",
+          "tree_id": "9da8a08c9e322328537d60c0065a6da1420c65ee",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/9334a55a2f165a23705a596d8caa740f8ff04a43"
+        },
+        "date": 1790409564560,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 79007,
+            "range": "± 1826",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 92803,
+            "range": "± 1459",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3052,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 795,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 91,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 93,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 89,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 78,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 21,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 186,
+            "range": "± 0",
             "unit": "ns/iter"
           }
         ]
