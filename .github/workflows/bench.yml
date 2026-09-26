@@ -46,6 +46,8 @@ jobs:
           # Per-workflow cache key so unit-test cache doesn't churn the
           # bench profile artifacts.
           shared-key: bench
+          # Only main writes; a PR run restores this key but leaves no copy behind
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       # Plain text output is what benchmark-action's tool: cargo parser
       # expects. Don't pipe through `tee` interactively — the action reads

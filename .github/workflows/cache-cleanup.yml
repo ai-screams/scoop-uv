@@ -1,0 +1,44 @@
+# Delete the Actions caches a pull request left behind.
+#
+# Every PR run used to save its own copies of the rust-cache and BuildKit
+# entries under `refs/pull/<n>/merge`, and GitHub never deletes those on
+# close; they sit there until LRU eviction. With the repository at its 10 GB
+# allowance that eviction ran during a BuildKit cache export and failed a
+# green build with `error writing layer blob: not_found` (#198). The saving
+# steps now write only from main, but anything still keyed to a PR ref (a
+# tool cache, a cache added later without `save-if`) is dropped here when the
+# PR closes.
+#
+# pull_request_target: the token has write access even for fork PRs, and this
+# workflow runs no code from the PR — only two API calls.
+
+name: Cache cleanup
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  actions: write
+
+jobs:
+  cleanup:
+    name: Delete caches for the closed PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete caches under refs/pull/${{ github.event.pull_request.number }}/merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REF: refs/pull/${{ github.event.pull_request.number }}/merge
+        run: |
+          ids=$(gh api --paginate "repos/$REPO/actions/caches?ref=$REF" --jq '.actions_caches[].id')
+          if [ -z "$ids" ]; then
+            echo "no caches under $REF"
+            exit 0
+          fi
+          for id in $ids; do
+            gh api -X DELETE "repos/$REPO/actions/caches/$id" > /dev/null
+            echo "deleted cache $id"
+          done

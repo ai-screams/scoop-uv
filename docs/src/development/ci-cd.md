@@ -20,6 +20,7 @@ that shaped them.
 | `docs-check.yml` | PR touching `docs/src/**`, `docs/po/**`, `docs/book.toml`, `docs/theme/**` | A docs edit that breaks the mdBook build or leaves `ko.po` stale reaching a release tag |
 | `docs.yml` | `v*` tags | Broken documentation site |
 | `release-plz.yml` | main | Manual release mistakes |
+| `cache-cleanup.yml` | PR closed | Closed PRs' cache copies eating the 10 GB allowance and forcing evictions mid-export |
 
 ## Cross-cutting decisions
 
@@ -297,9 +298,20 @@ any of these being fixed.
   dashboard would be wrong in the workflow. Coverage can still drift from 81%
   to 80.1% without tripping it — closing that needs `codecov/project`, see
   the gap above.
-- **The cache sits near its limit.** 8.34 GB of the 10 GB allowance, of
-  which `v0-rust-*` is only about 1 GB — the bulk is BuildKit blobs from
-  the Docker workflows. Nothing is failing yet; eviction is LRU.
+- **The cache hit its limit.** 10.49 GB against the 10 GB allowance on
+  2026-09-26: 139 caches for `main` (about 2 GB of them `v0-rust-*` keyed
+  to the Cargo.lock hash from before the 0.16.0 `cargo update`) and 118
+  copies left behind by merged PRs. LRU eviction then ran while a BuildKit
+  export was writing layers and failed a green Docker Integration build
+  with `error writing layer blob: not_found` (#198). Three changes: every
+  saving step (`Swatinem/rust-cache` `save-if`, BuildKit `cache-to`) now
+  writes only from `main` — PR runs restore `main`'s entries and leave no
+  copy; BuildKit exports are `ignore-error=true`, so a failed cache write
+  is a warning rather than a failed build; and `cache-cleanup.yml` deletes
+  whatever a PR still leaves when it closes. The one-time deletion of the
+  PR copies and the stale-lockfile rust caches brought usage to 6.4 GB.
+  Still open: `main` keeps two lockfile generations of every rust cache
+  between releases, and nothing prunes the older one.
 
 ### Recently closed
 

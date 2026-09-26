@@ -101,7 +101,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "stable-ci"
-          # save-if defaults to true - this job writes the cache
+          # Only main writes; a PR run restores this key but leaves no copy behind
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Run tests
         run: cargo test --all-features --workspace
@@ -156,6 +157,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "msrv"
+          # Only main writes; a PR run restores this key but leaves no copy behind
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       # Step 1: Lint check - catches MSRV-specific clippy warnings
       # Fails on any warnings (-D warnings)

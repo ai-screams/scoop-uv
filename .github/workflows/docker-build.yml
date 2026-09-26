@@ -88,7 +88,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.target }}
-          cache-to: type=gha,scope=${{ matrix.target }},mode=max
+          # Export only off pull_request and never fail the build on a cache
+          # write (see integration-test.yml for the incident behind this).
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=gha,scope={0},mode=max,ignore-error=true', matrix.target) || '' }}
           no-cache: ${{ github.event.inputs.force_rebuild == 'true' }}
           # Provenance only on push (incompatible with load on PRs)
           provenance: ${{ github.event_name != 'pull_request' && 'mode=max' || 'false' }}

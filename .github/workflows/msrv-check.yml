@@ -74,6 +74,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "msrv-verify"
+          # Only main writes; a PR run restores this key but leaves no copy behind
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       # Step 6: Verify MSRV accuracy
       # cargo-msrv reads rust-version from Cargo.toml and tests compilation
