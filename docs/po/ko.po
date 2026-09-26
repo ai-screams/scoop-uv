@@ -7957,8 +7957,8 @@ msgid "\"$(scuv shell <name>)\"    # Bash/Zsh\n"
 msgstr "\"$(scuv shell <name>)\"    # Bash/Zsh\n"
 
 #: src/commands/shell.md:11
-msgid "# Fish\n"
-msgstr "# Fish\n"
+msgid "# Fish (fish does not export FISH_VERSION, so name the shell)\n"
+msgstr ""
 
 #: src/commands/shell.md:14
 msgid ""
@@ -14814,6 +14814,9 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "# Fish\n"
+#~ msgstr "# Fish\n"
 
 #~ msgid ""
 #~ "`docs.yml` — the mdBook build and the `ko.po` staleness round-trip — "

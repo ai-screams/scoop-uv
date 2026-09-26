@@ -172,6 +172,9 @@ jobs:
 
       # Step 3: Run unit and integration tests
       # 520 unit tests + 43 integration tests
+      - name: Install fish (fish integration test in tests/cli.rs)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish
+
       - name: Run tests on MSRV
         run: cargo test --all-features --workspace
 
