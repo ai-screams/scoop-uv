@@ -685,7 +685,7 @@ scoop-uv/
 │   │   └── client.rs        # UvClient
 │   │
 │   └── output/              # Terminal output
-│       └── spinner.rs       # Progress spinner
+│       └── color.rs         # --color decision
 │
 ├── tests/                   # Integration tests
 ├── docs/                    # Public documentation

@@ -367,8 +367,8 @@ struct PartitionedEnvs<'a> {
 /// Returns the progress bar template; the colorless one when color is off.
 ///
 /// indicatif applies the colors named in the template. It already drops them
-/// on its own for `NO_COLOR` or a non-terminal stderr, but it cannot see the
-/// `--no-color` flag.
+/// on its own for `NO_COLOR` or a non-terminal stderr, but it cannot see
+/// `--color`/`--no-color`.
 fn progress_template(output: &Output) -> &'static str {
     if output.use_color() {
         "{spinner:.green} [{bar:30.cyan/blue}] {pos}/{len} {msg}"
@@ -702,9 +702,7 @@ mod tests {
     /// `--no-color` must reach the progress bar too. Fails if the template
     /// ignores the color setting, either way round.
     #[test]
-    #[serial_test::serial]
     fn progress_template_has_no_style_without_color() {
-        let _env = crate::test_utils::env_guard(&[("NO_COLOR", None)]);
         let plain = progress_template(&Output::new(0, false, true, false));
         let colored = progress_template(&Output::new(0, false, false, false));
         for style in [".green", ".cyan", "/blue"] {

@@ -121,6 +121,7 @@ complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_o
 complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt sort" -l sort -d "Sort order" -x -a "name created last-used"
 complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt json" -l json -d "Output as JSON"
 complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'use' (with duplicate prevention)
@@ -129,16 +130,19 @@ complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_op
 complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l link -d "Create .venv symlink"
 complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l no-link -d "Do not create .venv symlink"
 complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'create' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt force" -l force -d "Overwrite existing environment"
 complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'remove' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt force" -l force -d "Skip confirmation"
 complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'info' (with duplicate prevention)
@@ -146,27 +150,32 @@ complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_o
 complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt all-packages" -l all-packages -d "Show all installed packages"
 complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-size" -l no-size -d "Skip directory size calculation"
 complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'install' (with duplicate prevention, --latest/--stable mutually exclusive)
 complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l latest -d "Install latest stable Python"
 complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l stable -d "Install oldest fully-supported Python"
 complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'uninstall' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'doctor' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s v verbose" -s v -l verbose -d "Increase verbosity"
 complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt json" -l json -d "Output as JSON"
 complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'shell' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt unset" -l unset -d "Clear shell-specific environment"
 complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt color" -l color -d "When to use color" -x -a "auto always never"
 complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Dynamic completions: virtual environment names

@@ -42,7 +42,7 @@ are treated as the same package.
 `--packages-only` and `--metadata-only` are mutually exclusive
 (`clap`-enforced).
 
-Global flags (`--quiet`, `--no-color`) apply.
+Global flags (`--quiet`, `--color`, `--no-color`) apply.
 
 ## Exit codes
 

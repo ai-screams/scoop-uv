@@ -6,6 +6,8 @@ use std::path::PathBuf;
 
 use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 
+use crate::output::ColorChoice;
+
 /// scuv - Python virtual environment manager powered by uv
 #[derive(Parser, Debug)]
 #[command(name = "scuv")]
@@ -20,12 +22,35 @@ pub struct Cli {
     #[arg(short, long, global = true)]
     pub quiet: bool,
 
-    /// Disable colored output (a non-empty NO_COLOR does the same)
+    /// When to use color: auto (a terminal and no NO_COLOR), always, never
+    #[arg(
+        long,
+        global = true,
+        value_enum,
+        value_name = "WHEN",
+        default_value_t = ColorChoice::Auto,
+        overrides_with = "no_color"
+    )]
+    pub color: ColorChoice,
+
+    /// Disable colored output (same as --color never)
     // No `env = "NO_COLOR"` here: clap would parse the variable's value as a
     // bool and reject `NO_COLOR=1` before any subcommand runs (#204).
-    // `Output::new` reads the variable instead.
-    #[arg(long, global = true)]
+    // `Colors::detect` reads the variable instead.
+    #[arg(long, global = true, overrides_with = "color")]
     pub no_color: bool,
+}
+
+impl Cli {
+    /// The effective color choice: `--no-color` means `never`. The two flags
+    /// override each other, so only the later one on the command line is set.
+    pub fn color_choice(&self) -> ColorChoice {
+        if self.no_color {
+            ColorChoice::Never
+        } else {
+            self.color
+        }
+    }
 }
 
 /// Source type for migration
@@ -631,4 +656,34 @@ pub enum ShellType {
     /// PowerShell
     #[value(alias = "pwsh")]
     Powershell,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn choice(args: &[&str]) -> ColorChoice {
+        Cli::try_parse_from(args).unwrap().color_choice()
+    }
+
+    /// On a pipe `auto` and `never` print the same, so the end-to-end tests
+    /// cannot see `--no-color` being dropped. Fails if `color_choice`
+    /// ignores `--no-color` or the two flags stop overriding each other.
+    #[test]
+    fn color_choice_combines_both_flags() {
+        assert_eq!(choice(&["scuv", "lang"]), ColorChoice::Auto);
+        assert_eq!(choice(&["scuv", "--no-color", "lang"]), ColorChoice::Never);
+        assert_eq!(
+            choice(&["scuv", "lang", "--color", "always"]),
+            ColorChoice::Always
+        );
+        assert_eq!(
+            choice(&["scuv", "--color", "always", "--no-color", "lang"]),
+            ColorChoice::Never
+        );
+        assert_eq!(
+            choice(&["scuv", "--no-color", "--color", "always", "lang"]),
+            ColorChoice::Always
+        );
+    }
 }

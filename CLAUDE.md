@@ -237,7 +237,8 @@ The last three carry `#[command(hide = true)]` — the shell wrappers call them 
 | Option | Description |
 |--------|-------------|
 | `--quiet` | Minimal output |
-| `--no-color` | Disable colors |
+| `--color <WHEN>` | `auto` (default: terminal and no `NO_COLOR`), `always`, `never`; decided once in `main` (`output::color`) |
+| `--no-color` | Same as `--color never` |
 
 ### Common Options
 

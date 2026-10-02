@@ -75,6 +75,17 @@ _scuv_complete() {
         cmd="${COMP_WORDS[1]}"
     fi
 
+    # `--color` takes a value on every subcommand (`--color=<TAB>` or
+    # `--color <TAB>`), so offer the choices before the option lists.
+    if [[ "$cur" == --color=* ]]; then
+        COMPREPLY=($(compgen -W "auto always never" -P "--color=" -- "${cur#--color=}"))
+        return
+    fi
+    if [[ ${COMP_CWORD} -ge 2 && "${COMP_WORDS[COMP_CWORD-1]}" == "--color" ]]; then
+        COMPREPLY=($(compgen -W "auto always never" -- "$cur"))
+        return
+    fi
+
     # First argument: complete subcommands
     if [[ ${COMP_CWORD} -eq 1 ]]; then
         COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang" -- "$cur"))
@@ -98,95 +109,103 @@ _scuv_complete() {
                     COMPREPLY=($(compgen -W "name created last-used" -- "$cur"))
                     return 0
                 fi
-                local opts="--pythons --sort --json -q --quiet --no-color --help"
+                local opts="--pythons --sort --json -q --quiet --color --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         --pythons) opts="${opts//--pythons }" ;;
                         --sort|--sort=*) opts="${opts//--sort }" ;;
                         --json) opts="${opts//--json }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             doctor)
-                local opts="-v --verbose -q --quiet --json --no-color --help"
+                local opts="-v --verbose -q --quiet --json --color --no-color --help"
                 # Filter out already used options
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         -v|--verbose) opts="${opts//-v }"; opts="${opts//--verbose }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
                         --json) opts="${opts//--json }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             create)
-                local opts="--force -q --quiet --no-color --help"
+                local opts="--force -q --quiet --color --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         --force) opts="${opts//--force }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             use)
-                local opts="--unset --link --global --no-link -q --quiet --no-color --help"
+                local opts="--unset --link --global --no-link -q --quiet --color --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         --unset) opts="${opts//--unset }" ;;
                         --global) opts="${opts//--global }" ;;
                         --link|--no-link) opts="${opts//--link }"; opts="${opts//--no-link }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             remove)
-                local opts="--force -q --quiet --no-color --help"
+                local opts="--force -q --quiet --color --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         --force) opts="${opts//--force }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             install)
-                local opts="--latest --stable -q --quiet --no-color --help"
+                local opts="--latest --stable -q --quiet --color --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         --latest|--stable) opts="${opts//--latest }"; opts="${opts//--stable }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             uninstall)
-                local opts="-q --quiet --no-color --help"
+                local opts="-q --quiet --color --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             info)
-                local opts="--json --all-packages --no-size -q --quiet --no-color --help"
+                local opts="--json --all-packages --no-size -q --quiet --color --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         --json) opts="${opts//--json }" ;;
                         --all-packages) opts="${opts//--all-packages }" ;;
                         --no-size) opts="${opts//--no-size }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done
@@ -207,11 +226,12 @@ _scuv_complete() {
                 COMPREPLY=($(compgen -W "$opts" -- "$cur"))
                 ;;
             shell)
-                local opts="--unset -q --quiet --no-color --help"
+                local opts="--unset -q --quiet --color --no-color --help"
                 for word in "${COMP_WORDS[@]}"; do
                     case "$word" in
                         --unset) opts="${opts//--unset }" ;;
                         -q|--quiet) opts="${opts//-q }"; opts="${opts//--quiet }" ;;
+                        --color|--color=*) opts="${opts/ --color / }" ;;
                         --no-color) opts="${opts//--no-color }" ;;
                     esac
                 done

@@ -76,7 +76,7 @@ src/
 
 └── output/              # Output formatting
     ├── mod.rs
-    ├── spinner.rs
+    ├── color.rs         # --color decision
     └── time.rs          # last_used fuzzy-age formatter
 
 docs/                    # Public documentation

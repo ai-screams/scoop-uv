@@ -1,11 +1,11 @@
 //! Output utilities
 
+pub mod color;
 mod json;
-mod spinner;
 mod time;
 
+pub use color::{ColorChoice, Colors};
 pub use json::*;
-pub use spinner::Spinner;
 pub use time::{format_age, format_last_used_value};
 
 use owo_colors::OwoColorize;
@@ -49,27 +49,27 @@ pub struct Output {
     verbose: u8,
     /// Suppress all output
     quiet: bool,
-    /// Disable colors
-    no_color: bool,
+    /// Which streams get color, decided once at startup (see [`color`])
+    colors: Colors,
     /// Output as JSON
     json: bool,
 }
 
-/// Returns whether `NO_COLOR` asks for plain output: set and non-empty,
-/// whatever the value (<https://no-color.org>).
-fn no_color_env() -> bool {
-    std::env::var_os("NO_COLOR").is_some_and(|v| !v.is_empty())
-}
-
 impl Output {
-    /// Create a new output handler
+    /// Create a new output handler with color on both streams unless
+    /// `no_color`. Reads no environment: the binary decides color once with
+    /// [`Colors::detect`] and uses [`Output::with_colors`].
     pub fn new(verbose: u8, quiet: bool, no_color: bool, json: bool) -> Self {
-        let no_color = no_color || no_color_env();
+        let colors = if no_color { Colors::NONE } else { Colors::ALL };
+        Self::with_colors(verbose, quiet, colors, json)
+    }
 
+    /// Create a new output handler with a per-stream color decision.
+    pub fn with_colors(verbose: u8, quiet: bool, colors: Colors, json: bool) -> Self {
         Self {
             verbose,
             quiet,
-            no_color,
+            colors,
             json,
         }
     }
@@ -80,7 +80,7 @@ impl Output {
             return;
         }
 
-        if self.no_color {
+        if !self.colors.stderr {
             eprintln!("✓ {msg}");
         } else {
             eprintln!("{} {msg}", "✓".green());
@@ -93,7 +93,7 @@ impl Output {
             return;
         }
 
-        if self.no_color {
+        if !self.colors.stderr {
             eprintln!("✗ {msg}");
         } else {
             eprintln!("{} {msg}", "✗".red());
@@ -106,7 +106,7 @@ impl Output {
             return;
         }
 
-        if self.no_color {
+        if !self.colors.stderr {
             eprintln!("• {msg}");
         } else {
             eprintln!("{} {msg}", "•".blue());
@@ -119,7 +119,7 @@ impl Output {
             return;
         }
 
-        if self.no_color {
+        if !self.colors.stderr {
             eprintln!("⚠ {msg}");
         } else {
             eprintln!("{} {msg}", "⚠".yellow());
@@ -132,7 +132,7 @@ impl Output {
             return;
         }
 
-        if self.no_color {
+        if !self.colors.stderr {
             eprintln!("  {msg}");
         } else {
             eprintln!("  {}", msg.dimmed());
@@ -162,9 +162,14 @@ impl Output {
         self.verbose
     }
 
-    /// Check if colors should be used
+    /// Check if colors should be used on stderr (messages, progress bars)
     pub fn use_color(&self) -> bool {
-        !self.no_color
+        self.colors.stderr
+    }
+
+    /// Check if colors should be used on stdout (`list`'s highlight)
+    pub fn use_color_stdout(&self) -> bool {
+        self.colors.stdout
     }
 }
 
@@ -250,7 +255,7 @@ impl Output {
         };
 
         // Print with or without color
-        if self.no_color {
+        if !self.colors.stderr {
             eprintln!("{} {}", icon, message);
         } else {
             eprintln!("{} {}", color_fn(icon), message);
@@ -260,7 +265,7 @@ impl Output {
         if self.verbose > 0
             && let Some(details) = &result.details
         {
-            if self.no_color {
+            if !self.colors.stderr {
                 eprintln!("  {}", details);
             } else {
                 eprintln!("  {}", details.dimmed());
@@ -269,7 +274,7 @@ impl Output {
 
         // Print suggestion for errors/warnings
         if let Some(suggestion) = &result.suggestion {
-            if self.no_color {
+            if !self.colors.stderr {
                 eprintln!("  → {}", suggestion);
             } else {
                 eprintln!("  {} {}", "→".cyan(), suggestion);
@@ -290,7 +295,7 @@ impl Output {
         eprintln!("──────────────────────────────────");
 
         if errors == 0 && warnings == 0 {
-            if self.no_color {
+            if !self.colors.stderr {
                 eprintln!("All checks passed!");
             } else {
                 eprintln!("{}", "All checks passed!".green());
@@ -305,7 +310,7 @@ impl Output {
             }
 
             let summary = format!("Found {}.", parts.join(" and "));
-            if self.no_color {
+            if !self.colors.stderr {
                 eprintln!("{}", summary);
             } else {
                 eprintln!("{}", summary.yellow());
@@ -375,41 +380,6 @@ impl Output {
 mod tests {
     use super::*;
 
-    /// #204: the NO_COLOR convention is "set and non-empty, any value".
-    mod no_color_env_tests {
-        use super::*;
-        use crate::test_utils::env_guard;
-        use serial_test::serial;
-
-        fn colored_with(value: Option<&str>) -> bool {
-            let _env = env_guard(&[("NO_COLOR", value)]);
-            Output::new(0, false, false, false).use_color()
-        }
-
-        /// Fails if the check compares the value (e.g. only `true` counts).
-        #[test]
-        #[serial]
-        fn any_non_empty_value_disables_color() {
-            for value in ["1", "0", "false", "yes", "true"] {
-                assert!(!colored_with(Some(value)), "NO_COLOR={value}");
-            }
-        }
-
-        /// Fails if mere presence counts (`var(..).is_ok()`).
-        #[test]
-        #[serial]
-        fn empty_value_keeps_color() {
-            assert!(colored_with(Some("")));
-        }
-
-        /// Fails if the helper always reports "no color".
-        #[test]
-        #[serial]
-        fn unset_keeps_color() {
-            assert!(colored_with(None));
-        }
-    }
-
     mod format_size_tests {
         use super::*;
 
@@ -474,12 +444,30 @@ mod tests {
             assert!(!normal_output.is_quiet());
         }
 
-        /// Reads `NO_COLOR` through `Output::new`, so it pins the variable and
-        /// joins the `serial` group of the tests that set it.
+        /// stdout and stderr are decided separately (`scuv list > file` on a
+        /// terminal colors stderr only). Fails if either getter reads the
+        /// other stream's flag.
         #[test]
-        #[serial_test::serial]
+        fn with_colors_keeps_streams_apart() {
+            let only_stderr = Colors {
+                stdout: false,
+                stderr: true,
+            };
+            let output = Output::with_colors(0, false, only_stderr, false);
+            assert!(output.use_color());
+            assert!(!output.use_color_stdout());
+
+            let only_stdout = Colors {
+                stdout: true,
+                stderr: false,
+            };
+            let output = Output::with_colors(0, false, only_stdout, false);
+            assert!(!output.use_color());
+            assert!(output.use_color_stdout());
+        }
+
+        #[test]
         fn default_output_has_expected_flags() {
-            let _env = crate::test_utils::env_guard(&[("NO_COLOR", None)]);
             let output = Output::default();
 
             assert!(!output.is_json());

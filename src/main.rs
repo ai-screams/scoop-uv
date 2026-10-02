@@ -1,17 +1,26 @@
 //! scuv - Python virtual environment manager powered by uv
 
-use clap::Parser;
+use clap::{CommandFactory, FromArgMatches};
 use color_eyre::eyre::Result;
 
 use scoop_uv::cli::{Cli, Commands, MigrateCommand, SelfCommand};
-use scoop_uv::output::Output;
+use scoop_uv::output::{Colors, Output, color};
 
 fn main() -> Result<()> {
     // Initialize i18n (must be early, before any translated output)
     scoop_uv::i18n::init();
 
-    // Initialize error handling
-    color_eyre::install()?;
+    // Decide color before anything prints (#205). clap's help and parse
+    // errors come out before `Cli` exists, so the choice is read off the raw
+    // arguments first; scuv's own output uses the parsed flags below.
+    let early = color::choice_from_args(std::env::args_os());
+
+    // Initialize error handling (the panic report goes to stderr)
+    let mut hook = color_eyre::config::HookBuilder::default();
+    if !Colors::detect(early).stderr {
+        hook = hook.theme(color_eyre::config::Theme::new());
+    }
+    hook.install()?;
 
     // Initialize logging
     tracing_subscriber::fmt()
@@ -22,7 +31,9 @@ fn main() -> Result<()> {
         .init();
 
     // Parse CLI arguments
-    let cli = Cli::parse();
+    let matches = Cli::command().color(early.into()).get_matches();
+    let cli = Cli::from_arg_matches(&matches).unwrap_or_else(|e| e.exit());
+    let colors = Colors::detect(cli.color_choice());
 
     // Execute command
     let result = match cli.command {
@@ -33,7 +44,7 @@ fn main() -> Result<()> {
             sort,
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::list(&output, pythons, bare, python_version.as_deref(), sort)
         }
         Commands::Create {
@@ -44,7 +55,7 @@ fn main() -> Result<()> {
             install_python,
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::create(
                 &output,
                 &name,
@@ -55,7 +66,7 @@ fn main() -> Result<()> {
             )
         }
         Commands::Doctor { verbose, json, fix } => {
-            let output = Output::new(verbose, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(verbose, cli.quiet, colors, json);
             scoop_uv::cli::commands::doctor(&output, fix)
         }
         Commands::Info {
@@ -64,7 +75,7 @@ fn main() -> Result<()> {
             all_packages,
             no_size,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::info(&output, &name, all_packages, no_size)
         }
         Commands::Use {
@@ -75,11 +86,11 @@ fn main() -> Result<()> {
             no_link: _, // explicit option, same as default (no symlink)
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::use_env(&output, name.as_deref(), unset, global, link)
         }
         Commands::Remove { name, force, json } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::remove(&output, &name, force)
         }
         Commands::Install {
@@ -88,7 +99,7 @@ fn main() -> Result<()> {
             stable,
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::install(&output, python_version.as_deref(), latest, stable)
         }
         Commands::Uninstall {
@@ -97,7 +108,7 @@ fn main() -> Result<()> {
             force,
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::uninstall(&output, &python_version, cascade, force)
         }
         Commands::Init { shell } => scoop_uv::cli::commands::init(shell),
@@ -106,7 +117,7 @@ fn main() -> Result<()> {
         Commands::Activate { name, shell } => scoop_uv::cli::commands::activate(&name, shell),
         Commands::Deactivate { shell } => scoop_uv::cli::commands::deactivate(shell),
         Commands::Shell { name, unset, shell } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            let output = Output::with_colors(0, cli.quiet, colors, false);
             scoop_uv::cli::commands::shell(&output, name.as_deref(), unset, shell)
         }
         Commands::Migrate { command } => {
@@ -122,7 +133,7 @@ fn main() -> Result<()> {
                 | Some(MigrateCommand::Env { json, .. }) => *json,
                 None => false,
             };
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::migrate(&output, command)
         }
         Commands::Lang {
@@ -131,7 +142,7 @@ fn main() -> Result<()> {
             reset,
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::lang(&output, lang.as_deref(), list, reset)
         }
         Commands::Self_ { command } => match command {
@@ -141,16 +152,16 @@ fn main() -> Result<()> {
                 no_verify,
                 json,
             } => {
-                let output = Output::new(0, cli.quiet, cli.no_color, json);
+                let output = Output::with_colors(0, cli.quiet, colors, json);
                 scoop_uv::cli::commands::self_update(&output, force, version.as_deref(), no_verify)
             }
         },
         Commands::Status { json } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::status(&output)
         }
         Commands::Run { env, command } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, false);
+            let output = Output::with_colors(0, cli.quiet, colors, false);
             scoop_uv::cli::commands::run(&output, &env, &command)
         }
         Commands::Sync {
@@ -158,7 +169,7 @@ fn main() -> Result<()> {
             dry_run,
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::sync(&output, &with, dry_run)
         }
         Commands::Clone {
@@ -168,12 +179,12 @@ fn main() -> Result<()> {
             force,
             json,
         } => {
-            let out = Output::new(0, cli.quiet, cli.no_color, json);
+            let out = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::clone(&out, &src, &dst, no_packages, force)
         }
         Commands::Export { name, output } => {
             // Stdout is the schema itself; status messages go to stderr only.
-            let out = Output::new(0, cli.quiet, cli.no_color, false);
+            let out = Output::with_colors(0, cli.quiet, colors, false);
             scoop_uv::cli::commands::export(&out, &name, output.as_deref())
         }
         Commands::Import {
@@ -182,15 +193,15 @@ fn main() -> Result<()> {
             force,
             json,
         } => {
-            let out = Output::new(0, cli.quiet, cli.no_color, json);
+            let out = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::import(&out, &path, name.as_deref(), force)
         }
         Commands::Which { exe, env, json } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::which(&output, &exe, env.as_deref())
         }
         Commands::Prune { json } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::prune(&output)
         }
         Commands::Gc {
@@ -199,15 +210,15 @@ fn main() -> Result<()> {
             older_than,
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::gc(&output, yes, aggressive, older_than.as_deref())
         }
         Commands::Man { output_dir, json } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::man(&output, output_dir.as_deref())
         }
         Commands::Verify { name, strict, json } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             scoop_uv::cli::commands::verify(&output, name.as_deref(), strict)
         }
         Commands::Diff {
@@ -218,7 +229,7 @@ fn main() -> Result<()> {
             strict,
             json,
         } => {
-            let output = Output::new(0, cli.quiet, cli.no_color, json);
+            let output = Output::with_colors(0, cli.quiet, colors, json);
             let mode = match (packages_only, metadata_only) {
                 (true, false) => scoop_uv::cli::commands::DiffMode::PackagesOnly,
                 (false, true) => scoop_uv::cli::commands::DiffMode::MetadataOnly,
@@ -245,7 +256,7 @@ fn main() -> Result<()> {
     //     scripts can distinguish source-discovery failures (migrate, exit 3)
     //     from generic operational errors (exit 1).
     if let Err(e) = result {
-        let output = Output::new(0, cli.quiet, cli.no_color, false);
+        let output = Output::with_colors(0, cli.quiet, colors, false);
         if matches!(
             e.render_policy(),
             scoop_uv::error::ErrorRenderPolicy::Default
