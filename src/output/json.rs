@@ -143,6 +143,9 @@ pub struct RemoveData {
     /// The project `.venv` symlink removed along with the env, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unlinked: Option<String>,
+    /// Why that link could not be removed; the env itself is gone either way.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unlink_error: Option<String>,
 }
 
 /// Install response data
@@ -699,6 +702,7 @@ mod tests {
             name: "oldenv".into(),
             path: "/home/user/.scoop/virtualenvs/oldenv".into(),
             unlinked: None,
+            unlink_error: None,
         };
         let json = serde_json::to_string(&data).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();

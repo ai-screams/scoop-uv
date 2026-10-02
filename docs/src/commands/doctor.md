@@ -26,7 +26,7 @@ scuv doctor [options]
 | **symbolic links** | Python symlinks inside each environment still resolve |
 | **shell configuration** | The shell hook is present in your rc file |
 | **version files** | `.scuv-version` entries reference environments that exist |
-| **project .venv link** | A `.venv` symlink in the current directory (made by `scuv use --link`) still resolves. `--fix` removes it only when it points into `~/.scuv/virtualenvs/` |
+| **project .venv link** | A `.venv` symlink in the current directory still resolves. A dangling link into `~/.scuv/virtualenvs/` (made by `scuv use --link`) is an error that `--fix` removes; a dangling link elsewhere is only a warning |
 | **legacy scoop remnants** | Leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or `.scoop-version` / `.scoop.toml` in the current directory — none of them read since v0.16.0, so the check only warns |
 
 ## Examples

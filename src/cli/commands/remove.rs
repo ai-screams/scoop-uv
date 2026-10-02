@@ -48,7 +48,9 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
     service.delete(name)?;
 
     // The env is already gone, so a link we cannot remove is a warning, not a
-    // failed `remove`.
+    // failed `remove`. JSON carries it as `unlink_error`: `warn` is silent
+    // there, and a missing `unlinked` alone would read as "there was no link".
+    let mut unlink_error = None;
     let unlinked = link.filter(|link| match std::fs::remove_file(link) {
         Ok(()) => true,
         Err(e) => {
@@ -57,6 +59,7 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
                 path = crate::paths::abbreviate_home(link),
                 error = e.to_string()
             ));
+            unlink_error = Some(e.to_string());
             false
         }
     });
@@ -69,6 +72,7 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
                 name: name.to_string(),
                 path: path.display().to_string(),
                 unlinked: unlinked.map(|l| l.display().to_string()),
+                unlink_error,
             },
         );
         return Ok(());

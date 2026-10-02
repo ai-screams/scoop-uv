@@ -1681,7 +1681,7 @@ msgid "# Filter environments by Python version\n"
 msgstr "# Python 버전으로 환경 필터링\n"
 
 #: src/python-management.md:259 src/python-management.md:270
-#: src/commands/remove.md:65
+#: src/commands/remove.md:67
 msgid "#   myproject      3.12.1\n"
 msgstr "#   myproject      3.12.1\n"
 
@@ -3192,7 +3192,7 @@ msgid ""
 "The `--python-version` option uses prefix matching to filter environments:"
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
-#: src/commands/list.md:99 src/commands/remove.md:52
+#: src/commands/list.md:99 src/commands/remove.md:54
 #: src/commands/uninstall.md:113 src/commands/uninstall.md:160
 #: src/commands/doctor.md:52 src/commands/doctor.md:61
 msgid "# Output:\n"
@@ -3695,15 +3695,19 @@ msgid ""
 "removed (made by `scuv use <name> --link`), `remove` deletes that link too, "
 "so uv and editors do not trip over a dangling `.venv`. A real `.venv` "
 "directory, or a link to anything else, is left alone. Under `--json` the "
-"removed link is reported as `unlinked`."
+"removed link is reported as `unlinked`. If the link cannot be removed (for "
+"example, the directory is read-only), the environment is still removed, a "
+"warning is printed, and `--json` reports the reason as `unlink_error`."
 msgstr ""
 "현재 디렉터리에 지우려는 환경을 가리키는 `.venv` symlink가 있으면(`scuv use "
 "<name> --link`로 만든 것) `remove`가 그 링크도 함께 지웁니다. 그래서 uv나 에"
 "디터가 대상 없는 `.venv`에 걸리지 않습니다. 실제 `.venv` 디렉터리나 다른 곳"
 "을 가리키는 링크는 건드리지 않습니다. `--json`에서는 지운 링크를 `unlinked`"
-"로 보고합니다."
+"로 보고합니다. 디렉터리가 읽기 전용인 경우처럼 링크를 지울 수 없으면 환경은 "
+"그대로 지우고 경고를 출력하며, `--json`에서는 그 이유를 `unlink_error`로 보고"
+"합니다."
 
-#: src/commands/remove.md:42
+#: src/commands/remove.md:44
 msgid ""
 "Only the current directory is checked. If you remove the environment from "
 "somewhere else, `scuv doctor` in the project reports the dangling link and "
@@ -3712,47 +3716,47 @@ msgstr ""
 "현재 디렉터리만 확인합니다. 다른 곳에서 환경을 지웠다면 그 프로젝트에서 "
 "`scuv doctor`가 대상 없는 링크를 알려 주고, `scuv doctor --fix`가 지웁니다."
 
-#: src/commands/remove.md:46
+#: src/commands/remove.md:48
 msgid "Check Before Removing"
 msgstr "제거 전 확인"
 
-#: src/commands/remove.md:48
+#: src/commands/remove.md:50
 msgid "To see details about an environment before removing it:"
 msgstr "환경을 제거하기 전에 상세 정보를 확인하려면:"
 
-#: src/commands/remove.md:51
+#: src/commands/remove.md:53
 msgid "# Show environment details (Python version, path, packages)\n"
 msgstr "# 환경 상세 정보 표시 (Python 버전, 경로, 패키지)\n"
 
-#: src/commands/remove.md:54
+#: src/commands/remove.md:56
 msgid "#   Python:  3.12.1\n"
 msgstr "#   Python:  3.12.1\n"
 
-#: src/commands/remove.md:59
+#: src/commands/remove.md:61
 msgid "Removing All Environments for a Python Version"
 msgstr "Python 버전에 해당하는 모든 환경 제거"
 
-#: src/commands/remove.md:61
+#: src/commands/remove.md:63
 msgid "To remove all environments that use a specific Python version:"
 msgstr "특정 Python 버전을 사용하는 모든 환경을 제거하려면:"
 
-#: src/commands/remove.md:64
+#: src/commands/remove.md:66
 msgid "# List environments to identify which use Python 3.12\n"
 msgstr "# Python 3.12를 사용하는 환경 파악을 위한 목록 확인\n"
 
-#: src/commands/remove.md:67
+#: src/commands/remove.md:69
 msgid "#   ml-env         3.11.8\n"
 msgstr "#   ml-env         3.11.8\n"
 
-#: src/commands/remove.md:69
+#: src/commands/remove.md:71
 msgid "# Remove each one\n"
 msgstr "# 각각 제거\n"
 
-#: src/commands/remove.md:73
+#: src/commands/remove.md:75
 msgid "# Then optionally uninstall the Python version itself\n"
 msgstr "# 이후 필요하면 Python 버전 자체도 제거\n"
 
-#: src/commands/remove.md:78
+#: src/commands/remove.md:80
 msgid ""
 "**See also:** [uninstall command](uninstall.md) for the complete workflow to "
 "uninstall a Python version and clean up associated environments."
@@ -4271,11 +4275,13 @@ msgstr "**프로젝트 .venv 링크**"
 
 #: src/commands/doctor.md:29
 msgid ""
-"A `.venv` symlink in the current directory (made by `scuv use --link`) still "
-"resolves. `--fix` removes it only when it points into `~/.scuv/virtualenvs/`"
+"A `.venv` symlink in the current directory still resolves. A dangling link "
+"into `~/.scuv/virtualenvs/` (made by `scuv use --link`) is an error that `--"
+"fix` removes; a dangling link elsewhere is only a warning"
 msgstr ""
-"현재 디렉터리의 `.venv` symlink(`scuv use --link`로 만든 것)가 아직 유효함. "
-"`--fix`는 링크가 `~/.scuv/virtualenvs/` 안을 가리킬 때만 지움"
+"현재 디렉터리의 `.venv` symlink가 아직 유효함. `~/.scuv/virtualenvs/` 안을 가"
+"리키는 끊어진 링크(`scuv use --link`로 만든 것)는 에러이고 `--fix`가 지움. 다"
+"른 곳을 가리키는 끊어진 링크는 경고만 함"
 
 #: src/commands/doctor.md:30
 msgid "**legacy scoop remnants**"
@@ -14896,6 +14902,14 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid ""
+#~ "A `.venv` symlink in the current directory (made by `scuv use --link`) "
+#~ "still resolves. `--fix` removes it only when it points into `~/.scuv/"
+#~ "virtualenvs/`"
+#~ msgstr ""
+#~ "현재 디렉터리의 `.venv` symlink(`scuv use --link`로 만든 것)가 아직 유효"
+#~ "함. `--fix`는 링크가 `~/.scuv/virtualenvs/` 안을 가리킬 때만 지움"
 
 #~ msgid "# Fish\n"
 #~ msgstr "# Fish\n"

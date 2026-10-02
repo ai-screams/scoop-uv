@@ -37,7 +37,9 @@ If the current directory has a `.venv` symlink to the environment being
 removed (made by `scuv use <name> --link`), `remove` deletes that link too,
 so uv and editors do not trip over a dangling `.venv`. A real `.venv`
 directory, or a link to anything else, is left alone. Under `--json` the
-removed link is reported as `unlinked`.
+removed link is reported as `unlinked`. If the link cannot be removed (for
+example, the directory is read-only), the environment is still removed, a
+warning is printed, and `--json` reports the reason as `unlink_error`.
 
 Only the current directory is checked. If you remove the environment from
 somewhere else, `scuv doctor` in the project reports the dangling link and

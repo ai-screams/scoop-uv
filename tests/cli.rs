@@ -350,35 +350,82 @@ fn test_remove_deletes_venv_link_through_home_alias() {
     assert!(!project.join(".venv").is_symlink());
 }
 
+/// Makes a directory read-only so unlinking inside it fails, and restores it
+/// on drop (a panicking assertion must not leave an undeletable tempdir).
+#[cfg(unix)]
+struct ReadOnlyDir(PathBuf);
+
+#[cfg(unix)]
+impl ReadOnlyDir {
+    /// `None` when the lock has no effect: root ignores directory permissions
+    /// (the Docker integration jobs run as root), so there is nothing to test.
+    fn lock(dir: &std::path::Path) -> Option<Self> {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o555)).unwrap();
+        let guard = Self(dir.to_path_buf());
+        if std::fs::write(dir.join("probe"), b"").is_ok() {
+            eprintln!("skipped: directory permissions are not enforced (root?)");
+            return None;
+        }
+        Some(guard)
+    }
+}
+
+#[cfg(unix)]
+impl Drop for ReadOnlyDir {
+    fn drop(&mut self) {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = std::fs::set_permissions(&self.0, std::fs::Permissions::from_mode(0o755));
+    }
+}
+
 /// The env is deleted before the link, so a link that cannot be removed must
 /// not turn the finished `remove` into a failure. Fails if the unlink error
 /// is propagated with `?`.
 #[cfg(unix)]
 #[test]
 fn test_remove_warns_when_venv_link_cannot_be_removed() {
-    use std::os::unix::fs::PermissionsExt;
-
     let fixture = TestFixture::new();
     let (env_path, project) = env_and_project_with_link(&fixture, "linked", None);
-    std::fs::set_permissions(&project, std::fs::Permissions::from_mode(0o555)).unwrap();
-    // root ignores directory permissions (the Docker integration jobs run as
-    // root); there is nothing to provoke, so skip.
-    if std::fs::write(project.join("probe"), b"").is_ok() {
-        std::fs::set_permissions(&project, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let Some(_lock) = ReadOnlyDir::lock(&project) else {
         return;
-    }
+    };
 
-    let assert = scoop_cmd(&fixture.scoop_home)
+    scoop_cmd(&fixture.scoop_home)
         .current_dir(&project)
         .args(["remove", "--force", "linked"])
-        .assert();
-    std::fs::set_permissions(&project, std::fs::Permissions::from_mode(0o755)).unwrap();
-
-    assert
+        .assert()
         .success()
         .stderr(predicate::str::contains("Could not remove .venv link"));
     assert!(!env_path.exists());
     assert!(project.join(".venv").is_symlink());
+}
+
+/// `warn` is silent under `--json`, so the failure must be in the payload:
+/// without it a script cannot tell "link left behind" from "no link". Fails
+/// if `unlink_error` is not threaded into `RemoveData`.
+#[cfg(unix)]
+#[test]
+fn test_remove_json_reports_unlink_error() {
+    let fixture = TestFixture::new();
+    let (_, project) = env_and_project_with_link(&fixture, "linked", None);
+    let Some(_lock) = ReadOnlyDir::lock(&project) else {
+        return;
+    };
+
+    let out = scoop_cmd(&fixture.scoop_home)
+        .current_dir(&project)
+        .args(["remove", "--json", "linked"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert!(json["data"].get("unlinked").is_none());
+    assert!(
+        json["data"]["unlink_error"]
+            .as_str()
+            .is_some_and(|e| !e.is_empty())
+    );
 }
 
 /// JSON reports the removed link as `unlinked`, and omits the field otherwise.

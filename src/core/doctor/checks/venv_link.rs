@@ -4,7 +4,7 @@
 //! another directory leaves the link dangling, and uv then fails in that
 //! project with `File exists (os error 17)` (#202).
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::paths;
 
@@ -16,35 +16,53 @@ const NAME: &str = "project .venv link";
 /// Check for a dangling `.venv` symlink in the current directory.
 pub(super) struct VenvLinkCheck;
 
+/// Resolves `link`'s target the way the kernel does: relative to the link's
+/// directory. `None` when `link` is not a symlink.
+fn link_target(link: &Path) -> Option<PathBuf> {
+    Some(link.parent()?.join(std::fs::read_link(link).ok()?))
+}
+
+/// Whether `dest` names an entry directly inside `venvs_dir`, i.e. a link
+/// `scuv use --link` made. The env may be gone but its parent still exists,
+/// so the parent is compared canonically: that accepts an alias of
+/// `venvs_dir` and rejects a target that only looks inside it lexically
+/// (`virtualenvs/../../elsewhere/x`).
+fn is_in_venvs_dir(dest: &Path, venvs_dir: &Path) -> bool {
+    match (
+        dest.parent().map(std::fs::canonicalize),
+        std::fs::canonicalize(venvs_dir),
+    ) {
+        (Some(Ok(parent)), Ok(dir)) => parent == dir,
+        _ => false,
+    }
+}
+
 /// Classifies `link`; `None` when it is not a symlink (absent or a real venv).
-fn classify(link: &Path) -> Option<CheckResult> {
-    let dest = std::fs::read_link(link).ok()?;
+///
+/// A dangling link to a removed scuv env is an error that `--fix` clears. A
+/// dangling link elsewhere is not scuv's to fix, so it is only a warning:
+/// otherwise doctor would exit 2 in any project with a stale link of its own.
+fn classify(link: &Path, venvs_dir: Option<&Path>) -> Option<CheckResult> {
+    let dest = link_target(link)?;
     if link.exists() {
         return Some(CheckResult::ok(ID, NAME).with_details(format!("-> {}", dest.display())));
     }
+    let message = format!(".venv points to missing '{}'", dest.display());
     Some(
-        CheckResult::error(
-            ID,
-            NAME,
-            format!(".venv points to missing '{}'", dest.display()),
-        )
-        .with_suggestion("Run: rm .venv, or scuv use <env> --link"),
+        if venvs_dir.is_some_and(|dir| is_in_venvs_dir(&dest, dir)) {
+            CheckResult::error(ID, NAME, message)
+                .with_suggestion("Run: scuv doctor --fix, or scuv use <env> --link")
+        } else {
+            CheckResult::warn(ID, NAME, message).with_suggestion("Run: rm .venv")
+        },
     )
 }
 
 /// Removes `link` when it dangles to an entry directly inside `venvs_dir`; a
 /// link scuv did not make is left for the user.
-///
-/// The env is gone but its parent still exists, so the parent is compared
-/// canonically: that accepts an alias of `venvs_dir` and rejects a target that
-/// only looks inside it lexically (`virtualenvs/../../elsewhere/x`).
 fn remove_if_dangling_into(link: &Path, venvs_dir: &Path) -> Option<CheckResult> {
-    let dest = link.parent()?.join(std::fs::read_link(link).ok()?);
-    if link.exists() {
-        return None;
-    }
-    let dest_parent = std::fs::canonicalize(dest.parent()?).ok()?;
-    if dest.file_name().is_none() || dest_parent != std::fs::canonicalize(venvs_dir).ok()? {
+    let dest = link_target(link)?;
+    if link.exists() || !is_in_venvs_dir(&dest, venvs_dir) {
         return None;
     }
     Some(match std::fs::remove_file(link) {
@@ -66,7 +84,10 @@ impl Check for VenvLinkCheck {
     fn run(&self) -> Vec<CheckResult> {
         std::env::current_dir()
             .ok()
-            .and_then(|cwd| classify(&cwd.join(".venv")))
+            .and_then(|cwd| {
+                let venvs_dir = paths::virtualenvs_dir().ok();
+                classify(&cwd.join(".venv"), venvs_dir.as_deref())
+            })
             .into_iter()
             .collect()
     }
@@ -104,27 +125,53 @@ mod tests {
     fn classify_skips_non_symlinks() {
         let tmp = tempfile::tempdir().unwrap();
         let link = tmp.path().join(".venv");
-        assert!(classify(&link).is_none(), "absent .venv is not a finding");
+        assert!(
+            classify(&link, None).is_none(),
+            "absent .venv is not a finding"
+        );
         std::fs::create_dir(&link).unwrap();
-        assert!(classify(&link).is_none(), "a real .venv is not a finding");
+        assert!(
+            classify(&link, None).is_none(),
+            "a real .venv is not a finding"
+        );
     }
 
     /// Fails if `classify` returns `None` or a default result for a link.
     #[test]
     fn classify_ok_for_live_link_error_for_dangling() {
         let tmp = tempfile::tempdir().unwrap();
-        let env = tmp.path().join("env");
-        std::fs::create_dir(&env).unwrap();
+        let venvs = tmp.path().join("virtualenvs");
+        let env = venvs.join("env");
+        std::fs::create_dir_all(&env).unwrap();
         let link = tmp.path().join(".venv");
         symlink(&env, &link).unwrap();
-        assert!(classify(&link).unwrap().is_ok());
+        assert!(classify(&link, Some(&venvs)).unwrap().is_ok());
 
         std::fs::remove_dir(&env).unwrap();
-        let result = classify(&link).unwrap();
+        let result = classify(&link, Some(&venvs)).unwrap();
         assert!(
             result.is_error(),
-            "dangling link must be an error: {result:#?}"
+            "dangling link to a scuv env must be an error: {result:#?}"
         );
+    }
+
+    /// A stale link of the user's own must not fail `doctor` (exit 2) with an
+    /// error `--fix` cannot clear. Fails if the venvs-dir test is dropped.
+    #[test]
+    fn classify_warns_for_dangling_link_outside_venvs_dir() {
+        let tmp = tempfile::tempdir().unwrap();
+        let venvs = tmp.path().join("virtualenvs");
+        std::fs::create_dir_all(&venvs).unwrap();
+        let link = tmp.path().join(".venv");
+        symlink(tmp.path().join("poetry-env"), &link).unwrap();
+
+        let result = classify(&link, Some(&venvs)).unwrap();
+        assert!(
+            result.is_warning(),
+            "foreign link must only warn: {result:#?}"
+        );
+        let result = classify(&link, None).unwrap();
+        assert!(result.is_warning(), "no venvs dir: nothing is ours");
     }
 
     /// Fails if the live-link guard or the parent comparison is dropped.
