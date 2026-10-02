@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **doctor:** Error only on scuv's own dangling .venv; report unlink failures in JSON ([#206](https://github.com/ai-screams/scoop-uv/pull/206))
+- **migrate:** Drop the progress bar colors under --no-color ([#207](https://github.com/ai-screams/scoop-uv/pull/207))
+- **output:** Accept any NO_COLOR value instead of parsing it as a bool ([#207](https://github.com/ai-screams/scoop-uv/pull/207))
 - **remove:** Match the .venv link canonically and never fail after the delete ([#206](https://github.com/ai-screams/scoop-uv/pull/206))
 - **remove:** Delete the .venv link left pointing at a removed env ([#206](https://github.com/ai-screams/scoop-uv/pull/206))
 [0.16.2]: https://github.com/ai-screams/scoop-uv/compare/0.16.1...0.16.2
