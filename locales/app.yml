@@ -303,6 +303,20 @@ remove.success:
   ja: "'%{name}' を削除しました"
   es: "'%{name}' eliminado"
 
+remove.unlinked:
+  en: "Removed .venv link: %{path}"
+  ko: ".venv 링크 삭제됨: %{path}"
+  pt-BR: "Link .venv removido: %{path}"
+  ja: ".venv リンクを削除しました: %{path}"
+  es: "Enlace .venv eliminado: %{path}"
+
+remove.unlink_failed:
+  en: "Could not remove .venv link %{path}: %{error}"
+  ko: ".venv 링크 %{path} 삭제 실패: %{error}"
+  pt-BR: "Não foi possível remover o link .venv %{path}: %{error}"
+  ja: ".venv リンク %{path} を削除できませんでした: %{error}"
+  es: "No se pudo eliminar el enlace .venv %{path}: %{error}"
+
 # ============================================================================
 # List command
 # ============================================================================

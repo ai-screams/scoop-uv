@@ -5,6 +5,7 @@ mod legacy;
 mod shell;
 mod symlink;
 mod uv;
+mod venv_link;
 mod version;
 mod virtualenv;
 
@@ -22,6 +23,7 @@ pub(super) fn default_checks() -> Vec<Box<dyn Check>> {
         Box::new(symlink::SymlinkCheck),
         Box::new(shell::ShellCheck),
         Box::new(version::VersionCheck),
+        Box::new(venv_link::VenvLinkCheck),
         Box::new(legacy::LegacyCheck),
     ]
 }

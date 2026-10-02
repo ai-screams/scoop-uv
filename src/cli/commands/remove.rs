@@ -3,6 +3,7 @@
 use dialoguer::Confirm;
 use rust_i18n::t;
 
+use super::use_env::is_venv_symlink_to;
 use crate::core::VirtualenvService;
 use crate::error::Result;
 use crate::output::{Output, RemoveData};
@@ -34,8 +35,34 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
         }
     }
 
+    // A `.venv` that `scuv use --link` pointed at this env would dangle once
+    // the env is gone, and uv fails on it in that project (#202). Decide now,
+    // while the link still resolves. Only the current directory is checked:
+    // link locations are not recorded anywhere.
+    let link = std::env::current_dir()
+        .ok()
+        .map(|cwd| cwd.join(".venv"))
+        .filter(|link| is_venv_symlink_to(link, &path));
+
     output.info(&t!("remove.removing", name = name));
     service.delete(name)?;
+
+    // The env is already gone, so a link we cannot remove is a warning, not a
+    // failed `remove`. JSON carries it as `unlink_error`: `warn` is silent
+    // there, and a missing `unlinked` alone would read as "there was no link".
+    let mut unlink_error = None;
+    let unlinked = link.filter(|link| match std::fs::remove_file(link) {
+        Ok(()) => true,
+        Err(e) => {
+            output.warn(&t!(
+                "remove.unlink_failed",
+                path = crate::paths::abbreviate_home(link),
+                error = e.to_string()
+            ));
+            unlink_error = Some(e.to_string());
+            false
+        }
+    });
 
     // JSON output
     if output.is_json() {
@@ -44,12 +71,20 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
             RemoveData {
                 name: name.to_string(),
                 path: path.display().to_string(),
+                unlinked: unlinked.map(|l| l.display().to_string()),
+                unlink_error,
             },
         );
         return Ok(());
     }
 
     output.success(&t!("remove.success", name = name));
+    if let Some(link) = unlinked {
+        output.info(&t!(
+            "remove.unlinked",
+            path = crate::paths::abbreviate_home(&link)
+        ));
+    }
 
     Ok(())
 }
