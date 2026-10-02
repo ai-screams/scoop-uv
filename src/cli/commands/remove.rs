@@ -3,6 +3,7 @@
 use dialoguer::Confirm;
 use rust_i18n::t;
 
+use super::use_env::remove_venv_symlink_to;
 use crate::core::VirtualenvService;
 use crate::error::Result;
 use crate::output::{Output, RemoveData};
@@ -37,6 +38,12 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
     output.info(&t!("remove.removing", name = name));
     service.delete(name)?;
 
+    // A `.venv` that `scuv use --link` pointed at this env now dangles, and uv
+    // fails on it in that project (#202). Only the current directory is
+    // checked: the link locations are not recorded anywhere.
+    let link = std::env::current_dir()?.join(".venv");
+    let unlinked = remove_venv_symlink_to(&link, &path)?.then_some(link);
+
     // JSON output
     if output.is_json() {
         output.json_success(
@@ -44,12 +51,19 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
             RemoveData {
                 name: name.to_string(),
                 path: path.display().to_string(),
+                unlinked: unlinked.map(|l| l.display().to_string()),
             },
         );
         return Ok(());
     }
 
     output.success(&t!("remove.success", name = name));
+    if let Some(link) = unlinked {
+        output.info(&t!(
+            "remove.unlinked",
+            path = crate::paths::abbreviate_home(&link)
+        ));
+    }
 
     Ok(())
 }

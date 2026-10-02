@@ -31,6 +31,18 @@ scuv remove myproject --force   # Remove without asking
 scuv rm old-env -f              # Using alias
 ```
 
+## Project `.venv` Link
+
+If the current directory has a `.venv` symlink to the environment being
+removed (made by `scuv use <name> --link`), `remove` deletes that link too,
+so uv and editors do not trip over a dangling `.venv`. A real `.venv`
+directory, or a link to anything else, is left alone. Under `--json` the
+removed link is reported as `unlinked`.
+
+Only the current directory is checked. If you remove the environment from
+somewhere else, `scuv doctor` in the project reports the dangling link and
+`scuv doctor --fix` removes it.
+
 ## Check Before Removing
 
 To see details about an environment before removing it:
