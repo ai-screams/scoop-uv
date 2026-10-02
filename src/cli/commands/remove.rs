@@ -3,7 +3,7 @@
 use dialoguer::Confirm;
 use rust_i18n::t;
 
-use super::use_env::remove_venv_symlink_to;
+use super::use_env::is_venv_symlink_to;
 use crate::core::VirtualenvService;
 use crate::error::Result;
 use crate::output::{Output, RemoveData};
@@ -35,14 +35,31 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
         }
     }
 
+    // A `.venv` that `scuv use --link` pointed at this env would dangle once
+    // the env is gone, and uv fails on it in that project (#202). Decide now,
+    // while the link still resolves. Only the current directory is checked:
+    // link locations are not recorded anywhere.
+    let link = std::env::current_dir()
+        .ok()
+        .map(|cwd| cwd.join(".venv"))
+        .filter(|link| is_venv_symlink_to(link, &path));
+
     output.info(&t!("remove.removing", name = name));
     service.delete(name)?;
 
-    // A `.venv` that `scuv use --link` pointed at this env now dangles, and uv
-    // fails on it in that project (#202). Only the current directory is
-    // checked: the link locations are not recorded anywhere.
-    let link = std::env::current_dir()?.join(".venv");
-    let unlinked = remove_venv_symlink_to(&link, &path)?.then_some(link);
+    // The env is already gone, so a link we cannot remove is a warning, not a
+    // failed `remove`.
+    let unlinked = link.filter(|link| match std::fs::remove_file(link) {
+        Ok(()) => true,
+        Err(e) => {
+            output.warn(&t!(
+                "remove.unlink_failed",
+                path = crate::paths::abbreviate_home(link),
+                error = e.to_string()
+            ));
+            false
+        }
+    });
 
     // JSON output
     if output.is_json() {

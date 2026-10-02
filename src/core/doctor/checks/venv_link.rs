@@ -32,11 +32,19 @@ fn classify(link: &Path) -> Option<CheckResult> {
     )
 }
 
-/// Removes `link` when it dangles into `venvs_dir`; a link scuv did not make
-/// (target outside `venvs_dir`) is left for the user.
+/// Removes `link` when it dangles to an entry directly inside `venvs_dir`; a
+/// link scuv did not make is left for the user.
+///
+/// The env is gone but its parent still exists, so the parent is compared
+/// canonically: that accepts an alias of `venvs_dir` and rejects a target that
+/// only looks inside it lexically (`virtualenvs/../../elsewhere/x`).
 fn remove_if_dangling_into(link: &Path, venvs_dir: &Path) -> Option<CheckResult> {
-    let dest = std::fs::read_link(link).ok()?;
-    if link.exists() || !dest.starts_with(venvs_dir) {
+    let dest = link.parent()?.join(std::fs::read_link(link).ok()?);
+    if link.exists() {
+        return None;
+    }
+    let dest_parent = std::fs::canonicalize(dest.parent()?).ok()?;
+    if dest.file_name().is_none() || dest_parent != std::fs::canonicalize(venvs_dir).ok()? {
         return None;
     }
     Some(match std::fs::remove_file(link) {
@@ -119,11 +127,12 @@ mod tests {
         );
     }
 
-    /// Fails if `||` becomes `&&` or the `!` before `starts_with` is deleted.
+    /// Fails if the live-link guard or the parent comparison is dropped.
     #[test]
     fn remove_if_dangling_into_removes_only_scuv_links() {
         let tmp = tempfile::tempdir().unwrap();
         let venvs = tmp.path().join("virtualenvs");
+        std::fs::create_dir_all(venvs.join("live")).unwrap();
         let link = tmp.path().join(".venv");
 
         // Dangling, but outside venvs_dir: not ours.
@@ -133,7 +142,6 @@ mod tests {
         std::fs::remove_file(&link).unwrap();
 
         // Inside venvs_dir but still alive: nothing to fix.
-        std::fs::create_dir_all(venvs.join("live")).unwrap();
         symlink(venvs.join("live"), &link).unwrap();
         assert!(remove_if_dangling_into(&link, &venvs).is_none());
         assert!(link.is_symlink());
@@ -141,6 +149,36 @@ mod tests {
 
         // Dangling into venvs_dir: removed.
         symlink(venvs.join("gone"), &link).unwrap();
+        assert!(remove_if_dangling_into(&link, &venvs).unwrap().is_ok());
+        assert!(!link.is_symlink());
+    }
+
+    /// `starts_with` is lexical: `virtualenvs/../outside/x` passes it while
+    /// resolving outside. Fails if the guard goes back to a prefix match.
+    #[test]
+    fn remove_if_dangling_into_rejects_dotdot_escape() {
+        let tmp = tempfile::tempdir().unwrap();
+        let venvs = tmp.path().join("virtualenvs");
+        std::fs::create_dir_all(&venvs).unwrap();
+        std::fs::create_dir_all(tmp.path().join("outside")).unwrap();
+        let link = tmp.path().join(".venv");
+        symlink(venvs.join("../outside/missing"), &link).unwrap();
+
+        assert!(remove_if_dangling_into(&link, &venvs).is_none());
+        assert!(link.is_symlink());
+    }
+
+    /// The link may name venvs_dir through an alias (a symlinked SCUV_HOME).
+    /// Fails if the parent comparison is lexical.
+    #[test]
+    fn remove_if_dangling_into_accepts_alias_of_venvs_dir() {
+        let tmp = tempfile::tempdir().unwrap();
+        let venvs = tmp.path().join("home").join("virtualenvs");
+        std::fs::create_dir_all(&venvs).unwrap();
+        symlink(tmp.path().join("home"), tmp.path().join("alias")).unwrap();
+        let link = tmp.path().join(".venv");
+        symlink(tmp.path().join("alias/virtualenvs/gone"), &link).unwrap();
+
         assert!(remove_if_dangling_into(&link, &venvs).unwrap().is_ok());
         assert!(!link.is_symlink());
     }
@@ -153,6 +191,7 @@ mod tests {
         with_temp_scoop_home(|temp| {
             let cwd = TempDirCwdGuard::new();
             let link = cwd.path().join(".venv");
+            std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
             symlink(temp.path().join("virtualenvs").join("gone"), &link).unwrap();
 
             let results = VenvLinkCheck.run();

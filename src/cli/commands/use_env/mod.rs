@@ -12,7 +12,7 @@ mod symlink;
 mod system;
 mod unset;
 
-pub(crate) use symlink::remove_venv_symlink_to;
+pub(crate) use symlink::is_venv_symlink_to;
 
 use rust_i18n::t;
 

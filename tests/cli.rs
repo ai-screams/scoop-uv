@@ -328,6 +328,59 @@ fn test_remove_keeps_venv_link_to_other_target() {
     assert_eq!(std::fs::read_link(project.join(".venv")).unwrap(), other);
 }
 
+/// The link may reach the env through an alias of `SCUV_HOME` (a symlinked
+/// home directory). Fails if the comparison is lexical.
+#[cfg(unix)]
+#[test]
+fn test_remove_deletes_venv_link_through_home_alias() {
+    let fixture = TestFixture::new();
+    let alias = fixture.temp_dir.path().join("home-alias");
+    let env_path = fixture.scoop_home.join("virtualenvs").join("linked");
+    std::fs::create_dir_all(&env_path).unwrap();
+    std::os::unix::fs::symlink(&fixture.scoop_home, &alias).unwrap();
+    let via_alias = alias.join("virtualenvs").join("linked");
+    let (_, project) = env_and_project_with_link(&fixture, "linked", Some(&via_alias));
+
+    scoop_cmd(&fixture.scoop_home)
+        .current_dir(&project)
+        .args(["remove", "--force", "linked"])
+        .assert()
+        .success();
+
+    assert!(!project.join(".venv").is_symlink());
+}
+
+/// The env is deleted before the link, so a link that cannot be removed must
+/// not turn the finished `remove` into a failure. Fails if the unlink error
+/// is propagated with `?`.
+#[cfg(unix)]
+#[test]
+fn test_remove_warns_when_venv_link_cannot_be_removed() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let fixture = TestFixture::new();
+    let (env_path, project) = env_and_project_with_link(&fixture, "linked", None);
+    std::fs::set_permissions(&project, std::fs::Permissions::from_mode(0o555)).unwrap();
+    // root ignores directory permissions (the Docker integration jobs run as
+    // root); there is nothing to provoke, so skip.
+    if std::fs::write(project.join("probe"), b"").is_ok() {
+        std::fs::set_permissions(&project, std::fs::Permissions::from_mode(0o755)).unwrap();
+        return;
+    }
+
+    let assert = scoop_cmd(&fixture.scoop_home)
+        .current_dir(&project)
+        .args(["remove", "--force", "linked"])
+        .assert();
+    std::fs::set_permissions(&project, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+    assert
+        .success()
+        .stderr(predicate::str::contains("Could not remove .venv link"));
+    assert!(!env_path.exists());
+    assert!(project.join(".venv").is_symlink());
+}
+
 /// JSON reports the removed link as `unlinked`, and omits the field otherwise.
 /// Fails if the removed path is not threaded into `RemoveData`.
 #[cfg(unix)]
