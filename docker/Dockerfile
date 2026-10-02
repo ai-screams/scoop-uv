@@ -24,7 +24,7 @@
 ARG RUST_VERSION=1.89
 ARG PYTHON_311_VERSION=3.11.14
 ARG PYTHON_312_VERSION=3.12.12
-ARG UV_VERSION=0.11.28
+ARG UV_VERSION=0.12.22
 # Miniforge version — pinned for reproducible builds. Bump when a new
 # release adds a feature we need; verify the tag exists at
 # https://github.com/conda-forge/miniforge/releases.
