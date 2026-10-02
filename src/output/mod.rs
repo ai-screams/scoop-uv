@@ -55,11 +55,16 @@ pub struct Output {
     json: bool,
 }
 
+/// Returns whether `NO_COLOR` asks for plain output: set and non-empty,
+/// whatever the value (<https://no-color.org>).
+fn no_color_env() -> bool {
+    std::env::var_os("NO_COLOR").is_some_and(|v| !v.is_empty())
+}
+
 impl Output {
     /// Create a new output handler
     pub fn new(verbose: u8, quiet: bool, no_color: bool, json: bool) -> Self {
-        // Also check NO_COLOR environment variable
-        let no_color = no_color || std::env::var("NO_COLOR").is_ok();
+        let no_color = no_color || no_color_env();
 
         Self {
             verbose,
@@ -369,6 +374,41 @@ impl Output {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// #204: the NO_COLOR convention is "set and non-empty, any value".
+    mod no_color_env_tests {
+        use super::*;
+        use crate::test_utils::env_guard;
+        use serial_test::serial;
+
+        fn colored_with(value: Option<&str>) -> bool {
+            let _env = env_guard(&[("NO_COLOR", value)]);
+            Output::new(0, false, false, false).use_color()
+        }
+
+        /// Fails if the check compares the value (e.g. only `true` counts).
+        #[test]
+        #[serial]
+        fn any_non_empty_value_disables_color() {
+            for value in ["1", "0", "false", "yes", "true"] {
+                assert!(!colored_with(Some(value)), "NO_COLOR={value}");
+            }
+        }
+
+        /// Fails if mere presence counts (`var(..).is_ok()`).
+        #[test]
+        #[serial]
+        fn empty_value_keeps_color() {
+            assert!(colored_with(Some("")));
+        }
+
+        /// Fails if the helper always reports "no color".
+        #[test]
+        #[serial]
+        fn unset_keeps_color() {
+            assert!(colored_with(None));
+        }
+    }
 
     mod format_size_tests {
         use super::*;

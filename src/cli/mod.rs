@@ -20,8 +20,11 @@ pub struct Cli {
     #[arg(short, long, global = true)]
     pub quiet: bool,
 
-    /// Disable colored output
-    #[arg(long, global = true, env = "NO_COLOR")]
+    /// Disable colored output (a non-empty NO_COLOR does the same)
+    // No `env = "NO_COLOR"` here: clap would parse the variable's value as a
+    // bool and reject `NO_COLOR=1` before any subcommand runs (#204).
+    // `Output::new` reads the variable instead.
+    #[arg(long, global = true)]
     pub no_color: bool,
 }
 

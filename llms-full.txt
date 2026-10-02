@@ -755,7 +755,7 @@ Error response:
 | `SCUV_NO_AUTO` | Disable auto-activation when set to `1` |
 | `SCUV_ACTIVE` | Set when a virtualenv is active (internal) |
 | `SCUV_RESOLVE_MAX_DEPTH` | Limit parent directory traversal (for NFS/SSHFS) |
-| `NO_COLOR` | Disable colored output (standard) |
+| `NO_COLOR` | Disable colored output when set to any non-empty value (standard) |
 | `VIRTUAL_ENV` | Standard Python virtualenv path (set on activation) |
 
 ---

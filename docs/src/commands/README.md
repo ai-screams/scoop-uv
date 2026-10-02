@@ -50,7 +50,7 @@ Available for all commands:
 | `SCUV_HOME` | Base directory for scuv | `~/.scuv` |
 | `SCUV_NO_AUTO` | Disable auto-activation | (unset) |
 | `SCUV_LANG` | Display language (en, ko, ja, pt-BR, es) | System locale |
-| `NO_COLOR` | Disable colored output | (unset) |
+| `NO_COLOR` | Disable colored output when set to any non-empty value | (unset) |
 | `SCUV_VERSION` | Shell-session override; highest-priority version selector (set by `scuv shell`) | (unset) |
 | `SCUV_ACTIVE` | Name of the currently active environment (set by the activation script; read by `status`/`which`/`run`) | (unset) |
 | `SCUV_RESOLVE_MAX_DEPTH` | Caps the parent-directory walk when resolving `.scuv-version` (0 = current dir only; unset = unlimited) | (unset) |
