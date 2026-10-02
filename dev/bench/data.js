@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790926051928,
+  "lastUpdate": 1790926053332,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -7993,6 +7993,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1028,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7693686472204d1272db289d0cfed1f486b35e3b",
+          "message": "Merge pull request #206 from ai-screams/fix/202-remove-dangling-venv-link\n\nfix(remove): [#202] delete the .venv link left pointing at a removed env",
+          "timestamp": "2026-10-02T16:23:36+09:00",
+          "tree_id": "a793c3f9406710eb0c6ff80ad165cc6b0d07c7bd",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/7693686472204d1272db289d0cfed1f486b35e3b"
+        },
+        "date": 1790926053227,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1695,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1120,
+            "range": "± 5",
             "unit": "ns/iter"
           }
         ]
