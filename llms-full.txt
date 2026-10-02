@@ -181,7 +181,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 222 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 224 keys
 ```
 
 ### Design Principles

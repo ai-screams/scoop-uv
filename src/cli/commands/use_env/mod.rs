@@ -12,6 +12,8 @@ mod symlink;
 mod system;
 mod unset;
 
+pub(crate) use symlink::is_venv_symlink_to;
+
 use rust_i18n::t;
 
 use crate::error::{Result, ScoopError};
