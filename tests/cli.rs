@@ -257,6 +257,21 @@ fn test_activate_nonexistent_env() {
         .stderr(predicate::str::contains("Can't find"));
 }
 
+/// #204: clap used to parse NO_COLOR's value as a bool, so the usual
+/// `NO_COLOR=1` (and an empty value) aborted every subcommand. Fails if
+/// `env = "NO_COLOR"` comes back on the `--no-color` argument.
+#[test]
+fn test_no_color_env_accepts_any_value() {
+    let fixture = TestFixture::new();
+    for value in ["1", "", "yes"] {
+        scoop_cmd(&fixture.scoop_home)
+            .env("NO_COLOR", value)
+            .arg("list")
+            .assert()
+            .success();
+    }
+}
+
 #[test]
 fn test_remove_nonexistent_env() {
     let fixture = TestFixture::new();

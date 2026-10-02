@@ -207,7 +207,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
         let pb = ProgressBar::new(migratable.len() as u64);
         pb.set_style(
             ProgressStyle::default_bar()
-                .template("{spinner:.green} [{bar:30.cyan/blue}] {pos}/{len} {msg}")
+                .template(progress_template(output))
                 .expect("valid template")
                 .progress_chars("=>-"),
         );
@@ -362,6 +362,19 @@ struct PartitionedEnvs<'a> {
     migratable: Vec<&'a SourceEnvironment>,
     conflicts: Vec<MigrationConflictDetail>,
     skipped: Vec<MigrateSkipped>,
+}
+
+/// Returns the progress bar template; the colorless one when color is off.
+///
+/// indicatif applies the colors named in the template. It already drops them
+/// on its own for `NO_COLOR` or a non-terminal stderr, but it cannot see the
+/// `--no-color` flag.
+fn progress_template(output: &Output) -> &'static str {
+    if output.use_color() {
+        "{spinner:.green} [{bar:30.cyan/blue}] {pos}/{len} {msg}"
+    } else {
+        "{spinner} [{bar:30}] {pos}/{len} {msg}"
+    }
 }
 
 /// Split scanned envs into migratable / conflict / skipped buckets.
@@ -686,6 +699,23 @@ fn emit_envelope_or_fallback<T: Serialize>(envelope: &T) {
 
 #[cfg(test)]
 mod tests {
+    /// `--no-color` must reach the progress bar too. Fails if the template
+    /// ignores the color setting, either way round.
+    #[test]
+    #[serial_test::serial]
+    fn progress_template_has_no_style_without_color() {
+        let _env = crate::test_utils::env_guard(&[("NO_COLOR", None)]);
+        let plain = progress_template(&Output::new(0, false, true, false));
+        let colored = progress_template(&Output::new(0, false, false, false));
+        for style in [".green", ".cyan", "/blue"] {
+            assert!(!plain.contains(style), "{plain} carries {style}");
+        }
+        assert!(colored.contains(".green") && colored.contains("cyan/blue"));
+        // Both must stay valid indicatif templates.
+        ProgressStyle::default_bar().template(plain).unwrap();
+        ProgressStyle::default_bar().template(colored).unwrap();
+    }
+
     use super::*;
     use crate::cli::MigrateSource;
     use crate::core::migrate::{SourceEnvironment, SourceType};

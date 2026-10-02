@@ -2846,7 +2846,7 @@ msgstr "모든 출력 억제"
 msgid "`--no-color`"
 msgstr "`--no-color`"
 
-#: src/commands/index.md:42 src/commands/index.md:53
+#: src/commands/index.md:42
 msgid "Disable colored output"
 msgstr "컬러 출력 비활성화"
 
@@ -2885,6 +2885,10 @@ msgstr "시스템 로케일"
 #: src/commands/index.md:53
 msgid "`NO_COLOR`"
 msgstr "`NO_COLOR`"
+
+#: src/commands/index.md:53
+msgid "Disable colored output when set to any non-empty value"
+msgstr "비어 있지 않은 값이면 무엇이든 컬러 출력 비활성화"
 
 #: src/commands/index.md:54
 msgid ""
