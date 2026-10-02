@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790926568071,
+  "lastUpdate": 1790926569845,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -8113,6 +8113,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1120,
             "range": "± 5",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9cfdee67dd59f1b91cfcb14a7ab3cd9bd09bf6e5",
+          "message": "Merge pull request #207 from ai-screams/fix/no-color-env-value\n\nfix(output): [#204] accept any NO_COLOR value instead of parsing it as a bool",
+          "timestamp": "2026-10-02T16:32:04+09:00",
+          "tree_id": "c059c463add36a871c375bb49633945332b83828",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/9cfdee67dd59f1b91cfcb14a7ab3cd9bd09bf6e5"
+        },
+        "date": 1790926569737,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1702,
+            "range": "± 126",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1124,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
