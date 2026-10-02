@@ -474,8 +474,12 @@ mod tests {
             assert!(!normal_output.is_quiet());
         }
 
+        /// Reads `NO_COLOR` through `Output::new`, so it pins the variable and
+        /// joins the `serial` group of the tests that set it.
         #[test]
+        #[serial_test::serial]
         fn default_output_has_expected_flags() {
+            let _env = crate::test_utils::env_guard(&[("NO_COLOR", None)]);
             let output = Output::default();
 
             assert!(!output.is_json());
