@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790915712090,
+  "lastUpdate": 1790915713666,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -7873,6 +7873,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1116,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "45382228236081e25e4f0223a6f535095d5a1cdb",
+          "message": "Merge pull request #203 from ai-screams/chore/docker-uv-0.12.22\n\nchore(docker): bump pinned uv from 0.11.28 to 0.12.22",
+          "timestamp": "2026-10-02T13:31:33+09:00",
+          "tree_id": "fd563d8fad3085ed80e973aba0c8d30620041090",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/45382228236081e25e4f0223a6f535095d5a1cdb"
+        },
+        "date": 1790915713578,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1492,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1028,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
