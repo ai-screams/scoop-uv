@@ -42,15 +42,6 @@ pub struct ExtractionResult {
 }
 
 impl ExtractionResult {
-    /// Generates requirements.txt content from extracted packages.
-    pub fn to_requirements(&self) -> String {
-        self.packages
-            .iter()
-            .map(|p| p.to_requirement())
-            .collect::<Vec<_>>()
-            .join("\n")
-    }
-
     /// Returns only non-editable packages.
     pub fn regular_packages(&self) -> Vec<&PackageSpec> {
         self.packages.iter().filter(|p| !p.editable).collect()
@@ -233,6 +224,27 @@ impl PackageExtractor {
 mod tests {
     use super::*;
 
+    /// A package becomes `name==version`; an editable one with a path
+    /// becomes `-e <path>`, and without a path falls back to the pin.
+    /// Fails if either branch or the `&&` between its two conditions
+    /// changes.
+    #[test]
+    fn to_requirement_pins_or_points_at_the_editable_path() {
+        let spec = |editable, path: Option<&str>| PackageSpec {
+            name: "requests".into(),
+            version: "2.31.0".into(),
+            editable,
+            editable_path: path.map(PathBuf::from),
+        };
+        assert_eq!(spec(false, None).to_requirement(), "requests==2.31.0");
+        assert_eq!(spec(true, Some("/src/app")).to_requirement(), "-e /src/app");
+        assert_eq!(spec(true, None).to_requirement(), "requests==2.31.0");
+        assert_eq!(
+            spec(false, Some("/src/app")).to_requirement(),
+            "requests==2.31.0"
+        );
+    }
+
     fn spec(name: &str, editable: bool) -> PackageSpec {
         PackageSpec {
             name: name.to_string(),
@@ -361,31 +373,5 @@ mod tests {
 
         assert_eq!(result.packages.len(), 1);
         assert_eq!(result.packages[0].name, "requests");
-    }
-
-    #[test]
-    fn test_to_requirements() {
-        let result = ExtractionResult {
-            packages: vec![
-                PackageSpec {
-                    name: "requests".to_string(),
-                    version: "2.31.0".to_string(),
-                    editable: false,
-                    editable_path: None,
-                },
-                PackageSpec {
-                    name: "flask".to_string(),
-                    version: "3.0.0".to_string(),
-                    editable: false,
-                    editable_path: None,
-                },
-            ],
-            failed: vec![],
-            total_found: 2,
-        };
-
-        let requirements = result.to_requirements();
-        assert!(requirements.contains("requests==2.31.0"));
-        assert!(requirements.contains("flask==3.0.0"));
     }
 }

@@ -172,7 +172,6 @@ impl Output {
 // JSON Output Helpers
 // ============================================================================
 
-use crate::error::ScoopError;
 use serde::Serialize;
 
 impl Output {
@@ -183,21 +182,6 @@ impl Output {
         }
         let response = JsonResponse::success(command, data);
         println!(
-            "{}",
-            serde_json::to_string_pretty(&response).unwrap_or_default()
-        );
-    }
-
-    /// Print a JSON error response to stderr
-    pub fn json_error(&self, command: &'static str, error: &ScoopError) {
-        if !self.json {
-            return;
-        }
-        let mut response = JsonErrorResponse::error(command, error.code(), error.to_string());
-        if let Some(suggestion) = error.suggestion() {
-            response = response.with_suggestion(suggestion);
-        }
-        eprintln!(
             "{}",
             serde_json::to_string_pretty(&response).unwrap_or_default()
         );

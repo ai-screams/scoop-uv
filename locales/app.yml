@@ -577,12 +577,6 @@ migrate.dry_run_header:
   ja: "[DRY-RUN] 移行プレビュー:"
   es: "[DRY-RUN] Vista previa de la migración:"
 
-migrate.from:
-  en: "  From: %{path}"
-  ko: "  원본: %{path}"
-  pt-BR: "  De: %{path}"
-  ja: "  移行元: %{path}"
-  es: "  Desde: %{path}"
 
 migrate.to:
   en: "  To: %{path}"
@@ -748,12 +742,6 @@ migrate.no_eligible:
   ja: "移行対象の環境が見つかりません"
   es: "No hay entornos aptos para migrar."
 
-migrate.ready_count:
-  en: "  %{count} ready to migrate"
-  ko: "  %{count}개 마이그레이션 준비됨"
-  pt-BR: "  %{count} pronto(s) para migrar"
-  ja: "  %{count}個が移行準備完了"
-  es: "  %{count} listo(s) para migrar"
 
 migrate.skipped_count:
   en: "  %{count} skipped (name conflicts)"
@@ -762,12 +750,6 @@ migrate.skipped_count:
   ja: "  %{count}個スキップしました(名前の競合)"
   es: "  %{count} omitido(s) (conflictos de nombre)"
 
-migrate.conflict_hint:
-  en: "  → Use --auto-rename or migrate individually"
-  ko: "  → --auto-rename 또는 개별 마이그레이션"
-  pt-BR: "  → Use --auto-rename ou migre individualmente"
-  ja: "  → --auto-rename を使用または個別に移行してください"
-  es: "  → Usar --auto-rename o migrar individualmente"
 
 migrate.batch_cancelled:
   en: "Migration cancelled."
@@ -842,12 +824,6 @@ migrate.batch_failed_list:
 # ============================================================================
 # Migrate command - conflict
 # ============================================================================
-migrate.conflict_warning:
-  en: "Environment '%{name}' already exists at %{path}"
-  ko: "'%{name}' 환경이 이미 존재: %{path}"
-  pt-BR: "Ambiente '%{name}' já existe em %{path}"
-  ja: "環境 '%{name}' はすでに存在します: %{path}"
-  es: "El entorno '%{name}' ya existe en %{path}"
 
 # ============================================================================
 # Error messages

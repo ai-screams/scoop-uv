@@ -177,12 +177,6 @@ pub fn is_valid_python_version(version: &str) -> bool {
     VERSION_REGEX.is_match(version) || version.chars().all(|c| c.is_ascii_digit() || c == '.')
 }
 
-/// Normalize a Python version string
-/// e.g., "3" -> "3", "3.12" -> "3.12", "3.12.0" -> "3.12.0"
-pub fn normalize_python_version(version: &str) -> String {
-    version.trim().to_string()
-}
-
 /// Validate a Python version string, returning an error if invalid
 pub fn validate_python_version(version: &str) -> Result<()> {
     let trimmed = version.trim();
@@ -881,13 +875,6 @@ mod tests {
         let too_long = validate_env_name(&"a".repeat(MAX_ENV_NAME_LENGTH + 1));
         assert!(too_long.is_err());
         assert!(too_long.unwrap_err().to_string().contains("maximum length"));
-    }
-
-    #[test]
-    fn normalize_python_version_trims_whitespace() {
-        assert_eq!(normalize_python_version("  3.12  "), "3.12");
-        assert_eq!(normalize_python_version("3.12.0"), "3.12.0");
-        assert_eq!(normalize_python_version("\t3.13\n"), "3.13");
     }
 
     /// The digit/dot fallback accepts version-shaped strings the regex rejects

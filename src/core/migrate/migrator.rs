@@ -10,7 +10,6 @@ use crate::error::{MigrationExitCode, Result, ScoopError};
 use crate::paths;
 use crate::uv::PythonInfo;
 use crate::uv::UvClient;
-use crate::validate::PythonVersion;
 
 use super::extractor::{ExtractionResult, PackageExtractor};
 use super::source::{EnvironmentStatus, SourceEnvironment};
@@ -29,16 +28,6 @@ pub enum PythonAvailability {
     CanInstall { version: String },
     /// Not available at all
     Unavailable { reason: String },
-}
-
-/// Extracts major.minor from version string (e.g., "3.12.1" -> "3.12").
-fn extract_major_minor(version: &str) -> String {
-    let parts: Vec<&str> = version.split('.').collect();
-    match parts.as_slice() {
-        [major, minor, ..] => format!("{}.{}", major, minor),
-        [major] => (*major).to_string(),
-        _ => version.to_string(),
-    }
 }
 
 /// Options for migration
@@ -138,55 +127,11 @@ impl Migrator {
     }
 
     /// Creates a migrator with a specific UvClient.
-    pub fn with_uv(uv: UvClient) -> Self {
+    #[cfg(test)]
+    pub(crate) fn with_uv(uv: UvClient) -> Self {
         Self {
             uv,
             extractor: PackageExtractor::new(),
-        }
-    }
-
-    /// Checks if Python version is available for creating environment.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if uv commands fail.
-    pub fn check_python_availability(&self, version: &str) -> Result<PythonAvailability> {
-        // 1. Try exact match first using find_python
-        if let Some(info) = self.uv.find_python(version)? {
-            return Ok(PythonAvailability::Available(info));
-        }
-
-        // 2. Try major.minor match
-        let major_minor = extract_major_minor(version);
-        if let Some(info) = self.uv.find_python(&major_minor)? {
-            return Ok(PythonAvailability::Compatible {
-                requested: version.to_string(),
-                available: info,
-            });
-        }
-
-        // 3. Check if it can be installed: uv knows a version matching the
-        //    requested major.minor. Reuse PythonVersion::matches (as steps 1-2
-        //    do via find_python) instead of ad-hoc string matching.
-        let available = self.uv.list_pythons()?;
-        let can_install = PythonVersion::parse(&major_minor).is_some_and(|req| {
-            available
-                .iter()
-                .filter_map(|info| PythonVersion::parse(&info.version))
-                .any(|have| req.matches(&have))
-        });
-
-        if can_install {
-            Ok(PythonAvailability::CanInstall {
-                version: major_minor,
-            })
-        } else {
-            Ok(PythonAvailability::Unavailable {
-                reason: format!(
-                    "Python {} is not available and cannot be installed",
-                    version
-                ),
-            })
         }
     }
 
@@ -435,22 +380,6 @@ impl Migrator {
             actual_python_version: source.python_version.clone(),
         })
     }
-
-    /// Migrates multiple environments.
-    ///
-    /// # Errors
-    ///
-    /// Returns results for all environments, including failures.
-    pub fn migrate_all(
-        &self,
-        sources: &[SourceEnvironment],
-        options: &MigrateOptions,
-    ) -> Vec<Result<MigrationResult>> {
-        sources
-            .iter()
-            .map(|source| self.migrate(source, options))
-            .collect()
-    }
 }
 
 #[cfg(test)]
@@ -524,16 +453,6 @@ mod tests {
             raw.contains("3.12.0"),
             "python version should be recorded: {raw}"
         );
-    }
-
-    /// Version strings arrive as `3.12.1`, `3.12`, or something unparseable;
-    /// each arm has to survive on its own.
-    #[test]
-    fn extract_major_minor_handles_each_shape() {
-        assert_eq!(extract_major_minor("3.12.1"), "3.12");
-        assert_eq!(extract_major_minor("3.12"), "3.12");
-        assert_eq!(extract_major_minor("3"), "3");
-        assert_eq!(extract_major_minor("pypy"), "pypy");
     }
 
     /// A migrator with a UvClient that is never invoked — enough to reach
@@ -663,24 +582,5 @@ mod tests {
         let options = MigrateOptions::default();
 
         assert!(migrator.validate_source(&source, &options).is_err());
-    }
-
-    #[test]
-    fn test_extract_major_minor_full_version() {
-        assert_eq!(extract_major_minor("3.12.1"), "3.12");
-        assert_eq!(extract_major_minor("3.9.18"), "3.9");
-        assert_eq!(extract_major_minor("2.7.18"), "2.7");
-    }
-
-    #[test]
-    fn test_extract_major_minor_partial_version() {
-        assert_eq!(extract_major_minor("3.12"), "3.12");
-        assert_eq!(extract_major_minor("3"), "3");
-    }
-
-    #[test]
-    fn test_extract_major_minor_edge_cases() {
-        assert_eq!(extract_major_minor(""), "");
-        assert_eq!(extract_major_minor("3.12.1.post1"), "3.12");
     }
 }

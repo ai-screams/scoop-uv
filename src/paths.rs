@@ -34,11 +34,6 @@ pub fn virtualenvs_dir() -> Result<PathBuf> {
     Ok(scoop_home()?.join("virtualenvs"))
 }
 
-/// Get the pythons directory (~/.scuv/pythons)
-pub fn pythons_dir() -> Result<PathBuf> {
-    Ok(scoop_home()?.join("pythons"))
-}
-
 /// Get the global version file path (~/.scuv/version)
 pub fn global_version_file() -> Result<PathBuf> {
     Ok(scoop_home()?.join("version"))
@@ -60,11 +55,6 @@ pub fn virtualenv_path(name: &str) -> Result<PathBuf> {
 /// callers continue to pass the env name.
 pub fn virtualenv_bin(name: &str) -> Result<PathBuf> {
     Ok(virtualenv_bin_dir(&virtualenv_path(name)?))
-}
-
-/// Get the python executable in a virtualenv (`name`-based wrapper).
-pub fn virtualenv_python(name: &str) -> Result<PathBuf> {
-    Ok(virtualenv_python_exe(&virtualenv_path(name)?))
 }
 
 /// Returns the bin/Scripts directory of a virtualenv given its root path.
@@ -234,20 +224,6 @@ pub fn virtualenv_site_packages(venv_root: &Path) -> Result<PathBuf> {
     Err(ScoopError::SitePackagesNotFound {
         venv: venv_root.display().to_string(),
     })
-}
-
-/// Ensure all scuv directories exist
-///
-/// Creates the following directory structure:
-/// - ~/.scuv/
-/// - ~/.scuv/virtualenvs/
-/// - ~/.scuv/pythons/
-pub fn ensure_scoop_dirs() -> Result<()> {
-    let home = scoop_home()?;
-    std::fs::create_dir_all(&home)?;
-    std::fs::create_dir_all(home.join("virtualenvs"))?;
-    std::fs::create_dir_all(home.join("pythons"))?;
-    Ok(())
 }
 
 /// Check if a virtualenv exists
@@ -549,15 +525,6 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_pythons_dir() {
-        with_temp_scoop_home(|temp_dir| {
-            let pythons = pythons_dir().unwrap();
-            assert_eq!(pythons, temp_dir.path().join("pythons"));
-        });
-    }
-
-    #[test]
-    #[serial]
     fn test_virtualenv_path() {
         with_temp_scoop_home(|temp_dir| {
             let path = virtualenv_path("myenv").unwrap();
@@ -578,34 +545,6 @@ mod tests {
                     .join("myenv")
                     .join("bin")
             );
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn test_virtualenv_python() {
-        with_temp_scoop_home(|temp_dir| {
-            let python = virtualenv_python("myenv").unwrap();
-            assert_eq!(
-                python,
-                temp_dir
-                    .path()
-                    .join("virtualenvs")
-                    .join("myenv")
-                    .join("bin")
-                    .join("python")
-            );
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn test_ensure_scoop_dirs() {
-        with_temp_scoop_home(|temp_dir| {
-            ensure_scoop_dirs().unwrap();
-            assert!(temp_dir.path().exists());
-            assert!(temp_dir.path().join("virtualenvs").exists());
-            assert!(temp_dir.path().join("pythons").exists());
         });
     }
 
@@ -1023,14 +962,6 @@ mod tests {
             with_temp_scoop_home(|_| {
                 let bin = virtualenv_bin("anyname").unwrap();
                 assert!(bin.ends_with("bin"));
-            });
-        }
-
-        #[test]
-        fn virtualenv_python_wrapper_delegates_to_helper() {
-            with_temp_scoop_home(|_| {
-                let py = virtualenv_python("anyname").unwrap();
-                assert!(py.ends_with("bin/python"));
             });
         }
     }
