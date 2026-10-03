@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791061713949,
+  "lastUpdate": 1791061715467,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -8953,6 +8953,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1348,
             "range": "± 15",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "baa2e93bb7f4784d4cb9281a4304c6ba998f9e2d",
+          "message": "Merge pull request #216 from ai-screams/fix/shell-wrappers-name-shell\n\nfix(shell): make PowerShell integration work and name the shell in every wrapper",
+          "timestamp": "2026-10-04T06:04:35+09:00",
+          "tree_id": "04c096900fc79d29e176d1c6b438522d7be2c247",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/baa2e93bb7f4784d4cb9281a4304c6ba998f9e2d"
+        },
+        "date": 1791061715360,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1678,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1132,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
