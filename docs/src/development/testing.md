@@ -15,14 +15,18 @@ cargo clippy -- -D warnings         # Lint check
 
 ```
 tests/
-└── cli.rs                    # CLI integration tests
+├── cli/                      # CLI integration tests (one binary)
+│   ├── main.rs               # declares the topic modules
+│   ├── support.rs            # TestFixture, scoop_cmd, shared helpers
+│   └── <topic>.rs            # general, list, remove, color, shell, ...
+└── i18n_completeness.rs      # locale parity
 
 src/
 ├── error/                    # Unit tests for error types
 ├── validate.rs               # Unit tests for validation
 ├── paths.rs                  # Unit tests for path utilities
 ├── output/
-│   └── json.rs               # Unit tests for JSON output
+│   └── json/tests.rs         # Unit tests for JSON output
 ├── core/
 │   ├── virtualenv/           # virtualenv service (mod.rs + tests.rs)
 │   ├── version.rs            # Unit tests for version service

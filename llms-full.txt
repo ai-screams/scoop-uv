@@ -170,7 +170,7 @@ src/
 │   └── client.rs  # UvClient struct
 ├── output/        # Terminal UI & JSON output
 │   ├── mod.rs     # Output struct
-│   ├── json.rs    # JSON response types
+│   ├── json/      # JSON response types (mod.rs) + tests.rs
 │   ├── color.rs   # color decision (Colors, resolve); the flag is cli/color.rs
 │   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
