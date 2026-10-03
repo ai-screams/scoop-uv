@@ -1,4 +1,12 @@
+use std::path::Path;
+
+use chrono::{DateTime, Utc};
+
+use super::remove::remove_orphans;
+use super::scan::{recheck_stale, scan_orphan_envs, scan_stale_envs, scan_unused_pythons};
+use super::types::{EnvGcReason, EnvOutcome, EnvRecord, OrphanEnv, PythonRecord};
 use super::*;
+use crate::paths;
 use crate::test_utils::with_temp_scoop_home;
 use serial_test::serial;
 use std::fs;
