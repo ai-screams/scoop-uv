@@ -366,7 +366,7 @@ mod tests {
                 "broken symlink",
                 "Python symlink in 'fix-target' is broken".to_string(),
             );
-            let output = crate::output::Output::new(0, true, true, false);
+            let output = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
 
             let fixed = SymlinkCheck.fix(&probe, &output);
             assert!(fixed.is_some(), "fix_symlink must return Some");

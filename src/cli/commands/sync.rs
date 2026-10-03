@@ -252,7 +252,7 @@ mod tests {
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let result = execute(&output, &[], false);
 
             if let Some(p) = prev {
@@ -294,7 +294,7 @@ mod tests {
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let result = execute(&output, &["ghost".to_string()], true /* dry-run */);
 
             if let Some(p) = prev {
@@ -327,7 +327,7 @@ mod tests {
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let result = execute(&output, &[], true /* dry-run */);
 
             if let Some(p) = prev {

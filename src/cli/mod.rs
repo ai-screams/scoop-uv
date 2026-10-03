@@ -1,10 +1,13 @@
 //! CLI module
 
+pub mod color;
 pub mod commands;
 
 use std::path::PathBuf;
 
 use clap::{ArgAction, Parser, Subcommand, ValueEnum};
+
+use self::color::ColorChoice;
 
 /// scuv - Python virtual environment manager powered by uv
 #[derive(Parser, Debug)]
@@ -20,12 +23,92 @@ pub struct Cli {
     #[arg(short, long, global = true)]
     pub quiet: bool,
 
-    /// Disable colored output (a non-empty NO_COLOR does the same)
+    /// When to use color: auto (a terminal and no NO_COLOR), always, never
+    #[arg(
+        long,
+        global = true,
+        value_enum,
+        value_name = "WHEN",
+        default_value_t = ColorChoice::Auto,
+        overrides_with = "no_color"
+    )]
+    pub color: ColorChoice,
+
+    /// Disable colored output (same as --color never)
     // No `env = "NO_COLOR"` here: clap would parse the variable's value as a
     // bool and reject `NO_COLOR=1` before any subcommand runs (#204).
-    // `Output::new` reads the variable instead.
-    #[arg(long, global = true)]
+    // `Colors::detect` reads the variable instead.
+    #[arg(long, global = true, overrides_with = "color")]
     pub no_color: bool,
+}
+
+impl Commands {
+    /// Whether this command was asked for JSON output.
+    ///
+    /// Exhaustive on purpose: a new command must decide here instead of
+    /// silently printing text under `--json`.
+    pub fn json(&self) -> bool {
+        match self {
+            Self::List { json, .. }
+            | Self::Use { json, .. }
+            | Self::Create { json, .. }
+            | Self::Remove { json, .. }
+            | Self::Install { json, .. }
+            | Self::Uninstall { json, .. }
+            | Self::Doctor { json, .. }
+            | Self::Info { json, .. }
+            | Self::Lang { json, .. }
+            | Self::Status { json }
+            | Self::Clone { json, .. }
+            | Self::Import { json, .. }
+            | Self::Sync { json, .. }
+            | Self::Which { json, .. }
+            | Self::Prune { json }
+            | Self::Gc { json, .. }
+            | Self::Man { json, .. }
+            | Self::Verify { json, .. }
+            | Self::Diff { json, .. } => *json,
+            // The subcommand carries the flag (list / all / @env); bare
+            // `migrate` has none.
+            Self::Migrate { command } => match command {
+                Some(MigrateCommand::List { json, .. })
+                | Some(MigrateCommand::All { json, .. })
+                | Some(MigrateCommand::Env { json, .. }) => *json,
+                None => false,
+            },
+            Self::Self_ {
+                command: SelfCommand::Update { json, .. },
+            } => *json,
+            Self::Init { .. }
+            | Self::Completions { .. }
+            | Self::Resolve
+            | Self::Activate { .. }
+            | Self::Deactivate { .. }
+            | Self::Shell { .. }
+            | Self::Run { .. }
+            | Self::Export { .. } => false,
+        }
+    }
+
+    /// Verbosity requested with `-v` (only `doctor` has it).
+    pub fn verbosity(&self) -> u8 {
+        match self {
+            Self::Doctor { verbose, .. } => *verbose,
+            _ => 0,
+        }
+    }
+}
+
+impl Cli {
+    /// The effective color choice: `--no-color` means `never`. The two flags
+    /// override each other, so only the later one on the command line is set.
+    pub fn color_choice(&self) -> ColorChoice {
+        if self.no_color {
+            ColorChoice::Never
+        } else {
+            self.color
+        }
+    }
 }
 
 /// Source type for migration
@@ -631,4 +714,84 @@ pub enum ShellType {
     /// PowerShell
     #[value(alias = "pwsh")]
     Powershell,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn choice(args: &[&str]) -> ColorChoice {
+        Cli::try_parse_from(args).unwrap().color_choice()
+    }
+
+    /// `main` builds one `Output` from `Commands::json`, so a command whose
+    /// `--json` is not reported here would print text under `--json`.
+    /// Fails if any json-bearing command (or a migrate subcommand) maps to
+    /// false, or a command without the flag maps to true.
+    #[test]
+    fn commands_json_reports_every_json_flag() {
+        let json = |args: &[&str]| Cli::try_parse_from(args).unwrap().command.json();
+        let with_flag: &[&[&str]] = &[
+            &["scuv", "list", "--json"],
+            &["scuv", "use", "e", "--json"],
+            &["scuv", "create", "e", "--json"],
+            &["scuv", "remove", "e", "--json"],
+            &["scuv", "install", "--json"],
+            &["scuv", "uninstall", "3.12", "--json"],
+            &["scuv", "doctor", "--json"],
+            &["scuv", "info", "e", "--json"],
+            &["scuv", "lang", "--json"],
+            &["scuv", "status", "--json"],
+            &["scuv", "clone", "a", "b", "--json"],
+            &["scuv", "import", "f.json", "--json"],
+            &["scuv", "sync", "--json"],
+            &["scuv", "which", "python", "--json"],
+            &["scuv", "prune", "--json"],
+            &["scuv", "gc", "--json"],
+            &["scuv", "man", "d", "--json"],
+            &["scuv", "verify", "--json"],
+            &["scuv", "diff", "a", "b", "--json"],
+            &["scuv", "migrate", "list", "--json"],
+            &["scuv", "migrate", "all", "--json"],
+            &["scuv", "migrate", "@env", "e", "--json"],
+            &["scuv", "self", "update", "--json"],
+        ];
+        for args in with_flag {
+            assert!(json(args), "{args:?} should be json");
+            let plain: Vec<&str> = args.iter().copied().filter(|a| *a != "--json").collect();
+            assert!(!json(&plain), "{plain:?} should not be json");
+        }
+        assert!(!json(&["scuv", "migrate"]));
+        assert!(!json(&["scuv", "export", "e"]));
+    }
+
+    /// Fails if `verbosity` stops reading doctor's `-v`.
+    #[test]
+    fn commands_verbosity_reads_doctor_flag() {
+        let v = |args: &[&str]| Cli::try_parse_from(args).unwrap().command.verbosity();
+        assert_eq!(v(&["scuv", "doctor", "-vv"]), 2);
+        assert_eq!(v(&["scuv", "doctor"]), 0);
+        assert_eq!(v(&["scuv", "list"]), 0);
+    }
+
+    /// On a pipe `auto` and `never` print the same, so the end-to-end tests
+    /// cannot see `--no-color` being dropped. Fails if `color_choice`
+    /// ignores `--no-color` or the two flags stop overriding each other.
+    #[test]
+    fn color_choice_combines_both_flags() {
+        assert_eq!(choice(&["scuv", "lang"]), ColorChoice::Auto);
+        assert_eq!(choice(&["scuv", "--no-color", "lang"]), ColorChoice::Never);
+        assert_eq!(
+            choice(&["scuv", "lang", "--color", "always"]),
+            ColorChoice::Always
+        );
+        assert_eq!(
+            choice(&["scuv", "--color", "always", "--no-color", "lang"]),
+            ColorChoice::Never
+        );
+        assert_eq!(
+            choice(&["scuv", "--no-color", "--color", "always", "lang"]),
+            ColorChoice::Always
+        );
+    }
 }

@@ -204,7 +204,7 @@ mod tests {
     fn execute_returns_invalid_env_name() {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "../bad", &["python".to_string()]).unwrap_err();
             assert!(matches!(err, ScoopError::InvalidEnvName { .. }));
         });
@@ -215,7 +215,7 @@ mod tests {
     fn execute_returns_not_found_for_missing_env() {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "ghost", &["python".to_string()]).unwrap_err();
             assert!(matches!(err, ScoopError::VirtualenvNotFound { .. }));
         });
@@ -231,7 +231,7 @@ mod tests {
                 .join("myenv")
                 .join("bin");
             std::fs::create_dir_all(&bin).unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "myenv", &[]).unwrap_err();
             assert!(matches!(err, ScoopError::InvalidArgument { .. }));
         });

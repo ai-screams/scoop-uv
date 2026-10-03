@@ -309,8 +309,8 @@ for result in results {
 }
 
 // Auto-fix issues (requires Output for progress display)
-use scoop_uv::output::Output;
-let output = Output::new(0, false, false, false);
+use scoop_uv::output::{Colors, Output};
+let output = Output::new(0, false, Colors::NONE, false);
 let fixed_results = doctor.run_and_fix(&output);
 ```
 

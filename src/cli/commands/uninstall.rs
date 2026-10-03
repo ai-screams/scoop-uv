@@ -311,7 +311,7 @@ mod tests {
             return;
         }
 
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute(&output, "3.12.0", false, false);
 
         assert!(result.is_err());

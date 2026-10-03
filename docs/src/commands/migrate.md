@@ -45,7 +45,7 @@ scuv migrate all
 | `--rename <new-name>` | `@env` | Migrate under a different name |
 | `--auto-rename` | `@env` | On name conflict, append `-<source>` suffix automatically (conflicts with `--force`) |
 
-Global flags (`--quiet`, `--no-color`) apply to all subcommands.
+Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 
 ## Exit codes
 

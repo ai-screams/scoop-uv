@@ -224,7 +224,7 @@ mod tests {
             Some(missing_home.to_str().unwrap()),
         )]);
 
-        let output = crate::output::Output::new(0, true, true, false);
+        let output = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
         let broken = CheckResult::error("home", "SCUV_HOME directory", "directory not found");
 
         let fixed = HomeCheck.fix(&broken, &output);
@@ -246,7 +246,7 @@ mod tests {
             Some(tmp.path().to_str().unwrap()),
         )]);
 
-        let output = crate::output::Output::new(0, true, true, false);
+        let output = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
         let unrelated = CheckResult::error("home", "SCUV_HOME directory", "permission denied");
         assert!(HomeCheck.fix(&unrelated, &output).is_none());
 

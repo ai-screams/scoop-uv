@@ -596,7 +596,7 @@ mod tests {
     fn healthy_env_passes_all_checks() {
         with_temp_scoop_home(|_| {
             let path = make_env("ok", "3.12.0");
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             // No panic, no error.
             execute(&output, Some("ok"), false).unwrap();
 
@@ -760,7 +760,7 @@ mod tests {
     #[serial]
     fn empty_scoop_home_emits_no_envs_message() {
         with_temp_scoop_home(|_| {
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             execute(&output, None, false).unwrap();
         });
     }

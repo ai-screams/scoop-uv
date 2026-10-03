@@ -74,14 +74,14 @@ mod tests {
 
     #[test]
     fn execute_rejects_path_separator_in_exe() {
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         let err = execute(&output, "../python", Some("myenv")).unwrap_err();
         assert!(matches!(err, ScoopError::ExecutableNotFound { .. }));
     }
 
     #[test]
     fn execute_rejects_empty_exe() {
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         let err = execute(&output, "", Some("myenv")).unwrap_err();
         assert!(matches!(err, ScoopError::ExecutableNotFound { .. }));
     }
@@ -91,7 +91,7 @@ mod tests {
     fn execute_returns_not_found_for_missing_env() {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "python", Some("nonexistent")).unwrap_err();
             assert!(matches!(err, ScoopError::VirtualenvNotFound { .. }));
         });
@@ -106,7 +106,7 @@ mod tests {
             unsafe {
                 std::env::remove_var("SCUV_ACTIVE");
             }
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             // Use a tempdir as CWD that has no .scuv-version file.
             let workdir = TempDir::new().unwrap();
             let prev = std::env::current_dir().ok();
@@ -133,7 +133,7 @@ mod tests {
             std::fs::create_dir_all(&bin).unwrap();
             std::fs::write(bin.join("pytest"), b"").unwrap();
 
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             // The handler prints to stdout; we just need the Result to be Ok.
             assert!(execute(&output, "pytest", Some("myenv")).is_ok());
         });

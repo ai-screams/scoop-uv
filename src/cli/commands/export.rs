@@ -61,7 +61,7 @@ mod tests {
     fn execute_returns_not_found_for_missing_env() {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "ghost", None).unwrap_err();
             assert!(matches!(err, ScoopError::VirtualenvNotFound { .. }));
         });
@@ -90,7 +90,7 @@ mod tests {
             std::fs::write(env_dir.join(".scoop-metadata.json"), meta_json).unwrap();
 
             let out_file = temp_dir.path().join("snap.json");
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             execute(&output, "snap", Some(&out_file)).expect("export should succeed");
 
             let contents = std::fs::read_to_string(&out_file).unwrap();

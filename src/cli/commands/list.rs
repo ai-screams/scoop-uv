@@ -196,7 +196,7 @@ fn list_virtualenvs(
             let version = env.python_version.as_deref().unwrap_or("-");
             let path = abbreviate_home(&env.path);
 
-            if output.use_color() && is_active {
+            if output.use_color_stdout() && is_active {
                 println!(
                     "{} {:<name_w$}  {:<ver_w$}  {}",
                     marker.green(),
@@ -224,7 +224,7 @@ fn list_virtualenvs(
             let marker = if system_active { "*" } else { " " };
             let display_path = format!("{} (system)", path);
 
-            if output.use_color() && system_active {
+            if output.use_color_stdout() && system_active {
                 println!(
                     "{} {:<name_w$}  {:<ver_w$}  {}",
                     marker.green(),

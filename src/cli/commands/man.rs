@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn render_to_dir_emits_top_level_and_subcommand_pages() {
         let tmp = TempDir::new().unwrap();
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         execute(&output, Some(tmp.path())).unwrap();
 
         // Top-level page must exist
@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn render_to_dir_emits_page_for_every_non_hidden_subcommand() {
         let tmp = TempDir::new().unwrap();
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         execute(&output, Some(tmp.path())).unwrap();
 
         let cmd = Cli::command();
@@ -177,7 +177,7 @@ mod tests {
     #[test]
     fn render_to_dir_skips_hidden_subcommands() {
         let tmp = TempDir::new().unwrap();
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         execute(&output, Some(tmp.path())).unwrap();
 
         // `activate`, `deactivate`, `resolve` are hidden (shell-internal).
@@ -209,7 +209,7 @@ mod tests {
         // fire and the canary content must stay intact.
         std::os::unix::fs::symlink(&canary, tmp.path().join("scuv.1")).unwrap();
 
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute(&output, Some(tmp.path()));
         assert!(result.is_err(), "must refuse to write through symlink");
         assert_eq!(

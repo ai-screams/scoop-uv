@@ -109,7 +109,7 @@ fn dry_run_does_not_remove() {
         fs::create_dir_all(&dir).unwrap();
         make_env(&dir, "no-meta", false, true);
 
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         execute(&output, false, false, None).unwrap();
 
         assert!(
@@ -127,7 +127,7 @@ fn yes_actually_removes_orphans() {
         fs::create_dir_all(&dir).unwrap();
         make_env(&dir, "no-meta", false, true);
 
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         execute(&output, true, false, None).unwrap();
 
         assert!(!dir.join("no-meta").exists(), "--yes should remove orphans");
@@ -167,7 +167,7 @@ fn scan_skips_symlink_entries() {
 
         // Defense-in-depth: even the full --yes path must leave the
         // canary intact.
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         execute(&output, true, false, None).unwrap();
         assert!(
             canary.exists(),
@@ -251,7 +251,7 @@ fn remove_skips_env_that_became_healthy() {
             error: None,
         }];
 
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         remove_orphans(
             &output,
             &[stale_orphan],
@@ -424,7 +424,7 @@ fn execute_rejects_invalid_older_than() {
         let dir = paths::virtualenvs_dir().unwrap();
         fs::create_dir_all(&dir).unwrap();
 
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         for bad in ["garbage", "0d", "6m", "18446744073709551615d", "200y1d"] {
             let err = execute(&output, false, false, Some(bad)).unwrap_err();
             assert!(
@@ -568,7 +568,7 @@ fn remove_treats_not_found_as_already_removed() {
             error: None,
         }];
 
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         remove_orphans(
             &output,
             &[phantom],
@@ -617,7 +617,7 @@ fn remove_records_actual_outcomes_for_each_env() {
             })
             .collect();
 
-        let output = Output::new(0, true, true, false);
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
         remove_orphans(
             &output,
             &orphans,

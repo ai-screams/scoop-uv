@@ -120,7 +120,7 @@ mod tests {
             // Create virtualenvs directory (required by VirtualenvService)
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
 
-            let output = Output::new(0, false, false, false);
+            let output = Output::new(0, false, crate::output::Colors::ALL, false);
             let result = execute(&output, "nonexistent", false, false);
 
             assert!(result.is_err());
@@ -135,7 +135,7 @@ mod tests {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
 
-            let output = Output::new(0, false, false, false);
+            let output = Output::new(0, false, crate::output::Colors::ALL, false);
             // all_packages flag should not cause panic even with nonexistent env
             let result = execute(&output, "nonexistent", true, false);
 
@@ -149,7 +149,7 @@ mod tests {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
 
-            let output = Output::new(0, false, false, false);
+            let output = Output::new(0, false, crate::output::Colors::ALL, false);
             // no_size flag should not cause panic
             let result = execute(&output, "nonexistent", false, true);
 

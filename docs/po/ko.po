@@ -947,16 +947,16 @@ msgstr "# .scuv-version에 \"system\" 기록\n"
 msgid "# Set SCUV_VERSION=system (this terminal only)\n"
 msgstr "# SCUV_VERSION=system 설정 (현재 터미널에만 적용)\n"
 
-#: src/shell-integration.md:120 src/commands/index.md:46
+#: src/shell-integration.md:120 src/commands/index.md:47
 msgid "Environment Variables"
 msgstr "환경 변수"
 
-#: src/shell-integration.md:122 src/commands/index.md:48 src/commands/run.md:26
+#: src/shell-integration.md:122 src/commands/index.md:49 src/commands/run.md:26
 msgid "Variable"
 msgstr "변수"
 
 #: src/shell-integration.md:122 src/commands/index.md:7
-#: src/commands/index.md:39 src/commands/index.md:48 src/commands/list.md:15
+#: src/commands/index.md:39 src/commands/index.md:49 src/commands/list.md:15
 #: src/commands/create.md:13 src/commands/create.md:20 src/commands/use.md:15
 #: src/commands/use.md:21 src/commands/remove.md:15 src/commands/remove.md:21
 #: src/commands/install.md:13 src/commands/install.md:19
@@ -976,12 +976,12 @@ msgstr "변수"
 msgid "Description"
 msgstr "설명"
 
-#: src/shell-integration.md:122 src/commands/index.md:48
+#: src/shell-integration.md:122 src/commands/index.md:49
 #: src/commands/create.md:13 src/commands/install.md:13
 msgid "Default"
 msgstr "기본값"
 
-#: src/shell-integration.md:124 src/commands/index.md:50
+#: src/shell-integration.md:124 src/commands/index.md:51
 msgid "`SCUV_HOME`"
 msgstr "`SCUV_HOME`"
 
@@ -989,11 +989,11 @@ msgstr "`SCUV_HOME`"
 msgid "Base directory"
 msgstr "기본 디렉터리"
 
-#: src/shell-integration.md:124 src/commands/index.md:50
+#: src/shell-integration.md:124 src/commands/index.md:51
 msgid "`~/.scuv`"
 msgstr "`~/.scuv`"
 
-#: src/shell-integration.md:125 src/commands/index.md:54
+#: src/shell-integration.md:125 src/commands/index.md:55
 #: src/commands/status.md:34
 msgid "`SCUV_VERSION`"
 msgstr "`SCUV_VERSION`"
@@ -1003,20 +1003,20 @@ msgid "Override version (highest priority)"
 msgstr "버전 재정의 (최우선 순위)"
 
 #: src/shell-integration.md:125 src/shell-integration.md:126
-#: src/commands/index.md:51 src/commands/index.md:53 src/commands/index.md:54
-#: src/commands/index.md:55 src/commands/index.md:56
+#: src/commands/index.md:52 src/commands/index.md:54 src/commands/index.md:55
+#: src/commands/index.md:56 src/commands/index.md:57
 msgid "(unset)"
 msgstr "(미설정)"
 
-#: src/shell-integration.md:126 src/commands/index.md:51
+#: src/shell-integration.md:126 src/commands/index.md:52
 msgid "`SCUV_NO_AUTO`"
 msgstr "`SCUV_NO_AUTO`"
 
-#: src/shell-integration.md:126 src/commands/index.md:51
+#: src/shell-integration.md:126 src/commands/index.md:52
 msgid "Disable auto-activation"
 msgstr "자동 활성화 비활성화"
 
-#: src/shell-integration.md:127 src/commands/index.md:55 src/commands/run.md:29
+#: src/shell-integration.md:127 src/commands/index.md:56 src/commands/run.md:29
 msgid "`SCUV_ACTIVE`"
 msgstr "`SCUV_ACTIVE`"
 
@@ -1028,7 +1028,7 @@ msgstr "현재 활성화된 환경"
 msgid "(set by scuv)"
 msgstr "(scuv가 자동으로 설정)"
 
-#: src/shell-integration.md:128 src/commands/index.md:56
+#: src/shell-integration.md:128 src/commands/index.md:57
 msgid "`SCUV_RESOLVE_MAX_DEPTH`"
 msgstr "`SCUV_RESOLVE_MAX_DEPTH`"
 
@@ -2843,61 +2843,77 @@ msgid "Suppress all output"
 msgstr "모든 출력 억제"
 
 #: src/commands/index.md:42
+msgid "`--color <WHEN>`"
+msgstr "`--color <WHEN>`"
+
+#: src/commands/index.md:42
+msgid ""
+"When to use color: `auto` (default; on a terminal unless `NO_COLOR` is set), "
+"`always`, `never`"
+msgstr ""
+"색을 쓸 때: `auto`(기본값, 터미널이고 `NO_COLOR`가 없을 때), `always`, "
+"`never`"
+
+#: src/commands/index.md:43
 msgid "`--no-color`"
 msgstr "`--no-color`"
 
-#: src/commands/index.md:42
-msgid "Disable colored output"
-msgstr "컬러 출력 비활성화"
-
 #: src/commands/index.md:43
+msgid "Same as `--color never`"
+msgstr "`--color never`와 같음"
+
+#: src/commands/index.md:44
 msgid "`-h`, `--help`"
 msgstr "`-h`, `--help`"
 
-#: src/commands/index.md:43
+#: src/commands/index.md:44
 msgid "Show help message"
 msgstr "도움말 표시"
 
-#: src/commands/index.md:44
+#: src/commands/index.md:45
 msgid "`-V`, `--version`"
 msgstr "`-V`, `--version`"
 
-#: src/commands/index.md:44
+#: src/commands/index.md:45
 msgid "Show version"
 msgstr "버전 표시"
 
-#: src/commands/index.md:50
+#: src/commands/index.md:51
 msgid "Base directory for scuv"
 msgstr "scuv의 기본 디렉터리"
 
-#: src/commands/index.md:52
+#: src/commands/index.md:53
 msgid "`SCUV_LANG`"
 msgstr "`SCUV_LANG`"
 
-#: src/commands/index.md:52
+#: src/commands/index.md:53
 msgid "Display language (en, ko, ja, pt-BR, es)"
 msgstr "표시 언어 (en, ko, ja, pt-BR, es)"
 
-#: src/commands/index.md:52
+#: src/commands/index.md:53
 msgid "System locale"
 msgstr "시스템 로케일"
 
-#: src/commands/index.md:53
+#: src/commands/index.md:54
 msgid "`NO_COLOR`"
 msgstr "`NO_COLOR`"
 
-#: src/commands/index.md:53
-msgid "Disable colored output when set to any non-empty value"
-msgstr "비어 있지 않은 값이면 무엇이든 컬러 출력 비활성화"
-
 #: src/commands/index.md:54
+msgid ""
+"Disable colored output when set to any non-empty value (an explicit `--color "
+"always` still colors)"
+msgstr ""
+"비어 있지 않은 값이면 무엇이든 컬러 출력 비활성화(`--color always`를 명시하"
+"면 그래도 색을 씀)"
+
+#: src/commands/index.md:55
 msgid ""
 "Shell-session override; highest-priority version selector (set by `scuv "
 "shell`)"
 msgstr ""
 "셸 세션 오버라이드; 가장 높은 우선순위의 버전 선택자 (`scuv shell`로 설정)"
 
-#: src/commands/index.md:55
+#: src/commands/index.md:56
 msgid ""
 "Name of the currently active environment (set by the activation script; read "
 "by `status`/`which`/`run`)"
@@ -2905,7 +2921,7 @@ msgstr ""
 "현재 활성 환경의 이름 (활성화 스크립트로 설정; `status`/`which`/`run`에서 참"
 "조)"
 
-#: src/commands/index.md:56
+#: src/commands/index.md:57
 msgid ""
 "Caps the parent-directory walk when resolving `.scuv-version` (0 = current "
 "dir only; unset = unlimited)"
@@ -2913,48 +2929,48 @@ msgstr ""
 "`.scuv-version` 탐색 시 부모 디렉터리 탐색 횟수 제한 (0 = 현재 디렉터리만; 미"
 "설정 = 무제한)"
 
-#: src/commands/index.md:58
+#: src/commands/index.md:59
 msgid "Directory Layout"
 msgstr "디렉터리 구조"
 
-#: src/commands/index.md:60
+#: src/commands/index.md:61
 msgid "Location"
 msgstr "위치"
 
-#: src/commands/index.md:60 src/development/architecture.md:85
+#: src/commands/index.md:61 src/development/architecture.md:85
 #: src/development/architecture.md:322 src/development/ci-cd.md:227
 msgid "Purpose"
 msgstr "용도"
 
-#: src/commands/index.md:62
+#: src/commands/index.md:63
 msgid "`~/.scuv/virtualenvs/`"
 msgstr "`~/.scuv/virtualenvs/`"
 
-#: src/commands/index.md:62
+#: src/commands/index.md:63
 msgid "Virtual environments storage"
 msgstr "가상 환경 저장소"
 
-#: src/commands/index.md:63
+#: src/commands/index.md:64
 msgid "`~/.scuv/version`"
 msgstr "`~/.scuv/version`"
 
-#: src/commands/index.md:63
+#: src/commands/index.md:64
 msgid "Global default environment"
 msgstr "전역 기본 환경"
 
-#: src/commands/index.md:64
+#: src/commands/index.md:65
 msgid "`.scuv-version`"
 msgstr "`.scuv-version`"
 
-#: src/commands/index.md:64
+#: src/commands/index.md:65
 msgid "Local environment preference"
 msgstr "로컬 환경 설정"
 
-#: src/commands/index.md:65
+#: src/commands/index.md:66
 msgid "`.venv`"
 msgstr "`.venv`"
 
-#: src/commands/index.md:65
+#: src/commands/index.md:66
 msgid "Symlink to active environment (with `--link`)"
 msgstr "활성 환경에 대한 심볼릭 링크 (`--link` 사용 시)"
 
@@ -5806,8 +5822,11 @@ msgstr ""
 "이름 충돌 시 `-<source>` 접미사를 자동으로 추가합니다(`--force`와 충돌)"
 
 #: src/commands/migrate.md:48
-msgid "Global flags (`--quiet`, `--no-color`) apply to all subcommands."
-msgstr "전역 플래그(`--quiet`, `--no-color`)는 모든 서브커맨드에 적용됩니다."
+msgid ""
+"Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands."
+msgstr ""
+"전역 플래그(`--quiet`, `--color`, `--no-color`)는 모든 서브커맨드에 적용됩니"
+"다."
 
 #: src/commands/migrate.md:50 src/commands/verify.md:36 src/commands/diff.md:47
 msgid "Exit codes"
@@ -7321,8 +7340,8 @@ msgstr ""
 "제)."
 
 #: src/commands/diff.md:45
-msgid "Global flags (`--quiet`, `--no-color`) apply."
-msgstr "전역 플래그(`--quiet`, `--no-color`)가 적용됩니다."
+msgid "Global flags (`--quiet`, `--color`, `--no-color`) apply."
+msgstr "전역 플래그(`--quiet`, `--color`, `--no-color`)가 적용됩니다."
 
 #: src/commands/diff.md:49
 msgid ""
@@ -14619,8 +14638,8 @@ msgid "Most commands support `--json` for machine-readable output."
 msgstr "대부분의 명령은 기계가 읽기 쉬운 출력을 위해 `--json`을 지원합니다."
 
 #: src/llms.md:61
-msgid "Global options: `--quiet`, `--no-color`"
-msgstr "전역 옵션: `--quiet`, `--no-color`"
+msgid "Global options: `--quiet`, `--color <auto|always|never>`, `--no-color`"
+msgstr "전역 옵션: `--quiet`, `--color <auto|always|never>`, `--no-color`"
 
 #: src/llms.md:63
 msgid "Key Concepts"
@@ -14906,6 +14925,9 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "Disable colored output"
+#~ msgstr "컬러 출력 비활성화"
 
 #~ msgid ""
 #~ "A `.venv` symlink in the current directory (made by `scuv use --link`) "

@@ -246,7 +246,10 @@ mod tests {
             assert!(results[0].is_error());
 
             let fixed = VenvLinkCheck
-                .fix(&results[0], &Output::new(0, true, true, false))
+                .fix(
+                    &results[0],
+                    &Output::new(0, true, crate::output::Colors::NONE, false),
+                )
                 .expect("a dangling scuv link is fixable");
             assert!(fixed.is_ok());
             assert!(!link.is_symlink());

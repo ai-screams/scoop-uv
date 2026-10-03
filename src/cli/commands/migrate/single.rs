@@ -492,7 +492,7 @@ mod tests {
     #[serial]
     fn migrate_environment_not_found_returns_error() {
         with_isolated_migrate_env(|| {
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions::default();
 
             let result = migrate_environment(&output, "nonexistent_env_12345", &opts);
@@ -504,7 +504,7 @@ mod tests {
     #[serial]
     fn migrate_environment_with_pyenv_filter_not_found() {
         with_isolated_migrate_env(|| {
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(crate::cli::MigrateSource::Pyenv),
                 ..Default::default()
@@ -522,7 +522,7 @@ mod tests {
             // Create a corrupted environment (no bin/python)
             create_corrupted_pyenv_env(pyenv.path(), "corrupted_env", "3.12.0");
 
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(crate::cli::MigrateSource::Pyenv),
                 json: false,
@@ -548,7 +548,7 @@ mod tests {
         with_full_migrate_env(|_scoop, pyenv| {
             create_corrupted_pyenv_env(pyenv.path(), "corrupted_json", "3.12.0");
 
-            let output = Output::new(0, false, true, true);
+            let output = Output::new(0, false, crate::output::Colors::NONE, true);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(crate::cli::MigrateSource::Pyenv),
                 json: true,
@@ -618,7 +618,7 @@ mod tests {
             // Create environment with Python 2.7 (EOL)
             create_mock_pyenv_env(pyenv.path(), "py27_env", "2.7.18");
 
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(crate::cli::MigrateSource::Pyenv),
                 force: false,

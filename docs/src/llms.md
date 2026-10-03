@@ -58,7 +58,7 @@ All virtualenvs are stored in `~/.scuv/virtualenvs/`. Override with `SCUV_HOME` 
 
 Most commands support `--json` for machine-readable output.
 
-Global options: `--quiet`, `--no-color`
+Global options: `--quiet`, `--color <auto|always|never>`, `--no-color`
 
 ## Key Concepts
 

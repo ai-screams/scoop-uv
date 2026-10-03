@@ -107,7 +107,7 @@ mod tests {
     }
 
     fn quiet_output() -> crate::output::Output {
-        crate::output::Output::new(0, true, true, false)
+        crate::output::Output::new(0, true, crate::output::Colors::NONE, false)
     }
 
     #[test]

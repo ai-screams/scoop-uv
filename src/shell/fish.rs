@@ -100,6 +100,13 @@ complete -c scuv -f
 # Subcommands
 set -l commands list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang
 
+# Options every subcommand takes (`global = true` in the CLI), defined once.
+# `--color`'s values stay on offer right after it (`--color <TAB>`), which
+# the "not already used" condition would otherwise switch off.
+complete -c scuv -n "__fish_seen_subcommand_from $commands; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
+complete -c scuv -n "__fish_seen_subcommand_from $commands; and begin; not __fish_contains_opt color; or __fish_prev_arg_in --color; end" -l color -d "When to use color" -x -a "auto always never"
+complete -c scuv -n "__fish_seen_subcommand_from $commands; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
+
 complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "list" -d "List all virtual environments"
 complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "use" -d "Set local environment for current directory"
 complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "create" -d "Create a new virtual environment"
@@ -118,56 +125,38 @@ complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "lang" -d "Se
 
 # Options for 'list' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt pythons" -l pythons -d "Show installed Python versions"
-complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt sort" -l sort -d "Sort order" -x -a "name created last-used"
+complete -c scuv -n "__fish_seen_subcommand_from list; and begin; not __fish_contains_opt sort; or __fish_prev_arg_in --sort; end" -l sort -d "Sort order" -x -a "name created last-used"
 complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt json" -l json -d "Output as JSON"
-complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'use' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt unset" -l unset -d "Remove version setting"
 complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt global" -l global -d "Set as global default"
 complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l link -d "Create .venv symlink"
 complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt link no-link" -l no-link -d "Do not create .venv symlink"
-complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from use; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'create' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt force" -l force -d "Overwrite existing environment"
-complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from create; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'remove' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt force" -l force -d "Skip confirmation"
-complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from remove; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'info' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt json" -l json -d "Output as JSON"
 complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt all-packages" -l all-packages -d "Show all installed packages"
 complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-size" -l no-size -d "Skip directory size calculation"
-complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'install' (with duplicate prevention, --latest/--stable mutually exclusive)
 complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l latest -d "Install latest stable Python"
 complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l stable -d "Install oldest fully-supported Python"
-complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'uninstall' (with duplicate prevention)
-complete -c scuv -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from uninstall; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'doctor' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s v verbose" -s v -l verbose -d "Increase verbosity"
 complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt json" -l json -d "Output as JSON"
-complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Options for 'shell' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt unset" -l unset -d "Clear shell-specific environment"
-complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt -s q quiet" -s q -l quiet -d "Suppress output"
-complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt no-color" -l no-color -d "Disable colored output"
 
 # Dynamic completions: virtual environment names
 complete -c scuv -n "__fish_seen_subcommand_from use remove info activate shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
