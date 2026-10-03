@@ -138,6 +138,23 @@ mod tests {
         assert!(!init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
+    /// Every subcommand is offered at the first position. The list is
+    /// hand-written; fails if a subcommand added to the CLI is missing here
+    /// (or one is listed that no longer exists).
+    #[test]
+    fn completion_offers_every_subcommand() {
+        let script = init_script();
+        let start = script.find("local commands=(").expect("zsh commands array");
+        let block = &script[start..start + script[start..].find(')').unwrap()];
+        let re = regex::Regex::new(r"'([a-z@-]+):").unwrap();
+        let mut found: Vec<&str> = re
+            .captures_iter(block)
+            .map(|c| c.get(1).unwrap().as_str())
+            .collect();
+        found.sort_unstable();
+        assert_eq!(found, crate::shell::common::completion_subcommands());
+    }
+
     /// The `scuv lang` completion candidates are hand-written in this script;
     /// this pins them to `SUPPORTED_LANGS` so adding a locale cannot skip a
     /// shell. Fails if a code is missing from (or extra in) the list.

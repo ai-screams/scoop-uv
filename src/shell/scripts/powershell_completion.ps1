@@ -4,7 +4,8 @@ Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
 
     $commands = @('list', 'create', 'use', 'remove', 'info', 'install', 'uninstall',
                   'doctor', 'init', 'completions', 'activate', 'deactivate', 'shell',
-                  'migrate', 'lang')
+                  'migrate', 'lang', 'self', 'status', 'clone', 'export', 'import',
+                  'sync', 'run', 'which', 'prune', 'gc', 'man', 'verify', 'diff')
 
     $tokens = $commandAst.ToString() -split '\s+'
     $cmd = if ($tokens.Count -gt 1) { $tokens[1] } else { '' }
@@ -18,7 +19,7 @@ Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
     }
 
     # Environment name completion for specific commands
-    if ($cmd -in 'use', 'remove', 'info', 'activate', 'shell') {
+    if ($cmd -in 'use', 'remove', 'info', 'activate', 'shell', 'clone', 'export', 'run', 'verify', 'diff') {
         $envs = & $script:ScuvBin list --bare 2>$null
         if ($envs) {
             $envs | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
@@ -50,6 +51,14 @@ Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
     # Language completion for lang
     if ($cmd -eq 'lang') {
         @('en', 'ko', 'ja', 'pt-BR', 'es') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+        }
+        return
+    }
+
+    # self has one subcommand
+    if ($cmd -eq 'self') {
+        @('update') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
             [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
         }
         return

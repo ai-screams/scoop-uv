@@ -58,6 +58,19 @@ _scuv() {
                 'shell:Set shell-specific environment'
                 'migrate:Migrate environments from other tools'
                 'lang:Set or show language preference'
+                'self:Manage scuv itself'
+                'status:Show the current environment status'
+                'clone:Clone an environment'
+                'export:Export an environment as a portable JSON file'
+                'import:Import an environment from a scuv export file'
+                'sync:Sync an environment from .scuv.toml'
+                'run:Run a command inside an environment'
+                'which:Print the full path to an executable in an environment'
+                'prune:Prune the uv cache'
+                'gc:Garbage-collect orphan virtual environments'
+                'man:Generate man pages'
+                'verify:Verify environment health'
+                'diff:Compare two virtual environments'
             )
             _describe -V 'command' commands
             ;;
@@ -320,6 +333,46 @@ _scuv() {
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
+                    fi
+                    ;;
+                clone|export|run|verify|diff)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _scuv_global_opts
+                        _describe 'option' opts
+                    else
+                        # Environment names: diff takes two, the others one
+                        local max=1 count=0
+                        [[ ${line[1]} == diff ]] && max=2
+                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
+                        for w in "${prev_args[@]}"; do
+                            [[ $w != -* && -n $w ]] && ((count++))
+                        done
+                        if (( count < max )); then
+                            local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
+                            compadd -a envs
+                        fi
+                    fi
+                    ;;
+                self)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _scuv_global_opts
+                        _describe 'option' opts
+                    else
+                        local subcmds=('update:Reinstall scuv from crates.io')
+                        _describe 'subcommand' subcmds
+                    fi
+                    ;;
+                import|man)
+                    # A file (import) or a directory (man)
+                    _files
+                    ;;
+                status|sync|which|prune|gc)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _scuv_global_opts
+                        _describe 'option' opts
                     fi
                     ;;
                 migrate)

@@ -140,6 +140,22 @@ mod tests {
         assert!(!init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
+    /// Every subcommand is offered at the first position. The list is
+    /// hand-written; fails if a subcommand added to the CLI is missing here
+    /// (or one is listed that no longer exists).
+    #[test]
+    fn completion_offers_every_subcommand() {
+        let script = init_script();
+        let re = regex::Regex::new(
+            r#"COMP_CWORD\} -eq 1 \]\]; then\s*\n\s*COMPREPLY=\(\$\(compgen -W "([^"]+)""#,
+        )
+        .unwrap();
+        let caps = re.captures(script).expect("bash must complete subcommands");
+        let mut found: Vec<&str> = caps.get(1).unwrap().as_str().split_whitespace().collect();
+        found.sort_unstable();
+        assert_eq!(found, crate::shell::common::completion_subcommands());
+    }
+
     /// The `scuv lang` completion candidates are hand-written in this script;
     /// this pins them to `SUPPORTED_LANGS` so adding a locale cannot skip a
     /// shell. Fails if a code is missing from (or extra in) the list.

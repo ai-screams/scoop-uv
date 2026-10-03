@@ -253,6 +253,32 @@ mod tests {
         assert!(!init_script().contains("SCUV_SUPPRESS_DEPRECATION"));
     }
 
+    /// Every subcommand is offered at the first position, and the
+    /// `$commands` list that gates the per-subcommand rules names the same
+    /// set. Both are hand-written; fails if a subcommand added to the CLI is
+    /// missing from either (or one is listed that no longer exists).
+    #[test]
+    fn completion_offers_every_subcommand() {
+        let script = init_script();
+        let expected = crate::shell::common::completion_subcommands();
+        let list = script
+            .lines()
+            .find_map(|l| l.strip_prefix("set -l commands "))
+            .expect("fish $commands list");
+        let mut gate: Vec<&str> = list.split_whitespace().collect();
+        gate.sort_unstable();
+        assert_eq!(gate, expected);
+        let re =
+            regex::Regex::new(r#"-n "not __fish_seen_subcommand_from \$commands" -a "([a-z-]+)""#)
+                .unwrap();
+        let mut offered: Vec<&str> = re
+            .captures_iter(script)
+            .map(|c| c.get(1).unwrap().as_str())
+            .collect();
+        offered.sort_unstable();
+        assert_eq!(offered, expected);
+    }
+
     /// The `scuv lang` completion candidates are hand-written in this script;
     /// this pins them to `SUPPORTED_LANGS` so adding a locale cannot skip a
     /// shell. Fails if a code is missing from (or extra in) the list.

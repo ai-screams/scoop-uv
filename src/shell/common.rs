@@ -160,6 +160,22 @@ macro_rules! file_resolution_check {
 pub use file_resolution_check;
 pub use scoop_version_check;
 
+/// The subcommands every hand-written completion script must offer: the
+/// visible ones, plus `activate`/`deactivate`, which are hidden from
+/// `--help` but typed by users through the shell wrapper. `resolve` is
+/// internal to the auto-activate hook and stays out.
+#[cfg(test)]
+pub(crate) fn completion_subcommands() -> Vec<String> {
+    use clap::CommandFactory;
+    let mut names: Vec<String> = crate::cli::Cli::command()
+        .get_subcommands()
+        .filter(|c| !c.is_hide_set() || matches!(c.get_name(), "activate" | "deactivate"))
+        .map(|c| c.get_name().to_string())
+        .collect();
+    names.sort_unstable();
+    names
+}
+
 #[cfg(test)]
 mod tests {
     /// Verify bash hook contains priority comment

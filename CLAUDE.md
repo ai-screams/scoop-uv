@@ -246,6 +246,8 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 
 The last three carry `#[command(hide = true)]` — the shell wrappers call them via `eval`, they are absent from `--help`, and they deliberately have no page under `docs/src/commands/`.
 
+Adding a subcommand also means adding it to the four hand-written completion scripts (`src/shell/scripts/*_completion.*`): `completion_offers_every_subcommand` in each shell module compares them with the clap command tree and fails until they match.
+
 ### Global Options
 
 | Option | Description |
