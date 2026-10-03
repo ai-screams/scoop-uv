@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791063369595,
+  "lastUpdate": 1791063371206,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -9553,6 +9553,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1122,
             "range": "± 16",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8150d1d97d15d5a9ef46152e428c56af600b4256",
+          "message": "Merge pull request #221 from ai-screams/fix/migrate-auto-rename\n\nfix(migrate): let --rename and --auto-rename migrate a name-conflicted env",
+          "timestamp": "2026-10-04T06:28:33+09:00",
+          "tree_id": "ea3355b3b13f3651a62e051e4e412574d9fbfef7",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/8150d1d97d15d5a9ef46152e428c56af600b4256"
+        },
+        "date": 1791063371088,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1678,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1117,
+            "range": "± 10",
             "unit": "ns/iter"
           }
         ]
