@@ -1090,6 +1090,7 @@ fn every_variant() -> Vec<ScoopError> {
         ScoopError::MigrationSourcesNotFound {
             requested: Some("src-abc".into()),
         },
+        ScoopError::MigrationSourcesNotFound { requested: None },
         ScoopError::MigrationBatchFailed {
             failed_count: 4208,
             conflict_count: 4209,

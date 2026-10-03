@@ -29,6 +29,28 @@ pub enum DiffMode {
     MetadataOnly,
 }
 
+impl DiffMode {
+    /// The mode for `--packages-only` / `--metadata-only` (clap makes them
+    /// mutually exclusive; neither means everything).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use scoop_uv::cli::commands::DiffMode;
+    ///
+    /// assert_eq!(DiffMode::from_flags(true, false), DiffMode::PackagesOnly);
+    /// assert_eq!(DiffMode::from_flags(false, true), DiffMode::MetadataOnly);
+    /// assert_eq!(DiffMode::from_flags(false, false), DiffMode::All);
+    /// ```
+    pub fn from_flags(packages_only: bool, metadata_only: bool) -> Self {
+        match (packages_only, metadata_only) {
+            (true, false) => Self::PackagesOnly,
+            (false, true) => Self::MetadataOnly,
+            _ => Self::All,
+        }
+    }
+}
+
 /// One normalised package entry for diff input.
 ///
 /// `name` is the canonical PEP 503 key used for diff matching;

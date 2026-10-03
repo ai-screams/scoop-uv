@@ -188,12 +188,7 @@ fn dispatch(command: Commands, output: &Output) -> scoop_uv::error::Result<()> {
             strict,
             ..
         } => {
-            let mode = match (packages_only, metadata_only) {
-                (true, false) => scoop_uv::cli::commands::DiffMode::PackagesOnly,
-                (false, true) => scoop_uv::cli::commands::DiffMode::MetadataOnly,
-                // (false, false) is the default; (true, true) is blocked by clap.
-                _ => scoop_uv::cli::commands::DiffMode::All,
-            };
+            let mode = scoop_uv::cli::commands::DiffMode::from_flags(packages_only, metadata_only);
             scoop_uv::cli::commands::diff(
                 output,
                 &scoop_uv::cli::commands::DiffOpts {

@@ -73,3 +73,22 @@ pub(crate) fn fixture_with_active_env() -> TestFixture {
     std::fs::write(env.join("pyvenv.cfg"), "version = 3.12.1\n").unwrap();
     fixture
 }
+
+/// A directory holding a fake `uv` (unix): `--version`, an empty
+/// `python list` and `cache prune`. Put it first on PATH so commands get
+/// past their uv lookup without a real uv. Mirrors `test_utils::FakeUv`,
+/// which the lib tests use; integration tests cannot reach that module.
+#[cfg(unix)]
+pub(crate) fn fake_uv_dir() -> TempDir {
+    use std::os::unix::fs::PermissionsExt;
+
+    let dir = TempDir::new().unwrap();
+    let uv = dir.path().join("uv");
+    std::fs::write(
+        &uv,
+        "#!/bin/sh\ncase \"$1 $2\" in\n  \"--version \"*) echo \"uv 0.12.22\" ;;\n  \"python list\") echo \"[]\" ;;\n  \"cache prune\") ;;\n  *) echo \"fake uv: unsupported: $*\" >&2; exit 2 ;;\nesac\n",
+    )
+    .unwrap();
+    std::fs::set_permissions(&uv, std::fs::Permissions::from_mode(0o755)).unwrap();
+    dir
+}

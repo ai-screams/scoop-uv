@@ -15,6 +15,7 @@
 mod support;
 
 mod color;
+mod dispatch;
 mod errors;
 mod general;
 mod list;
