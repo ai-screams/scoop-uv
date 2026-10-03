@@ -85,12 +85,19 @@ _scuv_complete() {
         return
     fi
 
-    # Positional arguments already on the line (options skipped)
-    local positionals=0
+    # Positional arguments already on the line: options are skipped, and so
+    # is the value of an option that takes one
+    local positionals=0 skip=false
     for ((i=2; i<COMP_CWORD; i++)); do
-        if [[ "${COMP_WORDS[i]}" != -* ]]; then
-            ((positionals++))
+        if [[ $skip == true ]]; then
+            skip=false
+            continue
         fi
+        case "${COMP_WORDS[i]}" in
+            --color|-o|--output|--name|--shell) skip=true ;;
+            -*) ;;
+            *) ((positionals++)) ;;
+        esac
     done
 
     # Argument completion (by subcommand)
@@ -113,8 +120,12 @@ _scuv_complete() {
             fi
             ;;
         import|man)
-            # A file (import) or a directory (man)
-            COMPREPLY=($(compgen -f -- "$cur"))
+            # A file (import) or a directory (man); one name per line, so a
+            # path with spaces stays one candidate
+            if [[ $positionals -eq 0 ]]; then
+                local IFS=$'\n'
+                COMPREPLY=($(compgen -f -- "$cur"))
+            fi
             ;;
         uninstall)
             COMPREPLY=($(compgen -W "$(command scuv list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))

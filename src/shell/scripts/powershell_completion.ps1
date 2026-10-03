@@ -10,16 +10,44 @@ Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
     $tokens = $commandAst.ToString() -split '\s+'
     $cmd = if ($tokens.Count -gt 1) { $tokens[1] } else { '' }
 
-    # First argument: complete subcommands
-    if ($tokens.Count -le 2 -and $wordToComplete -notmatch '^-') {
+    # First argument: complete subcommands. The AST text drops the trailing
+    # space, so `scuv use <TAB>` also has two tokens; only an empty line
+    # after `scuv`, or a partly typed second word, is the subcommand slot.
+    $atSubcommand = $tokens.Count -eq 1 -or ($tokens.Count -eq 2 -and $wordToComplete)
+    if ($atSubcommand -and $wordToComplete -notmatch '^-') {
         $commands | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
             [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
         }
         return
     }
 
-    # Environment name completion for specific commands
+    # Positional arguments before the word being completed: options are
+    # skipped, and so is the value of an option that takes one
+    $before = @($tokens | Select-Object -Skip 2)
+    if ($wordToComplete -and $before.Count -gt 0) { $before = @($before | Select-Object -SkipLast 1) }
+    $positionals = 0
+    $skip = $false
+    foreach ($t in $before) {
+        if ($skip) { $skip = $false; continue }
+        if ($t -cin '--color', '-o', '--output', '--name', '--shell') { $skip = $true }
+        elseif ($t -and $t -notmatch '^-') { $positionals++ }
+    }
+
+    # self has one subcommand; import and man take a path (PowerShell falls
+    # back to path completion when nothing is returned)
+    if ($cmd -eq 'self') {
+        if ($positionals -eq 0) {
+            @('update') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+                [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+            }
+        }
+        return
+    }
+
+    # Environment names where one goes: the first argument, or either of diff's two
+    $maxEnvs = if ($cmd -eq 'diff') { 2 } else { 1 }
     if ($cmd -in 'use', 'remove', 'info', 'activate', 'shell', 'clone', 'export', 'run', 'verify', 'diff') {
+        if ($positionals -ge $maxEnvs) { return }
         $envs = & $script:ScuvBin list --bare 2>$null
         if ($envs) {
             $envs | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
@@ -51,14 +79,6 @@ Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
     # Language completion for lang
     if ($cmd -eq 'lang') {
         @('en', 'ko', 'ja', 'pt-BR', 'es') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
-        return
-    }
-
-    # self has one subcommand
-    if ($cmd -eq 'self') {
-        @('update') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
             [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
         }
         return

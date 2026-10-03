@@ -76,11 +76,14 @@ complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains
 complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt unset" -l unset -d "Clear shell-specific environment"
 
 # Dynamic completions: virtual environment names
-complete -c scuv -n "__fish_seen_subcommand_from use remove info activate shell clone export run verify diff" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
+complete -c scuv -n "__fish_seen_subcommand_from use remove info activate shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
+# Only where an environment name goes: the first argument, or either of diff's two
+complete -c scuv -n "__fish_seen_subcommand_from clone export run verify; and __fish_is_nth_token 2" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
+complete -c scuv -n "__fish_seen_subcommand_from diff; and begin; __fish_is_nth_token 2; or __fish_is_nth_token 3; end" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
 
 # self has one subcommand; import reads a file and man writes to a directory
-complete -c scuv -n "__fish_seen_subcommand_from self" -a "update" -d "Reinstall scuv from crates.io"
-complete -c scuv -n "__fish_seen_subcommand_from import man" -F
+complete -c scuv -n "__fish_seen_subcommand_from self; and __fish_is_nth_token 2" -a "update" -d "Reinstall scuv from crates.io"
+complete -c scuv -n "__fish_seen_subcommand_from import man; and __fish_is_nth_token 2" -F
 
 # Dynamic completions: Python versions for uninstall
 # Note: scuv list --pythons --bare already returns unique, sorted versions

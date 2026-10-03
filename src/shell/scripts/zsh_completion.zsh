@@ -15,6 +15,24 @@ _scuv_global_opts() {
     [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
 }
 
+# Count the positional arguments before the cursor into REPLY: options are
+# skipped, and so is the value of an option that takes one.
+_scuv_positionals() {
+    local w skip=false
+    REPLY=0
+    for w in "${words[@]:2:$((CURRENT-3))}"; do
+        if [[ $skip == true ]]; then
+            skip=false
+            continue
+        fi
+        case "$w" in
+            --color|-o|--output|--name|--shell) skip=true ;;
+            -*|'') ;;
+            *) ((REPLY++)) ;;
+        esac
+    done
+}
+
 _scuv() {
     local curcontext="$curcontext" state line
     typeset -A opt_args
@@ -342,13 +360,10 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Environment names: diff takes two, the others one
-                        local max=1 count=0
+                        local max=1
                         [[ ${line[1]} == diff ]] && max=2
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && ((count++))
-                        done
-                        if (( count < max )); then
+                        _scuv_positionals
+                        if (( REPLY < max )); then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -360,13 +375,23 @@ _scuv() {
                         _scuv_global_opts
                         _describe 'option' opts
                     else
-                        local subcmds=('update:Reinstall scuv from crates.io')
-                        _describe 'subcommand' subcmds
+                        _scuv_positionals
+                        if (( REPLY == 0 )); then
+                            local subcmds=('update:Reinstall scuv from crates.io')
+                            _describe 'subcommand' subcmds
+                        fi
                     fi
                     ;;
                 import|man)
                     # A file (import) or a directory (man)
-                    _files
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _scuv_global_opts
+                        _describe 'option' opts
+                    else
+                        _scuv_positionals
+                        (( REPLY == 0 )) && _files
+                    fi
                     ;;
                 status|sync|which|prune|gc)
                     if [[ $cur == -* ]]; then
