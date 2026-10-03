@@ -17,6 +17,7 @@ use rust_i18n::t;
 
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
+use crate::paths;
 
 use super::scan::{any_source_tool_available, scan_all_environments};
 use super::types::MigrateExecuteOptions;
@@ -68,7 +69,7 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
         migratable,
         conflicts,
         skipped,
-    } = partition_envs(&environments, opts.force);
+    } = partition_envs(&environments, opts.force, &paths::virtualenvs_dir()?);
     let conflict_count = conflicts.len();
 
     // Nothing migratable: unresolved conflicts fail (exit 2, rendered here

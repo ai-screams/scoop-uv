@@ -207,3 +207,22 @@ fn test_remove_json_reports_unlinked_path() {
     let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
     assert!(json["data"].get("unlinked").is_none());
 }
+
+/// Without --force, `remove` asks first. With no terminal to ask on (a
+/// script), that is an error and nothing is deleted; it used to print
+/// "Cancelled" and exit 0. Fails if the prompt error turns into "no" again.
+#[test]
+fn test_remove_without_force_and_without_terminal_fails() {
+    let fixture = TestFixture::new();
+    let env_path = fixture.scoop_home.join("virtualenvs").join("keepme");
+    std::fs::create_dir_all(&env_path).unwrap();
+
+    scoop_cmd(&fixture.scoop_home)
+        .args(["remove", "keepme"])
+        .assert()
+        .failure();
+    assert!(
+        env_path.exists(),
+        "nothing may be removed without an answer"
+    );
+}

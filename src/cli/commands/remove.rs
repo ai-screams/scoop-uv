@@ -27,7 +27,9 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
             .with_prompt(t!("remove.confirm", name = name).to_string())
             .default(false)
             .interact()
-            .unwrap_or(false);
+            // No terminal to ask on (a script without --force) is an error,
+            // not a "no": it used to print "Cancelled" and exit 0.
+            .map_err(|e| crate::error::ScoopError::Io(std::io::Error::other(e)))?;
 
         if !confirmed {
             output.info(&t!("remove.cancelled"));

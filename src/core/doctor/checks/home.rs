@@ -63,11 +63,10 @@ impl Check for HomeCheck {
             if let Ok(home) = paths::scoop_home() {
                 output.info(&format!("Creating {}...", home.display()));
 
-                match std::fs::create_dir_all(&home) {
+                // The home and its virtualenvs subdirectory: report
+                // "created" only when both exist.
+                match std::fs::create_dir_all(home.join("virtualenvs")) {
                     Ok(_) => {
-                        // Also create virtualenvs subdirectory
-                        let _ = std::fs::create_dir_all(home.join("virtualenvs"));
-
                         return Some(
                             CheckResult::ok("home", "SCUV_HOME directory")
                                 .with_details(format!("created {}", home.display())),

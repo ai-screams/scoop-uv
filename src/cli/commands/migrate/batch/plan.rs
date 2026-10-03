@@ -2,9 +2,9 @@
 //! which are skipped.
 
 use std::collections::HashMap;
+use std::path::Path;
 
 use crate::core::migrate::{EnvironmentStatus, SourceEnvironment, SourceType};
-use crate::paths;
 
 use super::super::types::{MigrateSkipped, MigrationConflictDetail};
 
@@ -22,10 +22,14 @@ pub(super) struct PartitionedEnvs<'a> {
 /// "name conflict (use --force)" reason so consumers reading
 /// `data.skipped[]` continue to work — this is intentional, see the
 /// `MigrateAllData` doc comment.
-pub(super) fn partition_envs(
-    environments: &[SourceEnvironment],
+///
+/// `venvs_dir` is where migrated envs land; it only names the target in
+/// conflict details.
+pub(super) fn partition_envs<'a>(
+    environments: &'a [SourceEnvironment],
     force: bool,
-) -> PartitionedEnvs<'_> {
+    venvs_dir: &Path,
+) -> PartitionedEnvs<'a> {
     let mut migratable: Vec<&SourceEnvironment> = Vec::new();
     let mut conflicts: Vec<MigrationConflictDetail> = Vec::new();
     let mut skipped: Vec<MigrateSkipped> = Vec::new();
@@ -67,7 +71,7 @@ pub(super) fn partition_envs(
         if is_ready || force_eligible {
             let key = env.name.to_ascii_lowercase();
             if let Some(winner) = claimed.get(&key) {
-                let target = paths::virtualenv_path(&env.name).unwrap_or_default();
+                let target = venvs_dir.join(&env.name);
                 conflicts.push(MigrationConflictDetail {
                     name: env.name.clone(),
                     source_type: env.source_type,
@@ -163,7 +167,7 @@ mod tests {
             create_test_env_from("web", SourceType::Conda),
         ];
 
-        let p = partition_envs(&envs, false);
+        let p = partition_envs(&envs, false, Path::new("/venvs"));
 
         assert_eq!(p.migratable.len(), 1, "only the first claim may migrate");
         assert_eq!(p.migratable[0].source_type, SourceType::Pyenv);
@@ -189,7 +193,7 @@ mod tests {
             create_test_env_from("web", SourceType::VirtualenvWrapper),
         ];
 
-        let p = partition_envs(&envs, true);
+        let p = partition_envs(&envs, true, Path::new("/venvs"));
 
         assert_eq!(p.migratable.len(), 1);
         assert_eq!(p.conflicts.len(), 1);
@@ -205,7 +209,7 @@ mod tests {
             create_test_env_from("web", SourceType::Conda),
         ];
 
-        let p = partition_envs(&envs, false);
+        let p = partition_envs(&envs, false, Path::new("/venvs"));
 
         assert_eq!(p.migratable.len(), 1);
         assert_eq!(p.migratable[0].name, "Web");
@@ -221,7 +225,7 @@ mod tests {
             create_test_env_from("api", SourceType::Conda),
         ];
 
-        let p = partition_envs(&envs, false);
+        let p = partition_envs(&envs, false, Path::new("/venvs"));
 
         assert_eq!(p.migratable.len(), 2);
         assert!(p.conflicts.is_empty());
@@ -235,7 +239,7 @@ mod tests {
             create_test_env("ready2", EnvironmentStatus::Ready),
         ];
 
-        let p = partition_envs(&envs, false);
+        let p = partition_envs(&envs, false, Path::new("/venvs"));
         assert_eq!(p.migratable.len(), 2);
         assert!(p.conflicts.is_empty());
         assert!(p.skipped.is_empty());
@@ -250,12 +254,12 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, false);
+        let p = partition_envs(&envs, false, Path::new("/venvs"));
         assert!(p.migratable.is_empty());
         assert_eq!(p.skipped.len(), 1);
         assert!(p.skipped[0].reason.contains("corrupted"));
 
-        let p_force = partition_envs(&envs, true);
+        let p_force = partition_envs(&envs, true, Path::new("/venvs"));
         assert!(p_force.migratable.is_empty());
     }
 
@@ -268,7 +272,7 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, false);
+        let p = partition_envs(&envs, false, Path::new("/venvs"));
         assert!(p.migratable.is_empty());
         assert_eq!(p.skipped.len(), 1);
         assert!(p.skipped[0].reason.contains("2.7.18"));
@@ -284,7 +288,7 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, true);
+        let p = partition_envs(&envs, true, Path::new("/venvs"));
         assert_eq!(p.migratable.len(), 1);
         assert!(p.skipped.is_empty());
     }
@@ -301,7 +305,7 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, false);
+        let p = partition_envs(&envs, false, Path::new("/venvs"));
         assert!(p.migratable.is_empty());
         assert_eq!(p.conflicts.len(), 1);
         assert_eq!(p.conflicts[0].name, "dup");
@@ -319,7 +323,7 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, true);
+        let p = partition_envs(&envs, true, Path::new("/venvs"));
         assert_eq!(p.migratable.len(), 1);
         assert!(p.conflicts.is_empty());
         assert!(p.skipped.is_empty());
@@ -349,14 +353,14 @@ mod tests {
             ),
         ];
 
-        let p = partition_envs(&envs, false);
+        let p = partition_envs(&envs, false, Path::new("/venvs"));
         assert_eq!(p.migratable.len(), 1);
         assert_eq!(p.migratable[0].name, "ready");
         assert_eq!(p.conflicts.len(), 1);
         // skipped has: eol + corrupted + conflict
         assert_eq!(p.skipped.len(), 3);
 
-        let p_force = partition_envs(&envs, true);
+        let p_force = partition_envs(&envs, true, Path::new("/venvs"));
         // ready + eol + conflict (not corrupted)
         assert_eq!(p_force.migratable.len(), 3);
         assert!(p_force.conflicts.is_empty());
