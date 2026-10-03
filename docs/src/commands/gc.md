@@ -26,6 +26,8 @@ Healthy environments are left untouched.
 
 With `--aggressive`, `gc` also reports uv-managed Python versions that no surviving environment references. Pair with `--yes` to uninstall them via `uv python uninstall`.
 
+An environment records the version it was created for. uv links environments to a minor version, so one recorded as `3.12` uses whichever 3.12.x is installed, and keeps every installed 3.12.x; one recorded as `3.12.1` keeps only 3.12.1. Pythons that uv does not manage (Homebrew, `/usr/bin/python3`) are never reported.
+
 Without `--aggressive`, Python versions are never touched — even ones that look unused — because manually installed interpreters might be intentionally kept around for ad-hoc use.
 
 ### When Pythons are left alone

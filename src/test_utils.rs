@@ -605,7 +605,7 @@ impl FakeUv {
             r#"#!/bin/sh
 case "$1 $2" in
   "--version "*) echo "uv 0.12.22" ;;
-  "python list") printf '%s\n' '{json}' ;;
+  "python list") echo "$*" >> "{d}/list.log"; printf '%s\n' '{json}' ;;
   "python uninstall") echo "$3" >> "{d}/uninstalled.log" ;;
   "cache prune") ;;
   *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;
@@ -623,6 +623,13 @@ esac
     pub fn path_var(&self) -> String {
         let rest = std::env::var("PATH").unwrap_or_default();
         format!("{}:{rest}", self.dir.path().display())
+    }
+
+    /// The arguments of each `uv python list` call, in order.
+    pub fn list_calls(&self) -> Vec<String> {
+        std::fs::read_to_string(self.dir.path().join("list.log"))
+            .map(|s| s.lines().map(str::to_string).collect())
+            .unwrap_or_default()
     }
 
     /// The versions `uv python uninstall` was called with, in order.
