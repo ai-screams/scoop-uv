@@ -140,9 +140,10 @@ $ scuv migrate list
 • To preview: scuv migrate @env <name> --dry-run
 ```
 
-Each env line starts with `✓` when it is ready to migrate and `⚠` when it
-is not, followed by the reason, such as `(Python 3.7.17 is EOL)` or
-`(conflicts with <path>)`. The grouped env lines go to stdout; the `•`,
+Each env line starts with `✓` when it is ready to migrate, `⚠` for a name
+conflict or an end-of-life Python (followed by the reason, such as
+`(Python 3.7.17 is EOL)` or `(conflicts with <path>)`), and `✗` when the
+env is corrupted. The grouped env lines go to stdout; the `•`,
 `✓ Found` lines go to stderr.
 
 ### Migrate Single Environment
@@ -357,12 +358,12 @@ stays empty. Detect via the exit code.
 Script template:
 
 ```bash
-if ! scuv migrate all --json > out.json; then
-  case $? in
-    2) echo "batch failure — read out.json for detail" ;;
-    3) echo "no source tool installed" ;;
-  esac
-fi
+scuv migrate all --json > out.json
+case $? in
+  0) ;;
+  2) echo "batch failure — read out.json for detail" ;;
+  3) echo "no source tool installed" ;;
+esac
 ```
 
 The exit-2 path (batch failure) is the only `migrate all` failure path

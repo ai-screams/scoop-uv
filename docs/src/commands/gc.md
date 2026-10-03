@@ -124,8 +124,8 @@ scuv gc --aggressive
 #   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-env
 #   - rogue-dir (no .scoop-metadata.json)  ~/.scuv/virtualenvs/rogue-dir
 # • Unused Python versions (2):
-#   - Python 3.13.x
-#   - Python 3.11.x
+#   - Python 3.13.1
+#   - Python 3.11.9
 # • (dry run — pass `--yes` to actually remove)
 
 # Actually clean up

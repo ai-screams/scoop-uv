@@ -43,7 +43,7 @@ scuv doctor --json              # JSON output for scripting
 The doctor checks each virtual environment for:
 
 - **Python symlink** — Does the `python` binary in the environment point to a valid Python installation?
-- **pyvenv.cfg** — Does the environment's configuration file exist and reference a valid Python?
+- **pyvenv.cfg** — Does the environment's configuration file exist (and its Python binary)?
 
 Environments can become broken when their underlying Python version is uninstalled. Use `scuv doctor` to detect these issues:
 

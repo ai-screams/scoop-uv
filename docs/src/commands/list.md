@@ -70,7 +70,7 @@ $ scuv list
   other          3.11    ~/.scuv/virtualenvs/other
   webapp         3.12    ~/.scuv/virtualenvs/webapp
   webapp-mirror  3.11    ~/.scuv/virtualenvs/webapp-mirror
-  system         3.13.x  /usr/bin/python3 (system)
+  system         3.13.1  /usr/bin/python3 (system)
 
 $ scuv list --bare
 myproject
@@ -103,7 +103,7 @@ For scripting, combine `--bare` with per-version filtering. `--pythons
 version (`3.12`), so cut each version down to `major.minor` first:
 
 ```bash
-for v in $(scuv list --pythons --bare | cut -d. -f1,2 | sort -uV); do
+for v in $(scuv list --pythons --bare | cut -d. -f1,2 | sort -u); do
   echo "== Python $v =="
   scuv list --python-version "$v" --bare
 done
@@ -150,5 +150,6 @@ scuv uninstall 3.12 --cascade
   a Python is on `PATH`. Only when there is none either does it print
   `No environments yet` and a `scuv create` hint (to stderr).
 - If no environments match a filter, `scuv list --python-version <VERSION>`
-  prints `No environments using Python <VERSION>` (to stderr; `--bare`
+  prints only the `system` row when the system Python matches, and
+  otherwise `No environments using Python <VERSION>` (to stderr; `--bare`
   prints nothing).

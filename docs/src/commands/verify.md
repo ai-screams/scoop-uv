@@ -91,7 +91,8 @@ scuv verify --strict
 Skip), `warnings` (at least one Warn, no Fail) or `issues` (at least one
 Fail). Only `issues` makes `--strict` exit 1.
 
-The human report goes to stderr:
+The human report puts the per-env lines on stdout and the closing summary
+on stderr:
 
 ```
 ✓ myproject (Python 3.12)

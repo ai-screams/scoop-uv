@@ -197,10 +197,12 @@ For automation:
 - Use `--json` for machine-readable output.
 - Use `--bare` for name-only output in shell scripts.
 
-Example script to iterate each Python version and print associated environments:
+Example script to iterate each Python version and print associated environments
+(envs record the minor version, such as `3.12`, so cut the installed versions
+down to `major.minor` first):
 
 ```bash
-for v in $(scuv list --pythons --bare); do
+for v in $(scuv list --pythons --bare | cut -d. -f1,2 | sort -u); do
   echo "== Python $v =="
   scuv list --python-version "$v" --bare
 done

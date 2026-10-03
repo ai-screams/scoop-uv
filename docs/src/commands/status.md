@@ -53,7 +53,9 @@ Last used:3 hours ago
 Packages: 1
 ```
 
-These rows go to stdout. `Packages:` is the number of installed packages.
+These rows go to stdout. `Packages:` is the number of packages `uv pip list`
+reports for the env; it reads `0` when that listing fails (no uv, a broken
+interpreter), not only when nothing is installed.
 
 The `Last used:` row reads `never` for envs that have metadata but
 have not yet been activated (fresh `scuv create`, or envs whose

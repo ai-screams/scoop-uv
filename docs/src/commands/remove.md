@@ -68,7 +68,7 @@ scuv list
 #   ml-env     3.11    ~/.scuv/virtualenvs/ml-env
 #   myproject  3.12    ~/.scuv/virtualenvs/myproject
 #   webapp     3.12    ~/.scuv/virtualenvs/webapp
-#   system     3.13.x  /usr/bin/python3 (system)
+#   system     3.13.1  /usr/bin/python3 (system)
 
 # Remove each one
 scuv remove myproject --force

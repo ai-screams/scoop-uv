@@ -141,8 +141,9 @@ scuv list --python-version 3.12
 ```
 
 Use `--json` for automation and `--bare` for script-friendly output.
-For full mapping in shell scripts, iterate versions from `scuv list --pythons --bare`
-and query each with `scuv list --python-version <VERSION> --bare`.
+For full mapping in shell scripts, iterate versions from `scuv list --pythons --bare`,
+cut each to `major.minor` (envs record `3.12`, not `3.12.14`), and query each with
+`scuv list --python-version <VERSION> --bare`.
 
 ### Integrate Custom or Pre-Existing Python
 

@@ -279,10 +279,11 @@ scuv list --python-version 3.12
 ```
 
 For automation, use `--json`.
-For shell loops, use `--bare` and iterate versions:
+For shell loops, use `--bare` and iterate versions, cut to `major.minor` (envs
+record `3.12`, not `3.12.14`):
 
 ```bash
-for v in $(scuv list --pythons --bare); do
+for v in $(scuv list --pythons --bare | cut -d. -f1,2 | sort -u); do
   scuv list --python-version "$v" --bare
 done
 ```
