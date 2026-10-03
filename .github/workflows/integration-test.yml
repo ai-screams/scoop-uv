@@ -70,6 +70,8 @@ jobs:
         # bypass is no longer needed: entrypoint.sh now wraps each
         # third-party init block with `set +e`, so benign initialization
         # failures in fresh containers don't abort the entrypoint.
+        # --include-ignored: the image has uv and Python 3.12, so the tests
+        # that need them (ignored on a bare runner) run here as well.
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
@@ -80,6 +82,6 @@ jobs:
             scuv:${{ matrix.source-env }}-test \
             bash -c "
               cargo build --release &&
-              cargo test --release &&
+              cargo test --release -- --include-ignored &&
               ./target/release/scuv migrate list
             "

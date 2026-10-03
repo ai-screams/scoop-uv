@@ -117,25 +117,25 @@ services:
   test:
     extends:
       service: slim
-    command: cargo test --features integration-test
+    command: cargo test -- --include-ignored
     profiles: [test]
 
   test-pyenv:
     extends:
       service: pyenv-test
-    command: cargo test --features integration-test
+    command: cargo test -- --include-ignored
     profiles: [test]
 
   test-conda:
     extends:
       service: conda-test
-    command: cargo test --features integration-test
+    command: cargo test -- --include-ignored
     profiles: [test]
 
   test-venvwrapper:
     extends:
       service: venvwrapper-test
-    command: cargo test --features integration-test
+    command: cargo test -- --include-ignored
     profiles: [test]
 
   # ============================================================
