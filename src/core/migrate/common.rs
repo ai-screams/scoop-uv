@@ -126,27 +126,26 @@ pub fn determine_status(name: &str, python_version: &str) -> EnvironmentStatus {
         return EnvironmentStatus::NameConflict { existing };
     }
 
-    // Check for EOL Python versions
+    if is_python_eol(python_version) {
+        return EnvironmentStatus::PythonEol {
+            version: python_version.to_string(),
+        };
+    }
+
+    EnvironmentStatus::Ready
+}
+
+/// Whether `python_version` is end-of-life: Python 2.x, or 3.8 and earlier
+/// (as of 2024). A version that does not parse is not called EOL.
+pub(crate) fn is_python_eol(python_version: &str) -> bool {
     let major_minor: Vec<&str> = python_version.split('.').collect();
     if major_minor.len() >= 2
         && let (Ok(major), Ok(minor)) =
             (major_minor[0].parse::<u32>(), major_minor[1].parse::<u32>())
     {
-        // Python 3.8 and earlier are EOL (as of 2024)
-        if major == 3 && minor <= EOL_PYTHON_MINOR {
-            return EnvironmentStatus::PythonEol {
-                version: python_version.to_string(),
-            };
-        }
-        // Python 2.x is definitely EOL
-        if major == 2 {
-            return EnvironmentStatus::PythonEol {
-                version: python_version.to_string(),
-            };
-        }
+        return major == 2 || (major == 3 && minor <= EOL_PYTHON_MINOR);
     }
-
-    EnvironmentStatus::Ready
+    false
 }
 
 #[cfg(test)]

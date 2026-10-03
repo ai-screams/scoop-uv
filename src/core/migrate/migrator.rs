@@ -113,6 +113,13 @@ pub struct Migrator {
     extractor: PackageExtractor,
 }
 
+/// The refusal for an end-of-life source Python without --force.
+fn eol_error(version: &str) -> ScoopError {
+    ScoopError::MigrationFailed {
+        reason: format!("Python {version} is end-of-life. Use --force to migrate anyway."),
+    }
+}
+
 impl Migrator {
     /// Creates a new migrator.
     ///
@@ -140,25 +147,33 @@ impl Migrator {
         match &source.status {
             EnvironmentStatus::Ready => Ok(()),
             EnvironmentStatus::NameConflict { existing } => {
+                // The conflict is with the source's own name; under a new
+                // name (--rename / --auto-rename) it no longer applies, and
+                // create_target_env checks the new name itself. The status
+                // records the conflict ahead of an EOL Python, so a renamed
+                // env still answers to the EOL guard here.
+                let renamed = options
+                    .rename_to
+                    .as_deref()
+                    .is_some_and(|to| to != source.name);
                 if options.force {
                     Ok(())
-                } else {
+                } else if !renamed {
                     Err(ScoopError::MigrationNameConflict {
                         name: source.name.clone(),
                         existing: existing.clone(),
                     })
+                } else if super::common::is_python_eol(&source.python_version) {
+                    Err(eol_error(&source.python_version))
+                } else {
+                    Ok(())
                 }
             }
             EnvironmentStatus::PythonEol { version } => {
                 if options.force {
                     Ok(())
                 } else {
-                    Err(ScoopError::MigrationFailed {
-                        reason: format!(
-                            "Python {} is end-of-life. Use --force to migrate anyway.",
-                            version
-                        ),
-                    })
+                    Err(eol_error(version))
                 }
             }
             EnvironmentStatus::Corrupted { reason } => Err(ScoopError::CorruptedEnvironment {
@@ -528,6 +543,55 @@ mod tests {
         let options = MigrateOptions::default();
 
         assert!(migrator.validate_source(&source, &options).is_ok());
+    }
+
+    /// A name conflict is about the source's name, so migrating under a new
+    /// name (--rename, --auto-rename) goes ahead; "renaming" to the same
+    /// name does not, and neither does a renamed env on an EOL Python
+    /// without --force. Fails if the conflict check ignores `rename_to` (the
+    /// rename then always fails), accepts a rename to the same name, or lets
+    /// a rename skip the EOL guard.
+    #[test]
+    fn validate_source_lets_a_renamed_conflict_through() {
+        let migrator = Migrator {
+            uv: UvClient::with_path(PathBuf::from("/mock/uv")),
+            extractor: PackageExtractor::new(),
+        };
+        let source = mock_source(
+            "test",
+            EnvironmentStatus::NameConflict {
+                existing: PathBuf::from("/home/u/.scuv/virtualenvs/test"),
+            },
+        );
+        let renamed = |to: &str| MigrateOptions {
+            rename_to: Some(to.to_string()),
+            ..MigrateOptions::default()
+        };
+        assert!(
+            migrator
+                .validate_source(&source, &MigrateOptions::default())
+                .is_err()
+        );
+        assert!(
+            migrator
+                .validate_source(&source, &renamed("test-pyenv"))
+                .is_ok()
+        );
+        assert!(migrator.validate_source(&source, &renamed("test")).is_err());
+
+        // The conflict hid an EOL Python: renaming must not skip that guard.
+        let mut eol = source.clone();
+        eol.python_version = "3.7.17".to_string();
+        assert!(
+            migrator
+                .validate_source(&eol, &renamed("test-pyenv"))
+                .is_err()
+        );
+        let forced = MigrateOptions {
+            force: true,
+            ..renamed("test-pyenv")
+        };
+        assert!(migrator.validate_source(&eol, &forced).is_ok());
     }
 
     #[test]
