@@ -63,6 +63,19 @@ _scuv() {
         return 0
     fi
 
+    # Values of the options that take one: shells for --shell, paths for -o
+    case "${words[CURRENT-1]:-}" in
+        --shell)
+            local shells=('bash:Bash shell' 'zsh:Zsh shell' 'fish:Fish shell' 'powershell:PowerShell')
+            _describe 'shell' shells
+            return 0
+            ;;
+        -o|--output)
+            _files
+            return 0
+            ;;
+    esac
+
     _arguments -C \
         '1: :->command' \
         '*: :->args'

@@ -442,7 +442,7 @@ fn fish_completion_offers_env_names_only_where_they_go() {
         "command scuv init fish | source\n",
         "for l in 'scuv clone ' 'scuv clone alpha ' 'scuv run alpha ' 'scuv diff alpha ' ",
         "'scuv diff alpha beta ' 'scuv self ' 'scuv self update ' 'scuv use alpha ' ",
-        "'scuv export -o out.json ' 'scuv export -o '\n",
+        "'scuv export -o out.json ' 'scuv export -o ' 'scuv activate --shell ' 'scuv import --name '\n",
         "    set -l c (complete -C $l | string split -f1 \\t | string join ' ')\n",
         "    echo \"$l=> $c\"\n",
         "end\n",
@@ -472,8 +472,15 @@ fn fish_completion_offers_env_names_only_where_they_go() {
             "scuv self update =>",
             "scuv use alpha =>",
             "scuv export -o out.json => alpha beta system",
-            "scuv export -o =>",
+            "scuv activate --shell => bash fish powershell zsh", // fish sorts
+            "scuv import --name =>",
         ],
+    );
+    // The value of -o is a path: files, never env names.
+    let line = stdout.lines().find(|l| l.starts_with("scuv export -o =>"));
+    assert!(
+        line.is_some_and(|l| !l.contains("alpha") && l.len() > "scuv export -o =>".len()),
+        "fish: {line:?}\n{stdout}"
     );
 }
 

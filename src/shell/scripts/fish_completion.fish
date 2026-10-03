@@ -104,7 +104,10 @@ complete -c scuv -n "__fish_seen_subcommand_from diff; and test (__scuv_position
 
 # self has one subcommand; import reads a file and man writes to a directory
 complete -c scuv -n "__fish_seen_subcommand_from self; and test (__scuv_positionals) -eq 0" -a "update" -d "Reinstall scuv from crates.io"
-complete -c scuv -n "__fish_seen_subcommand_from import man; and test (__scuv_positionals) -eq 0" -F
+complete -c scuv -n "__fish_seen_subcommand_from import man; and test (__scuv_positionals) -eq 0; and not __fish_prev_arg_in -o --output --name --shell" -F
+
+# --shell takes a shell name (fish already offers paths after -o/--output)
+complete -c scuv -n "__fish_prev_arg_in --shell" -x -a "bash zsh fish powershell" -d "Shell type"
 
 # Dynamic completions: Python versions for uninstall
 # Note: scuv list --pythons --bare already returns unique, sorted versions
