@@ -38,7 +38,16 @@ pub(super) fn remove_candidates(
     }
 
     if !pythons.is_empty() {
-        uninstall_pythons(output, envs, pythons, python_records);
+        // Only envs actually removed stop protecting their Pythons; one the
+        // recheck kept (used again, healthy again) or failed to delete
+        // still needs its interpreter.
+        let removed: Vec<&str> = envs
+            .iter()
+            .zip(env_records.iter())
+            .filter(|(_, record)| record.outcome == EnvOutcome::Removed)
+            .map(|(env, _)| env.name.as_str())
+            .collect();
+        uninstall_pythons(output, &removed, pythons, python_records);
     }
 }
 
@@ -117,7 +126,7 @@ fn remove_env(output: &Output, env: &GcCandidate, record: &mut EnvRecord) {
 /// unused right now.
 pub(super) fn uninstall_pythons(
     output: &Output,
-    envs: &[GcCandidate],
+    removed: &[&str],
     pythons: &[UnusedPython],
     python_records: &mut [PythonRecord],
 ) {
@@ -138,7 +147,7 @@ pub(super) fn uninstall_pythons(
     // leaving that env broken. Fails closed: if the re-scan errors or
     // cannot tell what is in use, nothing counts as still unused and every
     // uninstall is skipped. (It used to assume all of them still were.)
-    let still_unused: std::collections::HashSet<String> = match scan_unused_pythons(envs) {
+    let still_unused: std::collections::HashSet<String> = match scan_unused_pythons(removed) {
         Ok((current, None)) => current.into_iter().map(|p| p.version).collect(),
         _ => std::collections::HashSet::new(),
     };

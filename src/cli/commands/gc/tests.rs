@@ -222,11 +222,12 @@ fn aggressive_bails_when_metadata_unreadable() {
         // silently dropped it from the "used" set.
         let orphans = scan_orphan_envs().unwrap();
         assert!(orphans.iter().all(|o| o.name != "corrupt"));
+        let leaving: Vec<&str> = orphans.iter().map(|o| o.name.as_str()).collect();
 
         // The scan must bail with `unreadable_envs > 0` and return
         // an empty pythons list — refusing to mark any Python as
         // unused, no matter what `uv python list` reports.
-        let (pythons, skip) = scan_unused_pythons(&orphans).unwrap();
+        let (pythons, skip) = scan_unused_pythons(&leaving).unwrap();
         assert_eq!(
             skip,
             Some(PythonSkip::UnreadableMetadata(1)),
@@ -673,20 +674,15 @@ fn remove_records_actual_outcomes_for_each_env() {
 #[test]
 #[serial]
 fn referenced_versions_fails_closed_when_env_list_unreadable() {
-    use std::os::unix::fs::PermissionsExt;
-
-    with_temp_scoop_home(|_| {
-        let dir = paths::virtualenvs_dir().unwrap();
-        fs::create_dir_all(&dir).unwrap();
-        fs::set_permissions(&dir, fs::Permissions::from_mode(0o000)).unwrap();
-        let readable = fs::read_dir(&dir).is_ok(); // root ignores the mode
-        let result = referenced_versions(&[]);
-        fs::set_permissions(&dir, fs::Permissions::from_mode(0o755)).unwrap();
-        if readable {
-            eprintln!("skipped: directory permissions are not enforced (root?)");
-            return;
-        }
-        assert_eq!(result, Err(PythonSkip::EnvListUnavailable));
+    // A regular file where the virtualenvs directory should be makes the
+    // listing fail for any user, root included (a mode-000 directory does
+    // not stop root, and the test then proved nothing).
+    with_fake_uv_home(&["3.12.1"], |home, _| {
+        fs::write(home.join("virtualenvs"), b"not a directory").unwrap();
+        assert_eq!(
+            referenced_versions(&[]),
+            Err(PythonSkip::EnvListUnavailable)
+        );
     });
 }
 
@@ -728,24 +724,15 @@ fn pending_python(version: &str) -> (UnusedPython, PythonRecord) {
 #[test]
 #[serial]
 fn uninstall_pythons_skips_all_when_rescan_cannot_tell() {
-    use std::os::unix::fs::PermissionsExt;
-
     with_fake_uv_home(&["3.12.1"], |home, uv| {
-        let venvs = home.join("virtualenvs");
-        fs::create_dir_all(&venvs).unwrap();
-        fs::set_permissions(&venvs, fs::Permissions::from_mode(0o000)).unwrap();
-        let enforced = fs::read_dir(&venvs).is_err(); // root ignores the mode
+        // Unreadable env list, for any user (see the test above).
+        fs::write(home.join("virtualenvs"), b"not a directory").unwrap();
 
         let (py, record) = pending_python("3.12.1");
         let mut records = [record];
         let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
         uninstall_pythons(&out, &[], std::slice::from_ref(&py), &mut records);
-        fs::set_permissions(&venvs, fs::Permissions::from_mode(0o755)).unwrap();
 
-        if !enforced {
-            eprintln!("skipped: directory permissions are not enforced (root?)");
-            return;
-        }
         assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
         assert_eq!(records[0].outcome, PythonOutcome::SkippedInUse);
     });
@@ -768,5 +755,57 @@ fn uninstall_pythons_removes_a_python_still_unused() {
 
         assert_eq!(uv.uninstalled(), ["3.12.1"]);
         assert_eq!(records[0].outcome, PythonOutcome::Removed);
+    });
+}
+
+/// HIGH review fix: a candidate that `--yes` ends up keeping (here a stale
+/// env used again since the scan) still uses its Python, so the Python
+/// must survive. Fails if the re-scan excludes every candidate instead of
+/// only the ones actually removed.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn kept_candidate_keeps_its_python() {
+    with_fake_uv_home(&["3.12"], |home, uv| {
+        let venvs = home.join("virtualenvs");
+        fs::create_dir_all(&venvs).unwrap();
+        // Metadata says python 3.12 and "used just now".
+        make_env_with_last_used(&venvs, "kept", Some(Utc::now()));
+
+        let candidate = GcCandidate {
+            name: "kept".into(),
+            path: venvs.join("kept").display().to_string(),
+            reason: EnvGcReason::Stale,
+            age_days: Some(90),
+        };
+        let mut env_records = [EnvRecord {
+            name: "kept".into(),
+            path: candidate.path.clone(),
+            reason: EnvGcReason::Stale,
+            age_days: Some(90),
+            outcome: EnvOutcome::Pending,
+            error: None,
+        }];
+        let (py, py_record) = pending_python("3.12");
+        let mut py_records = [py_record];
+        let cutoff = Utc::now() - chrono::Duration::days(30);
+        let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+
+        remove_candidates(
+            &out,
+            std::slice::from_ref(&candidate),
+            std::slice::from_ref(&py),
+            &mut env_records,
+            &mut py_records,
+            Some(cutoff),
+        );
+
+        assert_eq!(env_records[0].outcome, EnvOutcome::SkippedRecentlyUsed);
+        assert!(venvs.join("kept").exists());
+        assert!(
+            uv.uninstalled().is_empty(),
+            "the kept env's Python was uninstalled"
+        );
+        assert_eq!(py_records[0].outcome, PythonOutcome::SkippedInUse);
     });
 }

@@ -62,7 +62,8 @@ pub fn execute(
     }
 
     let (pythons, skip) = if aggressive {
-        scan_unused_pythons(&envs)?
+        let leaving: Vec<&str> = envs.iter().map(|e| e.name.as_str()).collect();
+        scan_unused_pythons(&leaving)?
     } else {
         (Vec::new(), None)
     };

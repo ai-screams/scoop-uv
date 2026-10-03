@@ -214,15 +214,17 @@ pub(super) fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutc
 /// List uv-installed Python versions that aren't referenced by any healthy
 /// env's `.scoop-metadata.json`.
 ///
-/// Orphans already slated for removal are *not* counted as references —
-/// gc'ing them wouldn't free their Pythons otherwise.
+/// `leaving` names the envs that will not survive (the candidates at
+/// preview time, the ones actually removed at `--yes` time); they are not
+/// counted as references — gc'ing them wouldn't free their Pythons
+/// otherwise. An env that stays must keep protecting its Python.
 ///
 /// Safety: whenever it cannot tell which Pythons the surviving envs use (see
 /// [`referenced_versions`]), it names none as unused and returns the reason,
 /// which the caller surfaces. Claiming a live Python is unused would let
 /// `gc --aggressive --yes` uninstall it and break the env.
 pub(super) fn scan_unused_pythons(
-    orphans: &[GcCandidate],
+    leaving: &[&str],
 ) -> Result<(Vec<UnusedPython>, Option<PythonSkip>)> {
     let uv = match UvClient::new() {
         Ok(u) => u,
@@ -235,7 +237,7 @@ pub(super) fn scan_unused_pythons(
         return Ok((Vec::new(), None));
     }
 
-    let used = match referenced_versions(orphans) {
+    let used = match referenced_versions(leaving) {
         Ok(used) => used,
         Err(skip) => return Ok((Vec::new(), Some(skip))),
     };
@@ -259,7 +261,7 @@ pub(super) fn scan_unused_pythons(
 /// metadata cannot, the answer is unknown and the caller must not treat any
 /// Python as unused. An empty set here would mean exactly that.
 pub(super) fn referenced_versions(
-    candidates: &[GcCandidate],
+    leaving: &[&str],
 ) -> std::result::Result<HashSet<String>, PythonSkip> {
     let service = VirtualenvService::auto().map_err(|_| PythonSkip::EnvListUnavailable)?;
     let envs = service.list().map_err(|_| PythonSkip::EnvListUnavailable)?;
@@ -267,9 +269,9 @@ pub(super) fn referenced_versions(
     let mut used = HashSet::new();
     let mut unreadable = 0usize;
     for info in envs {
-        // Skip envs we're about to remove — they shouldn't protect their
+        // Skip envs that are going away — they shouldn't protect their
         // Pythons from cleanup.
-        if candidates.iter().any(|o| o.name == info.name) {
+        if leaving.contains(&info.name.as_str()) {
             continue;
         }
         // Read metadata for the python_version field — info.python_version
