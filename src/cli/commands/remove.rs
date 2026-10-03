@@ -1,5 +1,7 @@
 //! Remove command
 
+use std::path::{Path, PathBuf};
+
 use dialoguer::Confirm;
 use rust_i18n::t;
 
@@ -37,54 +39,16 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
         }
     }
 
-    // A `.venv` that `scuv use --link` pointed at this env would dangle once
-    // the env is gone, and uv fails on it in that project (#202). Decide now,
-    // while the link still resolves. Only the current directory is checked:
-    // link locations are not recorded anywhere.
-    // The raw target is recorded too: the env deletion below can take a
-    // while, and the unlink must only touch the same link it judged.
-    let link = std::env::current_dir()
-        .ok()
-        .map(|cwd| cwd.join(".venv"))
-        .filter(|link| is_venv_symlink_to(link, &path))
-        .and_then(|link| match std::fs::read_link(&link) {
-            Ok(target) => Some((link, Ok(target))),
-            // Gone or no longer a symlink since it was judged: not ours.
-            Err(e)
-                if matches!(
-                    e.kind(),
-                    std::io::ErrorKind::NotFound | std::io::ErrorKind::InvalidInput
-                ) =>
-            {
-                None
-            }
-            Err(e) => Some((link, Err(e))),
-        });
+    // Decided before the delete, while the link still resolves (#202).
+    let link = linked_venv(&path);
 
     output.info(&t!("remove.removing", name = name));
     service.delete(name)?;
 
-    // The env is already gone, so a link we cannot remove (or could not
-    // even read back) is a warning, not a failed `remove`. JSON carries it
-    // as `unlink_error`: `warn` is silent there, and a missing `unlinked`
-    // alone would read as "there was no link".
-    let mut unlink_error = None;
-    let unlinked = link.and_then(|(link, recorded)| {
-        let result = recorded
-            .and_then(|recorded| crate::paths::remove_symlink_if_unchanged(&link, &recorded));
-        match result {
-            Ok(removed) => removed.then_some(link),
-            Err(e) => {
-                output.warn(&t!(
-                    "remove.unlink_failed",
-                    path = crate::paths::abbreviate_home(&link),
-                    error = e.to_string()
-                ));
-                unlink_error = Some(e.to_string());
-                None
-            }
-        }
-    });
+    let (unlinked, unlink_error) = match link {
+        Some(link) => unlink_venv(output, link),
+        None => (None, None),
+    };
 
     // JSON output
     if output.is_json() {
@@ -109,4 +73,70 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// A `.venv` link that `remove` will be responsible for.
+struct VenvLink {
+    path: PathBuf,
+    /// Its raw target when judged, or why it could not be read back.
+    recorded: std::io::Result<PathBuf>,
+}
+
+/// The current directory's `.venv`, if it is the link `scuv use --link`
+/// made to `env_path`.
+///
+/// Such a link would dangle once the env is gone, and uv fails on it in
+/// that project (#202). Only the current directory is checked: link
+/// locations are not recorded anywhere. The raw target is recorded too:
+/// the env deletion in between can take a while, and the unlink must only
+/// touch the same link it judged.
+fn linked_venv(env_path: &Path) -> Option<VenvLink> {
+    let path = std::env::current_dir().ok()?.join(".venv");
+    if !is_venv_symlink_to(&path, env_path) {
+        return None;
+    }
+    match std::fs::read_link(&path) {
+        Ok(target) => Some(VenvLink {
+            path,
+            recorded: Ok(target),
+        }),
+        // Gone or no longer a symlink since it was judged: not ours.
+        Err(e)
+            if matches!(
+                e.kind(),
+                std::io::ErrorKind::NotFound | std::io::ErrorKind::InvalidInput
+            ) =>
+        {
+            None
+        }
+        Err(e) => Some(VenvLink {
+            path,
+            recorded: Err(e),
+        }),
+    }
+}
+
+/// Removes the judged link: `(Some(path), None)` when removed, `(None,
+/// Some(error))` when it could not be.
+///
+/// The env is already gone, so a link we cannot remove (or could not even
+/// read back) is a warning, not a failed `remove`. JSON carries it as
+/// `unlink_error`: `warn` is silent there, and a missing `unlinked` alone
+/// would read as "there was no link".
+fn unlink_venv(output: &Output, link: VenvLink) -> (Option<PathBuf>, Option<String>) {
+    let result = link
+        .recorded
+        .and_then(|recorded| crate::paths::remove_symlink_if_unchanged(&link.path, &recorded));
+    match result {
+        Ok(true) => (Some(link.path), None),
+        Ok(false) => (None, None),
+        Err(e) => {
+            output.warn(&t!(
+                "remove.unlink_failed",
+                path = crate::paths::abbreviate_home(&link.path),
+                error = e.to_string()
+            ));
+            (None, Some(e.to_string()))
+        }
+    }
 }
