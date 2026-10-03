@@ -104,14 +104,17 @@ jobs:
           # Only main writes; a PR run restores this key but leaves no copy behind
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
-      - name: Install fish (fish integration test in tests/cli/shell.rs)
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish
+      - name: Install fish and zsh (real-shell tests in tests/cli/shell.rs)
+        # bash and pwsh come with the runner image.
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish zsh
 
       - name: Run tests
-        # SCUV_REQUIRE_FISH turns a missing fish into a failure here; jobs that
-        # do not install fish (coverage, mutants) leave it unset and skip.
+        # SCUV_REQUIRE_<SHELL> turns a missing shell into a failure here; jobs
+        # that do not install them (coverage, mutants) leave these unset and skip.
         env:
           SCUV_REQUIRE_FISH: "1"
+          SCUV_REQUIRE_ZSH: "1"
+          SCUV_REQUIRE_PWSH: "1"
         run: cargo test --all-features --workspace
 
       - name: Run ignored tests (requires uv)
@@ -179,12 +182,14 @@ jobs:
 
       # Step 3: Run unit and integration tests
       # 520 unit tests + 43 integration tests
-      - name: Install fish (fish integration test in tests/cli/shell.rs)
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish
+      - name: Install fish and zsh (real-shell tests in tests/cli/shell.rs)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish zsh
 
       - name: Run tests on MSRV
         env:
           SCUV_REQUIRE_FISH: "1"
+          SCUV_REQUIRE_ZSH: "1"
+          SCUV_REQUIRE_PWSH: "1"
         run: cargo test --all-features --workspace
 
       # Step 4: Run tests that require uv installed

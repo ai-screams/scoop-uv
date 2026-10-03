@@ -20,19 +20,34 @@ scuv() {
                         *) name="$arg"; break ;;
                     esac
                 done
-                if [[ -n "$name" ]]; then
-                    eval "$(command scuv activate "$name")"
+                if [[ "$name" == system ]]; then
+                    eval "$(command scuv deactivate --shell zsh)"
+                elif [[ -n "$name" ]]; then
+                    eval "$(command scuv activate --shell zsh "$name")"
                 fi
             fi
             return $ret
             ;;
         activate|deactivate|shell)
-            # Pass through help/version flags without eval
-            if [[ "$*" == *--help* ]] || [[ "$*" == *-h* ]] || [[ "$*" == *--version* ]] || [[ "$*" == *-V* ]]; then
-                command scuv "$@"
-            else
-                eval "$(command scuv "$@")"
-            fi
+            local arg
+            for arg in "$@"; do
+                case "$arg" in
+                    # Pass through help/version flags without eval (whole-
+                    # argument match: an env name such as data-hub is not -h)
+                    -h|--help|-V|--version)
+                        command scuv "$@"
+                        return
+                        ;;
+                    # The user chose the shell; a second --shell is rejected
+                    --shell|--shell=*)
+                        eval "$(command scuv "$@")"
+                        return
+                        ;;
+                esac
+            done
+            # Name the shell: detection reads PSModulePath first, which
+            # Windows sets for every process, Git Bash included.
+            eval "$(command scuv "$1" --shell zsh "${@:2}")"
             ;;
         *)
             command scuv "$@"

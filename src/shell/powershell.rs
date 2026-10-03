@@ -15,7 +15,7 @@ use crate::{file_resolution_check, scoop_version_check};
 /// This script should be evaluated in the user's `$PROFILE`:
 ///
 /// ```powershell
-/// Invoke-Expression (& scuv init powershell)
+/// Invoke-Expression (& scuv init powershell | Out-String)
 /// ```
 ///
 /// # Examples

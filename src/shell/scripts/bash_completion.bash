@@ -129,4 +129,6 @@ _scuv_complete() {
             ;;
     esac
 }
-complete -o nosort -F _scuv_complete scuv
+# `-o nosort` (keep subcommand order) needs bash 4.4; macOS ships 3.2,
+# which rejects the whole line and would leave scuv without completion.
+complete -o nosort -F _scuv_complete scuv 2>/dev/null || complete -F _scuv_complete scuv
