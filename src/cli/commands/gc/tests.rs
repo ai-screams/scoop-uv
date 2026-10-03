@@ -241,6 +241,27 @@ fn aggressive_bails_when_metadata_unreadable() {
     });
 }
 
+/// The same bail through the command itself: `gc --aggressive --yes` with
+/// an unreadable env warns and uninstalls nothing. Fails if the unreadable
+/// env stops blocking the Python scan (e.g. the bail in
+/// `referenced_versions` is dropped): the fake uv then logs an uninstall.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn aggressive_gc_uninstalls_nothing_when_metadata_unreadable() {
+    with_fake_uv_home(&["3.12.1"], |_, uv| {
+        let env_path = paths::virtualenvs_dir().unwrap().join("corrupt");
+        fs::create_dir_all(env_path.join("bin")).unwrap();
+        fs::write(env_path.join("bin/python"), "").unwrap();
+        fs::write(env_path.join(".scoop-metadata.json"), "{ not json").unwrap();
+
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
+        execute(&output, true, true, None).unwrap();
+        assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
+        assert!(env_path.exists(), "a healthy-shaped env is not an orphan");
+    });
+}
+
 // ==========================================================================
 // Q3 regression — TOCTOU between scan and remove. We simulate by
 // building a fake orphan record that points at a path which is

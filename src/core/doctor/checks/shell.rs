@@ -26,7 +26,7 @@ impl Check for ShellCheck {
         };
 
         let shell_name = current_shell_name();
-        let Some(rc_files) = rc_files(&shell_name, &home) else {
+        let Some(rc_files) = rc_files(&shell_name, &home, cfg!(target_os = "macos")) else {
             return vec![
                 CheckResult::warn(
                     self.id(),
@@ -118,13 +118,12 @@ fn current_shell_name() -> String {
 
 /// The rc files to look in for `shell_name`, in order; `None` for a shell
 /// this check does not know. macOS bash reads `.bash_profile`, Linux bash
-/// `.bashrc`.
-fn rc_files(shell_name: &str, home: &Path) -> Option<Vec<PathBuf>> {
+/// `.bashrc`. The platform is a parameter so both branches are testable on
+/// either OS.
+fn rc_files(shell_name: &str, home: &Path, macos: bool) -> Option<Vec<PathBuf>> {
     match shell_name {
         "zsh" => Some(vec![home.join(".zshrc")]),
-        "bash" if cfg!(target_os = "macos") => {
-            Some(vec![home.join(".bash_profile"), home.join(".bashrc")])
-        }
+        "bash" if macos => Some(vec![home.join(".bash_profile"), home.join(".bashrc")]),
         "bash" => Some(vec![home.join(".bashrc")]),
         _ => None,
     }
@@ -305,18 +304,24 @@ mod tests {
     }
 
     /// Which rc files are read per shell and platform. Fails if a shell
-    /// arm or the macOS split is dropped (the macOS-only variants are only
-    /// distinguishable on the other platform, which is where CI runs).
+    /// arm or the macOS split is dropped, on any host OS.
     #[test]
     fn rc_files_per_shell_and_platform() {
         let home = Path::new("/h");
-        assert_eq!(rc_files("zsh", home), Some(vec![home.join(".zshrc")]));
-        let bash = rc_files("bash", home).expect("bash is supported");
-        if cfg!(target_os = "macos") {
-            assert_eq!(bash, vec![home.join(".bash_profile"), home.join(".bashrc")]);
-        } else {
-            assert_eq!(bash, vec![home.join(".bashrc")]);
+        for macos in [true, false] {
+            assert_eq!(
+                rc_files("zsh", home, macos),
+                Some(vec![home.join(".zshrc")])
+            );
+            assert_eq!(rc_files("fish", home, macos), None);
         }
-        assert_eq!(rc_files("fish", home), None);
+        assert_eq!(
+            rc_files("bash", home, true),
+            Some(vec![home.join(".bash_profile"), home.join(".bashrc")])
+        );
+        assert_eq!(
+            rc_files("bash", home, false),
+            Some(vec![home.join(".bashrc")])
+        );
     }
 }

@@ -146,6 +146,17 @@ pub struct DiffSummary {
 mod tests {
     use super::*;
 
+    /// Each flag selects its own mode; neither or both means everything.
+    /// Fails if a flag maps to the wrong mode or the both-set case is
+    /// treated as one of them.
+    #[test]
+    fn diff_mode_from_flags() {
+        assert_eq!(DiffMode::from_flags(true, false), DiffMode::PackagesOnly);
+        assert_eq!(DiffMode::from_flags(false, true), DiffMode::MetadataOnly);
+        assert_eq!(DiffMode::from_flags(false, false), DiffMode::All);
+        assert_eq!(DiffMode::from_flags(true, true), DiffMode::All);
+    }
+
     #[test]
     fn scalar_diff_both_none_is_not_changed() {
         let d: ScalarDiff<String> = ScalarDiff::from_sides(None, None);
