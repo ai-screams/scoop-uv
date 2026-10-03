@@ -97,8 +97,8 @@ msgstr "status"
 msgid "which"
 msgstr "which"
 
-#: src/SUMMARY.md:30 src/commands/run.md:1 src/development/testing.md:385
-#: src/development/testing.md:388 src/development/code-quality.md:240
+#: src/SUMMARY.md:30 src/commands/run.md:1 src/development/testing.md:386
+#: src/development/testing.md:389 src/development/code-quality.md:240
 #: src/development/code-quality.md:243 src/development/code-quality.md:246
 msgid "run"
 msgstr "run"
@@ -524,7 +524,7 @@ msgid "# scuv 0.16.2\n"
 msgstr "# scuv 0.16.2\n"
 
 #: src/installation.md:62 src/python-management.md:175
-#: src/development/testing.md:391 src/development/code-quality.md:425
+#: src/development/testing.md:392 src/development/code-quality.md:425
 msgid "Troubleshooting"
 msgstr "문제 해결"
 
@@ -788,7 +788,7 @@ msgid "\"$@\""
 msgstr "\"$@\""
 
 #: src/shell-integration.md:21 src/development/docs-translation.md:58
-#: src/development/testing.md:261
+#: src/development/testing.md:262
 msgid "\"\""
 msgstr "\"\""
 
@@ -4724,8 +4724,8 @@ msgstr "\"state\""
 
 #: src/commands/status.md:73 src/commands/import.md:62 src/commands/clone.md:59
 #: src/commands/verify.md:72 src/development/architecture.md:130 src/api.md:111
-#: src/api.md:113 src/api.md:117 src/development/testing.md:203
-#: src/development/testing.md:337
+#: src/api.md:113 src/api.md:117 src/development/testing.md:204
+#: src/development/testing.md:338
 msgid "\"myenv\""
 msgstr "\"myenv\""
 
@@ -5183,7 +5183,7 @@ msgstr "\"/path/to/.scuv.toml\""
 msgid "\"environment\""
 msgstr "\"environment\""
 
-#: src/commands/sync.md:102 src/api.md:113 src/development/testing.md:337
+#: src/commands/sync.md:102 src/api.md:113 src/development/testing.md:338
 msgid "\"3.12\""
 msgstr "\"3.12\""
 
@@ -8466,12 +8466,12 @@ msgstr "통합 테스트"
 msgid "Located in `tests/`:"
 msgstr "`tests/`에 위치합니다:"
 
-#: src/development/contributing.md:205 src/development/testing.md:277
-#: src/development/testing.md:287
+#: src/development/contributing.md:205 src/development/testing.md:278
+#: src/development/testing.md:288
 msgid "\"scuv\""
 msgstr ""
 
-#: src/development/contributing.md:207 src/development/testing.md:279
+#: src/development/contributing.md:207 src/development/testing.md:280
 msgid "\"list\""
 msgstr "\"list\""
 
@@ -9650,7 +9650,7 @@ msgstr ""
 "각 페이지 우측 상단의 언어 전환기를 사용하면 각 언어의 같은 페이지로 이동할 "
 "수 있습니다."
 
-#: src/development/docs-translation.md:27 src/development/testing.md:422
+#: src/development/docs-translation.md:27 src/development/testing.md:423
 msgid "# macOS\n"
 msgstr "# macOS\n"
 
@@ -9658,7 +9658,7 @@ msgstr "# macOS\n"
 msgid "# msginit / msgmerge / msgfmt\n"
 msgstr "# msginit / msgmerge / msgfmt\n"
 
-#: src/development/docs-translation.md:31 src/development/testing.md:424
+#: src/development/docs-translation.md:31 src/development/testing.md:425
 msgid "# Linux\n"
 msgstr "# Linux\n"
 
@@ -11697,7 +11697,7 @@ msgstr "주요 테스트 모듈:"
 msgid "Tests"
 msgstr "테스트"
 
-#: src/development/testing.md:121 src/development/testing.md:343
+#: src/development/testing.md:121 src/development/testing.md:344
 msgid "Coverage"
 msgstr "커버리지"
 
@@ -11792,50 +11792,52 @@ msgstr "통합 테스트 (`tests/cli/` + `tests/i18n_completeness.rs`)"
 #: src/development/testing.md:133
 msgid ""
 "`tests/cli/` is one test binary (`main.rs`) with a module per topic: "
-"`general`, `list`, `remove`, `color`, `shell`, `errors`, `output_format`, "
-"`requires_uv`, and shared fixtures in `support`."
+"`general`, `list`, `remove`, `color`, `shell`, `dispatch`, `errors`, "
+"`output_format`, `requires_uv`, and shared fixtures (including a fake `uv`) "
+"in `support`."
 msgstr ""
 "`tests/cli/`는 테스트 바이너리 하나(`main.rs`)이고 주제마다 모듈이 있습니다: "
-"`general`, `list`, `remove`, `color`, `shell`, `errors`, `output_format`, "
-"`requires_uv`. 공통 픽스처는 `support`에 있습니다."
+"`general`, `list`, `remove`, `color`, `shell`, `dispatch`, `errors`, "
+"`output_format`, `requires_uv`. 공통 픽스처(가짜 `uv` 포함)는 `support`에 있"
+"습니다."
 
-#: src/development/testing.md:138
+#: src/development/testing.md:139
 msgid "# Run only integration tests\n"
 msgstr "# Run only integration tests\n"
 
-#: src/development/testing.md:142
+#: src/development/testing.md:143
 msgid "Categories:"
 msgstr "카테고리:"
 
-#: src/development/testing.md:144
+#: src/development/testing.md:145
 msgid "**Error cases** - Invalid inputs, missing arguments"
 msgstr "**에러 케이스** - 유효하지 않은 입력, 누락된 인수"
 
-#: src/development/testing.md:145
+#: src/development/testing.md:146
 msgid "**Output format** - Help, version, JSON output"
 msgstr "**출력 형식** - 도움말, 버전, JSON 출력"
 
-#: src/development/testing.md:146
+#: src/development/testing.md:147
 msgid "**Command behavior** - list, create, use, remove"
 msgstr "**커맨드 동작** - list, create, use, remove"
 
-#: src/development/testing.md:148
+#: src/development/testing.md:149
 msgid "Some tests are marked `#[ignore]` because they require `uv` installed:"
 msgstr "일부 테스트는 `uv`가 설치되어 있어야 하므로 `#[ignore]`로 표시됩니다:"
 
-#: src/development/testing.md:151
+#: src/development/testing.md:152
 msgid "# Run ignored tests (requires uv)\n"
 msgstr "# Run ignored tests (requires uv)\n"
 
-#: src/development/testing.md:155
+#: src/development/testing.md:156
 msgid "Doc Tests (25 tests)"
 msgstr "Doc 테스트 (25개)"
 
-#: src/development/testing.md:157
+#: src/development/testing.md:158
 msgid "Examples in documentation comments:"
 msgstr "문서 주석에 포함된 예시:"
 
-#: src/development/testing.md:160
+#: src/development/testing.md:161
 msgid ""
 "/// Validates environment name.\n"
 "///\n"
@@ -11857,27 +11859,27 @@ msgstr ""
 "/// assert!(!is_valid_env_name(\"123bad\"));\n"
 "/// ```\n"
 
-#: src/development/testing.md:173
+#: src/development/testing.md:174
 msgid "# Run only doc tests\n"
 msgstr "# Run only doc tests\n"
 
-#: src/development/testing.md:177
+#: src/development/testing.md:178
 msgid "Property Tests"
 msgstr "프로퍼티 테스트"
 
-#: src/development/testing.md:179
+#: src/development/testing.md:180
 msgid "Using `proptest` for randomized testing:"
 msgstr "`proptest`를 사용한 무작위 테스트:"
 
-#: src/development/testing.md:192
+#: src/development/testing.md:193
 msgid "Located in `src/validate.rs`."
 msgstr "`src/validate.rs`에 위치합니다."
 
-#: src/development/testing.md:194
+#: src/development/testing.md:195
 msgid "Parameterized Tests"
 msgstr "파라미터화 테스트"
 
-#: src/development/testing.md:196
+#: src/development/testing.md:197
 msgid ""
 "Using `rstest` `#[case]` tables for input/output matrices (e.g. version "
 "parsing, env-name validation) so each case reports independently:"
@@ -11885,19 +11887,19 @@ msgstr ""
 "`rstest`의 `#[case]` 테이블로 입력/출력 매트릭스(예: 버전 파싱, 환경 이름 유"
 "효성 검사)를 정의하여 각 케이스가 독립적으로 보고됩니다:"
 
-#: src/development/testing.md:204
+#: src/development/testing.md:205
 msgid "\"123\""
 msgstr "\"123\""
 
-#: src/development/testing.md:205
+#: src/development/testing.md:206
 msgid "\"activate\""
 msgstr "\"activate\""
 
-#: src/development/testing.md:211
+#: src/development/testing.md:212
 msgid "Mutation Testing"
 msgstr "변이 테스트"
 
-#: src/development/testing.md:213
+#: src/development/testing.md:214
 msgid ""
 "`cargo-mutants` verifies the suite actually _catches_ bugs (not just that "
 "lines run). Config in `.cargo/mutants.toml`; CI runs it on changed lines per "
@@ -11907,19 +11909,19 @@ msgstr ""
 "히 라인 실행 여부가 아닌). 설정은 `.cargo/mutants.toml`에 있으며, CI에서는 PR"
 "당 변경된 라인(`--in-diff`)과 매주 전체 검사를 실행합니다."
 
-#: src/development/testing.md:219
+#: src/development/testing.md:220
 msgid "# full (scoped via mutants.toml)\n"
 msgstr "# full (scoped via mutants.toml)\n"
 
-#: src/development/testing.md:220
+#: src/development/testing.md:221
 msgid "# changed lines\n"
 msgstr "# changed lines\n"
 
-#: src/development/testing.md:223
+#: src/development/testing.md:224
 msgid "Fuzz Testing"
 msgstr "퍼즈 테스트"
 
-#: src/development/testing.md:225
+#: src/development/testing.md:226
 msgid ""
 "`cargo-fuzz` (libFuzzer) fuzzes the untrusted-input parsers. It lives in an "
 "isolated `fuzz/` workspace pinned to nightly, so it never affects the "
@@ -11929,15 +11931,15 @@ msgstr ""
 "정된 격리된 `fuzz/` 워크스페이스에 있어 MSRV-1.89 빌드에 영향을 주지 않으며, "
 "CI가 주간 일정으로 타깃을 실행합니다."
 
-#: src/development/testing.md:234
+#: src/development/testing.md:235
 msgid "Writing Tests"
 msgstr "테스트 작성하기"
 
-#: src/development/testing.md:236
+#: src/development/testing.md:237
 msgid "Unit Test Template"
 msgstr "단위 테스트 템플릿"
 
-#: src/development/testing.md:243
+#: src/development/testing.md:244
 msgid ""
 "// ========================================\n"
 "    // Test Group Name\n"
@@ -11947,79 +11949,79 @@ msgstr ""
 "    // Test Group Name\n"
 "    // ========================================\n"
 
-#: src/development/testing.md:249
+#: src/development/testing.md:250
 msgid "// Arrange\n"
 msgstr "// Arrange\n"
 
-#: src/development/testing.md:250
+#: src/development/testing.md:251
 msgid "\"test input\""
 msgstr "\"test input\""
 
-#: src/development/testing.md:252
+#: src/development/testing.md:253
 msgid "// Act\n"
 msgstr "// Act\n"
 
-#: src/development/testing.md:255
+#: src/development/testing.md:256
 msgid "// Assert\n"
 msgstr "// Assert\n"
 
-#: src/development/testing.md:267
+#: src/development/testing.md:268
 msgid "Integration Test Template"
 msgstr "통합 테스트 템플릿"
 
-#: src/development/testing.md:270
+#: src/development/testing.md:271
 msgid "// tests/cli/<topic>.rs (declare it in tests/cli/main.rs)\n"
 msgstr "// tests/cli/<topic>.rs (tests/cli/main.rs에 모듈 선언)\n"
 
-#: src/development/testing.md:282
+#: src/development/testing.md:283
 msgid "\"expected output\""
 msgstr "\"expected output\""
 
-#: src/development/testing.md:289
+#: src/development/testing.md:290
 msgid "\"use\""
 msgstr "\"use\""
 
-#: src/development/testing.md:289
+#: src/development/testing.md:290
 msgid "\"nonexistent\""
 msgstr "\"nonexistent\""
 
-#: src/development/testing.md:292
+#: src/development/testing.md:293
 msgid "\"not found\""
 msgstr "\"not found\""
 
-#: src/development/testing.md:296
+#: src/development/testing.md:297
 msgid "JSON Output Testing"
 msgstr "JSON 출력 테스트"
 
-#: src/development/testing.md:301 src/development/testing.md:306
+#: src/development/testing.md:302 src/development/testing.md:307
 msgid "\"value\""
 msgstr "\"value\""
 
-#: src/development/testing.md:304
+#: src/development/testing.md:305
 msgid "// Check JSON structure\n"
 msgstr "// Check JSON structure\n"
 
-#: src/development/testing.md:306
+#: src/development/testing.md:307
 msgid "\"field\""
 msgstr "\"field\""
 
-#: src/development/testing.md:314
+#: src/development/testing.md:315
 msgid "// skip_serializing_if = \"Option::is_none\"\n"
 msgstr "// skip_serializing_if = \"Option::is_none\"\n"
 
-#: src/development/testing.md:315
+#: src/development/testing.md:316
 msgid "\"optional\""
 msgstr "\"optional\""
 
-#: src/development/testing.md:319
+#: src/development/testing.md:320
 msgid "Test Utilities"
 msgstr "테스트 유틸리티"
 
-#: src/development/testing.md:321
+#: src/development/testing.md:322
 msgid "Located in `src/test_utils.rs`:"
 msgstr "`src/test_utils.rs`에 위치합니다:"
 
-#: src/development/testing.md:329
+#: src/development/testing.md:330
 msgid ""
 "// SCUV_HOME is set to temp_dir\n"
 "        // Cleanup happens automatically\n"
@@ -12027,55 +12029,55 @@ msgstr ""
 "// SCUV_HOME is set to temp_dir\n"
 "        // Cleanup happens automatically\n"
 
-#: src/development/testing.md:338
+#: src/development/testing.md:339
 msgid "// Virtual environment created at temp_dir/virtualenvs/myenv\n"
 msgstr "// Virtual environment created at temp_dir/virtualenvs/myenv\n"
 
-#: src/development/testing.md:345
+#: src/development/testing.md:346
 msgid "Using cargo-tarpaulin"
 msgstr "cargo-tarpaulin 사용"
 
-#: src/development/testing.md:348 src/development/testing.md:364
+#: src/development/testing.md:349 src/development/testing.md:365
 msgid "# Install\n"
 msgstr "# Install\n"
 
-#: src/development/testing.md:350 src/development/testing.md:366
+#: src/development/testing.md:351 src/development/testing.md:367
 msgid "# Run with HTML report\n"
 msgstr "# Run with HTML report\n"
 
-#: src/development/testing.md:353
+#: src/development/testing.md:354
 msgid "# Run with specific target\n"
 msgstr "# Run with specific target\n"
 
-#: src/development/testing.md:356 src/development/testing.md:369
+#: src/development/testing.md:357 src/development/testing.md:370
 msgid "# View report\n"
 msgstr "# View report\n"
 
-#: src/development/testing.md:361
+#: src/development/testing.md:362
 msgid "Using cargo-llvm-cov"
 msgstr "cargo-llvm-cov 사용"
 
-#: src/development/testing.md:374
+#: src/development/testing.md:375
 msgid "CI/CD Testing"
 msgstr "CI/CD 테스트"
 
-#: src/development/testing.md:376
+#: src/development/testing.md:377
 msgid "Tests run automatically on:"
 msgstr "테스트는 다음 경우에 자동으로 실행됩니다:"
 
-#: src/development/testing.md:378
+#: src/development/testing.md:379
 msgid "Every push to any branch"
 msgstr "모든 브랜치의 모든 푸시"
 
-#: src/development/testing.md:379
+#: src/development/testing.md:380
 msgid "Every pull request"
 msgstr "모든 풀 리퀘스트"
 
-#: src/development/testing.md:381
+#: src/development/testing.md:382
 msgid "GitHub Actions workflow (`.github/workflows/ci.yml`):"
 msgstr "GitHub Actions 워크플로우 (`.github/workflows/ci.yml`):"
 
-#: src/development/testing.md:384 src/development/testing.md:387
+#: src/development/testing.md:385 src/development/testing.md:388
 #: src/development/code-quality.md:159 src/development/code-quality.md:166
 #: src/development/code-quality.md:173 src/development/code-quality.md:224
 #: src/development/code-quality.md:234 src/development/code-quality.md:239
@@ -12083,91 +12085,91 @@ msgstr "GitHub Actions 워크플로우 (`.github/workflows/ci.yml`):"
 msgid "name"
 msgstr "name"
 
-#: src/development/testing.md:384
+#: src/development/testing.md:385
 msgid "Run tests"
 msgstr "Run tests"
 
-#: src/development/testing.md:385 src/development/code-quality.md:246
+#: src/development/testing.md:386 src/development/code-quality.md:246
 msgid "cargo test --all-features"
 msgstr "cargo test --all-features"
 
-#: src/development/testing.md:387
+#: src/development/testing.md:388
 msgid "Run clippy"
 msgstr "Run clippy"
 
-#: src/development/testing.md:388
+#: src/development/testing.md:389
 msgid "cargo clippy --all-targets -- -D warnings"
 msgstr "cargo clippy --all-targets -- -D warnings"
 
-#: src/development/testing.md:393
+#: src/development/testing.md:394
 msgid "Test Hangs"
 msgstr "테스트 멈춤 문제"
 
-#: src/development/testing.md:396
+#: src/development/testing.md:397
 msgid "# Run single-threaded to identify hanging test\n"
 msgstr "# Run single-threaded to identify hanging test\n"
 
-#: src/development/testing.md:400
+#: src/development/testing.md:401
 msgid "Flaky Tests"
 msgstr "플래키 테스트"
 
-#: src/development/testing.md:403
+#: src/development/testing.md:404
 msgid "# Run specific test multiple times\n"
 msgstr "# Run specific test multiple times\n"
 
-#: src/development/testing.md:407
+#: src/development/testing.md:408
 msgid "Environment Issues"
 msgstr "환경 문제"
 
-#: src/development/testing.md:410
+#: src/development/testing.md:411
 msgid "# Clear test artifacts\n"
 msgstr "# Clear test artifacts\n"
 
-#: src/development/testing.md:412
+#: src/development/testing.md:413
 msgid "# Rebuild and test\n"
 msgstr "# Rebuild and test\n"
 
-#: src/development/testing.md:417
+#: src/development/testing.md:418
 msgid "Shell Tests Fail"
 msgstr "Shell 테스트 실패 시"
 
-#: src/development/testing.md:419
+#: src/development/testing.md:420
 msgid "ShellCheck must be installed for shell script tests:"
 msgstr "shell 스크립트 테스트를 위해 ShellCheck이 설치되어 있어야 합니다:"
 
-#: src/development/testing.md:429
+#: src/development/testing.md:430
 msgid "Best Practices"
 msgstr "모범 사례"
 
-#: src/development/testing.md:431
+#: src/development/testing.md:432
 msgid "**Test naming**: `test_<function>_<scenario>_<expected>`"
 msgstr "**테스트 이름 규칙**: `test_<function>_<scenario>_<expected>`"
 
-#: src/development/testing.md:432
+#: src/development/testing.md:433
 msgid "**Arrange-Act-Assert**: Clear test structure"
 msgstr "**Arrange-Act-Assert**: 명확한 테스트 구조"
 
-#: src/development/testing.md:433
+#: src/development/testing.md:434
 msgid "**One assertion per test**: When practical"
 msgstr "**테스트당 하나의 단언**: 실용적인 범위 내에서"
 
-#: src/development/testing.md:434
+#: src/development/testing.md:435
 msgid "**Test edge cases**: Empty, unicode, special chars, boundaries"
 msgstr "**엣지 케이스 테스트**: 빈 값, 유니코드, 특수 문자, 경계값"
 
-#: src/development/testing.md:435
+#: src/development/testing.md:436
 msgid "**No test interdependencies**: Each test should be isolated"
 msgstr "**테스트 간 독립성 유지**: 각 테스트는 독립적으로 실행되어야 합니다"
 
-#: src/development/testing.md:436
+#: src/development/testing.md:437
 msgid "**Fast tests**: Mock external dependencies"
 msgstr "**빠른 테스트**: 외부 의존성은 Mock으로 대체"
 
-#: src/development/testing.md:438
+#: src/development/testing.md:439
 msgid "Codespaces / Devcontainer"
 msgstr "Codespaces / Devcontainer"
 
-#: src/development/testing.md:440
+#: src/development/testing.md:441
 msgid ""
 "`.devcontainer/devcontainer.json` boots a Rust 1.89 dev environment on "
 "`mcr.microsoft.com/devcontainers/rust:1-bookworm` that matches the local "
@@ -12180,55 +12182,55 @@ msgstr ""
 "bookworm` 위에 띄웁니다. VS Code에서 저장소를 열거나(\"Reopen in "
 "Container\") Codespace를 만들면 되며, 둘 다 같은 생명주기를 따릅니다:"
 
-#: src/development/testing.md:446 src/development/code-quality.md:202
+#: src/development/testing.md:447 src/development/code-quality.md:202
 msgid "Hook"
 msgstr "Hook"
 
-#: src/development/testing.md:446
+#: src/development/testing.md:447
 msgid "Runs"
 msgstr "실행 시점"
 
-#: src/development/testing.md:446
+#: src/development/testing.md:447
 msgid "Used for"
 msgstr "사용 목적"
 
-#: src/development/testing.md:448
+#: src/development/testing.md:449
 msgid "`onCreateCommand`"
 msgstr "`onCreateCommand`"
 
-#: src/development/testing.md:448
+#: src/development/testing.md:449
 msgid "once (in Codespace prebuild)"
 msgstr "한 번 (Codespace 프리빌드 시)"
 
-#: src/development/testing.md:448
+#: src/development/testing.md:449
 msgid "install nextest / llvm-cov / mutants / uv, warm `cargo build`"
 msgstr "nextest / llvm-cov / mutants / uv 설치, `cargo build` 워밍업"
 
-#: src/development/testing.md:449
+#: src/development/testing.md:450
 msgid "`updateContentCommand`"
 msgstr "`updateContentCommand`"
 
-#: src/development/testing.md:449
+#: src/development/testing.md:450
 msgid "on every prebuild refresh"
 msgstr "프리빌드 갱신 시마다"
 
-#: src/development/testing.md:449
+#: src/development/testing.md:450
 msgid "`cargo fetch` to keep registry warm"
 msgstr "레지스트리 캐시 유지를 위한 `cargo fetch`"
 
-#: src/development/testing.md:450
+#: src/development/testing.md:451
 msgid "`postCreateCommand`"
 msgstr "`postCreateCommand`"
 
-#: src/development/testing.md:450
+#: src/development/testing.md:451
 msgid "when user creates the Codespace"
 msgstr "사용자가 Codespace를 생성할 때"
 
-#: src/development/testing.md:450
+#: src/development/testing.md:451
 msgid "`prek install`"
 msgstr "`prek install`"
 
-#: src/development/testing.md:452
+#: src/development/testing.md:453
 msgid ""
 "Cargo registry + git caches persist as named Docker volumes scoped per "
 "project so two scoop-uv worktrees don't share caches. `target/` is NOT "
@@ -12238,11 +12240,11 @@ msgstr ""
 "므로, 두 개의 scoop-uv 워크트리가 캐시를 공유하지 않습니다. `target/`은 볼륨"
 "화되지 않습니다 — 아키텍처에 따라 달라지며 프리빌드 레이어에서 워밍업됩니다."
 
-#: src/development/testing.md:456
+#: src/development/testing.md:457
 msgid "Enabling Codespace prebuilds"
 msgstr "Codespace 프리빌드 활성화"
 
-#: src/development/testing.md:458
+#: src/development/testing.md:459
 msgid ""
 "In repo Settings → Codespaces → \"Set up prebuild\", configure for the "
 "`main` branch on the \"configuration change\" trigger. This keeps Actions "
@@ -12255,11 +12257,11 @@ msgstr ""
 "만 재빌드), 볼륨 영속성을 통해 cargo 레지스트리를 항상 워밍업 상태로 유지합니"
 "다."
 
-#: src/development/testing.md:464
+#: src/development/testing.md:465
 msgid "Multi-source Integration (Docker matrix)"
 msgstr "멀티 소스 통합 (Docker 매트릭스)"
 
-#: src/development/testing.md:466
+#: src/development/testing.md:467
 msgid ""
 "The Dockerfile builds three per-source leaf stages — `pyenv-test`, `conda-"
 "test`, `venvwrapper-test` — on top of a shared `scuv-test-base`. Each "
@@ -12271,19 +12273,19 @@ msgstr ""
 "마이그레이션하는 소스 도구만 포함하므로, CI에서 하나의 변형만 선택적으로 매트"
 "릭스 빌드할 수 있습니다."
 
-#: src/development/testing.md:472
+#: src/development/testing.md:473
 msgid "# Local (sequential)\n"
 msgstr "# Local (sequential)\n"
 
-#: src/development/testing.md:476
+#: src/development/testing.md:477
 msgid "# Local (all three sequentially)\n"
 msgstr "# Local (all three sequentially)\n"
 
-#: src/development/testing.md:479
+#: src/development/testing.md:480
 msgid "# Drop into a single variant for ad-hoc debugging\n"
 msgstr "# Drop into a single variant for ad-hoc debugging\n"
 
-#: src/development/testing.md:484
+#: src/development/testing.md:485
 msgid ""
 "CI runs all three in parallel via `.github/workflows/integration-test.yml`'s "
 "strategy.matrix with per-source BuildKit cache scoping (`cache-from/"
@@ -12293,79 +12295,79 @@ msgstr ""
 "지를 모두 병렬로 실행하며, 소스별 BuildKit 캐시 범위(`cache-from/"
 "to=type=gha,scope=<src>`)를 사용합니다."
 
-#: src/development/testing.md:488
+#: src/development/testing.md:489
 msgid "Benchmarks (Criterion)"
 msgstr "벤치마크 (Criterion)"
 
-#: src/development/testing.md:490
+#: src/development/testing.md:491
 msgid "Three bench binaries live in `benches/`:"
 msgstr "`benches/`에 세 개의 벤치 바이너리가 있습니다:"
 
-#: src/development/testing.md:492
+#: src/development/testing.md:493
 msgid "Binary"
 msgstr "바이너리"
 
-#: src/development/testing.md:492
+#: src/development/testing.md:493
 msgid "Targets"
 msgstr "대상"
 
-#: src/development/testing.md:494
+#: src/development/testing.md:495
 msgid "`parsing`"
 msgstr "`parsing`"
 
-#: src/development/testing.md:494
+#: src/development/testing.md:495
 msgid "clap parse, TOML manifest, JSON `uv python list`"
 msgstr "clap 파싱, TOML 매니페스트, JSON `uv python list`"
 
-#: src/development/testing.md:495
+#: src/development/testing.md:496
 msgid "`validation`"
 msgstr "`validation`"
 
-#: src/development/testing.md:495
+#: src/development/testing.md:496
 msgid "`is_valid_env_name` across 6 representative inputs"
 msgstr "6가지 대표 입력에 대한 `is_valid_env_name`"
 
-#: src/development/testing.md:496 src/development/ci-cd.md:72
+#: src/development/testing.md:497 src/development/ci-cd.md:72
 msgid "`path_lookup`"
 msgstr "`path_lookup`"
 
-#: src/development/testing.md:496
+#: src/development/testing.md:497
 msgid "`find_executable_in` hit + miss"
 msgstr "`find_executable_in` 히트 + 미스"
 
-#: src/development/testing.md:498
+#: src/development/testing.md:499
 msgid "Local workflow"
 msgstr "로컬 워크플로우"
 
-#: src/development/testing.md:501
+#: src/development/testing.md:502
 msgid "# Run all benches once (no baseline diffing)\n"
 msgstr "# Run all benches once (no baseline diffing)\n"
 
-#: src/development/testing.md:503
+#: src/development/testing.md:504
 msgid "# Save current results as a named baseline (default: \"main\")\n"
 msgstr "# Save current results as a named baseline (default: \"main\")\n"
 
-#: src/development/testing.md:505
+#: src/development/testing.md:506
 msgid "# saves as \"main\"\n"
 msgstr "# saves as \"main\"\n"
 
-#: src/development/testing.md:506
+#: src/development/testing.md:507
 msgid "# saves as \"before-X\"\n"
 msgstr "# saves as \"before-X\"\n"
 
-#: src/development/testing.md:507
+#: src/development/testing.md:508
 msgid "# Compare current results against a saved baseline\n"
 msgstr "# Compare current results against a saved baseline\n"
 
-#: src/development/testing.md:509
+#: src/development/testing.md:510
 msgid "# vs \"main\"\n"
 msgstr "# vs \"main\"\n"
 
-#: src/development/testing.md:511
+#: src/development/testing.md:512
 msgid "# Run all benches inside Docker (reproducible)\n"
 msgstr "# Run all benches inside Docker (reproducible)\n"
 
-#: src/development/testing.md:516
+#: src/development/testing.md:517
 msgid ""
 "Criterion writes HTML reports to `target/criterion/report/index.html` for "
 "visual diffing."
@@ -12373,32 +12375,32 @@ msgstr ""
 "Criterion은 HTML 보고서를 `target/criterion/report/index.html`에 작성하여 시"
 "각적 비교를 지원합니다."
 
-#: src/development/testing.md:519
+#: src/development/testing.md:520
 msgid "CI regression gate"
 msgstr "CI 회귀 게이트"
 
-#: src/development/testing.md:521
+#: src/development/testing.md:522
 msgid "`.github/workflows/bench.yml` runs every PR and push:"
 msgstr "`.github/workflows/bench.yml`은 모든 PR과 푸시에서 실행됩니다:"
 
-#: src/development/testing.md:523
+#: src/development/testing.md:524
 msgid ""
 "On `main`: results are pushed to the `gh-pages` branch as the new baseline."
 msgstr "`main`에서: 결과가 새 기준선으로 `gh-pages` 브랜치에 푸시됩니다."
 
-#: src/development/testing.md:525
+#: src/development/testing.md:526
 msgid "On PRs: results are compared against that baseline."
 msgstr "PR에서: 결과가 해당 기준선과 비교됩니다."
 
-#: src/development/testing.md:526
+#: src/development/testing.md:527
 msgid "**alert at 130%** — leaves a PR comment, doesn't block merge"
 msgstr "**130%에서 경고** — PR 코멘트를 남기며, 머지를 차단하지 않습니다"
 
-#: src/development/testing.md:527
+#: src/development/testing.md:528
 msgid "**fail at 150%** — fails the workflow, blocks merge"
 msgstr "**150%에서 실패** — 워크플로우를 실패시키며, 머지를 차단합니다"
 
-#: src/development/testing.md:529
+#: src/development/testing.md:530
 msgid ""
 "Thresholds account for GitHub-hosted runner variance (10-30% per-bench noise "
 "is normal on shared CPU). Tighten by running on a self-hosted runner with "

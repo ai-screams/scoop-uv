@@ -131,8 +131,9 @@ Key test modules:
 ### Integration Tests (`tests/cli/` + `tests/i18n_completeness.rs`)
 
 `tests/cli/` is one test binary (`main.rs`) with a module per topic:
-`general`, `list`, `remove`, `color`, `shell`, `errors`, `output_format`,
-`requires_uv`, and shared fixtures in `support`.
+`general`, `list`, `remove`, `color`, `shell`, `dispatch`, `errors`,
+`output_format`, `requires_uv`, and shared fixtures (including a fake `uv`)
+in `support`.
 
 ```bash
 # Run only integration tests
