@@ -24,7 +24,7 @@ use super::duration::parse_duration;
 use remove::remove_orphans;
 use render::render_human;
 use scan::{scan_orphan_envs, scan_stale_envs, scan_unused_pythons};
-use types::{EnvOutcome, EnvRecord, GcData, PythonOutcome, PythonRecord};
+use types::{EnvOutcome, EnvRecord, GcData, PythonOutcome, PythonRecord, PythonSkip};
 
 /// Execute the `gc` command.
 ///
@@ -61,19 +61,23 @@ pub fn execute(
         envs.sort_by(|a, b| a.name.cmp(&b.name));
     }
 
-    let (pythons, unreadable_envs) = if aggressive {
+    let (pythons, skip) = if aggressive {
         scan_unused_pythons(&envs)?
     } else {
-        (Vec::new(), 0)
+        (Vec::new(), None)
     };
 
     // Surface the conservative bail-out before any destructive work so the
     // user understands why `--aggressive` turned up nothing.
-    if aggressive && unreadable_envs > 0 {
-        output.warn(&t!(
-            "gc.unreadable_metadata_warn",
-            count = unreadable_envs.to_string()
-        ));
+    match skip {
+        Some(PythonSkip::UnreadableMetadata(count)) => {
+            output.warn(&t!(
+                "gc.unreadable_metadata_warn",
+                count = count.to_string()
+            ));
+        }
+        Some(PythonSkip::EnvListUnavailable) => output.warn(&t!("gc.env_list_unavailable_warn")),
+        None => {}
     }
 
     // Build records up-front. Dry-run leaves everything Pending; `--yes`

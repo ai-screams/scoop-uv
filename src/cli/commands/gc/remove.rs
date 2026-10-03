@@ -122,11 +122,13 @@ pub(super) fn remove_orphans(
         // Python-level recheck a concurrent `scuv create` could
         // pull a venv onto a Python we're about to nuke, leaving
         // that env broken.
-        let still_unused: std::collections::HashSet<String> = scan_unused_pythons(envs)
-            .map_or_else(
-                |_| pythons.iter().map(|p| p.version.clone()).collect(),
-                |(current, _)| current.into_iter().map(|p| p.version).collect(),
-            );
+        // Fails closed: if the re-scan errors or cannot tell what is in
+        // use, nothing counts as still unused and every uninstall is
+        // skipped. (It used to assume all of them still were.)
+        let still_unused: std::collections::HashSet<String> = match scan_unused_pythons(envs) {
+            Ok((current, None)) => current.into_iter().map(|p| p.version).collect(),
+            _ => std::collections::HashSet::new(),
+        };
 
         for (py, record) in pythons.iter().zip(python_records.iter_mut()) {
             if !still_unused.contains(&py.version) {

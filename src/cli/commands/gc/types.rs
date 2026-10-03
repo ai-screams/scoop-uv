@@ -47,6 +47,15 @@ pub(super) struct OrphanEnv {
     pub(super) age_days: Option<u64>,
 }
 
+/// Why `--aggressive` named no Python as unused even though some may be.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum PythonSkip {
+    /// This many surviving envs have metadata that cannot be read.
+    UnreadableMetadata(usize),
+    /// The env list itself could not be read.
+    EnvListUnavailable,
+}
+
 #[derive(Debug, Serialize)]
 pub(super) struct UnusedPython {
     pub(super) version: String,

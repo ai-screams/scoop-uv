@@ -1,6 +1,7 @@
 //! Finding candidates: orphan and stale virtualenvs, unused Pythons, and the
 //! re-checks `--yes` runs right before deleting.
 
+use std::collections::HashSet;
 use std::path::Path;
 
 use chrono::{DateTime, Utc};
@@ -10,7 +11,7 @@ use crate::error::Result;
 use crate::paths;
 use crate::uv::UvClient;
 
-use super::types::{EnvGcReason, EnvOutcome, OrphanEnv, UnusedPython};
+use super::types::{EnvGcReason, EnvOutcome, OrphanEnv, PythonSkip, UnusedPython};
 
 /// Walk `~/.scuv/virtualenvs/` and flag any directory that fails the
 /// "looks like a working env" sniff test.
@@ -216,67 +217,28 @@ pub(super) fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutc
 /// Orphans already slated for removal are *not* counted as references —
 /// gc'ing them wouldn't free their Pythons otherwise.
 ///
-/// Safety: if any surviving (non-orphan) env has unreadable metadata, we
-/// can't tell what Python it depends on. Silent-dropping it would treat
-/// its Python as unused and `gc --aggressive --yes` would uninstall a
-/// Python that's actually live — leaving the env broken. To prevent this
-/// destructive misclassification, the function bails out conservatively
-/// (returns an empty list) the moment it encounters any unreadable
-/// metadata, and surfaces a warning to the caller via the second tuple
-/// element.
-pub(super) fn scan_unused_pythons(orphans: &[OrphanEnv]) -> Result<(Vec<UnusedPython>, usize)> {
+/// Safety: whenever it cannot tell which Pythons the surviving envs use (see
+/// [`referenced_versions`]), it names none as unused and returns the reason,
+/// which the caller surfaces. Claiming a live Python is unused would let
+/// `gc --aggressive --yes` uninstall it and break the env.
+pub(super) fn scan_unused_pythons(
+    orphans: &[OrphanEnv],
+) -> Result<(Vec<UnusedPython>, Option<PythonSkip>)> {
     let uv = match UvClient::new() {
         Ok(u) => u,
         // No uv on PATH → nothing we can do here. Skip aggressive mode
         // silently instead of failing the whole command.
-        Err(_) => return Ok((Vec::new(), 0)),
+        Err(_) => return Ok((Vec::new(), None)),
     };
     let installed = uv.list_installed_pythons().unwrap_or_default();
     if installed.is_empty() {
-        return Ok((Vec::new(), 0));
+        return Ok((Vec::new(), None));
     }
 
-    let service = VirtualenvService::auto().ok();
-    let mut used: std::collections::HashSet<String> = std::collections::HashSet::new();
-    let mut unreadable_envs: usize = 0;
-
-    if let Some(svc) = service {
-        for info in svc.list().unwrap_or_default() {
-            // Skip envs we're about to remove — they shouldn't protect
-            // their Pythons from cleanup.
-            if orphans.iter().any(|o| o.name == info.name) {
-                continue;
-            }
-            let path = match paths::virtualenv_path(&info.name) {
-                Ok(p) => p,
-                Err(_) => {
-                    unreadable_envs += 1;
-                    continue;
-                }
-            };
-            // Read metadata for the python_version field — info.python_version
-            // is sniffed from the venv layout and can be missing.
-            match svc.read_metadata(&path) {
-                Some(meta) => {
-                    used.insert(meta.python_version);
-                }
-                None => {
-                    // Metadata file exists (the env wasn't classified as
-                    // an orphan) but failed to parse. We can't tell which
-                    // Python it depends on — see this function's doc for
-                    // why we then bail conservatively.
-                    unreadable_envs += 1;
-                }
-            }
-        }
-    }
-
-    if unreadable_envs > 0 {
-        // Conservative bail: refuse to claim *any* Python is unused.
-        // Caller surfaces the warning so the user knows why aggressive
-        // cleanup turned up nothing.
-        return Ok((Vec::new(), unreadable_envs));
-    }
+    let used = match referenced_versions(orphans) {
+        Ok(used) => used,
+        Err(skip) => return Ok((Vec::new(), Some(skip))),
+    };
 
     Ok((
         installed
@@ -287,6 +249,46 @@ pub(super) fn scan_unused_pythons(orphans: &[OrphanEnv]) -> Result<(Vec<UnusedPy
                 path: p.path.map(|p| p.display().to_string()),
             })
             .collect(),
-        0,
+        None,
     ))
+}
+
+/// The Python versions the surviving (non-candidate) envs depend on.
+///
+/// Fails closed: if the env list cannot be read, or any surviving env's
+/// metadata cannot, the answer is unknown and the caller must not treat any
+/// Python as unused. An empty set here would mean exactly that.
+pub(super) fn referenced_versions(
+    candidates: &[OrphanEnv],
+) -> std::result::Result<HashSet<String>, PythonSkip> {
+    let service = VirtualenvService::auto().map_err(|_| PythonSkip::EnvListUnavailable)?;
+    let envs = service.list().map_err(|_| PythonSkip::EnvListUnavailable)?;
+
+    let mut used = HashSet::new();
+    let mut unreadable = 0usize;
+    for info in envs {
+        // Skip envs we're about to remove — they shouldn't protect their
+        // Pythons from cleanup.
+        if candidates.iter().any(|o| o.name == info.name) {
+            continue;
+        }
+        // Read metadata for the python_version field — info.python_version
+        // is sniffed from the venv layout and can be missing.
+        let meta = paths::virtualenv_path(&info.name)
+            .ok()
+            .and_then(|path| service.read_metadata(&path));
+        match meta {
+            Some(meta) => {
+                used.insert(meta.python_version);
+            }
+            // Metadata exists (the env wasn't classified as a candidate) but
+            // failed to parse: we can't tell which Python it depends on.
+            None => unreadable += 1,
+        }
+    }
+
+    if unreadable > 0 {
+        return Err(PythonSkip::UnreadableMetadata(unreadable));
+    }
+    Ok(used)
 }

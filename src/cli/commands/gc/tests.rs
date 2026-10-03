@@ -3,8 +3,10 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 
 use super::remove::remove_orphans;
-use super::scan::{recheck_stale, scan_orphan_envs, scan_stale_envs, scan_unused_pythons};
-use super::types::{EnvGcReason, EnvOutcome, EnvRecord, OrphanEnv, PythonRecord};
+use super::scan::{
+    recheck_stale, referenced_versions, scan_orphan_envs, scan_stale_envs, scan_unused_pythons,
+};
+use super::types::{EnvGcReason, EnvOutcome, EnvRecord, OrphanEnv, PythonRecord, PythonSkip};
 use super::*;
 use crate::paths;
 use crate::test_utils::with_temp_scoop_home;
@@ -213,8 +215,12 @@ fn aggressive_bails_when_metadata_unreadable() {
         // The scan must bail with `unreadable_envs > 0` and return
         // an empty pythons list — refusing to mark any Python as
         // unused, no matter what `uv python list` reports.
-        let (pythons, unreadable_envs) = scan_unused_pythons(&orphans).unwrap();
-        assert_eq!(unreadable_envs, 1, "should count one unreadable env");
+        let (pythons, skip) = scan_unused_pythons(&orphans).unwrap();
+        assert_eq!(
+            skip,
+            Some(PythonSkip::UnreadableMetadata(1)),
+            "should count one unreadable env"
+        );
         assert!(
             pythons.is_empty(),
             "must not claim any Python is unused when metadata is unreadable; got {:?}",
@@ -645,5 +651,30 @@ fn remove_records_actual_outcomes_for_each_env() {
             );
             assert!(record.error.is_none());
         }
+    });
+}
+
+/// HIGH audit fix: an env list that cannot be read must not look like "no
+/// env uses any Python" — `gc --aggressive --yes` would then uninstall
+/// every Python. Fails if `referenced_versions` swallows the list error
+/// (e.g. `.unwrap_or_default()`), which returns an empty set instead.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn referenced_versions_fails_closed_when_env_list_unreadable() {
+    use std::os::unix::fs::PermissionsExt;
+
+    with_temp_scoop_home(|_| {
+        let dir = paths::virtualenvs_dir().unwrap();
+        fs::create_dir_all(&dir).unwrap();
+        fs::set_permissions(&dir, fs::Permissions::from_mode(0o000)).unwrap();
+        let readable = fs::read_dir(&dir).is_ok(); // root ignores the mode
+        let result = referenced_versions(&[]);
+        fs::set_permissions(&dir, fs::Permissions::from_mode(0o755)).unwrap();
+        if readable {
+            eprintln!("skipped: directory permissions are not enforced (root?)");
+            return;
+        }
+        assert_eq!(result, Err(PythonSkip::EnvListUnavailable));
     });
 }
