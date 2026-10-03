@@ -194,5 +194,14 @@ mod tests {
             list_installed_packages(temp.path()),
             [("six".to_string(), "1.16.0".to_string())]
         );
+        // It asks about this env's interpreter, in JSON.
+        let python = crate::paths::virtualenv_python_exe(temp.path());
+        assert_eq!(
+            uv.pip_calls(),
+            [format!(
+                "pip list --format=json --python {}",
+                python.display()
+            )]
+        );
     }
 }

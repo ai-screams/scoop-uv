@@ -2,7 +2,8 @@
 //!
 //! Summarises the current environment in one shot: which env is active, where
 //! it came from (shell-activated vs version file), and a few metadata fields.
-//! Designed to be fast — no package listing or directory size walk.
+//! Kept light: one `uv pip list` for the package count, no directory size
+//! walk.
 
 use rust_i18n::t;
 

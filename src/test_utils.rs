@@ -607,7 +607,7 @@ case "$1 $2" in
   "--version "*) echo "uv 0.12.22" ;;
   "python list") echo "$*" >> "{d}/list.log"; printf '%s\n' '{json}' ;;
   "python uninstall") echo "$3" >> "{d}/uninstalled.log" ;;
-  "pip list") printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
+  "pip list") echo "$*" >> "{d}/pip.log"; printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
   "cache prune") ;;
   *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;
 esac
@@ -629,6 +629,13 @@ esac
     /// The arguments of each `uv python list` call, in order.
     pub fn list_calls(&self) -> Vec<String> {
         std::fs::read_to_string(self.dir.path().join("list.log"))
+            .map(|s| s.lines().map(str::to_string).collect())
+            .unwrap_or_default()
+    }
+
+    /// The arguments of each `uv pip ...` call, in order.
+    pub fn pip_calls(&self) -> Vec<String> {
+        std::fs::read_to_string(self.dir.path().join("pip.log"))
             .map(|s| s.lines().map(str::to_string).collect())
             .unwrap_or_default()
     }
