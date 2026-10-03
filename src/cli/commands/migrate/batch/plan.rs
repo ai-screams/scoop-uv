@@ -49,7 +49,12 @@ pub(super) fn partition_envs(
     // batch there is no such environment — both are new. Letting them through
     // is the bug, not the fix. The user picks a winner by migrating one
     // explicitly with `scuv migrate @env <name> --rename <other>`.
-    let mut claimed: HashMap<&str, SourceType> = HashMap::new();
+    //
+    // Names compare case-insensitively: on a case-insensitive filesystem
+    // (the macOS and Windows defaults) `Web` and `web` are the same target
+    // directory, so they race exactly like two `web`s. On a case-sensitive
+    // one this costs a second batch run for one of them, nothing worse.
+    let mut claimed: HashMap<String, SourceType> = HashMap::new();
 
     for env in environments {
         let is_ready = matches!(env.status, EnvironmentStatus::Ready);
@@ -60,7 +65,8 @@ pub(super) fn partition_envs(
             );
 
         if is_ready || force_eligible {
-            if let Some(winner) = claimed.get(env.name.as_str()) {
+            let key = env.name.to_ascii_lowercase();
+            if let Some(winner) = claimed.get(&key) {
                 let target = paths::virtualenv_path(&env.name).unwrap_or_default();
                 conflicts.push(MigrationConflictDetail {
                     name: env.name.clone(),
@@ -76,7 +82,7 @@ pub(super) fn partition_envs(
                 });
                 continue;
             }
-            claimed.insert(env.name.as_str(), env.source_type);
+            claimed.insert(key, env.source_type);
             migratable.push(env);
             continue;
         }
@@ -187,6 +193,24 @@ mod tests {
 
         assert_eq!(p.migratable.len(), 1);
         assert_eq!(p.conflicts.len(), 1);
+    }
+
+    /// `Web` and `web` are one directory on a case-insensitive filesystem,
+    /// so they must not both migrate in one batch. Fails if the claim key
+    /// goes back to the exact name.
+    #[test]
+    fn partition_rejects_names_differing_only_in_case() {
+        let envs = vec![
+            create_test_env_from("Web", SourceType::Pyenv),
+            create_test_env_from("web", SourceType::Conda),
+        ];
+
+        let p = partition_envs(&envs, false);
+
+        assert_eq!(p.migratable.len(), 1);
+        assert_eq!(p.migratable[0].name, "Web");
+        assert_eq!(p.conflicts.len(), 1);
+        assert_eq!(p.conflicts[0].name, "web");
     }
 
     /// Distinct names from distinct sources stay unaffected.
