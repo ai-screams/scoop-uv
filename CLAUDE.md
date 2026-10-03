@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Language**: Rust (Edition 2024, MSRV 1.89)
 - **License**: MIT OR Apache-2.0
 - **Version**: scuv 0.16.2 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
-- **Tests**: 1018 passed (948 unit + 44 integration + 2 i18n + 24 doctest), 0 clippy warnings — these drift; `cargo test` is the source of truth
+- **Tests**: ~1080 (unit, `tests/cli/` integration, i18n parity, doctests), 0 clippy warnings — counts drift; `cargo test` is the source of truth
 - **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
 - **CI/CD design**: `docs/src/development/ci-cd.md` documents what each of the 13 workflows guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
 - **Test tooling**: rstest (table tests), proptest, cargo-mutants (mutation), cargo-fuzz (nightly `fuzz/` workspace); see `.docs/dev/testing-strategy.md`
@@ -150,9 +150,13 @@ CI enforces it: `ci.yml` tests both toolchains, and `msrv-check.yml` runs
 src/
 ├── cli/           # CLI parsing (clap)
 │   ├── mod.rs     # Cli struct, Commands enum, ShellType
+│   ├── color.rs   # --color/--no-color flag (ColorChoice); the decision lives in output/color.rs
 │   └── commands/  # Subcommand handlers (execute functions)
 │       ├── use_env/   # Use command modular (normal, system, unset, symlink)
-│       └── migrate/   # Migration subcommands
+│       ├── migrate/   # Migration subcommands; batch/ = plan, run, report
+│       ├── gc/        # types, scan, remove, render
+│       ├── verify/    # types, checks (CheckKind), report
+│       └── diff/      # types, enumerator, compute, render
 ├── core/          # Domain logic
 │   ├── version.rs       # Version file resolution (.scuv-version)
 │   ├── metadata.rs      # Virtualenv metadata (JSON; last_used since 0.13)
@@ -163,15 +167,20 @@ src/
 │   └── migrate/         # Migration from pyenv/conda/virtualenvwrapper
 ├── shell/         # Shell integration (bash, zsh, fish, powershell)
 │   ├── bash.rs, zsh.rs, fish.rs, powershell.rs  # Shell-specific scripts
+│   ├── scripts/   # Wrapper/completion bodies, pulled in with include_str! (listed in Cargo.toml `include`)
 │   └── common.rs  # Shared utilities (version check, 4-shell macros)
 ├── uv/            # uv CLI wrapper (client.rs) + version policy (version.rs)
 ├── output/        # Terminal UI & JSON output
+│   ├── color.rs   # Colors decision, made once in main
 │   └── time.rs    # English fuzzy-age formatter for last_used display
 ├── error/         # ScoopError module (code, display, exit codes, migrate, suggestion; i18n Display)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
+├── test_utils.rs  # env_guard, with_temp_scoop_home, FakeUv (test-only)
 └── config.rs      # Config management (~/.scuv/config.json)
+
+tests/cli/         # Integration tests (main.rs + per-topic files; support.rs = shared helpers)
 
 locales/
 └── app.yml        # Translation strings (en, ko, ja, pt-BR, es)
@@ -310,11 +319,12 @@ pub fn create(name: &str, version: &str) -> Result<VirtualEnv, ScoopError>
 | Category | Path | Description |
 |----------|------|-------------|
 | ADR | `adr/0001-architecture.md` | Architecture decisions |
-| Plan | `plan/mvp.md` | MVP feature scope |
+| Index | `README.md` | Layout and index of `.docs/` |
+| Ledger | `gotchas.md`, `followups.md`, `decisions/`, `prs/` | Traps, deferred work, decision records, per-PR logs |
 | Spec | `spec/naming.md` | Naming conventions |
 | Spec | `spec/cli-options.md` | CLI options spec |
 | Dev | `dev/code-quality.md` | Linting/formatting setup |
-| Dev | `dev/documentation.md` | Rust documentation best practices |
+| Dev | `dev/testing-strategy.md` | Test tooling and mutation strategy |
 
 ### Document Naming Rules
 
