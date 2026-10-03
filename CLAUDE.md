@@ -77,6 +77,10 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 - `.cargo/mutants.toml` `exclude_re` matches the full mutant description, not the function name — a bare `"foo"` silently drops every mutant in `foo`, including ones the tests kill. Exclude the exact description (`"delete match arm \\[major\\] in foo"`); verify the delta with `cargo mutants --config <alt>.toml --list --file '<glob>'` + `comm`.
 - A green `Mutants (diff)` proves little on a test-only PR — no production lines changed — and `Mutants (full)` is skipped on PRs. Verify mutation claims locally with `cargo mutants --file '<glob>'`.
 - `--in-diff` scopes mutants to the *enclosing function*, not the changed lines — touching one line in an untested function surfaces its pre-existing gaps as new failures. Check whether the missed mutant is one your change could have caused before treating it as a regression.
+- A `cfg!(target_os = ...)` inside a match guard or `if` yields a mutant that is equivalent on one OS (CI mutants run on Linux), so `--in-diff` reports it MISSED. Pass the platform in as a `bool` parameter (`rc_files(shell, home, cfg!(target_os = "macos"))`) and test both values.
+- Tests that need `uv` use `FakeUv` (src/test_utils.rs; see `with_fake_uv_home` in gc/tests.rs): PATH holds only the fake dir, so its script must use shell builtins (`printf`/`echo`), never `cat` — otherwise `uv python list` fails, the code falls back to empty, and the test passes vacuously.
+- To make a directory read fail, put a regular file where the directory should be; `chmod 000` does not stop root, and the test then proves nothing in root CI.
+- `codecov/patch` = base coverage − 5% (codecov.yml); a split/move refactor counts relocated lines as new. Per-file patch misses: `curl -s "https://api.codecov.io/api/v2/github/ai-screams/repos/scoop-uv/compare/?pullid=<n>"` → `.files[].totals.patch`.
 
 ## Dependabot & Release Automation
 
@@ -385,6 +389,8 @@ t!("error.virtualenv_not_found", name = name)
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
 - `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical. Install the versions `docs.yml` pins (mdbook 0.5.3, mdbook-i18n-helpers 0.4.0) — latest produces a different `.pot`. `messages.pot` is untracked; only `ko.po` is committed.
   - Reproducing that guard locally also needs: restore `POT-Creation-Date`/`PO-Revision-Date` from the pre-merge copy (msgmerge rewrites both to "now" → phantom diff), and `msgcat --width=79` any hand-written msgstr (unwrapped lines are gettext-version-sensitive; CI's gettext may differ from Homebrew's). Done when two consecutive runs leave the file byte-identical with 0 fuzzy.
+  - Check `mdbook --version` first: a wrong version makes the xgettext renderer fail (`missing field items`), msgmerge then reuses the stale `messages.pot`, and new msgids silently never reach `ko.po`. Grep `ko.po` for the new text.
+  - In-page links inside a msgstr must use the translated heading's id (`[TOCTOU 가드](#toctou-가드)`); keeping the English anchor breaks the link in the ko book.
 - The ko.po staleness guard runs in two places: `docs-check.yml` ("Documentation checks") on PRs that touch the docs paths it lists, and `docs.yml` (build + deploy) on `v*` tags. A PR outside those paths only gets `msgfmt --check` from the CI Lint job.
 - `docs.yml`'s `deploy` job has no branch guard — a `workflow_dispatch` from any branch publishes that branch to production Pages. Verify on `main` only.
 
