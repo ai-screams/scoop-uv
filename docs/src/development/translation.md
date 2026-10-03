@@ -91,7 +91,7 @@ Each shell module has a test (`lang_completion_list_matches_supported_langs`)
 that compares its list with `SUPPORTED_LANGS`, so a shell you miss fails
 `cargo test` instead of surfacing when a user presses Tab.
 
-**3. Locale loops in tests (optional)** — `src/error/mod.rs` and
+**3. Locale loops in tests (optional)** — `src/error/tests.rs` and
 `src/error/suggestion.rs` iterate the supported locales. Adding yours gives
 your translation unit-level coverage. Skip it if you would rather not touch
 Rust, and a maintainer can add it during review.

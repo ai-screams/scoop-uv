@@ -8806,12 +8806,12 @@ msgstr ""
 
 #: src/development/translation.md:94
 msgid ""
-"**3. Locale loops in tests (optional)** — `src/error/mod.rs` and `src/error/"
-"suggestion.rs` iterate the supported locales. Adding yours gives your "
+"**3. Locale loops in tests (optional)** — `src/error/tests.rs` and `src/"
+"error/suggestion.rs` iterate the supported locales. Adding yours gives your "
 "translation unit-level coverage. Skip it if you would rather not touch Rust, "
 "and a maintainer can add it during review."
 msgstr ""
-"**3. 테스트의 로케일 루프 (선택)** — `src/error/mod.rs`와 `src/error/"
+"**3. 테스트의 로케일 루프 (선택)** — `src/error/tests.rs`와 `src/error/"
 "suggestion.rs`는 지원 로케일을 순회합니다. 여기에 언어를 추가하면 번역이 유"
 "닛 레벨 커버리지까지 확보합니다. Rust를 건드리고 싶지 않다면 건너뛰어도 되"
 "며, 리뷰 과정에서 메인테이너가 추가할 수 있습니다."
@@ -11626,8 +11626,8 @@ msgid "# By module path\n"
 msgstr "# 모듈 경로로\n"
 
 #: src/development/testing.md:62
-msgid "# Tests in output/json.rs\n"
-msgstr "# output/json.rs의 테스트\n"
+msgid "# Tests in output/json/tests.rs\n"
+msgstr "# output/json/tests.rs의 테스트\n"
 
 #: src/development/testing.md:63
 msgid "# Tests in error.rs\n"

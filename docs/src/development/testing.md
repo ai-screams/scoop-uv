@@ -59,7 +59,7 @@ cargo test error                    # Tests containing "error"
 cargo test virtualenv               # Tests containing "virtualenv"
 
 # By module path
-cargo test output::json             # Tests in output/json.rs
+cargo test output::json             # Tests in output/json/tests.rs
 cargo test error::tests             # Tests in error.rs
 cargo test core::version            # Tests in core/version.rs
 cargo test cli::commands            # Tests in cli/commands/
