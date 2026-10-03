@@ -4,7 +4,11 @@
 
 use rust_i18n::t;
 
-use crate::core::migrate::{EnvironmentStatus, MigrateOptions, MigrationResult, Migrator};
+use std::path::Path;
+
+use crate::core::migrate::{
+    EnvironmentStatus, MigrateOptions, MigrationResult, Migrator, SourceEnvironment,
+};
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
 
@@ -71,85 +75,85 @@ pub fn migrate_environment(
     opts: &MigrateExecuteOptions,
 ) -> Result<()> {
     let source = find_environment_by_name(name, opts.source_filter)?;
+    if !opts.json {
+        print_source_info(output, name, &source);
+    }
+
+    let Some(target) = resolve_target(output, name, &source.status, opts)? else {
+        return Ok(()); // the user chose to skip
+    };
+
+    let migrator = Migrator::new()?;
+    let options = MigrateOptions {
+        dry_run: opts.dry_run,
+        force: target.force,
+        skip_packages: false,
+        rename_to: (target.name != name).then(|| target.name.clone()),
+        strict: opts.strict,
+        delete_source: opts.delete_source,
+        auto_install_python: false,
+    };
 
     if !opts.json {
-        // Show environment info
-        output.info(&format!(
-            "Source: {} ({}, Python {})",
-            name, source.source_type, source.python_version
-        ));
-        output.info(&t!(
-            "migrate.source_path",
-            path = crate::paths::abbreviate_home(&source.path)
-        ));
-
-        if let Some(size_bytes) = source.size_bytes {
-            let size_mb = size_bytes as f64 / 1_048_576.0;
-            output.info(&t!("migrate.size", size = format!("{:.1}", size_mb)));
+        if opts.dry_run {
+            output.info(&t!("migrate.simulating"));
+        } else {
+            output.info(&t!("migrate.migrating"));
         }
     }
 
-    // Determine final name (may be renamed)
-    let mut final_name = opts.rename.clone().unwrap_or_else(|| name.to_string());
-    let mut effective_force = opts.force;
+    let result = migrator.migrate(&source, &options)?;
 
-    // Check status
-    match &source.status {
+    if opts.json {
+        output.json_success("migrate", &result);
+        return Ok(());
+    }
+    print_migration_result(output, &result, opts.dry_run);
+    Ok(())
+}
+
+/// Where an environment will be migrated to, once its status is resolved.
+struct Target {
+    name: String,
+    /// Overwrite an existing scuv env of that name.
+    force: bool,
+}
+
+/// What is being migrated, before anything happens (human mode only).
+fn print_source_info(output: &Output, name: &str, source: &SourceEnvironment) {
+    output.info(&format!(
+        "Source: {} ({}, Python {})",
+        name, source.source_type, source.python_version
+    ));
+    output.info(&t!(
+        "migrate.source_path",
+        path = crate::paths::abbreviate_home(&source.path)
+    ));
+
+    if let Some(size_bytes) = source.size_bytes {
+        let size_mb = size_bytes as f64 / 1_048_576.0;
+        output.info(&t!("migrate.size", size = format!("{:.1}", size_mb)));
+    }
+}
+
+/// Decides the target name and whether to overwrite, from the source's
+/// status. `Ok(None)` means the user chose to skip; EOL (without --force)
+/// and corrupted sources are errors.
+fn resolve_target(
+    output: &Output,
+    name: &str,
+    status: &EnvironmentStatus,
+    opts: &MigrateExecuteOptions,
+) -> Result<Option<Target>> {
+    let target = Target {
+        name: opts.rename.clone().unwrap_or_else(|| name.to_string()),
+        force: opts.force,
+    };
+
+    match status {
         EnvironmentStatus::Ready => {}
         EnvironmentStatus::NameConflict { existing } => {
-            if opts.auto_rename {
-                // Auto-rename: generate unique name
-                final_name = generate_unique_name(name)?;
-                if !opts.json {
-                    output.info(&t!("migrate.auto_rename", name = &final_name));
-                }
-            } else if opts.rename.is_some() {
-                // User provided explicit rename, check if that conflicts too
-                let renamed_path = crate::paths::virtualenv_path(&final_name)?;
-                if renamed_path.exists() && !opts.force {
-                    return Err(ScoopError::MigrationNameConflict {
-                        name: final_name.clone(),
-                        existing: renamed_path,
-                    });
-                }
-            } else if !opts.force {
-                // Interactive conflict resolution (if not json and not yes)
-                if !opts.json && !opts.yes {
-                    let resolution = prompt_conflict_resolution(output, name, existing)?;
-                    match resolution {
-                        ConflictResolution::Overwrite => {
-                            effective_force = true;
-                            if !opts.json {
-                                output.warn(&t!("migrate.will_overwrite"));
-                            }
-                        }
-                        ConflictResolution::Rename => {
-                            final_name = prompt_rename(name)?;
-                            if !opts.json {
-                                output.info(&t!("migrate.will_migrate_as", name = &final_name));
-                            }
-                        }
-                        ConflictResolution::Skip => {
-                            if !opts.json {
-                                output.info(&t!("migrate.skipped"));
-                            }
-                            return Ok(());
-                        }
-                    }
-                } else {
-                    // Non-interactive mode: error out
-                    if !opts.json {
-                        output.warn(&t!("migrate.name_exists", name = name));
-                        output.info(&t!("migrate.use_flags"));
-                    }
-                    return Err(ScoopError::MigrationNameConflict {
-                        name: name.to_string(),
-                        existing: existing.clone(),
-                    });
-                }
-            } else if !opts.json {
-                output.warn(&t!("migrate.overwriting"));
-            }
+            return resolve_name_conflict(output, name, existing, opts, target);
         }
         EnvironmentStatus::PythonEol { version } => {
             if !opts.force {
@@ -175,44 +179,64 @@ pub fn migrate_environment(
             });
         }
     }
+    Ok(Some(target))
+}
 
-    // Create migrator and options
-    let migrator = Migrator::new()?;
-    let options = MigrateOptions {
-        dry_run: opts.dry_run,
-        force: effective_force,
-        skip_packages: false,
-        rename_to: if final_name != name {
-            Some(final_name.clone())
-        } else {
-            None
-        },
-        strict: opts.strict,
-        delete_source: opts.delete_source,
-        auto_install_python: false,
-    };
-
-    if !opts.json {
-        if opts.dry_run {
-            output.info(&t!("migrate.simulating"));
-        } else {
-            output.info(&t!("migrate.migrating"));
+/// A scuv env named `name` already exists. In order: `--auto-rename`
+/// picks a free name; `--rename` must itself be free (unless `--force`);
+/// `--force` overwrites; non-interactive runs (`--json`, `--yes`) fail;
+/// otherwise the user is asked.
+fn resolve_name_conflict(
+    output: &Output,
+    name: &str,
+    existing: &Path,
+    opts: &MigrateExecuteOptions,
+    mut target: Target,
+) -> Result<Option<Target>> {
+    if opts.auto_rename {
+        target.name = generate_unique_name(name)?;
+        if !opts.json {
+            output.info(&t!("migrate.auto_rename", name = &target.name));
+        }
+    } else if opts.rename.is_some() {
+        let renamed_path = crate::paths::virtualenv_path(&target.name)?;
+        if renamed_path.exists() && !opts.force {
+            return Err(ScoopError::MigrationNameConflict {
+                name: target.name,
+                existing: renamed_path,
+            });
+        }
+    } else if opts.force {
+        if !opts.json {
+            output.warn(&t!("migrate.overwriting"));
+        }
+    } else if opts.json || opts.yes {
+        if !opts.json {
+            output.warn(&t!("migrate.name_exists", name = name));
+            output.info(&t!("migrate.use_flags"));
+        }
+        return Err(ScoopError::MigrationNameConflict {
+            name: name.to_string(),
+            existing: existing.to_path_buf(),
+        });
+    } else {
+        // Interactive (human mode, no --yes)
+        match prompt_conflict_resolution(output, name, existing)? {
+            ConflictResolution::Overwrite => {
+                target.force = true;
+                output.warn(&t!("migrate.will_overwrite"));
+            }
+            ConflictResolution::Rename => {
+                target.name = prompt_rename(name)?;
+                output.info(&t!("migrate.will_migrate_as", name = &target.name));
+            }
+            ConflictResolution::Skip => {
+                output.info(&t!("migrate.skipped"));
+                return Ok(None);
+            }
         }
     }
-
-    // Perform migration
-    let result = migrator.migrate(&source, &options)?;
-
-    // JSON output
-    if opts.json {
-        output.json_success("migrate", &result);
-        return Ok(());
-    }
-
-    // Report results
-    print_migration_result(output, &result, opts.dry_run);
-
-    Ok(())
+    Ok(Some(target))
 }
 
 // ============================================================================
@@ -629,5 +653,104 @@ mod tests {
             // Should fail because Python 2.7 is EOL
             assert!(result.is_err());
         });
+    }
+
+    // =========================================================================
+    // resolve_name_conflict: the non-interactive branches, in priority order
+    // =========================================================================
+
+    fn conflict_opts() -> MigrateExecuteOptions {
+        MigrateExecuteOptions {
+            yes: true,
+            ..Default::default()
+        }
+    }
+
+    fn start(name: &str, force: bool) -> Target {
+        Target {
+            name: name.to_string(),
+            force,
+        }
+    }
+
+    /// Fails if `--auto-rename` stops picking a fresh name.
+    #[test]
+    #[serial]
+    fn name_conflict_auto_rename_picks_a_free_name() {
+        crate::test_utils::with_temp_scoop_home(|_| {
+            let opts = MigrateExecuteOptions {
+                auto_rename: true,
+                ..conflict_opts()
+            };
+            let out = quiet_output();
+            let t = resolve_name_conflict(&out, "web", Path::new("/x"), &opts, start("web", false))
+                .unwrap()
+                .expect("auto-rename proceeds");
+            assert_ne!(t.name, "web");
+            assert!(!t.force);
+        });
+    }
+
+    /// `--rename` to a name that is taken fails unless `--force`; to a free
+    /// one it proceeds. Fails if the renamed-path check is dropped.
+    #[test]
+    #[serial]
+    fn name_conflict_rename_must_itself_be_free() {
+        crate::test_utils::with_temp_scoop_home(|home| {
+            std::fs::create_dir_all(home.path().join("virtualenvs").join("taken")).unwrap();
+            let out = quiet_output();
+            let opts = MigrateExecuteOptions {
+                rename: Some("taken".into()),
+                ..conflict_opts()
+            };
+            let err =
+                resolve_name_conflict(&out, "web", Path::new("/x"), &opts, start("taken", false));
+            assert!(
+                matches!(err, Err(ScoopError::MigrationNameConflict { ref name, .. }) if name == "taken")
+            );
+
+            let opts = MigrateExecuteOptions {
+                rename: Some("free".into()),
+                ..conflict_opts()
+            };
+            let t =
+                resolve_name_conflict(&out, "web", Path::new("/x"), &opts, start("free", false))
+                    .unwrap()
+                    .unwrap();
+            assert_eq!(t.name, "free");
+        });
+    }
+
+    /// `--force` overwrites; without it a non-interactive run fails.
+    /// Fails if the `--force` branch or the json/yes guard is reordered.
+    #[test]
+    fn name_conflict_force_overwrites_else_noninteractive_fails() {
+        let out = quiet_output();
+        let forced = MigrateExecuteOptions {
+            force: true,
+            ..conflict_opts()
+        };
+        let t = resolve_name_conflict(&out, "web", Path::new("/x"), &forced, start("web", true))
+            .unwrap()
+            .unwrap();
+        assert_eq!((t.name.as_str(), t.force), ("web", true));
+
+        for opts in [
+            conflict_opts(),
+            MigrateExecuteOptions {
+                json: true,
+                ..Default::default()
+            },
+        ] {
+            let err =
+                resolve_name_conflict(&out, "web", Path::new("/x"), &opts, start("web", false));
+            assert!(
+                matches!(err, Err(ScoopError::MigrationNameConflict { ref name, .. }) if name == "web")
+            );
+        }
+    }
+
+    fn quiet_output() -> Output {
+        Output::new(0, true, crate::output::Colors::NONE, false)
     }
 }

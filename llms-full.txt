@@ -170,7 +170,7 @@ src/
 │   └── client.rs  # UvClient struct
 ├── output/        # Terminal UI & JSON output
 │   ├── mod.rs     # Output struct
-│   ├── json.rs    # JSON response types
+│   ├── json/      # JSON response types (mod.rs) + tests.rs
 │   ├── color.rs   # color decision (Colors, resolve); the flag is cli/color.rs
 │   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
@@ -182,7 +182,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 224 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 225 keys
 ```
 
 ### Design Principles
@@ -793,8 +793,8 @@ Error response:
 
 - 1029 tests (957 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings
 - Unit tests: inline `mod tests` blocks in each source file
-- Integration tests: `tests/cli.rs` with `assert_cmd` + `predicates`
-- Test isolation: `tests/common::TestFixture` for `SCUV_HOME` isolation
+- Integration tests: `tests/cli/` (one binary, a module per topic) with `assert_cmd` + `predicates`
+- Test isolation: `tests/cli/support.rs::TestFixture` for `SCUV_HOME` isolation
 - Property-based: `proptest` for validation logic
 
 ```bash

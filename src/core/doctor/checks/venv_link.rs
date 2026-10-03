@@ -61,15 +61,20 @@ fn classify(link: &Path, venvs_dir: Option<&Path>) -> Option<CheckResult> {
 /// Removes `link` when it dangles to an entry directly inside `venvs_dir`; a
 /// link scuv did not make is left for the user.
 fn remove_if_dangling_into(link: &Path, venvs_dir: &Path) -> Option<CheckResult> {
+    let raw = std::fs::read_link(link).ok()?;
     let dest = link_target(link)?;
     if link.exists() || !is_in_venvs_dir(&dest, venvs_dir) {
         return None;
     }
-    Some(match std::fs::remove_file(link) {
-        Ok(()) => CheckResult::ok(ID, NAME).with_details("removed dangling .venv link"),
-        Err(e) => CheckResult::error(ID, NAME, format!("failed to remove .venv link: {e}"))
-            .with_suggestion("Check file permissions"),
-    })
+    Some(
+        match crate::paths::remove_symlink_if_unchanged(link, &raw) {
+            Ok(true) => CheckResult::ok(ID, NAME).with_details("removed dangling .venv link"),
+            // Replaced since it was judged: no longer ours to remove.
+            Ok(false) => return None,
+            Err(e) => CheckResult::error(ID, NAME, format!("failed to remove .venv link: {e}"))
+                .with_suggestion("Check file permissions"),
+        },
+    )
 }
 
 impl Check for VenvLinkCheck {

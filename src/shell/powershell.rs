@@ -34,45 +34,12 @@ use crate::{file_resolution_check, scoop_version_check};
 /// ```
 pub fn init_script() -> &'static str {
     concat!(
-        r#"# scuv shell integration for PowerShell
-# Add to your $PROFILE: Invoke-Expression (& scuv init powershell)
-
-# Get the scuv binary path (avoids conflict with wrapper function)
-$script:ScuvBin = (Get-Command scuv -CommandType Application -ErrorAction SilentlyContinue).Source
-if (-not $script:ScuvBin) {
-    Write-Warning "scuv binary not found in PATH"
-    return
-}
-
-# Wrapper function for scuv
-function scuv {
-    param([Parameter(ValueFromRemainingArguments=$true)]$Arguments)
-
-    $command = if ($Arguments.Count -gt 0) { $Arguments[0] } else { '' }
-
-    switch ($command) {
-        'use' {
-            & $script:ScuvBin @Arguments
-            if ($LASTEXITCODE -eq 0) {
-                $name = $Arguments | Where-Object { $_ -notmatch '^-' } | Select-Object -Skip 1 -First 1
-                if ($name) {
-                    Invoke-Expression (& $script:ScuvBin activate $name)
-                }
-            }
-        }
-        { $_ -in 'activate', 'deactivate', 'shell' } {
-            if ($Arguments -match '(-h|--help|-V|--version)') {
-                & $script:ScuvBin @Arguments
-            } else {
-                Invoke-Expression (& $script:ScuvBin @Arguments)
-            }
-        }
-        default {
-            & $script:ScuvBin @Arguments
-        }
-    }
-}
-
+        // The `scuv` wrapper function (src/shell/scripts/powershell_wrapper.ps1).
+        include_str!("scripts/powershell_wrapper.ps1"),
+        // The auto-activate hook, assembled from the shared checks.
+        // The blank line after the wrapper lives here: a script file
+        // cannot end in one (end-of-file-fixer trims it).
+        r#"
 # Auto-activate hook
 function _scuv_hook {
 "#,
@@ -93,72 +60,9 @@ if (-not $env:SCUV_NO_AUTO) {
 # Run hook on startup
 _scuv_hook
 
-# Tab completion
-Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
-    param($wordToComplete, $commandAst, $cursorPosition)
-
-    $commands = @('list', 'create', 'use', 'remove', 'info', 'install', 'uninstall',
-                  'doctor', 'init', 'completions', 'activate', 'deactivate', 'shell',
-                  'migrate', 'lang')
-
-    $tokens = $commandAst.ToString() -split '\s+'
-    $cmd = if ($tokens.Count -gt 1) { $tokens[1] } else { '' }
-
-    # First argument: complete subcommands
-    if ($tokens.Count -le 2 -and $wordToComplete -notmatch '^-') {
-        $commands | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
-        return
-    }
-
-    # Environment name completion for specific commands
-    if ($cmd -in 'use', 'remove', 'info', 'activate', 'shell') {
-        $envs = & $script:ScuvBin list --bare 2>$null
-        if ($envs) {
-            $envs | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-                [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-            }
-        }
-        return
-    }
-
-    # Python version completion
-    if ($cmd -in 'install', 'uninstall', 'create') {
-        $versions = & $script:ScuvBin list --pythons --bare 2>$null | Sort-Object -Unique
-        if ($versions) {
-            $versions | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-                [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-            }
-        }
-        return
-    }
-
-    # Shell completion for init/completions
-    if ($cmd -in 'init', 'completions') {
-        @('bash', 'zsh', 'fish', 'powershell') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
-        return
-    }
-
-    # Language completion for lang
-    if ($cmd -eq 'lang') {
-        @('en', 'ko', 'ja', 'pt-BR', 'es') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
-        return
-    }
-
-    # Migrate subcommand completion
-    if ($cmd -eq 'migrate') {
-        @('list', 'all') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
-        return
-    }
-}
-"#
+"#,
+        // Tab completion (src/shell/scripts/powershell_completion.ps1).
+        include_str!("scripts/powershell_completion.ps1"),
     )
 }
 

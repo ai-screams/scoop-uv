@@ -78,7 +78,7 @@ impl VirtualenvService {
             // virtualenvs/ would otherwise be enumerated as a normal env,
             // and downstream commands like `scuv verify` would exec the
             // target's bin/python — arbitrary execution under the user's
-            // UID. This is the same hardening gc::scan_orphan_envs does;
+            // UID. This is the same hardening gc::scan::scan_orphan_envs does;
             // doing it here makes every caller of list() consistent.
             let ft = match entry.file_type() {
                 Ok(t) => t,

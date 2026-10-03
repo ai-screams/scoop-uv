@@ -322,7 +322,7 @@ fi
 
 The exit-2 path (batch failure) is the only `migrate all` failure path
 that emits a structured envelope on stdout. Bridging the exit-3
-asymmetry would require `batch.rs` (and `single.rs`) to call
+asymmetry would require `batch/` (and `single.rs`) to call
 `Output::json_error` before returning Err; tracked for a follow-up.
 
 ## Migration Process

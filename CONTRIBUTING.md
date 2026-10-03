@@ -57,7 +57,7 @@ Docs can always be clearer. PRs welcome for:
 Help make scuv accessible to developers worldwide!
 
 **Quick start:**
-1. Add translations to `locales/app.yml` (224 keys)
+1. Add translations to `locales/app.yml` (225 keys)
 2. Register your language in `src/i18n.rs`
 3. Submit PR with title: `docs(i18n): add {Language} translation`
 
@@ -592,7 +592,8 @@ mod tests {
 Located in `tests/` directory:
 
 ```rust
-// tests/cli.rs
+// tests/cli/<topic>.rs (declare it in tests/cli/main.rs)
+use crate::support::*;
 
 use assert_cmd::Command;
 use predicates::prelude::*;

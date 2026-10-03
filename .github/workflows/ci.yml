@@ -104,7 +104,7 @@ jobs:
           # Only main writes; a PR run restores this key but leaves no copy behind
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
-      - name: Install fish (fish integration test in tests/cli.rs)
+      - name: Install fish (fish integration test in tests/cli/shell.rs)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fish
 
       - name: Run tests
@@ -179,7 +179,7 @@ jobs:
 
       # Step 3: Run unit and integration tests
       # 520 unit tests + 43 integration tests
-      - name: Install fish (fish integration test in tests/cli.rs)
+      - name: Install fish (fish integration test in tests/cli/shell.rs)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fish
 
       - name: Run tests on MSRV

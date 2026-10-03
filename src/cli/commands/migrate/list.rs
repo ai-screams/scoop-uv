@@ -5,7 +5,7 @@
 use rust_i18n::t;
 
 use crate::cli::MigrateSource;
-use crate::core::migrate::{EnvironmentStatus, SourceType};
+use crate::core::migrate::{EnvironmentStatus, SourceEnvironment, SourceType};
 use crate::error::Result;
 use crate::output::Output;
 
@@ -32,38 +32,16 @@ pub fn list_environments(
 
     let environments = scan_all_environments(source_filter);
 
-    // JSON output
     if json {
-        let mut ready = 0;
-        let mut conflict = 0;
-        let mut eol = 0;
-        let mut corrupted = 0;
-
-        for env in &environments {
-            match &env.status {
-                EnvironmentStatus::Ready => ready += 1,
-                EnvironmentStatus::NameConflict { .. } => conflict += 1,
-                EnvironmentStatus::PythonEol { .. } => eol += 1,
-                EnvironmentStatus::Corrupted { .. } => corrupted += 1,
-            }
-        }
-
-        let source_str = source_filter
-            .map(|s| s.to_string())
-            .unwrap_or_else(|| "all".to_string());
-
+        let summary = summarize(&environments);
         output.json_success(
             "migrate list",
             MigrateListData {
-                source: source_str,
+                source: source_filter
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| "all".to_string()),
                 environments,
-                summary: MigrateListSummary {
-                    total: ready + conflict + eol + corrupted,
-                    ready,
-                    conflict,
-                    eol,
-                    corrupted,
-                },
+                summary,
             },
         );
         return Ok(());
@@ -77,11 +55,39 @@ pub fn list_environments(
 
     output.success(&t!("migrate.found", count = environments.len()));
     println!();
+    print_grouped(&environments);
+    println!();
+    output.info(&t!("migrate.hint_single"));
+    output.info(&t!("migrate.hint_preview"));
 
-    // Group by source type for display
+    Ok(())
+}
+
+/// Counts the scanned environments by status.
+fn summarize(environments: &[SourceEnvironment]) -> MigrateListSummary {
+    let mut summary = MigrateListSummary {
+        total: environments.len(),
+        ready: 0,
+        conflict: 0,
+        eol: 0,
+        corrupted: 0,
+    };
+    for env in environments {
+        match &env.status {
+            EnvironmentStatus::Ready => summary.ready += 1,
+            EnvironmentStatus::NameConflict { .. } => summary.conflict += 1,
+            EnvironmentStatus::PythonEol { .. } => summary.eol += 1,
+            EnvironmentStatus::Corrupted { .. } => summary.corrupted += 1,
+        }
+    }
+    summary
+}
+
+/// Prints the environments under a `[source]` header per source type (the
+/// scan already sorts by source).
+fn print_grouped(environments: &[SourceEnvironment]) {
     let mut current_source: Option<SourceType> = None;
-    for env in &environments {
-        // Print source header when it changes
+    for env in environments {
         if current_source != Some(env.source_type) {
             if current_source.is_some() {
                 println!();
@@ -89,35 +95,29 @@ pub fn list_environments(
             println!("  [{}]", env.source_type);
             current_source = Some(env.source_type);
         }
-
-        let (status_icon, status_hint) = match &env.status {
-            EnvironmentStatus::Ready => ("✓", "".to_string()),
-            EnvironmentStatus::NameConflict { existing } => {
-                ("⚠", format!(" (conflicts with {})", existing.display()))
-            }
-            EnvironmentStatus::PythonEol { version } => {
-                ("⚠", format!(" (Python {} is EOL)", version))
-            }
-            EnvironmentStatus::Corrupted { reason } => ("✗", format!(" ({})", reason)),
-        };
-
-        let size_mb = env.size_bytes.unwrap_or(0) as f64 / 1_048_576.0;
-        let size_str = if env.size_bytes.is_some() {
-            format!("{:>8.1} MB", size_mb)
-        } else {
-            "       - MB".to_string() // Not calculated
-        };
-        println!(
-            "    {} {:<20} Python {:<10} {}{}",
-            status_icon, env.name, env.python_version, size_str, status_hint
-        );
+        println!("{}", env_line(env));
     }
+}
 
-    println!();
-    output.info(&t!("migrate.hint_single"));
-    output.info(&t!("migrate.hint_preview"));
+/// One environment's line: status icon, name, Python, size and a hint.
+fn env_line(env: &SourceEnvironment) -> String {
+    let (status_icon, status_hint) = match &env.status {
+        EnvironmentStatus::Ready => ("✓", "".to_string()),
+        EnvironmentStatus::NameConflict { existing } => {
+            ("⚠", format!(" (conflicts with {})", existing.display()))
+        }
+        EnvironmentStatus::PythonEol { version } => ("⚠", format!(" (Python {} is EOL)", version)),
+        EnvironmentStatus::Corrupted { reason } => ("✗", format!(" ({})", reason)),
+    };
 
-    Ok(())
+    let size_str = match env.size_bytes {
+        Some(bytes) => format!("{:>8.1} MB", bytes as f64 / 1_048_576.0),
+        None => "       - MB".to_string(), // Not calculated
+    };
+    format!(
+        "    {} {:<20} Python {:<10} {}{}",
+        status_icon, env.name, env.python_version, size_str, status_hint
+    )
 }
 
 // ============================================================================
@@ -126,6 +126,36 @@ pub fn list_environments(
 
 #[cfg(test)]
 mod tests {
+
+    /// Fails if a status is counted in the wrong bucket or `total` stops
+    /// matching the scan.
+    #[test]
+    fn summarize_counts_each_status() {
+        use std::path::PathBuf;
+        let env = |status| SourceEnvironment {
+            name: "e".into(),
+            python_version: "3.12".into(),
+            path: PathBuf::from("/e"),
+            source_type: SourceType::Pyenv,
+            size_bytes: None,
+            status,
+        };
+        let s = summarize(&[
+            env(EnvironmentStatus::Ready),
+            env(EnvironmentStatus::Ready),
+            env(EnvironmentStatus::NameConflict {
+                existing: PathBuf::from("/x"),
+            }),
+            env(EnvironmentStatus::PythonEol {
+                version: "2.7".into(),
+            }),
+            env(EnvironmentStatus::Corrupted { reason: "r".into() }),
+        ]);
+        assert_eq!(
+            (s.total, s.ready, s.conflict, s.eol, s.corrupted),
+            (5, 2, 1, 1, 1)
+        );
+    }
     use super::*;
     use crate::core::migrate::SourceEnvironment;
     use crate::test_utils::{

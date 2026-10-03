@@ -1,5 +1,7 @@
 //! Check for symbolic link validity.
 
+use std::path::{Path, PathBuf};
+
 use crate::core::metadata::Metadata;
 use crate::paths;
 use crate::uv::UvClient;
@@ -85,7 +87,6 @@ impl Check for SymlinkCheck {
     fn fix(&self, result: &CheckResult, output: &crate::output::Output) -> Option<CheckResult> {
         // Extract environment name from error message: "Python symlink in 'name' is broken"
         let venv_name = if let CheckStatus::Error(msg) = &result.status {
-            // Parse: "Python symlink in 'name' is broken"
             msg.split('\'').nth(1).map(|s| s.to_string())
         } else {
             None
@@ -93,141 +94,102 @@ impl Check for SymlinkCheck {
 
         output.info(&format!("Attempting to fix symlink for '{}'...", venv_name));
 
-        // Get virtualenv path
-        let venvs_dir = paths::virtualenvs_dir().ok()?;
-        let venv_path = venvs_dir.join(&venv_name);
-
-        if !venv_path.exists() {
-            return Some(
-                CheckResult::error(
-                    "symlink",
-                    "broken symlink",
-                    format!("environment '{}' not found", venv_name),
-                )
-                .with_suggestion(format!("scuv create {} <python-version>", venv_name)),
-            );
-        }
-
-        // Read the venv's Python version (scuv metadata, then pyvenv.cfg fallback).
-        let python_version = read_python_version(&venv_path);
-
-        let python_version = match python_version {
-            Some(v) => v,
-            None => {
-                return Some(
-                    CheckResult::error(
-                        "symlink",
-                        "broken symlink",
-                        format!("could not determine Python version for '{}'", venv_name),
-                    )
-                    .with_suggestion(format!(
-                        "scuv remove {} && scuv create {} <python-version>",
-                        venv_name, venv_name
-                    )),
-                );
+        let venv_path = paths::virtualenvs_dir().ok()?.join(&venv_name);
+        Some(match relink(output, &venv_path, &venv_name) {
+            Ok(()) => {
+                output.success(&format!("Fixed symlink for '{}'", venv_name));
+                CheckResult::ok("symlink", "broken symlink")
+                    .with_details(format!("fixed symlink for '{}'", venv_name))
             }
-        };
+            Err(failed) => failed,
+        })
+    }
+}
 
-        output.info(&format!("Found Python version: {}", python_version));
+/// A failed fix: the error and what the user can do about it.
+fn failure(message: impl Into<String>, suggestion: impl Into<String>) -> CheckResult {
+    CheckResult::error("symlink", "broken symlink", message).with_suggestion(suggestion)
+}
 
-        // Find Python binary using uv
-        let uv = match UvClient::new() {
-            Ok(uv) => uv,
-            Err(_) => {
-                return Some(
-                    CheckResult::error("symlink", "broken symlink", "uv not available")
-                        .with_suggestion("Install uv first"),
-                );
-            }
-        };
+/// Points the env's `python` at its installed interpreter again: find the
+/// env's Python version, find that Python via uv, replace the link.
+fn relink(
+    output: &crate::output::Output,
+    venv_path: &Path,
+    venv_name: &str,
+) -> Result<(), CheckResult> {
+    if !venv_path.exists() {
+        return Err(failure(
+            format!("environment '{}' not found", venv_name),
+            format!("scuv create {} <python-version>", venv_name),
+        ));
+    }
 
-        let python_path = match uv.find_python(&python_version) {
-            Ok(Some(info)) => match info.path {
-                Some(path) => path,
-                None => {
-                    return Some(
-                        CheckResult::error(
-                            "symlink",
-                            "broken symlink",
-                            format!("Python {} path not found", python_version),
-                        )
-                        .with_suggestion(format!("scuv install {}", python_version)),
-                    );
-                }
-            },
-            Ok(None) => {
-                return Some(
-                    CheckResult::error(
-                        "symlink",
-                        "broken symlink",
-                        format!("Python {} not installed", python_version),
-                    )
-                    .with_suggestion(format!("scuv install {}", python_version)),
-                );
-            }
-            Err(_) => {
-                return Some(
-                    CheckResult::error(
-                        "symlink",
-                        "broken symlink",
-                        "failed to find Python installation",
-                    )
-                    .with_suggestion(format!("scuv install {}", python_version)),
-                );
-            }
-        };
-
-        // Recreate symlink
-        let symlink_path = crate::paths::virtualenv_python_exe(&venv_path);
-
-        // Remove old symlink if exists
-        if (symlink_path.exists() || symlink_path.is_symlink())
-            && let Err(e) = std::fs::remove_file(&symlink_path)
-        {
-            return Some(
-                CheckResult::error(
-                    "symlink",
-                    "broken symlink",
-                    format!("failed to remove old symlink: {}", e),
-                )
-                .with_suggestion("Check file permissions"),
-            );
-        }
-
-        // Create new symlink
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::symlink;
-            if let Err(e) = symlink(&python_path, &symlink_path) {
-                return Some(
-                    CheckResult::error(
-                        "symlink",
-                        "broken symlink",
-                        format!("failed to create symlink: {}", e),
-                    )
-                    .with_suggestion("Check file permissions"),
-                );
-            }
-        }
-
-        #[cfg(not(unix))]
-        {
-            return Some(
-                CheckResult::warn(
-                    "symlink",
-                    "broken symlink",
-                    "symlink fix not supported on this platform",
-                )
-                .with_suggestion("Manually recreate the symlink"),
-            );
-        }
-
-        output.success(&format!("Fixed symlink for '{}'", venv_name));
-
-        Some(
-            CheckResult::ok("symlink", "broken symlink")
-                .with_details(format!("fixed symlink for '{}'", venv_name)),
+    // Read the venv's Python version (scuv metadata, then pyvenv.cfg fallback).
+    let python_version = read_python_version(venv_path).ok_or_else(|| {
+        failure(
+            format!("could not determine Python version for '{}'", venv_name),
+            format!(
+                "scuv remove {} && scuv create {} <python-version>",
+                venv_name, venv_name
+            ),
         )
+    })?;
+    output.info(&format!("Found Python version: {}", python_version));
+
+    let python_path = installed_python_path(&python_version)?;
+    replace_symlink(
+        &python_path,
+        &crate::paths::virtualenv_python_exe(venv_path),
+    )
+}
+
+/// The interpreter uv has installed for `version`.
+fn installed_python_path(version: &str) -> Result<PathBuf, CheckResult> {
+    let install_hint = format!("scuv install {}", version);
+    let uv = UvClient::new().map_err(|_| failure("uv not available", "Install uv first"))?;
+    match uv.find_python(version) {
+        Ok(Some(info)) => info
+            .path
+            .ok_or_else(|| failure(format!("Python {} path not found", version), install_hint)),
+        Ok(None) => Err(failure(
+            format!("Python {} not installed", version),
+            install_hint,
+        )),
+        Err(_) => Err(failure("failed to find Python installation", install_hint)),
+    }
+}
+
+/// Replaces `link` (if anything is there) with a symlink to `target`.
+fn replace_symlink(target: &Path, link: &Path) -> Result<(), CheckResult> {
+    if (link.exists() || link.is_symlink())
+        && let Err(e) = std::fs::remove_file(link)
+    {
+        return Err(failure(
+            format!("failed to remove old symlink: {}", e),
+            "Check file permissions",
+        ));
+    }
+
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(target, link).map_err(|e| {
+            failure(
+                format!("failed to create symlink: {}", e),
+                "Check file permissions",
+            )
+        })
+    }
+
+    #[cfg(not(unix))]
+    {
+        let _ = target;
+        Err(CheckResult::warn(
+            "symlink",
+            "broken symlink",
+            "symlink fix not supported on this platform",
+        )
+        .with_suggestion("Manually recreate the symlink"))
     }
 }
 
@@ -380,5 +342,48 @@ mod tests {
                     || matches!(&r.status, CheckStatus::Error(msg) if msg.contains("fix-target"))
             );
         });
+    }
+
+    /// Fails if `relink` stops refusing a missing env (`!` deleted).
+    #[test]
+    fn relink_reports_a_missing_env() {
+        let tmp = tempfile::tempdir().unwrap();
+        let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+        let err = relink(&out, &tmp.path().join("gone"), "gone").unwrap_err();
+        assert!(err.is_error());
+        assert!(format!("{err:?}").contains("not found"), "{err:?}");
+    }
+
+    /// A dangling `python` link (target gone) is replaced, and so is one
+    /// pointing elsewhere. Fails if `replace_symlink` does nothing, or if the
+    /// `exists() || is_symlink()` test becomes `&&` (a dangling link then
+    /// survives and creating the new one fails).
+    #[cfg(unix)]
+    #[test]
+    fn replace_symlink_replaces_dangling_and_stale_links() {
+        use std::os::unix::fs::symlink;
+
+        let tmp = tempfile::tempdir().unwrap();
+        let target = tmp.path().join("python3.12");
+        std::fs::write(&target, b"").unwrap();
+        let link = tmp.path().join("python");
+
+        symlink(tmp.path().join("gone"), &link).unwrap();
+        replace_symlink(&target, &link).unwrap();
+        assert_eq!(std::fs::read_link(&link).unwrap(), target);
+
+        let other = tmp.path().join("other");
+        std::fs::write(&other, b"").unwrap();
+        std::fs::remove_file(&link).unwrap();
+        symlink(&other, &link).unwrap();
+        replace_symlink(&target, &link).unwrap();
+        assert_eq!(std::fs::read_link(&link).unwrap(), target);
+    }
+
+    /// No uv, or uv without that Python: either way an error, never a
+    /// made-up path. Fails if `installed_python_path` returns `Ok` blindly.
+    #[test]
+    fn installed_python_path_errors_for_a_version_nobody_has() {
+        assert!(installed_python_path("0.0.1").is_err());
     }
 }
