@@ -76,14 +76,35 @@ complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains
 complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt unset" -l unset -d "Clear shell-specific environment"
 
 # Dynamic completions: virtual environment names
-complete -c scuv -n "__fish_seen_subcommand_from use remove info activate shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
-# Only where an environment name goes: the first argument, or either of diff's two
-complete -c scuv -n "__fish_seen_subcommand_from clone export run verify; and __fish_is_nth_token 2" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
-complete -c scuv -n "__fish_seen_subcommand_from diff; and begin; __fish_is_nth_token 2; or __fish_is_nth_token 3; end" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
+# Positional arguments before the cursor. Options are skipped, and so is the
+# value of an option that takes one (`__fish_is_nth_token` would count it).
+function __scuv_positionals
+    set -l count 0
+    set -l skip 0
+    for t in (commandline -opc)[3..-1]
+        if test $skip -eq 1
+            set skip 0
+            continue
+        end
+        switch $t
+            case --color -o --output --name --shell
+                set skip 1
+            case '-*'
+            case '*'
+                set count (math $count + 1)
+        end
+    end
+    echo $count
+end
+
+# Env names only where one goes: the first argument (diff: either of two),
+# and not as the value of an option
+complete -c scuv -n "__fish_seen_subcommand_from use remove info activate shell clone export run verify; and test (__scuv_positionals) -eq 0; and not __fish_prev_arg_in -o --output --name --shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
+complete -c scuv -n "__fish_seen_subcommand_from diff; and test (__scuv_positionals) -lt 2; and not __fish_prev_arg_in -o --output --name --shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
 
 # self has one subcommand; import reads a file and man writes to a directory
-complete -c scuv -n "__fish_seen_subcommand_from self; and __fish_is_nth_token 2" -a "update" -d "Reinstall scuv from crates.io"
-complete -c scuv -n "__fish_seen_subcommand_from import man; and __fish_is_nth_token 2" -F
+complete -c scuv -n "__fish_seen_subcommand_from self; and test (__scuv_positionals) -eq 0" -a "update" -d "Reinstall scuv from crates.io"
+complete -c scuv -n "__fish_seen_subcommand_from import man; and test (__scuv_positionals) -eq 0" -F
 
 # Dynamic completions: Python versions for uninstall
 # Note: scuv list --pythons --bare already returns unique, sorted versions

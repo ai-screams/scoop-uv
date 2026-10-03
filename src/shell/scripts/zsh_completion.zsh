@@ -33,6 +33,15 @@ _scuv_positionals() {
     done
 }
 
+# True when the word being completed is the value of an option that takes
+# one (`-o <TAB>`, `--shell <TAB>`): no positional candidates there.
+_scuv_at_option_value() {
+    case "${words[CURRENT-1]:-}" in
+        -o|--output|--name|--shell) return 0 ;;
+    esac
+    return 1
+}
+
 _scuv() {
     local curcontext="$curcontext" state line
     typeset -A opt_args
@@ -112,12 +121,8 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
-                        local has_env=false
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && has_env=true && break
-                        done
-                        if [[ $has_env == false ]]; then
+                        _scuv_positionals
+                        if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -137,12 +142,8 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
-                        local has_env=false
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && has_env=true && break
-                        done
-                        if [[ $has_env == false ]]; then
+                        _scuv_positionals
+                        if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -166,12 +167,8 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
-                        local has_env=false
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && has_env=true && break
-                        done
-                        if [[ $has_env == false ]]; then
+                        _scuv_positionals
+                        if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -179,12 +176,8 @@ _scuv() {
                     ;;
                 activate)
                     # Check if env name already provided (exclude current word being typed)
-                    local has_env=false
-                    local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                    for w in "${prev_args[@]}"; do
-                        [[ $w != -* && -n $w ]] && has_env=true && break
-                    done
-                    if [[ $has_env == false ]]; then
+                    _scuv_positionals
+                    if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                         local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                         compadd -a envs
                     fi
@@ -342,12 +335,8 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
-                        local has_env=false
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && has_env=true && break
-                        done
-                        if [[ $has_env == false ]]; then
+                        _scuv_positionals
+                        if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -363,7 +352,7 @@ _scuv() {
                         local max=1
                         [[ ${line[1]} == diff ]] && max=2
                         _scuv_positionals
-                        if (( REPLY < max )); then
+                        if (( REPLY < max )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -390,7 +379,7 @@ _scuv() {
                         _describe 'option' opts
                     else
                         _scuv_positionals
-                        (( REPLY == 0 )) && _files
+                        (( REPLY == 0 )) && ! _scuv_at_option_value && _files
                     fi
                     ;;
                 status|sync|which|prune|gc)

@@ -316,7 +316,9 @@ fn assert_completions(shell: &str, stdout: &str, stderr: &str, expected: &[&str]
 
 /// Env names are offered only where an env name goes: after an option's
 /// value (`-o out.json`, `--color auto`), at diff's second slot but not its
-/// third, and not at clone's destination or run's command. Fails if the
+/// third, and not at clone's destination, run's command, a second `use`
+/// argument or an option's own value (`-o <TAB>`; `--shell <TAB>` gets the
+/// shells). Fails if the
 /// position count includes option values or loses its limits.
 #[cfg(unix)]
 #[test]
@@ -337,6 +339,9 @@ fn bash_completion_offers_env_names_only_where_they_go() {
         "t scuv diff alpha beta ''\n",
         "t scuv self ''\n",
         "t scuv self update ''\n",
+        "t scuv use alpha ''\n",
+        "t scuv activate --shell ''\n",
+        "t scuv export -o ''\n",
     );
     let output = std::process::Command::new(bash)
         .args(["--norc", "--noprofile", "-c", script])
@@ -360,6 +365,63 @@ fn bash_completion_offers_env_names_only_where_they_go() {
             "scuv diff alpha beta  =>",
             "scuv self  => update",
             "scuv self update  =>",
+            "scuv use alpha  =>",
+            "scuv activate --shell  => bash zsh fish powershell",
+        ],
+    );
+    // The value of -o is a path: no env names there.
+    let line = stdout.lines().find(|l| l.starts_with("scuv export -o  =>"));
+    assert!(
+        line.is_some_and(|l| !l.contains("alpha")),
+        "bash: {line:?}\n{stdout}"
+    );
+}
+
+/// zsh's position helpers, called directly with `words`/`CURRENT` set as
+/// the completion system sets them (driving `compadd` itself needs a
+/// terminal). Fails if `_scuv_positionals` counts an option's value or
+/// `_scuv_at_option_value` misses one.
+#[cfg(unix)]
+#[test]
+fn zsh_completion_counts_positions_past_option_values() {
+    let Some(zsh) = find_shell("zsh") else {
+        eprintln!("skipping: no zsh binary found");
+        return;
+    };
+    let (fixture, _fake_uv, path) = completion_fixture();
+    let script = concat!(
+        "eval \"$(command scuv init zsh)\" 2>/dev/null\n",
+        "t() { words=(\"$@\"); CURRENT=${#words}; _scuv_positionals;",
+        " if _scuv_at_option_value; then v=yes; else v=no; fi;",
+        " echo \"${words[*]} => $REPLY $v\"; }\n",
+        "t scuv export -o out.json ''\n",
+        "t scuv verify --color auto ''\n",
+        "t scuv diff alpha ''\n",
+        "t scuv use alpha ''\n",
+        "t scuv export -o ''\n",
+        "t scuv activate --shell ''\n",
+    );
+    let output = std::process::Command::new(zsh)
+        .args(["-f", "-c", script])
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("PATH", path)
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("zsh must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_completions(
+        "zsh",
+        &stdout,
+        &stderr,
+        &[
+            "scuv export -o out.json  => 0 no",
+            "scuv verify --color auto  => 0 no",
+            "scuv diff alpha  => 1 no",
+            "scuv use alpha  => 1 no",
+            "scuv export -o  => 0 yes",
+            "scuv activate --shell  => 0 yes",
         ],
     );
 }
@@ -379,7 +441,8 @@ fn fish_completion_offers_env_names_only_where_they_go() {
     let script = concat!(
         "command scuv init fish | source\n",
         "for l in 'scuv clone ' 'scuv clone alpha ' 'scuv run alpha ' 'scuv diff alpha ' ",
-        "'scuv diff alpha beta ' 'scuv self ' 'scuv self update '\n",
+        "'scuv diff alpha beta ' 'scuv self ' 'scuv self update ' 'scuv use alpha ' ",
+        "'scuv export -o out.json ' 'scuv export -o '\n",
         "    set -l c (complete -C $l | string split -f1 \\t | string join ' ')\n",
         "    echo \"$l=> $c\"\n",
         "end\n",
@@ -407,6 +470,9 @@ fn fish_completion_offers_env_names_only_where_they_go() {
             "scuv diff alpha beta =>",
             "scuv self => update",
             "scuv self update =>",
+            "scuv use alpha =>",
+            "scuv export -o out.json => alpha beta system",
+            "scuv export -o =>",
         ],
     );
 }
@@ -429,10 +495,11 @@ fn powershell_completion_offers_env_names_only_where_they_go() {
         "Invoke-Expression (& scuv init powershell | Out-String)\n",
         "foreach ($l in 'scuv use ', 'scuv clone ', 'scuv clone alpha ', 'scuv diff alpha ',\n",
         "             'scuv diff alpha beta ', 'scuv export -o out.json ', 'scuv self ',\n",
-        "             'scuv self update ') {\n",
+        "             'scuv self update ', 'scuv use alpha ', 'scuv export -o \"out file.json\" ',\n",
+        "             'scuv activate --shell ', 'scuv export -o ') {\n",
         "    $r = TabExpansion2 -inputScript $l -cursorColumn $l.Length\n",
         "    $c = @($r.CompletionMatches | ForEach-Object CompletionText |\n",
-        "          Where-Object { $_ -in 'alpha', 'beta', 'system', 'update', 'list' })\n",
+        "          Where-Object { $_ -in 'alpha', 'beta', 'system', 'update', 'list', 'bash' })\n",
         "    $l + '=> ' + ($c -join ' ')\n",
         "}\n",
     );
@@ -459,6 +526,10 @@ fn powershell_completion_offers_env_names_only_where_they_go() {
             "scuv export -o out.json => alpha beta system",
             "scuv self => update",
             "scuv self update =>",
+            "scuv use alpha =>",
+            "scuv export -o \"out file.json\" => alpha beta system",
+            "scuv activate --shell => bash",
+            "scuv export -o =>",
         ],
     );
 }

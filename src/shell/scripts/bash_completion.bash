@@ -47,6 +47,23 @@ _scuv_complete() {
         return
     fi
 
+    # The word being completed is an option's value: shells for --shell,
+    # paths for -o/--output, nothing for --name
+    case "${COMP_WORDS[COMP_CWORD-1]}" in
+        --shell)
+            COMPREPLY=($(compgen -W "bash zsh fish powershell" -- "$cur"))
+            return
+            ;;
+        -o|--output)
+            local IFS=$'\n'
+            COMPREPLY=($(compgen -f -- "$cur"))
+            return
+            ;;
+        --name)
+            return
+            ;;
+    esac
+
     # First argument: complete subcommands
     if [[ ${COMP_CWORD} -eq 1 ]]; then
         COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang self status clone export import sync run which prune gc man verify diff" -- "$cur"))

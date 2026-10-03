@@ -7,30 +7,41 @@ Register-ArgumentCompleter -Native -CommandName scuv -ScriptBlock {
                   'migrate', 'lang', 'self', 'status', 'clone', 'export', 'import',
                   'sync', 'run', 'which', 'prune', 'gc', 'man', 'verify', 'diff')
 
-    $tokens = $commandAst.ToString() -split '\s+'
-    $cmd = if ($tokens.Count -gt 1) { $tokens[1] } else { '' }
+    # The words before the one being completed, as the parser split them
+    # (quotes kept together); the word under the cursor ends at the cursor
+    # and is left out.
+    $words = @($commandAst.CommandElements |
+        Where-Object { $_.Extent.EndOffset -lt $cursorPosition } |
+        ForEach-Object { $_.Extent.Text })
+    $cmd = if ($words.Count -gt 1) { $words[1] } else { '' }
 
-    # First argument: complete subcommands. The AST text drops the trailing
-    # space, so `scuv use <TAB>` also has two tokens; only an empty line
-    # after `scuv`, or a partly typed second word, is the subcommand slot.
-    $atSubcommand = $tokens.Count -eq 1 -or ($tokens.Count -eq 2 -and $wordToComplete)
-    if ($atSubcommand -and $wordToComplete -notmatch '^-') {
+    # First argument: complete subcommands
+    if ($words.Count -le 1 -and $wordToComplete -notmatch '^-') {
         $commands | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
             [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
         }
         return
     }
 
+    # The word being completed is an option's value: shells for --shell,
+    # PowerShell's own path completion for -o/--output, nothing otherwise
+    $prev = $words[-1]
+    if ($prev -ceq '--shell') {
+        @('bash', 'zsh', 'fish', 'powershell') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object {
+            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+        }
+        return
+    }
+    if ($prev -cin '-o', '--output', '--name', '--color') { return }
+
     # Positional arguments before the word being completed: options are
     # skipped, and so is the value of an option that takes one
-    $before = @($tokens | Select-Object -Skip 2)
-    if ($wordToComplete -and $before.Count -gt 0) { $before = @($before | Select-Object -SkipLast 1) }
     $positionals = 0
     $skip = $false
-    foreach ($t in $before) {
+    foreach ($t in @($words | Select-Object -Skip 2)) {
         if ($skip) { $skip = $false; continue }
         if ($t -cin '--color', '-o', '--output', '--name', '--shell') { $skip = $true }
-        elseif ($t -and $t -notmatch '^-') { $positionals++ }
+        elseif ($t -notmatch '^-') { $positionals++ }
     }
 
     # self has one subcommand; import and man take a path (PowerShell falls
