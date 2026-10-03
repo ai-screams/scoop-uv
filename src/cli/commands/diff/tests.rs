@@ -96,7 +96,7 @@ fn execute_identical_envs_returns_ok_non_strict() {
         make_env_with_metadata("b", "3.12.0");
         let svc = VirtualenvService::auto().unwrap();
         let enumerator = MockEnumerator::shared(vec![pkg("requests", "2.31.0")]);
-        let out = Output::new(0, true, true, false);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute_with(
             &out,
             &opts_for("a", "b", false, DiffMode::All),
@@ -114,7 +114,7 @@ fn execute_identical_envs_returns_ok_strict() {
         make_env_with_metadata("b", "3.12.0");
         let svc = VirtualenvService::auto().unwrap();
         let enumerator = MockEnumerator::shared(vec![pkg("requests", "2.31.0")]);
-        let out = Output::new(0, true, true, false);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute_with(
             &out,
             &opts_for("a", "b", true, DiffMode::All),
@@ -144,7 +144,7 @@ fn execute_mismatch_non_strict_returns_ok() {
                 (path_b.clone(), vec![pkg("requests", "2.32.0")]),
             ],
         );
-        let out = Output::new(0, true, true, false);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute_with(
             &out,
             &opts_for("a", "b", false, DiffMode::All),
@@ -168,7 +168,7 @@ fn execute_mismatch_strict_returns_diff_mismatch() {
                 (path_b, vec![pkg("requests", "2.32.0")]),
             ],
         );
-        let out = Output::new(0, true, true, false);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute_with(
             &out,
             &opts_for("a", "b", true, DiffMode::All),
@@ -188,7 +188,7 @@ fn execute_env_a_missing_returns_not_found() {
         make_env_with_metadata("b", "3.12.0");
         let svc = VirtualenvService::auto().unwrap();
         let enumerator = MockEnumerator::shared(vec![]);
-        let out = Output::new(0, true, true, false);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute_with(
             &out,
             &opts_for("a", "b", false, DiffMode::All),
@@ -208,7 +208,7 @@ fn execute_env_b_missing_returns_not_found() {
         make_env_with_metadata("a", "3.12.0");
         let svc = VirtualenvService::auto().unwrap();
         let enumerator = MockEnumerator::shared(vec![]);
-        let out = Output::new(0, true, true, false);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute_with(
             &out,
             &opts_for("a", "b", false, DiffMode::All),
@@ -237,7 +237,7 @@ fn execute_packages_only_skips_metadata_section() {
                 (path_b, vec![pkg("requests", "2.31.0")]), // identical packages
             ],
         );
-        let out = Output::new(0, true, true, false);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
         // PackagesOnly suppresses the *metadata* section only; the
         // top-level `python` ScalarDiff is always computed (and is the
         // single source of truth for python_changed). Packages match
@@ -269,7 +269,7 @@ fn execute_metadata_only_skips_package_enumeration() {
         make_env_with_metadata("a", "3.12.0");
         make_env_with_metadata("b", "3.12.0");
         let svc = VirtualenvService::auto().unwrap();
-        let out = Output::new(0, true, true, false);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
         let result = execute_with(
             &out,
             &opts_for("a", "b", false, DiffMode::MetadataOnly),

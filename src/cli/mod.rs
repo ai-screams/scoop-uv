@@ -1,12 +1,13 @@
 //! CLI module
 
+pub mod color;
 pub mod commands;
 
 use std::path::PathBuf;
 
 use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 
-use crate::output::ColorChoice;
+use self::color::ColorChoice;
 
 /// scuv - Python virtual environment manager powered by uv
 #[derive(Parser, Debug)]
@@ -39,6 +40,63 @@ pub struct Cli {
     // `Colors::detect` reads the variable instead.
     #[arg(long, global = true, overrides_with = "color")]
     pub no_color: bool,
+}
+
+impl Commands {
+    /// Whether this command was asked for JSON output.
+    ///
+    /// Exhaustive on purpose: a new command must decide here instead of
+    /// silently printing text under `--json`.
+    pub fn json(&self) -> bool {
+        match self {
+            Self::List { json, .. }
+            | Self::Use { json, .. }
+            | Self::Create { json, .. }
+            | Self::Remove { json, .. }
+            | Self::Install { json, .. }
+            | Self::Uninstall { json, .. }
+            | Self::Doctor { json, .. }
+            | Self::Info { json, .. }
+            | Self::Lang { json, .. }
+            | Self::Status { json }
+            | Self::Clone { json, .. }
+            | Self::Import { json, .. }
+            | Self::Sync { json, .. }
+            | Self::Which { json, .. }
+            | Self::Prune { json }
+            | Self::Gc { json, .. }
+            | Self::Man { json, .. }
+            | Self::Verify { json, .. }
+            | Self::Diff { json, .. } => *json,
+            // The subcommand carries the flag (list / all / @env); bare
+            // `migrate` has none.
+            Self::Migrate { command } => match command {
+                Some(MigrateCommand::List { json, .. })
+                | Some(MigrateCommand::All { json, .. })
+                | Some(MigrateCommand::Env { json, .. }) => *json,
+                None => false,
+            },
+            Self::Self_ {
+                command: SelfCommand::Update { json, .. },
+            } => *json,
+            Self::Init { .. }
+            | Self::Completions { .. }
+            | Self::Resolve
+            | Self::Activate { .. }
+            | Self::Deactivate { .. }
+            | Self::Shell { .. }
+            | Self::Run { .. }
+            | Self::Export { .. } => false,
+        }
+    }
+
+    /// Verbosity requested with `-v` (only `doctor` has it).
+    pub fn verbosity(&self) -> u8 {
+        match self {
+            Self::Doctor { verbose, .. } => *verbose,
+            _ => 0,
+        }
+    }
 }
 
 impl Cli {
@@ -664,6 +722,56 @@ mod tests {
 
     fn choice(args: &[&str]) -> ColorChoice {
         Cli::try_parse_from(args).unwrap().color_choice()
+    }
+
+    /// `main` builds one `Output` from `Commands::json`, so a command whose
+    /// `--json` is not reported here would print text under `--json`.
+    /// Fails if any json-bearing command (or a migrate subcommand) maps to
+    /// false, or a command without the flag maps to true.
+    #[test]
+    fn commands_json_reports_every_json_flag() {
+        let json = |args: &[&str]| Cli::try_parse_from(args).unwrap().command.json();
+        let with_flag: &[&[&str]] = &[
+            &["scuv", "list", "--json"],
+            &["scuv", "use", "e", "--json"],
+            &["scuv", "create", "e", "--json"],
+            &["scuv", "remove", "e", "--json"],
+            &["scuv", "install", "--json"],
+            &["scuv", "uninstall", "3.12", "--json"],
+            &["scuv", "doctor", "--json"],
+            &["scuv", "info", "e", "--json"],
+            &["scuv", "lang", "--json"],
+            &["scuv", "status", "--json"],
+            &["scuv", "clone", "a", "b", "--json"],
+            &["scuv", "import", "f.json", "--json"],
+            &["scuv", "sync", "--json"],
+            &["scuv", "which", "python", "--json"],
+            &["scuv", "prune", "--json"],
+            &["scuv", "gc", "--json"],
+            &["scuv", "man", "d", "--json"],
+            &["scuv", "verify", "--json"],
+            &["scuv", "diff", "a", "b", "--json"],
+            &["scuv", "migrate", "list", "--json"],
+            &["scuv", "migrate", "all", "--json"],
+            &["scuv", "migrate", "@env", "e", "--json"],
+            &["scuv", "self", "update", "--json"],
+        ];
+        for args in with_flag {
+            assert!(json(args), "{args:?} should be json");
+            let plain: Vec<&str> = args.iter().copied().filter(|a| *a != "--json").collect();
+            assert!(!json(&plain), "{plain:?} should not be json");
+        }
+        assert!(!json(&["scuv", "migrate"]));
+        assert!(!json(&["scuv", "export", "e"]));
+    }
+
+    /// Fails if `verbosity` stops reading doctor's `-v`.
+    #[test]
+    fn commands_verbosity_reads_doctor_flag() {
+        let v = |args: &[&str]| Cli::try_parse_from(args).unwrap().command.verbosity();
+        assert_eq!(v(&["scuv", "doctor", "-vv"]), 2);
+        assert_eq!(v(&["scuv", "doctor"]), 0);
+        assert_eq!(v(&["scuv", "list"]), 0);
     }
 
     /// On a pipe `auto` and `never` print the same, so the end-to-end tests

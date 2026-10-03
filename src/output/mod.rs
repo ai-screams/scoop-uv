@@ -4,7 +4,7 @@ pub mod color;
 mod json;
 mod time;
 
-pub use color::{ColorChoice, Colors};
+pub use color::Colors;
 pub use json::*;
 pub use time::{format_age, format_last_used_value};
 
@@ -56,16 +56,11 @@ pub struct Output {
 }
 
 impl Output {
-    /// Create a new output handler with color on both streams unless
-    /// `no_color`. Reads no environment: the binary decides color once with
-    /// [`Colors::detect`] and uses [`Output::with_colors`].
-    pub fn new(verbose: u8, quiet: bool, no_color: bool, json: bool) -> Self {
-        let colors = if no_color { Colors::NONE } else { Colors::ALL };
-        Self::with_colors(verbose, quiet, colors, json)
-    }
-
-    /// Create a new output handler with a per-stream color decision.
-    pub fn with_colors(verbose: u8, quiet: bool, colors: Colors, json: bool) -> Self {
+    /// Create a new output handler.
+    ///
+    /// `colors` is already decided (the binary calls [`Colors::detect`] once
+    /// at startup); `Output` reads no environment itself.
+    pub fn new(verbose: u8, quiet: bool, colors: Colors, json: bool) -> Self {
         Self {
             verbose,
             quiet,
@@ -163,7 +158,7 @@ impl Output {
     }
 
     /// Check if colors should be used on stderr (messages, progress bars)
-    pub fn use_color(&self) -> bool {
+    pub fn use_color_stderr(&self) -> bool {
         self.colors.stderr
     }
 
@@ -210,8 +205,9 @@ impl Output {
 }
 
 impl Default for Output {
+    /// Plain output: with nothing decided, no color is the safe default.
     fn default() -> Self {
-        Self::new(0, false, false, false)
+        Self::new(0, false, Colors::NONE, false)
     }
 }
 
@@ -428,8 +424,8 @@ mod tests {
 
         #[test]
         fn is_json_returns_correct_value() {
-            let json_output = Output::new(0, false, false, true);
-            let normal_output = Output::new(0, false, false, false);
+            let json_output = Output::new(0, false, Colors::ALL, true);
+            let normal_output = Output::new(0, false, Colors::ALL, false);
 
             assert!(json_output.is_json());
             assert!(!normal_output.is_json());
@@ -437,8 +433,8 @@ mod tests {
 
         #[test]
         fn is_quiet_returns_correct_value() {
-            let quiet_output = Output::new(0, true, false, false);
-            let normal_output = Output::new(0, false, false, false);
+            let quiet_output = Output::new(0, true, Colors::ALL, false);
+            let normal_output = Output::new(0, false, Colors::ALL, false);
 
             assert!(quiet_output.is_quiet());
             assert!(!normal_output.is_quiet());
@@ -448,21 +444,21 @@ mod tests {
         /// terminal colors stderr only). Fails if either getter reads the
         /// other stream's flag.
         #[test]
-        fn with_colors_keeps_streams_apart() {
+        fn colors_keep_streams_apart() {
             let only_stderr = Colors {
                 stdout: false,
                 stderr: true,
             };
-            let output = Output::with_colors(0, false, only_stderr, false);
-            assert!(output.use_color());
+            let output = Output::new(0, false, only_stderr, false);
+            assert!(output.use_color_stderr());
             assert!(!output.use_color_stdout());
 
             let only_stdout = Colors {
                 stdout: true,
                 stderr: false,
             };
-            let output = Output::with_colors(0, false, only_stdout, false);
-            assert!(!output.use_color());
+            let output = Output::new(0, false, only_stdout, false);
+            assert!(!output.use_color_stderr());
             assert!(output.use_color_stdout());
         }
 
@@ -472,13 +468,16 @@ mod tests {
 
             assert!(!output.is_json());
             assert!(!output.is_quiet());
-            assert!(output.use_color()); // default should use color
+            // Nothing decided means no color. Fails if Default goes back to
+            // coloring (it once colored even through a pipe).
+            assert!(!output.use_color_stderr());
+            assert!(!output.use_color_stdout());
         }
 
         /// Boundary value: maximum verbosity level
         #[test]
         fn output_handles_max_verbosity() {
-            let output = Output::new(u8::MAX, false, false, false);
+            let output = Output::new(u8::MAX, false, Colors::ALL, false);
 
             // Should not panic, and verbosity should be preserved
             assert_eq!(output.verbosity(), u8::MAX);
@@ -488,20 +487,20 @@ mod tests {
         #[test]
         fn output_handles_all_flags_enabled() {
             // quiet=true, no_color=true, json=true - potentially conflicting
-            let output = Output::new(0, true, true, true);
+            let output = Output::new(0, true, Colors::NONE, true);
 
             // All flags should be set as specified
             assert!(output.is_quiet());
-            assert!(!output.use_color()); // no_color=true means use_color=false
+            assert!(!output.use_color_stderr()); // no_color=true means use_color=false
             assert!(output.is_json());
         }
 
         /// Verbosity levels affect behavior correctly
         #[test]
         fn output_verbosity_levels() {
-            let v0 = Output::new(0, false, false, false);
-            let v1 = Output::new(1, false, false, false);
-            let v2 = Output::new(2, false, false, false);
+            let v0 = Output::new(0, false, Colors::ALL, false);
+            let v1 = Output::new(1, false, Colors::ALL, false);
+            let v2 = Output::new(2, false, Colors::ALL, false);
 
             assert_eq!(v0.verbosity(), 0);
             assert_eq!(v1.verbosity(), 1);

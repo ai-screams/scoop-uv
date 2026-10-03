@@ -300,7 +300,7 @@ mod tests {
             let prev = std::env::current_dir().ok();
             std::env::set_current_dir(workdir.path()).unwrap();
 
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             assert!(execute(&output).is_ok(), "None state");
 
             // Active state with no on-disk env: must still succeed.

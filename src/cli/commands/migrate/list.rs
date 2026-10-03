@@ -363,7 +363,7 @@ mod tests {
     #[serial]
     fn list_environments_empty_when_no_sources() {
         with_isolated_migrate_env(|| {
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let result = list_environments(&output, false, None);
             assert!(result.is_ok());
         });
@@ -373,7 +373,7 @@ mod tests {
     #[serial]
     fn list_environments_json_mode_empty() {
         with_isolated_migrate_env(|| {
-            let output = Output::new(0, true, true, true);
+            let output = Output::new(0, true, crate::output::Colors::NONE, true);
             let result = list_environments(&output, true, None);
             assert!(result.is_ok());
         });
@@ -383,7 +383,7 @@ mod tests {
     #[serial]
     fn list_environments_with_pyenv_filter() {
         with_isolated_migrate_env(|| {
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let result = list_environments(&output, false, Some(MigrateSource::Pyenv));
             assert!(result.is_ok());
         });
@@ -397,7 +397,7 @@ mod tests {
             create_mock_pyenv_env(pyenv.path(), "testenv1", "3.12.0");
             create_mock_pyenv_env(pyenv.path(), "testenv2", "3.11.0");
 
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let result = list_environments(&output, false, Some(MigrateSource::Pyenv));
             assert!(result.is_ok());
         });
@@ -409,7 +409,7 @@ mod tests {
         with_full_migrate_env(|_scoop, pyenv| {
             create_mock_pyenv_env(pyenv.path(), "jsontest", "3.12.0");
 
-            let output = Output::new(0, true, true, true);
+            let output = Output::new(0, true, crate::output::Colors::NONE, true);
             let result = list_environments(&output, true, Some(MigrateSource::Pyenv));
             assert!(result.is_ok());
         });

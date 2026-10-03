@@ -109,7 +109,7 @@ mod tests {
     fn execute_rejects_invalid_dst_name() {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             // "list" is reserved.
             let err = execute(&output, "src", "list", false, false).unwrap_err();
             assert!(matches!(err, ScoopError::InvalidEnvName { .. }));
@@ -121,7 +121,7 @@ mod tests {
     fn execute_rejects_self_clone() {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "same", "same", false, false).unwrap_err();
             assert!(matches!(err, ScoopError::InvalidArgument { .. }));
         });
@@ -132,7 +132,7 @@ mod tests {
     fn execute_returns_not_found_when_src_missing() {
         with_temp_scoop_home(|temp_dir| {
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs")).unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "ghost", "newcopy", false, false).unwrap_err();
             assert!(matches!(err, ScoopError::VirtualenvNotFound { .. }));
         });
@@ -162,7 +162,7 @@ mod tests {
 
             std::fs::create_dir_all(temp_dir.path().join("virtualenvs").join("dupe")).unwrap();
 
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "source", "dupe", false, false /* no force */).unwrap_err();
             assert!(matches!(err, ScoopError::VirtualenvExists { .. }));
         });
@@ -181,7 +181,7 @@ mod tests {
                     .join("bin"),
             )
             .unwrap();
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, "nometa", "newone", false, false).unwrap_err();
             assert!(matches!(err, ScoopError::CorruptedEnvironment { .. }));
         });

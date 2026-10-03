@@ -171,7 +171,7 @@ src/
 ├── output/        # Terminal UI & JSON output
 │   ├── mod.rs     # Output struct
 │   ├── json.rs    # JSON response types
-│   ├── color.rs   # --color decision (ColorChoice, Colors)
+│   ├── color.rs   # color decision (Colors, resolve); the flag is cli/color.rs
 │   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
 ├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
@@ -572,8 +572,7 @@ pub struct Output {
 }
 
 impl Output {
-    pub fn new(verbose: u8, quiet: bool, no_color: bool, json: bool) -> Self;
-    pub fn with_colors(verbose: u8, quiet: bool, colors: Colors, json: bool) -> Self;
+    pub fn new(verbose: u8, quiet: bool, colors: Colors, json: bool) -> Self;
     pub fn success(&self, msg: &str);
     pub fn error(&self, msg: &str);
     pub fn info(&self, msg: &str);
@@ -582,7 +581,7 @@ impl Output {
     pub fn println(&self, msg: &str);
     pub fn is_json(&self) -> bool;
     pub fn is_quiet(&self) -> bool;
-    pub fn use_color(&self) -> bool;        // stderr
+    pub fn use_color_stderr(&self) -> bool; // stderr
     pub fn use_color_stdout(&self) -> bool; // stdout
     pub fn json_success<T: Serialize>(&self, command: &'static str, data: T);
     pub fn json_error(&self, command: &'static str, error: &ScoopError);

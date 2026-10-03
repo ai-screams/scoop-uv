@@ -82,7 +82,7 @@ pub fn execute(output: &Output, force: bool, version: Option<&str>, no_verify: b
         VerifyOutcome::Skipped
     } else {
         output.info(&t!("selfupdate.verifying"));
-        verify_with_new_binary(output.is_json())
+        verify_with_new_binary(output.is_json(), output.use_color_stderr())
     };
     emit_verify(output, &verify);
 
@@ -227,7 +227,7 @@ fn run_cargo_install(version: &str, json_mode: bool) -> Result<()> {
 /// This function deliberately returns an outcome instead of printing — output
 /// is the caller's responsibility (see [`emit_verify`]). That keeps the verify
 /// path testable in isolation and keeps the text/JSON branches in one place.
-fn verify_with_new_binary(json_mode: bool) -> VerifyOutcome {
+fn verify_with_new_binary(json_mode: bool, color: bool) -> VerifyOutcome {
     let Some(new_bin) = installed_binary_path() else {
         return VerifyOutcome::LaunchFailed {
             error: format!(
@@ -237,7 +237,7 @@ fn verify_with_new_binary(json_mode: bool) -> VerifyOutcome {
     };
 
     let mut cmd = Command::new(&new_bin);
-    cmd.arg("doctor");
+    cmd.args(doctor_args(color));
     if json_mode {
         // doctor prints free-form text; muffle both streams in JSON mode so the
         // envelope on stdout stays parseable. The VerifyOutcome carries
@@ -256,6 +256,13 @@ fn verify_with_new_binary(json_mode: bool) -> VerifyOutcome {
             error: e.to_string(),
         },
     }
+}
+
+/// Arguments for the verifying `doctor` run. The child writes to the same
+/// stderr, so it gets the parent's already-made decision instead of
+/// re-deciding `auto` (which would drop an explicit `--color never`).
+fn doctor_args(color: bool) -> [&'static str; 3] {
+    ["--color", if color { "always" } else { "never" }, "doctor"]
 }
 
 /// Locate the binary `cargo install` just wrote.
@@ -296,6 +303,13 @@ fn binary_filename() -> String {
 
 #[cfg(test)]
 mod tests {
+
+    /// Fails if the child stops receiving the parent's color decision.
+    #[test]
+    fn doctor_args_forward_the_color_decision() {
+        assert_eq!(doctor_args(true), ["--color", "always", "doctor"]);
+        assert_eq!(doctor_args(false), ["--color", "never", "doctor"]);
+    }
     use super::*;
 
     // ---- parse_cargo_search_version -----------------------------------------

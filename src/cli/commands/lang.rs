@@ -153,7 +153,7 @@ mod tests {
     // =========================================================================
 
     fn create_test_output(json: bool) -> Output {
-        Output::new(0, false, true, json) // verbose=0, quiet=false, no_color=true, json
+        Output::new(0, false, crate::output::Colors::NONE, json) // verbose=0, quiet=false, no_color=true, json
     }
 
     // =========================================================================

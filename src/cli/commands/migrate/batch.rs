@@ -370,7 +370,7 @@ struct PartitionedEnvs<'a> {
 /// on its own for `NO_COLOR` or a non-terminal stderr, but it cannot see
 /// `--color`/`--no-color`.
 fn progress_template(output: &Output) -> &'static str {
-    if output.use_color() {
+    if output.use_color_stderr() {
         "{spinner:.green} [{bar:30.cyan/blue}] {pos}/{len} {msg}"
     } else {
         "{spinner} [{bar:30}] {pos}/{len} {msg}"
@@ -703,8 +703,8 @@ mod tests {
     /// ignores the color setting, either way round.
     #[test]
     fn progress_template_has_no_style_without_color() {
-        let plain = progress_template(&Output::new(0, false, true, false));
-        let colored = progress_template(&Output::new(0, false, false, false));
+        let plain = progress_template(&Output::new(0, false, crate::output::Colors::NONE, false));
+        let colored = progress_template(&Output::new(0, false, crate::output::Colors::ALL, false));
         for style in [".green", ".cyan", "/blue"] {
             assert!(!plain.contains(style), "{plain} carries {style}");
         }
@@ -1002,7 +1002,7 @@ mod tests {
     #[serial]
     fn migrate_all_environments_empty_when_no_sources() {
         with_isolated_migrate_env(|| {
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions {
                 yes: true,
                 ..Default::default()
@@ -1022,7 +1022,7 @@ mod tests {
     #[serial]
     fn migrate_all_environments_json_empty_no_sources() {
         with_isolated_migrate_env(|| {
-            let output = Output::new(0, true, true, true);
+            let output = Output::new(0, true, crate::output::Colors::NONE, true);
             let opts = MigrateExecuteOptions {
                 json: true,
                 ..Default::default()
@@ -1042,7 +1042,7 @@ mod tests {
     fn migrate_all_environments_empty_with_tools_present() {
         // pyenv root exists but has zero envs → Ok(()) (no exit 3).
         with_full_migrate_env(|_scoop, _pyenv| {
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(MigrateSource::Pyenv),
                 yes: true,
@@ -1058,7 +1058,7 @@ mod tests {
     #[serial]
     fn migrate_all_environments_with_source_filter() {
         with_isolated_migrate_env(|| {
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(MigrateSource::Pyenv),
                 yes: true,
@@ -1080,7 +1080,7 @@ mod tests {
         with_full_migrate_env(|_scoop, pyenv| {
             create_corrupted_pyenv_env(pyenv.path(), "corrupted_batch", "3.12.0");
 
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(MigrateSource::Pyenv),
                 yes: true,
@@ -1104,7 +1104,7 @@ mod tests {
         with_full_migrate_env(|_scoop, pyenv| {
             create_mock_pyenv_env(pyenv.path(), "dryrun_env", "3.12.0");
 
-            let output = Output::new(0, false, true, false);
+            let output = Output::new(0, false, crate::output::Colors::NONE, false);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(MigrateSource::Pyenv),
                 dry_run: true,
@@ -1134,7 +1134,7 @@ mod tests {
             create_mock_pyenv_env(pyenv.path(), "json_batch", "3.12.0");
             create_corrupted_pyenv_env(pyenv.path(), "json_corrupted", "3.11.0");
 
-            let output = Output::new(0, true, true, true);
+            let output = Output::new(0, true, crate::output::Colors::NONE, true);
             let opts = MigrateExecuteOptions {
                 source_filter: Some(MigrateSource::Pyenv),
                 json: true,

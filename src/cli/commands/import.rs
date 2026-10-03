@@ -113,7 +113,7 @@ mod tests {
     fn execute_rejects_invalid_json() {
         with_temp_scoop_home(|temp_dir| {
             let file = write_export_file(temp_dir.path(), "not json");
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, file.to_str().unwrap(), None, false).unwrap_err();
             assert!(matches!(err, ScoopError::InvalidExportFile { .. }));
         });
@@ -129,7 +129,7 @@ mod tests {
                 "packages": []
             }"#;
             let file = write_export_file(temp_dir.path(), payload);
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(&output, file.to_str().unwrap(), None, false).unwrap_err();
             assert!(matches!(err, ScoopError::UnsupportedExportVersion { .. }));
         });
@@ -146,7 +146,7 @@ mod tests {
                 "packages": []
             }"#;
             let file = write_export_file(temp_dir.path(), payload);
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(
                 &output,
                 file.to_str().unwrap(),
@@ -173,7 +173,7 @@ mod tests {
                 "packages": []
             }"#;
             let file = write_export_file(temp_dir.path(), payload);
-            let output = Output::new(0, true, true, false);
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
             let err = execute(
                 &output,
                 file.to_str().unwrap(),
