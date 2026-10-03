@@ -980,3 +980,225 @@ fn test_suggestion_unsupported_export_version_includes_supported_version() {
     assert!(s.starts_with("→"));
     assert!(s.contains("'1'") || s.contains("version '1'"));
 }
+
+// =========================================================================
+// Every variant renders in every locale
+// =========================================================================
+
+/// One sample of every variant, with distinctive field values so a test
+/// can see that they reach the message.
+fn every_variant() -> Vec<ScoopError> {
+    use std::path::PathBuf;
+    vec![
+        ScoopError::VirtualenvNotFound {
+            name: "env-aaa".into(),
+        },
+        ScoopError::VirtualenvExists {
+            name: "env-aab".into(),
+        },
+        ScoopError::InvalidEnvName {
+            name: "env-aac".into(),
+            reason: "why-aac".into(),
+        },
+        ScoopError::InvalidPythonVersion {
+            version: "9.9.aad".into(),
+        },
+        ScoopError::UvNotFound,
+        ScoopError::UvCommandFailed {
+            command: "cmd-aae".into(),
+            message: "msg-aae".into(),
+        },
+        ScoopError::PathError("path-aaf".into()),
+        ScoopError::HomeNotFound,
+        ScoopError::Io(std::io::Error::other("io-aag")),
+        ScoopError::Json(serde_json::from_str::<u8>("x").unwrap_err()),
+        ScoopError::VersionFileNotFound {
+            path: PathBuf::from("/p/aah"),
+        },
+        ScoopError::UnsupportedShell {
+            shell: "sh-aai".into(),
+        },
+        ScoopError::PythonNotInstalled {
+            version: "9.9.aaj".into(),
+        },
+        ScoopError::PythonInstallFailed {
+            version: "9.9.aak".into(),
+            message: "msg-aak".into(),
+        },
+        ScoopError::PythonUninstallFailed {
+            version: "9.9.aal".into(),
+            message: "msg-aal".into(),
+        },
+        ScoopError::NoPythonVersions {
+            pattern: "pat-aam".into(),
+        },
+        ScoopError::InvalidArgument {
+            message: "msg-aan".into(),
+        },
+        ScoopError::PyenvNotFound,
+        ScoopError::PyenvEnvNotFound {
+            name: "env-aao".into(),
+        },
+        ScoopError::VenvWrapperEnvNotFound {
+            name: "env-aap".into(),
+        },
+        ScoopError::CondaEnvNotFound {
+            name: "env-aaq".into(),
+        },
+        ScoopError::CorruptedEnvironment {
+            name: "env-aar".into(),
+            reason: "why-aar".into(),
+        },
+        ScoopError::PackageExtractionFailed {
+            reason: "why-aas".into(),
+        },
+        ScoopError::MigrationFailed {
+            reason: "why-aat".into(),
+        },
+        ScoopError::MigrationNameConflict {
+            name: "env-aau".into(),
+            existing: PathBuf::from("/p/aau"),
+        },
+        ScoopError::InvalidPythonPath {
+            path: PathBuf::from("/p/aav"),
+            reason: "why-aav".into(),
+        },
+        ScoopError::CascadeAborted,
+        ScoopError::SelfUpdateFailed {
+            message: "msg-aaw".into(),
+        },
+        ScoopError::NoActiveEnvironment,
+        ScoopError::ExecutableNotFound {
+            exe: "exe-aax".into(),
+            env: "env-aax".into(),
+        },
+        ScoopError::ManifestNotFound {
+            start_dir: PathBuf::from("/p/aay"),
+        },
+        ScoopError::InvalidExportFile {
+            path: PathBuf::from("/p/aaz"),
+            reason: "why-aaz".into(),
+        },
+        ScoopError::UnsupportedExportVersion {
+            version: "v-aba".into(),
+            supported: "s-aba".into(),
+        },
+        ScoopError::VerifyFailed { issues: 4207 },
+        ScoopError::SitePackagesNotFound {
+            venv: "env-abb".into(),
+        },
+        ScoopError::MigrationSourcesNotFound {
+            requested: Some("src-abc".into()),
+        },
+        ScoopError::MigrationBatchFailed {
+            failed_count: 4208,
+            conflict_count: 4209,
+        },
+        ScoopError::DiffMismatch {
+            env_a: "env-abd".into(),
+            env_b: "env-abe".into(),
+            differences: 4210,
+        },
+    ]
+}
+
+/// No wildcard: adding a variant breaks the build here until it is also
+/// added to `every_variant` above.
+#[allow(dead_code)]
+fn every_variant_is_listed(e: &ScoopError) {
+    match e {
+        ScoopError::VirtualenvNotFound { .. }
+        | ScoopError::VirtualenvExists { .. }
+        | ScoopError::InvalidEnvName { .. }
+        | ScoopError::InvalidPythonVersion { .. }
+        | ScoopError::UvNotFound
+        | ScoopError::UvCommandFailed { .. }
+        | ScoopError::PathError(_)
+        | ScoopError::HomeNotFound
+        | ScoopError::Io(_)
+        | ScoopError::Json(_)
+        | ScoopError::VersionFileNotFound { .. }
+        | ScoopError::UnsupportedShell { .. }
+        | ScoopError::PythonNotInstalled { .. }
+        | ScoopError::PythonInstallFailed { .. }
+        | ScoopError::PythonUninstallFailed { .. }
+        | ScoopError::NoPythonVersions { .. }
+        | ScoopError::InvalidArgument { .. }
+        | ScoopError::PyenvNotFound
+        | ScoopError::PyenvEnvNotFound { .. }
+        | ScoopError::VenvWrapperEnvNotFound { .. }
+        | ScoopError::CondaEnvNotFound { .. }
+        | ScoopError::CorruptedEnvironment { .. }
+        | ScoopError::PackageExtractionFailed { .. }
+        | ScoopError::MigrationFailed { .. }
+        | ScoopError::MigrationNameConflict { .. }
+        | ScoopError::InvalidPythonPath { .. }
+        | ScoopError::CascadeAborted
+        | ScoopError::SelfUpdateFailed { .. }
+        | ScoopError::NoActiveEnvironment
+        | ScoopError::ExecutableNotFound { .. }
+        | ScoopError::ManifestNotFound { .. }
+        | ScoopError::InvalidExportFile { .. }
+        | ScoopError::UnsupportedExportVersion { .. }
+        | ScoopError::VerifyFailed { .. }
+        | ScoopError::SitePackagesNotFound { .. }
+        | ScoopError::MigrationSourcesNotFound { .. }
+        | ScoopError::MigrationBatchFailed { .. }
+        | ScoopError::DiffMismatch { .. } => {}
+    }
+}
+
+/// Every message, in every supported locale, is a real sentence: no
+/// leftover `%{placeholder}` (a key or argument name that does not match),
+/// not the bare i18n key (a missing translation). Fails on a typo in any
+/// `t!` key or argument name in `message_in`, or in a locale's template.
+#[test]
+fn every_error_message_renders_in_every_locale() {
+    let mut problems = Vec::new();
+    for (lang, _) in crate::i18n::SUPPORTED_LANGS {
+        for e in every_variant() {
+            let m = e.message_in(lang);
+            if m.trim().is_empty() || m.contains("%{") || m.starts_with("error.") {
+                problems.push(format!("{lang} {e:?}: {m:?}"));
+            }
+        }
+    }
+    assert!(
+        problems.is_empty(),
+        "bad messages:\n{}",
+        problems.join("\n")
+    );
+}
+
+/// In English, each sample's distinctive field values appear in the
+/// message. Fails if a placeholder is dropped from the template or fed the
+/// wrong field.
+#[test]
+fn every_error_message_carries_its_fields() {
+    let mut problems = Vec::new();
+    for e in every_variant() {
+        let m = e.message_in("en");
+        let debug = format!("{e:?}");
+        // the distinctive sample values: tokens like env-aaa, 9.9.aad, 4207
+        let tokens: Vec<&str> = debug
+            .split(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '.' || c == '/'))
+            .filter(|t| {
+                t.len() >= 4
+                    && (t.contains("-a")
+                        || t.contains(".a")
+                        || t.contains("/a")
+                        || t.starts_with("420"))
+            })
+            .collect();
+        for t in tokens {
+            if !m.contains(t) {
+                problems.push(format!("{e:?}: {t} missing from {m:?}"));
+            }
+        }
+    }
+    assert!(
+        problems.is_empty(),
+        "fields not in messages:\n{}",
+        problems.join("\n")
+    );
+}
