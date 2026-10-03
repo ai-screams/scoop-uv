@@ -14,13 +14,14 @@ use crate::support::*;
 ///   activate/deactivate/shell arm (its output always carries the
 ///   deactivation block);
 /// - `scuv shell --shell fish system` must not get a second `--shell`;
-/// - `scuv use system` must deactivate instead of activating the reserved
-///   name.
+/// - `scuv use SYSTEM` must deactivate instead of activating the reserved
+///   name (`use` takes it in any case);
+/// - a failed `scuv activate` must keep its exit status.
 ///
 /// Fails if a call site evals the output (fish rejoins the lines with
 /// spaces and errors out), lets scuv guess the shell (fish does not export
-/// FISH_VERSION, so the guess is bash), duplicates `--shell`, or routes
-/// `use system` to `activate`.
+/// FISH_VERSION, so the guess is bash), duplicates `--shell`, routes
+/// `use system` to `activate`, or loses scuv's exit status.
 #[test]
 fn fish_wrapper_and_hook_source_multiline_scripts() {
     let Some(fish) = find_shell("fish") else {
@@ -48,8 +49,10 @@ fn fish_wrapper_and_hook_source_multiline_scripts() {
         "scuv shell --shell fish system; ",
         "echo \"explicit-status=$status SCUV_VERSION=[$SCUV_VERSION]\"; ",
         "set -gx SCUV_ACTIVE stale2; set -gx VIRTUAL_ENV /stale2; ",
-        "scuv use system; ",
-        "echo \"use-system SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"",
+        "scuv use SYSTEM; ",
+        "echo \"use-system SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"; ",
+        "scuv activate no-such-env 2>/dev/null; ",
+        "echo \"missing-status=$status\"",
     );
     let output = std::process::Command::new(fish)
         .args(["-c", script])
@@ -74,6 +77,7 @@ fn fish_wrapper_and_hook_source_multiline_scripts() {
         "shell-status=0 SCUV_VERSION=[system]",
         "explicit-status=0 SCUV_VERSION=[system]",
         "use-system SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+        "missing-status=1",
     ] {
         assert!(
             stdout.contains(expected),
@@ -119,7 +123,8 @@ fn shell_test_path(fake_uv: &TempDir) -> String {
 ///
 /// Fails if a wrapper or hook call omits `--shell` (the stale activation
 /// survives init, or eval chokes on PowerShell), duplicates an explicit
-/// `--shell`, routes `use system` to `activate`, or treats an env name
+/// `--shell`, routes `use system` (in any case) to `activate`, loses scuv's
+/// exit status behind `eval`, or treats an env name
 /// containing `-h` as a help flag (`activate data-hub` then prints instead
 /// of activating). On bash older than 4.4 (macOS's 3.2) it also fails if
 /// completion registration depends on `complete -o nosort`.
@@ -145,8 +150,10 @@ fn posix_wrappers_and_hook_name_their_shell() {
                 "echo \"explicit-status=$? SCUV_VERSION=[$SCUV_VERSION]\"\n",
                 "unset SCUV_VERSION\n",
                 "export SCUV_ACTIVE=stale2 VIRTUAL_ENV=/stale2\n",
-                "scuv use system\n",
+                "scuv use SYSTEM\n",
                 "echo \"use-system SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"\n",
+                "scuv activate no-such-env 2>/dev/null\n",
+                "echo \"missing-status=$?\"\n",
                 "{completion}",
             ),
             sh = shell,
@@ -186,6 +193,7 @@ fn posix_wrappers_and_hook_name_their_shell() {
             "deactivate SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
             "explicit-status=0 SCUV_VERSION=[system]",
             "use-system SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+            "missing-status=1",
             if shell == "bash" {
                 "-F _scuv_complete scuv"
             } else {
@@ -207,7 +215,8 @@ fn posix_wrappers_and_hook_name_their_shell() {
 /// Fails if a call hands `Invoke-Expression` the raw output (an array of
 /// lines it refuses to bind), the deactivation script names variables as
 /// `Env:\\X` (removes nothing, silently), `use system` activates instead of
-/// deactivating, an env name containing `-h` counts as a help flag, or the
+/// deactivating, an env name containing `-h` counts as a help flag, a
+/// failed scuv call reports success, or the
 /// binary lookup breaks with more than one `scuv` on PATH.
 #[cfg(unix)]
 #[test]
@@ -229,8 +238,10 @@ fn powershell_wrapper_and_hook_evaluate_multiline_scripts() {
         "scuv shell --unset\n",
         "\"unset SCUV_VERSION=[$env:SCUV_VERSION]\"\n",
         "$env:SCUV_ACTIVE = 'stale2'; $env:VIRTUAL_ENV = '/stale2'\n",
-        "scuv use system\n",
+        "scuv use SYSTEM\n",
         "\"use-system SCUV_ACTIVE=[$env:SCUV_ACTIVE] VIRTUAL_ENV=[$env:VIRTUAL_ENV]\"\n",
+        "scuv activate no-such-env 2>$null\n",
+        "\"missing-status=$LASTEXITCODE\"\n",
     );
     let output = std::process::Command::new(pwsh)
         .args(["-NoProfile", "-NonInteractive", "-Command", script])
@@ -256,6 +267,7 @@ fn powershell_wrapper_and_hook_evaluate_multiline_scripts() {
         "shell SCUV_VERSION=[system]",
         "unset SCUV_VERSION=[]",
         "use-system SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+        "missing-status=1",
     ] {
         assert!(
             stdout.contains(expected),

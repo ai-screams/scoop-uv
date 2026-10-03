@@ -22,7 +22,7 @@ function scuv {
             & $script:ScuvBin @Arguments
             if ($LASTEXITCODE -eq 0) {
                 $name = $Arguments | Where-Object { $_ -notmatch '^-' } | Select-Object -Skip 1 -First 1
-                if ($name -ceq 'system') {
+                if ($name -eq 'system') {  # case-insensitive, as `use` takes it
                     Invoke-Expression (& $script:ScuvBin deactivate --shell powershell | Out-String)
                 } elseif ($name) {
                     Invoke-Expression (& $script:ScuvBin activate --shell powershell $name | Out-String)
@@ -35,11 +35,18 @@ function scuv {
             # (whole-argument, case-sensitive match: data-hub is not -h).
             if ($Arguments | Where-Object { $_ -cin '-h', '--help', '-V', '--version' }) {
                 & $script:ScuvBin @Arguments
-            } elseif ($Arguments | Where-Object { $_ -clike '--shell*' }) {
-                Invoke-Expression (& $script:ScuvBin @Arguments | Out-String)
             } else {
-                $rest = @($Arguments | Select-Object -Skip 1)
-                Invoke-Expression (& $script:ScuvBin $Arguments[0] --shell powershell @rest | Out-String)
+                if ($Arguments | Where-Object { $_ -clike '--shell*' }) {
+                    $out = & $script:ScuvBin @Arguments
+                } else {
+                    $rest = @($Arguments | Select-Object -Skip 1)
+                    $out = & $script:ScuvBin $Arguments[0] --shell powershell @rest
+                }
+                # On failure leave $LASTEXITCODE as scuv set it; evaluating
+                # nothing would hide the error behind a successful call.
+                if ($LASTEXITCODE -eq 0) {
+                    Invoke-Expression ($out | Out-String)
+                }
             }
         }
         default {

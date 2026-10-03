@@ -27,11 +27,11 @@ scuv() {
                 esac
             done
             if [[ -n "$name" ]]; then
-                eval "$(command scuv activate "$name")"
+                eval "$(command scuv activate --shell bash "$name")"
             fi
             ;;
         activate|deactivate|shell)
-            eval "$(command scuv "$@")"
+            eval "$(command scuv "$1" --shell bash "${@:2}")"
             ;;
         *)
             command scuv "$@"

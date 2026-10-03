@@ -196,7 +196,7 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 ```bash
 # User runs: scuv activate myenv
 # CLI outputs: export VIRTUAL_ENV="..." export PATH="..."
-# Shell wrapper: eval "$(command scuv activate myenv)"
+# Shell wrapper: eval "$(command scuv activate --shell bash myenv)"
 ```
 
 **Version File Priority**: `SCUV_VERSION` env > `.scuv-version` (local + parent walk) > `~/.scuv/version`

@@ -11,7 +11,8 @@ function scuv
             if test $ret -eq 0
                 for arg in $argv[2..-1]
                     if not string match -q -- '-*' "$arg"
-                        if test "$arg" = system
+                        # `use` takes system in any case (SYSTEM, System)
+                        if test (string lower -- "$arg") = system
                             command scuv deactivate --shell fish | source
                         else
                             command scuv activate --shell fish "$arg" | source

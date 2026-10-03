@@ -232,15 +232,17 @@ mod tests {
 
     /// The pass-through arm must not add a second `--shell` when the user
     /// gave one (clap rejects duplicates), must treat only a whole argument
-    /// as a help/version flag, and `use system` must deactivate rather than
-    /// try to activate the reserved name. Fails if any of the three guards
+    /// as a help/version flag, and `use system` (in any case) must deactivate
+    /// rather than try to activate the reserved name. Fails if any of the three guards
     /// is dropped.
     #[test]
     fn init_script_guards_explicit_shell_help_flags_and_use_system() {
         let script = init_script();
         assert!(script.contains("else if string match -q -- '--shell*' $argv"));
         assert!(script.contains("string match -qr -- '^(-h|--help|-V|--version)$' $argv"));
-        assert!(script.contains("if test \"$arg\" = system\n                            command scuv deactivate --shell fish | source"));
+        assert!(script.contains(
+            "if test (string lower -- \"$arg\") = system\n                            command scuv deactivate --shell fish | source"
+        ));
     }
 
     /// The one-shot deprecation warnings went with 0.16.0, and with them

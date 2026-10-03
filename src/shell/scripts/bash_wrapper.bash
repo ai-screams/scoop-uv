@@ -17,6 +17,10 @@ scuv() {
                         *) name="$arg"; break ;;
                     esac
                 done
+                # `use` takes system in any case (SYSTEM, System)
+                case "$name" in
+                    [Ss][Yy][Ss][Tt][Ee][Mm]) name=system ;;
+                esac
                 if [[ "$name" == system ]]; then
                     eval "$(command scuv deactivate --shell bash)"
                 elif [[ -n "$name" ]]; then
@@ -26,7 +30,7 @@ scuv() {
             return $ret
             ;;
         activate|deactivate|shell)
-            local arg
+            local arg script
             for arg in "$@"; do
                 case "$arg" in
                     # Pass through help/version flags without eval (whole-
@@ -37,14 +41,17 @@ scuv() {
                         ;;
                     # The user chose the shell; a second --shell is rejected
                     --shell|--shell=*)
-                        eval "$(command scuv "$@")"
+                        script="$(command scuv "$@")" || return
+                        eval "$script"
                         return
                         ;;
                 esac
             done
             # Name the shell: detection reads PSModulePath first, which
             # Windows sets for every process, Git Bash included.
-            eval "$(command scuv "$1" --shell bash "${@:2}")"
+            # Keep scuv's exit status: `eval ""` would turn a failure into 0.
+            script="$(command scuv "$1" --shell bash "${@:2}")" || return
+            eval "$script"
             ;;
         *)
             command scuv "$@"

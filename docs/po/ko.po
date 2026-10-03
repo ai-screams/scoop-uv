@@ -801,12 +801,12 @@ msgid "\"$name\""
 msgstr "\"$name\""
 
 #: src/shell-integration.md:30
-msgid "\"$(command scuv activate \"$name\")\""
-msgstr "\"$(command scuv activate \"$name\")\""
+msgid "\"$(command scuv activate --shell bash \"$name\")\""
+msgstr "\"$(command scuv activate --shell bash \"$name\")\""
 
 #: src/shell-integration.md:34
-msgid "\"$(command scuv \"$@\")\""
-msgstr "\"$(command scuv \"$@\")\""
+msgid "\"$(command scuv \"$1\" --shell bash \"${@:2}\")\""
+msgstr "\"$(command scuv \"$1\" --shell bash \"${@:2}\")\""
 
 #: src/shell-integration.md:43 src/commands/init.md:17
 #: src/development/contributing.md:11 src/development/code-quality.md:138
@@ -8097,8 +8097,8 @@ msgstr ""
 "`SCUV_VERSION` 환경 변수를 설정합니다."
 
 #: src/commands/shell.md:10
-msgid "\"$(scuv shell <name>)\"    # Bash/Zsh\n"
-msgstr "\"$(scuv shell <name>)\"    # Bash/Zsh\n"
+msgid "\"$(scuv shell --shell bash <name>)\"   # Bash (Zsh: --shell zsh)\n"
+msgstr "\"$(scuv shell --shell bash <name>)\"   # Bash (Zsh: --shell zsh)\n"
 
 #: src/commands/shell.md:11
 msgid "# Fish (fish does not export FISH_VERSION, so name the shell)\n"
@@ -10084,8 +10084,8 @@ msgid "# Shell wrapper evaluates this output\n"
 msgstr "# shell 래퍼가 이 출력을 평가(eval)합니다\n"
 
 #: src/development/architecture.md:133
-msgid "\"$(command scuv activate myenv)\""
-msgstr "\"$(command scuv activate myenv)\""
+msgid "\"$(command scuv activate --shell bash myenv)\""
+msgstr "\"$(command scuv activate --shell bash myenv)\""
 
 #: src/development/architecture.md:136
 msgid "This pattern is used by pyenv, rbenv, and other version managers."
