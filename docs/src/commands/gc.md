@@ -28,6 +28,17 @@ With `--aggressive`, `gc` also reports uv-managed Python versions that no surviv
 
 Without `--aggressive`, Python versions are never touched — even ones that look unused — because manually installed interpreters might be intentionally kept around for ad-hoc use.
 
+### When Pythons are left alone
+
+`gc` reports a Python as unused only when it can tell which Python every remaining environment uses — every environment it lists that is not itself being cleaned up. When it cannot, it skips Python cleanup instead of guessing:
+
+- **The environment directory cannot be read** — if `~/.scuv/virtualenvs` is unreadable from the start, `gc` stops with an error before touching anything. If it becomes unreadable later, during the Python scan, a warning is printed and no Python is reported.
+- **A remaining environment has unreadable metadata** — its Python version is unknown, so a warning is printed and no Python is reported. A cleanup candidate with unreadable metadata does not count: it is going away.
+
+Warnings are not printed under `--json` or `--quiet`; the JSON output then has an empty `pythons` array.
+
+With `--yes`, the Python scan runs again right before uninstalling. Every environment it lists at that moment protects the Python it uses, including a candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or failed to remove. If this second scan cannot tell which Pythons are in use, nothing is uninstalled, and each Python left alone gets a warning and the JSON outcome `skipped_in_use`. If uv itself can no longer be found at that point, nothing is uninstalled either; those Pythons get the outcome `skipped_no_uv`.
+
 ## `--older-than <DURATION>`
 
 Flag environments whose `last_used` timestamp is older than the given duration. Accepts `<n>d` (days), `<n>w` (weeks = 7d), and `<n>y` (years = 365d). Examples: `30d`, `2w`, `1y`.

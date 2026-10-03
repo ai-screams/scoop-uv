@@ -216,7 +216,7 @@ msgstr "LLM 레퍼런스"
 #: src/commands/doctor.md:32 src/commands/info.md:75 src/commands/status.md:97
 #: src/commands/which.md:36 src/commands/run.md:42 src/commands/sync.md:65
 #: src/commands/import.md:39 src/commands/clone.md:39
-#: src/commands/migrate.md:117 src/commands/gc.md:84 src/commands/prune.md:25
+#: src/commands/migrate.md:117 src/commands/gc.md:95 src/commands/prune.md:25
 #: src/commands/verify.md:50 src/commands/diff.md:60 src/commands/lang.md:52
 #: src/commands/self.md:28 src/commands/init.md:45 src/commands/shell.md:53
 #: src/commands/completions.md:17 src/examples.md:1
@@ -966,7 +966,7 @@ msgstr "변수"
 #: src/commands/sync.md:14 src/commands/export.md:14 src/commands/export.md:20
 #: src/commands/import.md:14 src/commands/import.md:20 src/commands/clone.md:14
 #: src/commands/clone.md:21 src/commands/migrate.md:20
-#: src/commands/migrate.md:36 src/commands/gc.md:77 src/commands/prune.md:21
+#: src/commands/migrate.md:36 src/commands/gc.md:88 src/commands/prune.md:21
 #: src/commands/diff.md:35 src/commands/lang.md:23 src/commands/lang.md:29
 #: src/commands/self.md:13 src/commands/init.md:13 src/commands/shell.md:21
 #: src/commands/shell.md:27 src/commands/completions.md:13
@@ -2828,7 +2828,7 @@ msgstr "모든 명령에 사용 가능합니다:"
 #: src/commands/uninstall.md:19 src/commands/doctor.md:13
 #: src/commands/info.md:22 src/commands/which.md:20 src/commands/sync.md:14
 #: src/commands/export.md:20 src/commands/import.md:20 src/commands/clone.md:21
-#: src/commands/migrate.md:36 src/commands/gc.md:77 src/commands/prune.md:21
+#: src/commands/migrate.md:36 src/commands/gc.md:88 src/commands/prune.md:21
 #: src/commands/diff.md:35 src/commands/lang.md:29 src/commands/self.md:13
 #: src/commands/shell.md:27 src/commands/man.md:26
 msgid "Option"
@@ -3000,7 +3000,7 @@ msgstr "사용법"
 #: src/commands/uninstall.md:17 src/commands/doctor.md:11
 #: src/commands/info.md:20 src/commands/which.md:18 src/commands/sync.md:12
 #: src/commands/export.md:18 src/commands/import.md:18 src/commands/clone.md:19
-#: src/commands/migrate.md:34 src/commands/gc.md:75 src/commands/prune.md:19
+#: src/commands/migrate.md:34 src/commands/gc.md:86 src/commands/prune.md:19
 #: src/commands/diff.md:33 src/commands/lang.md:27 src/commands/self.md:11
 #: src/commands/shell.md:25 src/commands/man.md:24
 msgid "Options"
@@ -3043,7 +3043,7 @@ msgstr "이름만 출력 (스크립팅용); `--help`에서 숨겨짐"
 #: src/commands/uninstall.md:23 src/commands/doctor.md:16
 #: src/commands/info.md:26 src/commands/which.md:23 src/commands/sync.md:18
 #: src/commands/import.md:24 src/commands/clone.md:25
-#: src/commands/migrate.md:39 src/commands/gc.md:82 src/commands/prune.md:23
+#: src/commands/migrate.md:39 src/commands/gc.md:93 src/commands/prune.md:23
 #: src/commands/diff.md:37 src/commands/lang.md:33 src/commands/self.md:18
 #: src/commands/man.md:28
 msgid "`--json`"
@@ -3051,7 +3051,7 @@ msgstr "`--json`"
 
 #: src/commands/list.md:21 src/commands/info.md:26 src/commands/which.md:23
 #: src/commands/sync.md:18 src/commands/import.md:24 src/commands/clone.md:25
-#: src/commands/gc.md:82 src/commands/lang.md:33
+#: src/commands/gc.md:93 src/commands/lang.md:33
 msgid "Output as JSON"
 msgstr "JSON 형식으로 출력"
 
@@ -4066,7 +4066,7 @@ msgstr "# {\n"
 #: src/commands/import.md:59 src/commands/clone.md:56
 #: src/commands/migrate.md:175 src/commands/migrate.md:186
 #: src/commands/migrate.md:194 src/commands/migrate.md:220
-#: src/commands/migrate.md:258 src/commands/gc.md:109 src/commands/verify.md:67
+#: src/commands/migrate.md:258 src/commands/gc.md:120 src/commands/verify.md:67
 #: src/commands/verify.md:76 src/commands/verify.md:77
 #: src/commands/verify.md:78 src/commands/verify.md:79
 #: src/commands/verify.md:80 src/commands/verify.md:81 src/commands/diff.md:108
@@ -4079,7 +4079,7 @@ msgstr "\"status\""
 #: src/commands/status.md:69 src/commands/sync.md:97 src/commands/import.md:59
 #: src/commands/clone.md:56 src/commands/migrate.md:175
 #: src/commands/migrate.md:220 src/commands/migrate.md:238
-#: src/commands/migrate.md:286 src/commands/gc.md:109 src/commands/verify.md:67
+#: src/commands/migrate.md:286 src/commands/gc.md:120 src/commands/verify.md:67
 #: src/commands/diff.md:108 src/commands/lang.md:96 src/commands/self.md:48
 msgid "\"success\""
 msgstr "\"success\""
@@ -4092,7 +4092,7 @@ msgstr "#   \"command\": \"uninstall\",\n"
 #: src/commands/status.md:71 src/commands/sync.md:99 src/commands/import.md:61
 #: src/commands/clone.md:58 src/commands/migrate.md:177
 #: src/commands/migrate.md:222 src/commands/migrate.md:266
-#: src/commands/gc.md:111 src/commands/verify.md:69 src/commands/diff.md:110
+#: src/commands/gc.md:122 src/commands/verify.md:69 src/commands/diff.md:110
 #: src/commands/diff.md:151 src/commands/lang.md:98 src/commands/self.md:50
 msgid "\"data\""
 msgstr "\"data\""
@@ -4448,7 +4448,7 @@ msgstr "JSON 출력"
 #: src/commands/info.md:57 src/commands/status.md:70 src/commands/sync.md:98
 #: src/commands/import.md:60 src/commands/clone.md:57
 #: src/commands/migrate.md:176 src/commands/migrate.md:221
-#: src/commands/migrate.md:259 src/commands/gc.md:110 src/commands/verify.md:68
+#: src/commands/migrate.md:259 src/commands/gc.md:121 src/commands/verify.md:68
 #: src/commands/diff.md:109 src/commands/diff.md:143 src/commands/lang.md:97
 #: src/commands/self.md:49
 msgid "\"command\""
@@ -4464,7 +4464,7 @@ msgstr "\"info\""
 #: src/commands/migrate.md:181 src/commands/migrate.md:189
 #: src/commands/migrate.md:225 src/commands/migrate.md:270
 #: src/commands/migrate.md:277 src/commands/migrate.md:281
-#: src/commands/gc.md:114 src/commands/gc.md:115 src/commands/gc.md:116
+#: src/commands/gc.md:125 src/commands/gc.md:126 src/commands/gc.md:127
 #: src/commands/verify.md:72 src/commands/verify.md:76
 #: src/commands/verify.md:77 src/commands/verify.md:78
 #: src/commands/verify.md:79 src/commands/verify.md:80
@@ -4485,8 +4485,8 @@ msgstr "\"3.12.1\""
 
 #: src/commands/info.md:61 src/commands/status.md:75 src/commands/clone.md:62
 #: src/commands/migrate.md:183 src/commands/migrate.md:191
-#: src/commands/migrate.md:230 src/commands/gc.md:114 src/commands/gc.md:115
-#: src/commands/gc.md:116
+#: src/commands/migrate.md:230 src/commands/gc.md:125 src/commands/gc.md:126
+#: src/commands/gc.md:127
 msgid "\"path\""
 msgstr "\"path\""
 
@@ -5223,7 +5223,7 @@ msgstr "\"debugpy\""
 msgid "\"env_created\""
 msgstr "\"env_created\""
 
-#: src/commands/sync.md:106 src/commands/migrate.md:229 src/commands/gc.md:112
+#: src/commands/sync.md:106 src/commands/migrate.md:229 src/commands/gc.md:123
 msgid "\"dry_run\""
 msgstr "\"dry_run\""
 
@@ -6337,8 +6337,8 @@ msgstr "\"Couldn't extract packages: pip not found at ...\""
 msgid "\"myproj\""
 msgstr "\"myproj\""
 
-#: src/commands/migrate.md:277 src/commands/gc.md:114 src/commands/gc.md:115
-#: src/commands/gc.md:116
+#: src/commands/migrate.md:277 src/commands/gc.md:125 src/commands/gc.md:126
+#: src/commands/gc.md:127
 msgid "\"reason\""
 msgstr "\"reason\""
 
@@ -6596,7 +6596,7 @@ msgstr ""
 msgid "Healthy environments are left untouched."
 msgstr "정상적인 환경은 그대로 유지됩니다."
 
-#: src/commands/gc.md:25 src/commands/gc.md:80
+#: src/commands/gc.md:25 src/commands/gc.md:91
 msgid "`--aggressive`"
 msgstr "`--aggressive`"
 
@@ -6620,11 +6620,75 @@ msgstr ""
 "처럼 보이는 경우에도 마찬가지입니다. 수동으로 설치한 인터프리터를 임시 사용 "
 "목적으로 의도적으로 유지해 둘 수 있기 때문입니다."
 
-#: src/commands/gc.md:31 src/commands/gc.md:81
+#: src/commands/gc.md:31
+msgid "When Pythons are left alone"
+msgstr "Python을 건드리지 않는 경우"
+
+#: src/commands/gc.md:33
+msgid ""
+"`gc` reports a Python as unused only when it can tell which Python every "
+"remaining environment uses — every environment it lists that is not itself "
+"being cleaned up. When it cannot, it skips Python cleanup instead of "
+"guessing:"
+msgstr ""
+"`gc`는 남아 있는 모든 환경, 즉 목록에 있는 환경 중 정리 대상이 아닌 환경이 각"
+"각 어떤 Python을 쓰는지 알 수 있을 때만 Python을 미사용으로 보고합니다. 알 "
+"수 없으면 추측하지 않고 Python 정리를 건너뜁니다."
+
+#: src/commands/gc.md:35
+msgid ""
+"**The environment directory cannot be read** — if `~/.scuv/virtualenvs` is "
+"unreadable from the start, `gc` stops with an error before touching "
+"anything. If it becomes unreadable later, during the Python scan, a warning "
+"is printed and no Python is reported."
+msgstr ""
+"**환경 디렉터리를 읽을 수 없을 때** — 처음부터 `~/.scuv/virtualenvs`를 읽을 "
+"수 없으면 `gc`는 아무것도 건드리지 않고 오류로 끝납니다. 그 뒤 Python 스캔 중"
+"에 읽을 수 없게 되면 경고를 출력하고 어떤 Python도 표시하지 않습니다."
+
+#: src/commands/gc.md:36
+msgid ""
+"**A remaining environment has unreadable metadata** — its Python version is "
+"unknown, so a warning is printed and no Python is reported. A cleanup "
+"candidate with unreadable metadata does not count: it is going away."
+msgstr ""
+"**남아 있는 환경의 메타데이터를 읽을 수 없을 때** — 그 환경의 Python 버전을 "
+"알 수 없으므로 경고를 출력하고 어떤 Python도 표시하지 않습니다. 메타데이터를 "
+"읽을 수 없는 환경이 정리 대상이라면 해당하지 않습니다. 곧 지워질 환경이기 때"
+"문입니다."
+
+#: src/commands/gc.md:38
+msgid ""
+"Warnings are not printed under `--json` or `--quiet`; the JSON output then "
+"has an empty `pythons` array."
+msgstr ""
+"`--json`이나 `--quiet`에서는 경고가 출력되지 않습니다. 이때 JSON 출력의 "
+"`pythons`는 빈 배열입니다."
+
+#: src/commands/gc.md:40
+msgid ""
+"With `--yes`, the Python scan runs again right before uninstalling. Every "
+"environment it lists at that moment protects the Python it uses, including a "
+"candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or "
+"failed to remove. If this second scan cannot tell which Pythons are in use, "
+"nothing is uninstalled, and each Python left alone gets a warning and the "
+"JSON outcome `skipped_in_use`. If uv itself can no longer be found at that "
+"point, nothing is uninstalled either; those Pythons get the outcome "
+"`skipped_no_uv`."
+msgstr ""
+"`--yes`를 주면 제거 직전에 Python 스캔을 한 번 더 합니다. 그 시점에 목록에 잡"
+"힌 환경은 모두 해당 환경이 사용하는 Python을 보호합니다. `gc`가 남기기로 한 "
+"후보([TOCTOU 가드](#toctou-가드) 참고)나 삭제에 실패한 후보도 마찬가지입니"
+"다. 이 두 번째 스캔에서 어떤 Python이 쓰이는지 알 수 없으면 아무것도 제거하"
+"지 않고, 남겨진 Python마다 경고가 출력되며 JSON에는 `skipped_in_use` 결과로 "
+"기록됩니다. 그 시점에 uv를 찾을 수 없어도 아무것도 제거하지 않으며, 이때 결과"
+"는 `skipped_no_uv`입니다."
+
+#: src/commands/gc.md:42 src/commands/gc.md:92
 msgid "`--older-than <DURATION>`"
 msgstr "`--older-than <DURATION>`"
 
-#: src/commands/gc.md:33
+#: src/commands/gc.md:44
 msgid ""
 "Flag environments whose `last_used` timestamp is older than the given "
 "duration. Accepts `<n>d` (days), `<n>w` (weeks = 7d), and `<n>y` (years = "
@@ -6634,7 +6698,7 @@ msgstr ""
 "`<n>d`(일), `<n>w`(주 = 7일), `<n>y`(년 = 365일) 형식을 허용합니다. 예: "
 "`30d`, `2w`, `1y`."
 
-#: src/commands/gc.md:35
+#: src/commands/gc.md:46
 msgid ""
 "**Months are deliberately rejected** — `m` is ambiguous between \"minute\" "
 "and \"month\", and calendar months would require timezone-aware arithmetic "
@@ -6646,7 +6710,7 @@ msgstr ""
 "만 유휴 환경 휴리스틱의 정확도 개선 효과는 미미합니다. 대신 `30d` 또는 `1y`"
 "를 사용하세요."
 
-#: src/commands/gc.md:37
+#: src/commands/gc.md:48
 msgid ""
 "The maximum allowed value is 200 years (`200y`); larger values are rejected "
 "to keep the resulting cutoff inside chrono's representable range."
@@ -6654,7 +6718,7 @@ msgstr ""
 "허용되는 최대값은 200년(`200y`)입니다. 더 큰 값은 결과로 산출되는 컷오프 시점"
 "이 chrono의 표현 가능 범위를 벗어나므로 거부됩니다."
 
-#: src/commands/gc.md:39
+#: src/commands/gc.md:50
 msgid ""
 "**Note on system clock**: the cutoff is `Utc::now() - <duration>`, so the "
 "threshold moves with the system clock. A host whose clock is wrong (NTP "
@@ -6669,15 +6733,15 @@ msgstr ""
 "환경이 달라질 수 있습니다. 이는 보안 경계가 아닌 최선 노력 휴리스틱이므로, 클"
 "록을 신뢰할 수 있을 때만 `--yes`와 함께 사용하세요."
 
-#: src/commands/gc.md:46
+#: src/commands/gc.md:57
 msgid "Conservative rules"
 msgstr "보수적인 규칙"
 
-#: src/commands/gc.md:48
+#: src/commands/gc.md:59
 msgid "Two cases are **never** flagged as stale, by design:"
 msgstr "설계상 **절대로** 유휴 상태로 표시되지 않는 두 가지 케이스가 있습니다:"
 
-#: src/commands/gc.md:50
+#: src/commands/gc.md:61
 msgid ""
 "**`last_used = None`** — fresh envs that have never been activated since the "
 "field landed, _and_ envs whose metadata predates the field. Either way we "
@@ -6687,7 +6751,7 @@ msgstr ""
 "경, _그리고_ 필드 도입 이전에 생성된 메타데이터를 가진 환경. 어느 경우든 환경"
 "이 사용되지 않는다는 양성 근거가 없습니다."
 
-#: src/commands/gc.md:51
+#: src/commands/gc.md:62
 msgid ""
 "**Corrupt metadata** — if we can't read the metadata, we don't pretend to "
 "know its age."
@@ -6695,7 +6759,7 @@ msgstr ""
 "**손상된 메타데이터** — 메타데이터를 읽을 수 없으면, 해당 환경의 나이를 알 "
 "수 없다고 판단합니다."
 
-#: src/commands/gc.md:53
+#: src/commands/gc.md:64
 msgid ""
 "If you want to clean up un-activated envs anyway, surface them with `scuv "
 "list --sort last-used` — envs missing `last_used` always sort to the bottom "
@@ -6706,11 +6770,11 @@ msgstr ""
 "세요 — `last_used`가 없는 환경은 항상 목록 하단으로 정렬됩니다 — 그런 다음 "
 "`scuv remove <name>`으로 개별 환경을 제거합니다. 스크립트로 열거하려면:"
 
-#: src/commands/gc.md:59
+#: src/commands/gc.md:70
 msgid "'.data.virtualenvs[] | select(.last_used == null) | .name'"
 msgstr "'.data.virtualenvs[] | select(.last_used == null) | .name'"
 
-#: src/commands/gc.md:62
+#: src/commands/gc.md:73
 msgid ""
 "(Note: `scuv verify` checks per-env health — metadata / interpreter / "
 "manifest drift — and intentionally does NOT flag a healthy env just because "
@@ -6720,11 +6784,11 @@ msgstr ""
 "리프트 — 를 검사하며, 한 번도 활성화되지 않은 정상적인 환경을 유휴로 표시하"
 "지 **않습니다**.)"
 
-#: src/commands/gc.md:66
+#: src/commands/gc.md:77
 msgid "TOCTOU guard"
 msgstr "TOCTOU 가드"
 
-#: src/commands/gc.md:68
+#: src/commands/gc.md:79
 msgid ""
 "Between the `--older-than` scan and the actual delete, an env may be "
 "activated. Each candidate is re-checked just before removal:"
@@ -6732,7 +6796,7 @@ msgstr ""
 "`--older-than` 스캔과 실제 삭제 사이에 환경이 활성화될 수 있습니다. 각 후보"
 "는 제거 직전에 다시 확인합니다:"
 
-#: src/commands/gc.md:70
+#: src/commands/gc.md:81
 msgid ""
 "`SkippedRecentlyUsed` — the env was touched after the scan; `last_used` is "
 "now at-or-newer than the original cutoff, so it is no longer stale."
@@ -6740,7 +6804,7 @@ msgstr ""
 "`SkippedRecentlyUsed` — 스캔 이후 환경이 사용되었습니다. `last_used`가 원래 "
 "컷오프 이상으로 업데이트되어 더 이상 유휴 상태가 아닙니다."
 
-#: src/commands/gc.md:71
+#: src/commands/gc.md:82
 msgid ""
 "`SkippedNoData` — metadata became unreadable or missing between scan and "
 "remove. We refuse to delete envs we can no longer reason about."
@@ -6748,7 +6812,7 @@ msgstr ""
 "`SkippedNoData` — 스캔과 제거 사이에 메타데이터를 읽을 수 없거나 사라진 경"
 "우. 더 이상 판단할 수 없는 환경은 삭제하지 않습니다."
 
-#: src/commands/gc.md:73
+#: src/commands/gc.md:84
 msgid ""
 "Both surface in the JSON envelope as `outcome` values so scripts can "
 "distinguish them from `Removed` / `Failed`."
@@ -6756,31 +6820,31 @@ msgstr ""
 "두 가지 모두 JSON envelope에서 `outcome` 값으로 나타나므로, 스크립트에서 "
 "`Removed` / `Failed`와 구분할 수 있습니다."
 
-#: src/commands/gc.md:79
+#: src/commands/gc.md:90
 msgid "`-y`, `--yes`"
 msgstr "`-y`, `--yes`"
 
-#: src/commands/gc.md:79
+#: src/commands/gc.md:90
 msgid "Actually remove the candidates (default: preview only)"
 msgstr "후보를 실제로 제거합니다(기본값: 미리보기만)."
 
-#: src/commands/gc.md:80
+#: src/commands/gc.md:91
 msgid "Also remove uv-managed Python versions that no environment uses"
 msgstr "어떤 환경에서도 사용하지 않는 uv 관리 Python 버전도 함께 제거합니다."
 
-#: src/commands/gc.md:81
+#: src/commands/gc.md:92
 msgid "Also flag envs idle past the cutoff (`30d` / `2w` / `1y`)"
 msgstr "컷오프 이후 유휴 상태인 환경도 표시합니다(`30d` / `2w` / `1y`)."
 
-#: src/commands/gc.md:87
+#: src/commands/gc.md:98
 msgid "# See what would be removed\n"
 msgstr "# See what would be removed\n"
 
-#: src/commands/gc.md:89
+#: src/commands/gc.md:100
 msgid "# Sample output:\n"
 msgstr "# Sample output:\n"
 
-#: src/commands/gc.md:91
+#: src/commands/gc.md:102
 msgid ""
 "#   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-"
 "env\n"
@@ -6788,79 +6852,79 @@ msgstr ""
 "#   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-"
 "env\n"
 
-#: src/commands/gc.md:93
+#: src/commands/gc.md:104
 msgid "# (dry run — pass `--yes` to actually remove)\n"
 msgstr "# (dry run — pass `--yes` to actually remove)\n"
 
-#: src/commands/gc.md:95
+#: src/commands/gc.md:106
 msgid "# Actually clean up\n"
 msgstr "# Actually clean up\n"
 
-#: src/commands/gc.md:100 src/commands/verify.md:63 src/commands/diff.md:99
+#: src/commands/gc.md:111 src/commands/verify.md:63 src/commands/diff.md:99
 msgid "JSON output"
 msgstr "JSON 출력"
 
-#: src/commands/gc.md:110
+#: src/commands/gc.md:121
 msgid "\"gc\""
 msgstr "\"gc\""
 
-#: src/commands/gc.md:113 src/commands/verify.md:70
+#: src/commands/gc.md:124 src/commands/verify.md:70
 msgid "\"envs\""
 msgstr "\"envs\""
 
-#: src/commands/gc.md:114
+#: src/commands/gc.md:125
 msgid "\"broken-env\""
 msgstr "\"broken-env\""
 
-#: src/commands/gc.md:114
+#: src/commands/gc.md:125
 msgid "\"/Users/x/.scuv/virtualenvs/broken-env\""
 msgstr "\"/Users/x/.scuv/virtualenvs/broken-env\""
 
-#: src/commands/gc.md:114
+#: src/commands/gc.md:125
 msgid "\"broken_python\""
 msgstr "\"broken_python\""
 
-#: src/commands/gc.md:114 src/commands/gc.md:115 src/commands/gc.md:116
+#: src/commands/gc.md:125 src/commands/gc.md:126 src/commands/gc.md:127
 msgid "\"outcome\""
 msgstr "\"outcome\""
 
-#: src/commands/gc.md:114 src/commands/gc.md:115 src/commands/gc.md:116
+#: src/commands/gc.md:125 src/commands/gc.md:126 src/commands/gc.md:127
 msgid "\"pending\""
 msgstr "\"pending\""
 
-#: src/commands/gc.md:115
+#: src/commands/gc.md:126
 msgid "\"rogue-dir\""
 msgstr "\"rogue-dir\""
 
-#: src/commands/gc.md:115
+#: src/commands/gc.md:126
 msgid "\"/Users/x/.scuv/virtualenvs/rogue-dir\""
 msgstr "\"/Users/x/.scuv/virtualenvs/rogue-dir\""
 
-#: src/commands/gc.md:115
+#: src/commands/gc.md:126
 msgid "\"missing_metadata\""
 msgstr "\"missing_metadata\""
 
-#: src/commands/gc.md:116
+#: src/commands/gc.md:127
 msgid "\"old-poc\""
 msgstr "\"old-poc\""
 
-#: src/commands/gc.md:116
+#: src/commands/gc.md:127
 msgid "\"/Users/x/.scuv/virtualenvs/old-poc\""
 msgstr "\"/Users/x/.scuv/virtualenvs/old-poc\""
 
-#: src/commands/gc.md:116
+#: src/commands/gc.md:127
 msgid "\"stale\""
 msgstr "\"stale\""
 
-#: src/commands/gc.md:116
+#: src/commands/gc.md:127
 msgid "\"age_days\""
 msgstr "\"age_days\""
 
-#: src/commands/gc.md:118
+#: src/commands/gc.md:129
 msgid "\"pythons\""
 msgstr "\"pythons\""
 
-#: src/commands/gc.md:123
+#: src/commands/gc.md:134
 msgid ""
 "`reason` stays a flat string for all variants — orphans use the existing "
 "`\"missing_metadata\"` / `\"broken_python\"` values; stale records add "
@@ -6874,20 +6938,20 @@ msgstr ""
 "소비자는 변경 없이 계속 동작하며, 유일한 추가 변경은 새로운 `outcome` 값인 "
 "`skipped_recently_used`와 `skipped_no_data`입니다."
 
-#: src/commands/gc.md:130 src/commands/prune.md:35 src/commands/verify.md:90
+#: src/commands/gc.md:141 src/commands/prune.md:35 src/commands/verify.md:90
 #: src/commands/diff.md:183 src/commands/self.md:61 src/commands/man.md:43
 msgid "See also"
 msgstr "참고 항목"
 
-#: src/commands/gc.md:132
+#: src/commands/gc.md:143
 msgid "[`prune`](prune.md) — clean the uv cache"
 msgstr "[`prune`](prune.md) — uv cache 정리"
 
-#: src/commands/gc.md:133
+#: src/commands/gc.md:144
 msgid "[`doctor`](doctor.md) — diagnose without removing"
 msgstr "[`doctor`](doctor.md) — 삭제 없이 진단"
 
-#: src/commands/gc.md:134
+#: src/commands/gc.md:145
 msgid "[`remove`](remove.md) — delete a specific environment by name"
 msgstr "[`remove`](remove.md) — 이름으로 특정 환경 삭제"
 
