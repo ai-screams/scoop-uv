@@ -43,7 +43,7 @@ scuv doctor --json              # JSON output for scripting
 The doctor checks each virtual environment for:
 
 - **Python symlink** — Does the `python` binary in the environment point to a valid Python installation?
-- **pyvenv.cfg** — Does the environment's configuration file exist and reference a valid Python?
+- **pyvenv.cfg** — Does the environment's configuration file exist (and its Python binary)?
 
 Environments can become broken when their underlying Python version is uninstalled. Use `scuv doctor` to detect these issues:
 
@@ -51,17 +51,66 @@ Environments can become broken when their underlying Python version is uninstall
 # After accidentally uninstalling Python 3.12:
 scuv doctor -v
 # Output:
-#   ✓ uv: installed (0.5.x)
-#   ✓ Shell: zsh integration active
-#   ⚠ Environment 'myproject': Python symlink broken
-#   ⚠ Environment 'webapp': Python symlink broken
+#
+# Checking installation...
+#
+# ✓ uv installation
+#   uv 0.x.y (<commit> <date> <target>)
+# ✓ SCUV_HOME directory
+#   ~/.scuv
+# ✗ broken virtualenv: 'myproject' is corrupted
+#   → scuv remove myproject && scuv create myproject <python-version>
+# ✗ broken virtualenv: 'webapp' is corrupted
+#   → scuv remove webapp && scuv create webapp <python-version>
+# ✗ broken symlink: Python symlink in 'myproject' is broken
+#   → scuv remove myproject && scuv create myproject <python-version>
+# ✗ broken symlink: Python symlink in 'webapp' is broken
+#   → scuv remove webapp && scuv create webapp <python-version>
+# ✓ shell configuration
+#   found in ~/.zshrc
+# ✓ version files
+#   no version files configured
+# ✓ legacy scoop remnants
+#
+# ──────────────────────────────────
+# Found 4 error(s).
 
 # Auto-fix by recreating symlinks (requires Python to be reinstalled)
 scuv install 3.12
 scuv doctor --fix
-# Output:
-#   ✓ Fixed 'myproject': Python symlink restored
-#   ✓ Fixed 'webapp': Python symlink restored
+# Output (excerpt):
+# ✗ broken virtualenv: 'myproject' is corrupted
+#   → scuv remove myproject && scuv create myproject <python-version>
+# ✗ broken virtualenv: 'webapp' is corrupted
+#   → scuv remove webapp && scuv create webapp <python-version>
+# • Attempting to fix symlink for 'myproject'...
+# • Found Python version: 3.12
+# ✓ Fixed symlink for 'myproject'
+# ✓ broken symlink
+# • Attempting to fix symlink for 'webapp'...
+# • Found Python version: 3.12
+# ✓ Fixed symlink for 'webapp'
+# ✓ broken symlink
+# ...
+# Found 2 error(s).
+```
+
+`✓` marks a passing check, `⚠` a warning and `✗` an error; `→` lines
+suggest a fix. The report goes to stderr. `doctor` exits `2` when any
+check errors, `1` when the worst finding is a warning, and `0` when every
+check passes (`All checks passed!`).
+
+The `broken virtualenv` check runs before the symlink fix, so `--fix`
+still reports those errors in the same run. Run `scuv doctor` again to
+confirm the repair:
+
+```bash
+scuv doctor
+# Output (excerpt):
+# ✓ virtual environments
+# ✓ symbolic links
+# ...
+# All checks passed!
 ```
 
 > **Tip:** Run `scuv doctor` periodically or after uninstalling Python versions to catch broken environments early. See [uninstall command](uninstall.md) for the safe uninstall workflow.

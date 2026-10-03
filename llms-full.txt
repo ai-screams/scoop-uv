@@ -262,11 +262,11 @@ Do not use `--global` if you only want project-scoped behavior.
 After activating an environment, install project dependencies with:
 
 ```bash
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
-Use `pip install -r path/to/requirements.txt` for alternate paths.
-Verify with `pip list`.
+Use `uv pip install -r path/to/requirements.txt` for alternate paths.
+Verify with `uv pip list`. scuv envs have no `pip` of their own; `uv pip` targets the active env.
 
 **List Python Versions + Associated Environments**:
 
@@ -279,10 +279,11 @@ scuv list --python-version 3.12
 ```
 
 For automation, use `--json`.
-For shell loops, use `--bare` and iterate versions:
+For shell loops, use `--bare` and iterate versions, cut to `major.minor` (an env
+may record `3.12` rather than `3.12.14`):
 
 ```bash
-for v in $(scuv list --pythons --bare); do
+for v in $(scuv list --pythons --bare | cut -d. -f1,2 | sort -u); do
   scuv list --python-version "$v" --bare
 done
 ```

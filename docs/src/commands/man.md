@@ -25,7 +25,7 @@ scuv man /tmp/scuv-man
 
 | Option | Description |
 |--------|-------------|
-| `--json` | Output as JSON (only meaningful with `DIR`) |
+| `--json` | Output as JSON; requires `DIR` (without it, clap rejects the call with exit 2) |
 
 ## Packager usage
 

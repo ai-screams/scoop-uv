@@ -126,11 +126,11 @@ Use these without `--global` to avoid changing global settings.
 
 ```bash
 # environment already active (prompt shows: (myproject))
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
-Use `pip install -r path/to/requirements.txt` for non-root files.
-Verify with `pip list`.
+Use `uv pip install -r path/to/requirements.txt` for non-root files.
+Verify with `uv pip list`. scuv envs have no `pip` of their own; `uv pip` targets the active env.
 
 ### List Python Versions and Associated Environments
 
@@ -141,8 +141,9 @@ scuv list --python-version 3.12
 ```
 
 Use `--json` for automation and `--bare` for script-friendly output.
-For full mapping in shell scripts, iterate versions from `scuv list --pythons --bare`
-and query each with `scuv list --python-version <VERSION> --bare`.
+For full mapping in shell scripts, iterate versions from `scuv list --pythons --bare`,
+cut each to `major.minor` (an env may record `3.12` rather than `3.12.14`), and query each with
+`scuv list --python-version <VERSION> --bare`.
 
 ### Integrate Custom or Pre-Existing Python
 

@@ -101,14 +101,41 @@ Both surface in the JSON envelope as `outcome` values so scripts can distinguish
 scuv gc
 
 # Sample output:
-# Orphan virtualenvs (2):
+# • Orphan virtualenvs (2):
 #   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-env
-#   - rogue-dir  (no .scoop-metadata.json)     ~/.scuv/virtualenvs/rogue-dir
-# (dry run — pass `--yes` to actually remove)
+#   - rogue-dir (no .scoop-metadata.json)  ~/.scuv/virtualenvs/rogue-dir
+# • (dry run — pass `--yes` to actually remove)
+
+# Stale envs join the same list, in name order
+scuv gc --older-than 30d
+
+# Sample output:
+# • Orphan virtualenvs (3):
+#   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-env
+#   - old-poc (stale (62 days idle))  ~/.scuv/virtualenvs/old-poc
+#   - rogue-dir (no .scoop-metadata.json)  ~/.scuv/virtualenvs/rogue-dir
+# • (dry run — pass `--yes` to actually remove)
+
+# Unused uv-managed Pythons get their own list
+scuv gc --aggressive
+
+# Sample output:
+# • Orphan virtualenvs (2):
+#   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-env
+#   - rogue-dir (no .scoop-metadata.json)  ~/.scuv/virtualenvs/rogue-dir
+# • Unused Python versions (2):
+#   - Python 3.13.1
+#   - Python 3.11.9
+# • (dry run — pass `--yes` to actually remove)
 
 # Actually clean up
 scuv gc --yes
 ```
+
+The `- ` item lines go to stdout; the `• ` header and footer lines go to
+stderr, so `scuv gc 2>/dev/null` prints only the candidates. With nothing
+to remove, `gc` prints `✓ Nothing to clean up — all environments look
+healthy` (stderr).
 
 ## JSON output
 
@@ -125,8 +152,8 @@ scuv gc --older-than 30d --json
     "dry_run": true,
     "envs": [
       { "name": "broken-env", "path": "/Users/x/.scuv/virtualenvs/broken-env", "reason": "broken_python", "outcome": "pending" },
-      { "name": "rogue-dir",  "path": "/Users/x/.scuv/virtualenvs/rogue-dir",  "reason": "missing_metadata", "outcome": "pending" },
-      { "name": "old-poc",    "path": "/Users/x/.scuv/virtualenvs/old-poc",    "reason": "stale", "age_days": 62, "outcome": "pending" }
+      { "name": "old-poc",    "path": "/Users/x/.scuv/virtualenvs/old-poc",    "reason": "stale", "age_days": 62, "outcome": "pending" },
+      { "name": "rogue-dir",  "path": "/Users/x/.scuv/virtualenvs/rogue-dir",  "reason": "missing_metadata", "outcome": "pending" }
     ],
     "pythons": []
   }

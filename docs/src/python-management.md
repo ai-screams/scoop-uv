@@ -85,11 +85,11 @@ scuv create graal-env --python-path /opt/graalpy/bin/graalpy
 scuv validates the path, auto-detects the version, and stores the custom path in metadata.
 
 ```bash
-# Verify what was integrated
+# Verify what was integrated (shows the detected version)
 scuv info debug-env
-# Name:         debug-env
-# Python:       3.13.0
-# Python Path:  /opt/python-debug/bin/python3
+# Name:       debug-env
+# Python:     3.13.0
+# Path:       ~/.scuv/virtualenvs/debug-env
 ```
 
 Metadata is stored in `~/.scuv/virtualenvs/<name>/.scoop-metadata.json` (`python_path` field).
@@ -149,11 +149,13 @@ If you have existing virtual environments in pyenv, conda, or virtualenvwrapper,
 scuv migrate list
 
 # Example output:
-# pyenv-virtualenv:
-#   myproject (Python 3.12.0)
-#   webapp (Python 3.11.8)
-# conda:
-#   ml-env (Python 3.10.4)
+# • Scanning all sources for environments...
+# ✓ Found 2 environment(s):
+#
+#   [virtualenvwrapper]
+#     ✓ myproject            Python 3.12              - MB
+#     ✓ webapp               Python 3.11              - MB
+# ...
 
 # Migrate a specific environment
 scuv migrate @env myproject
@@ -257,8 +259,8 @@ Before uninstalling, you can check which environments would be affected:
 ```bash
 # Filter environments by Python version
 scuv list --python-version 3.12
-#   myproject      3.12.1
-#   webapp         3.12.0
+#   myproject  3.12  ~/.scuv/virtualenvs/myproject
+#   webapp     3.12  ~/.scuv/virtualenvs/webapp
 ```
 
 ### Manual workflow
@@ -268,8 +270,8 @@ If you prefer manual control (without `--cascade`):
 ```bash
 # 1. Identify environments using the target Python version
 scuv list --python-version 3.12
-#   myproject      3.12.1
-#   webapp         3.12.1
+#   myproject  3.12  ~/.scuv/virtualenvs/myproject
+#   webapp     3.12  ~/.scuv/virtualenvs/webapp
 
 # 2. Remove or recreate affected environments
 scuv remove myproject --force
@@ -292,7 +294,10 @@ If you uninstalled Python without cleaning up environments:
 ```bash
 # Detect broken environments
 scuv doctor -v
-#   ⚠ Environment 'myproject': Python symlink broken
+# ✗ broken virtualenv: 'myproject' is corrupted
+#   → scuv remove myproject && scuv create myproject <python-version>
+# ✗ broken symlink: Python symlink in 'myproject' is broken
+#   → scuv remove myproject && scuv create myproject <python-version>
 
 # Fix by reinstalling the Python version
 scuv install 3.12

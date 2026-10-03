@@ -69,14 +69,14 @@ The `--cascade` flag automatically removes all virtual environments that use the
 
 ```bash
 scuv uninstall 3.12 --cascade
-# Finding environments using Python 3.12...
-# Found 2 environments using Python 3.12:
-#   - myproject
-#   - webapp
+# • Found 2 environment(s) using Python 3.12:
+# •   - myproject
+# •   - webapp
 # Remove these environments and uninstall Python 3.12? [y/N]
-# Removing myproject...
-# Removing webapp...
-# Uninstalling Python 3.12...
+# • Removing 'myproject'...
+# • Removing 'webapp'...
+# • Removed 2 environment(s)
+# • Uninstalling Python 3.12...
 # ✓ Python 3.12 uninstalled
 ```
 
@@ -112,8 +112,8 @@ If you prefer manual control (without `--cascade`):
 # List environments filtered by Python version
 scuv list --python-version 3.12
 # Output:
-#   myproject      3.12.1
-#   webapp         3.12.1
+#   myproject  3.12  ~/.scuv/virtualenvs/myproject
+#   webapp     3.12  ~/.scuv/virtualenvs/webapp
 
 # Or use JSON for scripting
 scuv list --json
@@ -158,8 +158,11 @@ If you uninstalled a Python version without cleaning up environments first:
 ```bash
 # Detect broken environments
 scuv doctor -v
-# Output:
-#   ⚠ Environment 'myproject': Python symlink broken
+# Output (excerpt):
+# ✗ broken virtualenv: 'myproject' is corrupted
+#   → scuv remove myproject && scuv create myproject <python-version>
+# ✗ broken symlink: Python symlink in 'myproject' is broken
+#   → scuv remove myproject && scuv create myproject <python-version>
 
 # Option 1: Reinstall the Python version
 scuv install 3.12

@@ -52,10 +52,10 @@ To see details about an environment before removing it:
 ```bash
 # Show environment details (Python version, path, packages)
 scuv info myproject
-# Output:
-#   Name:    myproject
-#   Python:  3.12.1
-#   Path:    ~/.scuv/virtualenvs/myproject
+# Output (excerpt):
+#   Name:       myproject
+#   Python:     3.12
+#   Path:       ~/.scuv/virtualenvs/myproject
 ```
 
 ## Removing All Environments for a Python Version
@@ -65,9 +65,10 @@ To remove all environments that use a specific Python version:
 ```bash
 # List environments to identify which use Python 3.12
 scuv list
-#   myproject      3.12.1
-#   webapp         3.12.1
-#   ml-env         3.11.8
+#   ml-env     3.11    ~/.scuv/virtualenvs/ml-env
+#   myproject  3.12    ~/.scuv/virtualenvs/myproject
+#   webapp     3.12    ~/.scuv/virtualenvs/webapp
+#   system     3.13.1  /usr/bin/python3 (system)
 
 # Remove each one
 scuv remove myproject --force

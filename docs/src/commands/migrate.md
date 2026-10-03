@@ -43,7 +43,7 @@ scuv migrate all
 | `--strict` | `@env`, `all` | Fail on the first package install error inside an env (default: keep going) |
 | `--delete-source` | `@env`, `all` | Remove the source env after successful migration |
 | `--rename <new-name>` | `@env` | Migrate under a different name |
-| `--auto-rename` | `@env` | On name conflict, append `-<source>` suffix automatically (conflicts with `--force`) |
+| `--auto-rename` | `@env` | On name conflict, migrate under `<name>-pyenv` automatically (conflicts with `--force`) |
 
 Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 
@@ -64,7 +64,7 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | The env migrated successfully (or the user chose `Skip` at the interactive conflict prompt) |
-| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, non-interactive context) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
+| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--yes` or `--json` skips the prompt) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
 | `3` | The named source env was not found in the requested source (`PyenvEnvNotFound`, `VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **or** the source env is `CorruptedEnvironment` |
 
 ### `migrate list`
@@ -100,19 +100,28 @@ proceeds under an auto-generated name. It does **not** override any
 other status (EOL / corrupted), and it does **not** delete or overwrite
 the existing scuv env.
 
-Known limitations (tracked separately from this docs PR):
+```bash
+$ scuv migrate @env myproject --auto-rename --yes
+• Source: myproject (virtualenvwrapper, Python 3.12)
+•   Source: ~/.virtualenvs/myproject
+• Auto-renaming to 'myproject-pyenv'
+• Migrating...
+✓ Migrated 'myproject-pyenv'
+•   Path: ~/.scuv/virtualenvs/myproject-pyenv
+•   Python: 3.12
+•   Packages: 1
+•
+• → Activate: scuv use myproject-pyenv
+```
 
-- The generated name is currently hard-coded as `<name>-pyenv` even
-  for `virtualenvwrapper` / `conda` sources; the doc-comment promise
-  of `<name>-<source>` doesn't yet match the code.
-- For envs whose status would be both "name conflict" and "EOL",
-  conflict detection runs before EOL detection in `determine_status`,
-  so the EOL branch is never reached and `--auto-rename` proceeds with
-  the EOL Python silently. Prefer `--force` if you need explicit
-  control over EOL semantics in mixed-status envs.
+The generated name is `<name>-pyenv` for every source, including
+`virtualenvwrapper` and `conda`. When that name is taken as well, scuv
+picks a numbered name such as `myproject-2`.
 
-For deterministic conflict handling in scripts, prefer `--force` over
-`--auto-rename` until these limitations are addressed.
+The EOL guard still applies to a renamed env. When the source env both
+conflicts by name and runs an end-of-life Python, `--auto-rename` stops
+with `Python <version> is end-of-life. Use --force to migrate anyway.`
+(exit 2).
 
 ## Examples
 
@@ -120,33 +129,71 @@ For deterministic conflict handling in scripts, prefer `--force` over
 
 ```bash
 $ scuv migrate list
-📦 Migratable Environments
+• Scanning all sources for environments...
+✓ Found 2 environment(s):
 
-  pyenv-virtualenv:
-    • myproject (Python 3.12.0)
-    • webapp (Python 3.11.8)
+  [virtualenvwrapper]
+    ✓ myproject            Python 3.12              - MB
+    ✓ webapp               Python 3.11              - MB
 
-  conda:
-    • ml-env (Python 3.10.4)
+• To migrate: scuv migrate @env <name>
+• To preview: scuv migrate @env <name> --dry-run
 ```
+
+Each env line starts with `✓` when it is ready to migrate, `⚠` for a name
+conflict or an end-of-life Python (followed by the reason, such as
+`(Python 3.7.17 is EOL)` or `(conflicts with <path>)`), and `✗` when the
+env is corrupted. The grouped env lines go to stdout; the `•`,
+`✓ Found` lines go to stderr.
 
 ### Migrate Single Environment
 
 ```bash
-$ scuv migrate @env myproject
-✓ Migrated 'myproject' from pyenv-virtualenv
-  Source: ~/.pyenv/versions/myproject
-  Target: ~/.scuv/virtualenvs/myproject
+$ scuv migrate @env myproject --yes
+• Source: myproject (virtualenvwrapper, Python 3.12)
+•   Source: ~/.virtualenvs/myproject
+• Migrating...
+✓ Migrated 'myproject'
+•   Path: ~/.scuv/virtualenvs/myproject
+•   Python: 3.12
+•   Packages: 1
+•
+• → Activate: scuv use myproject
 ```
 
 ### Migrate All
 
 ```bash
-$ scuv migrate all
-✓ Migrated 3 environments
-  • myproject (pyenv-virtualenv)
-  • webapp (pyenv-virtualenv)
-  • ml-env (conda)
+$ scuv migrate all --yes
+• Scanning all sources for environments...
+• Found 2 environment(s) to migrate:
+•   - myproject (Python 3.12)
+•   - webapp (Python 3.11)
+•
+• Starting batch migration...
+•
+• ────────────────────────────────────────
+✓ Migration complete: 2/2 succeeded
+```
+
+When some envs fail or conflict, the summary names them and the command
+exits 2:
+
+```bash
+$ scuv migrate all --yes
+• Scanning all sources for environments...
+• Found 1 environment(s) to migrate:
+•   - brokenpip (Python 3.12)
+⚠ 1 environment(s) will be skipped (see summary)
+•
+• Starting batch migration...
+•
+• ────────────────────────────────────────
+✓ Migration complete: 0/1 succeeded
+⚠ Failed environments: brokenpip
+⚠ 1 name conflict(s) skipped (use --force):
+⚠   - myproject (virtualenvwrapper) conflicts with /home/u/.scuv/virtualenvs/myproject
+• → Pass --force to overwrite existing scuv environments
 ```
 
 ### CI gate (fail the build on batch failure)
@@ -179,20 +226,19 @@ array, and a `summary` bucketed by status.
     "environments": [
       {
         "name": "myproject",
-        "python_version": "3.12.0",
-        "path": "/home/u/.pyenv/versions/myproject",
-        "source_type": "pyenv",
-        "size_bytes": 12582912,
-        "status": "ready"
+        "python_version": "3.12",
+        "path": "/home/u/.virtualenvs/myproject",
+        "source_type": "virtualenv_wrapper",
+        "size_bytes": null,
+        "status": { "status": "ready" }
       },
       {
         "name": "oldenv",
-        "python_version": "2.7.18",
-        "path": "/home/u/.pyenv/versions/oldenv",
-        "source_type": "pyenv",
+        "python_version": "3.7.17",
+        "path": "/home/u/.virtualenvs/oldenv",
+        "source_type": "virtualenv_wrapper",
         "size_bytes": null,
-        "status": "python_eol",
-        "version": "2.7.18"
+        "status": { "status": "python_eol", "version": "3.7.17" }
       }
     ],
     "summary": { "total": 2, "ready": 1, "conflict": 0, "eol": 1, "corrupted": 0 }
@@ -200,11 +246,12 @@ array, and a `summary` bucketed by status.
 }
 ```
 
-The `status` field is a serde-tagged enum (`#[serde(tag = "status",
-rename_all = "snake_case")]`) — `"ready"`, `"name_conflict"`
-(`existing` payload), `"python_eol"` (`version` payload), or
-`"corrupted"` (`reason` payload). `size_bytes` is lazily computed and
-may be `null` if not yet requested.
+The `status` field is an object whose own `status` key names the state:
+`{"status": "ready"}`, `{"status": "name_conflict", "existing": "<path>"}`,
+`{"status": "python_eol", "version": "<version>"}`, or
+`{"status": "corrupted", "reason": "<reason>"}`. `source_type` is
+`"pyenv"`, `"virtualenv_wrapper"` or `"conda"`. `size_bytes` is lazily
+computed and may be `null` if not yet requested.
 
 ### `migrate all --json` — success path
 
@@ -223,13 +270,13 @@ without parsing the localized `reason` string in `skipped[]`.
     "migrated": [
       {
         "name": "myproject",
-        "python_version": "3.12.0",
-        "packages_migrated": 42,
+        "python_version": "3.12",
+        "packages_migrated": 1,
         "packages_failed": [],
         "dry_run": false,
         "path": "/home/u/.scuv/virtualenvs/myproject",
         "source_deleted": false,
-        "actual_python_version": "3.12.0"
+        "actual_python_version": "3.12"
       }
     ],
     "failed": [],
@@ -240,9 +287,8 @@ without parsing the localized `reason` string in `skipped[]`.
 }
 ```
 
-`actual_python_version` may differ from `python_version` when uv
-selected a compatible interpreter (e.g. requested `3.12`, resolved to
-`3.12.4`). `source_deleted` reflects whether `--delete-source` was
+`actual_python_version` currently repeats the source env's
+`python_version`. `source_deleted` reflects whether `--delete-source` was
 honored for this env. `dry_run` mirrors the flag the command was
 invoked with.
 
@@ -267,20 +313,20 @@ failure side either.
     "migrated": [],
     "failed": [
       {
-        "name": "webapp",
-        "source_type": "pyenv",
+        "name": "brokenpip",
+        "source_type": "virtualenv_wrapper",
         "error_code": "MIGRATE_EXTRACTION_FAILED",
-        "error": "Couldn't extract packages: pip not found at ..."
+        "error": "Couldn't extract packages: pip not found at /home/u/.virtualenvs/brokenpip/bin/pip"
       }
     ],
     "skipped": [
-      { "name": "myproj", "reason": "name conflict (use --force)" }
+      { "name": "myproject", "reason": "name conflict (use --force)" }
     ],
     "conflicts": [
       {
-        "name": "myproj",
-        "source_type": "pyenv",
-        "existing": "/home/u/.scuv/virtualenvs/myproj"
+        "name": "myproject",
+        "source_type": "virtualenv_wrapper",
+        "existing": "/home/u/.scuv/virtualenvs/myproject"
       }
     ],
     "summary": { "total": 2, "success": 0, "failed": 1, "skipped": 1 }
@@ -290,7 +336,7 @@ failure side either.
 
 Per-env failure objects carry two additive fields:
 
-- `source_type` (`"pyenv"`, `"virtualenvwrapper"`, `"conda"`) — origin tool.
+- `source_type` (`"pyenv"`, `"virtualenv_wrapper"`, `"conda"`) — origin tool.
 - `error_code` — the stable `ScoopError::code()` constant (e.g.
   `"MIGRATE_EXTRACTION_FAILED"`, `"MIGRATE_NAME_CONFLICT"`,
   `"UV_COMMAND_FAILED"`). Scripts branch on this instead of parsing
@@ -312,12 +358,12 @@ stays empty. Detect via the exit code.
 Script template:
 
 ```bash
-if ! scuv migrate all --json > out.json; then
-  case $? in
-    2) echo "batch failure — read out.json for detail" ;;
-    3) echo "no source tool installed" ;;
-  esac
-fi
+scuv migrate all --json > out.json
+case $? in
+  0) ;;
+  2) echo "batch failure — read out.json for detail" ;;
+  3) echo "no source tool installed" ;;
+esac
 ```
 
 The exit-2 path (batch failure) is the only `migrate all` failure path

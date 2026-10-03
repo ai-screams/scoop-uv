@@ -39,8 +39,8 @@ change is detected cleanly rather than silently mis-parsed.
   "scoop_export_version": "1",
   "environment": {
     "name": "myproject",
-    "python": "3.12.7",
-    "created_at": "2026-05-29T12:34:56+00:00"
+    "python": "3.12",
+    "created_at": "2026-05-29T12:34:56.762998+00:00"
   },
   "packages": [
     { "name": "pytest", "version": "8.0.0" },
@@ -50,8 +50,10 @@ change is detected cleanly rather than silently mis-parsed.
 ```
 
 Field notes:
-- `environment.python` is the resolved version recorded in the env's metadata
-  (e.g. `3.12.7`), not the original specifier you typed.
+- `environment.python` is the version recorded in the env's metadata, which
+  comes from `version_info` in the env's `pyvenv.cfg`. Current uv writes the
+  minor version there (`3.12`); envs made with `--python-path` record the
+  interpreter's full version (e.g. `3.14.8`).
 - `environment.created_at` is RFC 3339 and may be absent for hand-authored or
   pre-metadata exports.
 - `packages` is what `uv pip list` reports for the env — versions are pinned

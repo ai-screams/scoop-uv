@@ -43,7 +43,7 @@ signal exits as `128 + signum` (matching what bash exposes via `$?`).
 
 ```bash
 scuv run myenv -- python script.py
-scuv run myenv -- pip install requests
+scuv run myenv -- uv pip install requests
 scuv run myenv -- pytest -vv tests/
 scuv run myenv -- which python   # absolute path inside myenv
 ```

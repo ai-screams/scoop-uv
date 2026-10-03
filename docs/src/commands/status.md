@@ -1,8 +1,8 @@
 # status
 
-Summarise the current environment in one shot — designed to be fast (no
-package listing, no directory size walk). Use [`scuv info`](info.md) for the
-heavier per-env view.
+Summarise the current environment in one shot. It counts packages but does
+not list them or walk the directory for its size. Use [`scuv info`](info.md)
+for the heavier per-env view.
 
 ## Usage
 
@@ -46,11 +46,16 @@ For a real env (`active` / `configured`):
 ```
 Name:     myenv
 Source:   scuv_active_env
-Python:   3.12.1
+Python:   3.12
 Path:     ~/.scuv/virtualenvs/myenv
 Created:  2026-05-29 12:34:56
 Last used:3 hours ago
+Packages: 1
 ```
+
+These rows go to stdout. `Packages:` is the number of packages `uv pip list`
+reports for the env; it reads `0` when that listing fails (a broken
+interpreter), not only when nothing is installed.
 
 The `Last used:` row reads `never` for envs that have metadata but
 have not yet been activated (fresh `scuv create`, or envs whose
@@ -58,9 +63,18 @@ metadata predates the field). It's omitted entirely when there's no
 metadata at all — that way "we don't know" doesn't get conflated with
 "definitely never used".
 
-For `system`: a single line indicating system Python is in use.
+For `system`, one line on stderr:
 
-For `none`: a hint pointing to `scuv use <name>`.
+```
+• Using system Python (no virtualenv active)
+```
+
+For `none`, a hint on stderr:
+
+```
+• No environment configured
+• → Activate one: scuv use <name>
+```
 
 ## JSON Output
 
@@ -73,9 +87,10 @@ For `none`: a hint pointing to `scuv use <name>`.
     "name": "myenv",
     "source": "scuv_active_env",
     "path": "/Users/me/.scuv/virtualenvs/myenv",
-    "python": "3.12.1",
-    "created_at": "2026-05-29T12:34:56+00:00",
-    "last_used": "2026-06-02T09:00:00+00:00"
+    "python": "3.12",
+    "created_at": "2026-05-29T12:34:56.375271+00:00",
+    "last_used": "2026-06-02T09:00:00.746201+00:00",
+    "packages": 1
   }
 }
 ```

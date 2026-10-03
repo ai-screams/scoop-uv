@@ -87,7 +87,7 @@ scuv create myproject 3.12
 
 # 4. Use it (auto-activates when you enter the directory!)
 scuv use myproject
-(myproject) $ pip install -r requirements.txt
+(myproject) $ uv pip install -r requirements.txt
 ```
 
 **That's it!** 🎉 Your environment is ready. For detailed docs, see **[Full Documentation →](https://ai-scream.ai/scoop-uv/)**
