@@ -15,6 +15,8 @@ categories = ["command-line-utilities", "development-tools"]
 # 화이트리스트: crates.io 배포에 필요한 파일만 포함
 include = [
     "src/**/*.rs",
+    # Shell script pieces pulled in by include_str! (src/shell/*.rs).
+    "src/shell/scripts/*",
     "build.rs",
     "Cargo.toml",
     "/LICENSE-*",
