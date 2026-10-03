@@ -18,7 +18,7 @@ passes help flags through and respects an explicit `--shell`):
 scuv() {
     case "$1" in
         use)
-            command scuv "$@"
+            command scuv "$@" || return
             local name=""
             shift
             for arg in "$@"; do
