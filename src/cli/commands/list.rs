@@ -353,18 +353,11 @@ fn get_system_python_info() -> Option<(String, String)> {
         .unwrap_or(version_str.trim())
         .to_string();
 
-    // Get path using 'which' on Unix
-    let path_output = Command::new("which").arg(python_cmd).output().ok()?;
+    // The same PATH lookup that ran `python_cmd` above, without spawning
+    // `which` (one process fewer, and `which` is not everywhere).
+    let path = crate::paths::find_on_path(python_cmd)?;
 
-    if !path_output.status.success() {
-        return None;
-    }
-
-    let path = String::from_utf8_lossy(&path_output.stdout)
-        .trim()
-        .to_string();
-
-    Some((version, path))
+    Some((version, path.display().to_string()))
 }
 
 #[cfg(test)]
