@@ -19,11 +19,40 @@ pub(super) enum CheckStatus {
     Fail,
 }
 
+/// Which check a result belongs to.
+///
+/// Serializes to the stable snake_case id `--json` clients read; the
+/// human-readable label comes from [`CheckKind::label_key`] at print time.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(super) enum CheckKind {
+    Metadata,
+    PythonBinary,
+    PyvenvCfg,
+    ActivateScript,
+    PythonExecutes,
+    ManifestMatch,
+}
+
+impl CheckKind {
+    /// The i18n key of this check's label. Exhaustive, so a new check
+    /// cannot ship without one.
+    pub(super) fn label_key(self) -> &'static str {
+        match self {
+            Self::Metadata => "verify.check_metadata",
+            Self::PythonBinary => "verify.check_python_binary",
+            Self::PyvenvCfg => "verify.check_pyvenv_cfg",
+            Self::ActivateScript => "verify.check_activate_script",
+            Self::PythonExecutes => "verify.check_python_executes",
+            Self::ManifestMatch => "verify.check_manifest_match",
+        }
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub(super) struct CheckResult {
-    /// Stable identifier — clients use this, the human-readable label is
-    /// rendered via i18n at print time.
-    pub(super) name: &'static str,
+    /// Which check this is (serialized as its stable id).
+    pub(super) name: CheckKind,
     pub(super) status: CheckStatus,
     /// Populated for Warn/Fail with a short hint. Pass/Skip leave this null.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -31,28 +60,28 @@ pub(super) struct CheckResult {
 }
 
 impl CheckResult {
-    pub(super) fn pass(name: &'static str) -> Self {
+    pub(super) fn pass(name: CheckKind) -> Self {
         Self {
             name,
             status: CheckStatus::Pass,
             message: None,
         }
     }
-    pub(super) fn skip(name: &'static str) -> Self {
+    pub(super) fn skip(name: CheckKind) -> Self {
         Self {
             name,
             status: CheckStatus::Skip,
             message: None,
         }
     }
-    pub(super) fn warn(name: &'static str, message: impl Into<String>) -> Self {
+    pub(super) fn warn(name: CheckKind, message: impl Into<String>) -> Self {
         Self {
             name,
             status: CheckStatus::Warn,
             message: Some(message.into()),
         }
     }
-    pub(super) fn fail(name: &'static str, message: impl Into<String>) -> Self {
+    pub(super) fn fail(name: CheckKind, message: impl Into<String>) -> Self {
         Self {
             name,
             status: CheckStatus::Fail,

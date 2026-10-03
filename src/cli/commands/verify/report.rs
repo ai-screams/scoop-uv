@@ -108,7 +108,7 @@ pub(super) fn render_human(
                     CheckStatus::Warn => "  ⚠",
                     CheckStatus::Fail => "  ✗",
                 };
-                let label = label_for_check(check.name);
+                let label = t!(check.name.label_key()).to_string();
                 let msg = check.message.as_deref().unwrap_or("");
                 if msg.is_empty() {
                     println!("{detail} {label}");
@@ -137,19 +137,4 @@ pub(super) fn render_human(
             issues = summary.issues.to_string()
         ));
     }
-}
-
-pub(super) fn label_for_check(name: &str) -> String {
-    let key = match name {
-        "metadata" => "verify.check_metadata",
-        "python_binary" => "verify.check_python_binary",
-        "pyvenv_cfg" => "verify.check_pyvenv_cfg",
-        "activate_script" => "verify.check_activate_script",
-        "python_executes" => "verify.check_python_executes",
-        "manifest_match" => "verify.check_manifest_match",
-        // Unknown check id — fall back to the id itself so we don't lie via
-        // t!()-default if a new check is added without a label.
-        other => return other.to_string(),
-    };
-    t!(key).to_string()
 }

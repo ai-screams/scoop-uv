@@ -1,5 +1,5 @@
 use super::checks::{check_manifest_drift, verify_one};
-use super::types::CheckStatus;
+use super::types::{CheckKind, CheckStatus};
 use super::*;
 use crate::core::Metadata;
 use crate::core::VirtualenvInfo;
@@ -114,7 +114,7 @@ fn missing_metadata_fails_metadata_check() {
         let meta_check = report
             .checks
             .iter()
-            .find(|c| c.name == "metadata")
+            .find(|c| c.name == CheckKind::Metadata)
             .expect("metadata check present");
         assert_eq!(meta_check.status, CheckStatus::Fail);
         assert!(report.python.is_none());
@@ -140,12 +140,12 @@ fn missing_python_binary_skips_exec_check() {
         let py_bin = report
             .checks
             .iter()
-            .find(|c| c.name == "python_binary")
+            .find(|c| c.name == CheckKind::PythonBinary)
             .unwrap();
         let py_exec = report
             .checks
             .iter()
-            .find(|c| c.name == "python_executes")
+            .find(|c| c.name == CheckKind::PythonExecutes)
             .unwrap();
         assert_eq!(py_bin.status, CheckStatus::Fail);
         // Exec is *skipped* when the binary is gone — failing it would
@@ -173,7 +173,7 @@ fn missing_pyvenv_cfg_fails() {
         let cfg = report
             .checks
             .iter()
-            .find(|c| c.name == "pyvenv_cfg")
+            .find(|c| c.name == CheckKind::PyvenvCfg)
             .unwrap();
         assert_eq!(cfg.status, CheckStatus::Fail);
     });
@@ -198,7 +198,7 @@ fn missing_activate_fails() {
         let act = report
             .checks
             .iter()
-            .find(|c| c.name == "activate_script")
+            .find(|c| c.name == CheckKind::ActivateScript)
             .unwrap();
         assert_eq!(act.status, CheckStatus::Fail);
     });
@@ -252,11 +252,39 @@ fn python_executes_check_passes_on_unix() {
         let exec = report
             .checks
             .iter()
-            .find(|c| c.name == "python_executes")
+            .find(|c| c.name == CheckKind::PythonExecutes)
             .unwrap();
         // We installed a shell script that `echo`s the version — it
         // exits 0, so the check should pass.
         assert_eq!(exec.status, CheckStatus::Pass);
         assert!(report.healthy);
     });
+}
+
+/// The ids are the `--json` contract; the enum must keep serializing to
+/// them. Fails if a variant is renamed without a serde rename.
+#[test]
+fn check_kind_serializes_to_stable_ids() {
+    let ids: Vec<String> = [
+        CheckKind::Metadata,
+        CheckKind::PythonBinary,
+        CheckKind::PyvenvCfg,
+        CheckKind::ActivateScript,
+        CheckKind::PythonExecutes,
+        CheckKind::ManifestMatch,
+    ]
+    .iter()
+    .map(|k| serde_json::to_string(k).unwrap())
+    .collect();
+    assert_eq!(
+        ids,
+        [
+            "\"metadata\"",
+            "\"python_binary\"",
+            "\"pyvenv_cfg\"",
+            "\"activate_script\"",
+            "\"python_executes\"",
+            "\"manifest_match\"",
+        ]
+    );
 }

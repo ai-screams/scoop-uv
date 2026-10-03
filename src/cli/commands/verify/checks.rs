@@ -11,7 +11,7 @@ use crate::core::{Metadata, VirtualenvInfo, VirtualenvService};
 use crate::error::{Result, ScoopError};
 use crate::validate::{self, PythonVersion};
 
-use super::types::{CheckResult, CheckStatus, EnvReport};
+use super::types::{CheckKind, CheckResult, CheckStatus, EnvReport};
 
 /// Build the list of envs to verify. Single-target path validates the
 /// name and confirms existence; all-targets path enumerates and sorts so
@@ -69,24 +69,24 @@ pub(super) fn verify_one(
     let metadata = service.read_metadata(path);
     let recorded_python = metadata.as_ref().map(|m| m.python_version.clone());
     checks.push(if metadata.is_some() {
-        CheckResult::pass("metadata")
+        CheckResult::pass(CheckKind::Metadata)
     } else if path.join(Metadata::FILE_NAME).exists() {
         // File exists but failed to deserialize — read_metadata swallows the
         // error and returns None. From a user's view that's still a failure,
         // just a different reason. We surface "unreadable" so they can fix it.
-        CheckResult::fail("metadata", t!("verify.metadata_unreadable"))
+        CheckResult::fail(CheckKind::Metadata, t!("verify.metadata_unreadable"))
     } else {
-        CheckResult::fail("metadata", t!("verify.metadata_missing"))
+        CheckResult::fail(CheckKind::Metadata, t!("verify.metadata_missing"))
     });
 
     // Check 2: interpreter binary on disk.
     let python_bin = crate::paths::virtualenv_python_exe(path);
     let python_present = python_bin.exists();
     checks.push(if python_present {
-        CheckResult::pass("python_binary")
+        CheckResult::pass(CheckKind::PythonBinary)
     } else {
         CheckResult::fail(
-            "python_binary",
+            CheckKind::PythonBinary,
             t!("verify.file_missing", path = python_bin.display()),
         )
     });
@@ -95,10 +95,10 @@ pub(super) fn verify_one(
     // (including `python -m venv`) won't recognise the directory.
     let pyvenv = path.join("pyvenv.cfg");
     checks.push(if pyvenv.exists() {
-        CheckResult::pass("pyvenv_cfg")
+        CheckResult::pass(CheckKind::PyvenvCfg)
     } else {
         CheckResult::fail(
-            "pyvenv_cfg",
+            CheckKind::PyvenvCfg,
             t!("verify.file_missing", path = pyvenv.display()),
         )
     });
@@ -106,10 +106,10 @@ pub(super) fn verify_one(
     // Check 4: activate script.
     let activate = crate::paths::virtualenv_activate_script(path);
     checks.push(if activate.exists() {
-        CheckResult::pass("activate_script")
+        CheckResult::pass(CheckKind::ActivateScript)
     } else {
         CheckResult::fail(
-            "activate_script",
+            CheckKind::ActivateScript,
             t!("verify.file_missing", path = activate.display()),
         )
     });
@@ -118,18 +118,18 @@ pub(super) fn verify_one(
     // failed check 2 — re-reporting the same problem just adds noise.
     checks.push(if python_present {
         match run_python_version(&python_bin) {
-            Ok(_) => CheckResult::pass("python_executes"),
-            Err(msg) => CheckResult::fail("python_executes", msg),
+            Ok(_) => CheckResult::pass(CheckKind::PythonExecutes),
+            Err(msg) => CheckResult::fail(CheckKind::PythonExecutes, msg),
         }
     } else {
-        CheckResult::skip("python_executes")
+        CheckResult::skip(CheckKind::PythonExecutes)
     });
 
     // Check 6: manifest drift. Only meaningful when both a manifest and a
     // recorded env Python are available — otherwise skip silently.
     checks.push(match (manifest, recorded_python.as_deref()) {
         (Some(m), Some(env_python)) => check_manifest_drift(&m.environment.python, env_python),
-        _ => CheckResult::skip("manifest_match"),
+        _ => CheckResult::skip(CheckKind::ManifestMatch),
     });
 
     // `healthy` on the report means "no Warn and no Fail" — the perfect
@@ -175,9 +175,11 @@ pub(super) fn check_manifest_drift(manifest_python: &str, env_python: &str) -> C
     let manifest_parsed = PythonVersion::parse(manifest_python);
     let env_parsed = PythonVersion::parse(env_python);
     match (manifest_parsed, env_parsed) {
-        (Some(want), Some(have)) if want.matches(&have) => CheckResult::pass("manifest_match"),
+        (Some(want), Some(have)) if want.matches(&have) => {
+            CheckResult::pass(CheckKind::ManifestMatch)
+        }
         (Some(_), Some(_)) => CheckResult::warn(
-            "manifest_match",
+            CheckKind::ManifestMatch,
             t!(
                 "verify.manifest_drift",
                 env = env_python,
@@ -186,6 +188,6 @@ pub(super) fn check_manifest_drift(manifest_python: &str, env_python: &str) -> C
         ),
         // If either side is unparseable we don't have enough information to
         // call drift — treat as Skip rather than a false positive.
-        _ => CheckResult::skip("manifest_match"),
+        _ => CheckResult::skip(CheckKind::ManifestMatch),
     }
 }
