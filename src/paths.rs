@@ -336,6 +336,41 @@ pub fn find_executable_in(dir: &std::path::Path, exe: &str) -> Option<PathBuf> {
         .find(|p| p.is_file())
 }
 
+/// Removes `link` only if it is still a symlink whose raw target is
+/// `expected`, the value the caller read when it decided to remove it.
+///
+/// Returns `Ok(true)` when removed. Anything else now at that path — a
+/// regular file, a directory, a link to somewhere else, nothing — is left
+/// alone and gives `Ok(false)`. This shrinks the gap between deciding and
+/// deleting to the two syscalls here; without it, a `.venv` replaced while
+/// a slow env deletion ran in between could be deleted in its place.
+///
+/// # Errors
+///
+/// Returns the I/O error if the unlink itself fails.
+///
+/// # Examples
+///
+/// ```no_run
+/// use std::path::Path;
+/// use scoop_uv::paths::remove_symlink_if_unchanged;
+///
+/// let link = Path::new(".venv");
+/// let recorded = std::fs::read_link(link)?;
+/// // ... other work ...
+/// remove_symlink_if_unchanged(link, &recorded)?;
+/// # Ok::<(), std::io::Error>(())
+/// ```
+pub fn remove_symlink_if_unchanged(
+    link: &std::path::Path,
+    expected: &std::path::Path,
+) -> std::io::Result<bool> {
+    match std::fs::read_link(link) {
+        Ok(dest) if dest == expected => std::fs::remove_file(link).map(|()| true),
+        _ => Ok(false),
+    }
+}
+
 /// Locate `exe` on `PATH`, the way a shell would: the first directory, in
 /// order, that holds it.
 ///
@@ -397,6 +432,33 @@ pub fn abbreviate_home(path: &std::path::Path) -> String {
 
 #[cfg(test)]
 mod tests {
+
+    /// The decision-to-delete gap: whatever replaced the link after the
+    /// caller recorded it must survive. Fails if the helper stops comparing
+    /// the recorded target, or deletes whatever is at the path.
+    #[cfg(unix)]
+    #[test]
+    fn remove_symlink_if_unchanged_spares_a_replaced_link() {
+        use std::os::unix::fs::symlink;
+        let tmp = tempfile::tempdir().unwrap();
+        let link = tmp.path().join(".venv");
+        let target = tmp.path().join("env");
+
+        symlink(&target, &link).unwrap();
+        assert!(remove_symlink_if_unchanged(&link, &target).unwrap());
+        assert!(!link.is_symlink());
+
+        // Replaced by a regular file between decision and delete.
+        std::fs::write(&link, b"user data").unwrap();
+        assert!(!remove_symlink_if_unchanged(&link, &target).unwrap());
+        assert_eq!(std::fs::read(&link).unwrap(), b"user data");
+        std::fs::remove_file(&link).unwrap();
+
+        // Re-pointed somewhere else.
+        symlink(tmp.path().join("other"), &link).unwrap();
+        assert!(!remove_symlink_if_unchanged(&link, &target).unwrap());
+        assert!(link.is_symlink());
+    }
 
     /// Fails if `find_on_path` skips PATH order or never finds anything.
     #[test]

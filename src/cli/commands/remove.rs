@@ -41,10 +41,13 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
     // the env is gone, and uv fails on it in that project (#202). Decide now,
     // while the link still resolves. Only the current directory is checked:
     // link locations are not recorded anywhere.
+    // The raw target is recorded too: the env deletion below can take a
+    // while, and the unlink must only touch the same link it judged.
     let link = std::env::current_dir()
         .ok()
         .map(|cwd| cwd.join(".venv"))
-        .filter(|link| is_venv_symlink_to(link, &path));
+        .filter(|link| is_venv_symlink_to(link, &path))
+        .and_then(|link| std::fs::read_link(&link).ok().map(|target| (link, target)));
 
     output.info(&t!("remove.removing", name = name));
     service.delete(name)?;
@@ -53,18 +56,21 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
     // failed `remove`. JSON carries it as `unlink_error`: `warn` is silent
     // there, and a missing `unlinked` alone would read as "there was no link".
     let mut unlink_error = None;
-    let unlinked = link.filter(|link| match std::fs::remove_file(link) {
-        Ok(()) => true,
-        Err(e) => {
-            output.warn(&t!(
-                "remove.unlink_failed",
-                path = crate::paths::abbreviate_home(link),
-                error = e.to_string()
-            ));
-            unlink_error = Some(e.to_string());
-            false
-        }
-    });
+    let unlinked =
+        link.and_then(|(link, recorded)| {
+            match crate::paths::remove_symlink_if_unchanged(&link, &recorded) {
+                Ok(removed) => removed.then_some(link),
+                Err(e) => {
+                    output.warn(&t!(
+                        "remove.unlink_failed",
+                        path = crate::paths::abbreviate_home(&link),
+                        error = e.to_string()
+                    ));
+                    unlink_error = Some(e.to_string());
+                    None
+                }
+            }
+        });
 
     // JSON output
     if output.is_json() {
