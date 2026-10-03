@@ -65,6 +65,22 @@ fi
 _scuv_hook
 
 # Zsh completion for scuv
+# Options every subcommand takes (`global = true` in the CLI): append the
+# ones not yet on the line to the caller's `opts` array (zsh scoping).
+_scuv_global_opts() {
+    local w has_quiet=false has_color=false has_nocolor=false
+    for w in "${words[@]}"; do
+        case "$w" in
+            -q|--quiet) has_quiet=true ;;
+            --color|--color=*) has_color=true ;;
+            --no-color) has_nocolor=true ;;
+        esac
+    done
+    [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
+    [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
+    [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+}
+
 _scuv() {
     local curcontext="$curcontext" state line
     typeset -A opt_args
@@ -116,23 +132,18 @@ _scuv() {
                 use)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_unset=false has_global=false has_link=false has_quiet=false has_nocolor=false has_color=false
+                        local has_unset=false has_global=false has_link=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 --unset) has_unset=true ;;
                                 --global) has_global=true ;;
                                 --link|--no-link) has_link=true ;;
-                                -q|--quiet) has_quiet=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
                         [[ $has_unset == false ]] && opts+=('--unset:Remove version setting')
                         [[ $has_link == false ]] && opts+=('--link:Create .venv symlink' '--no-link:Do not create .venv symlink')
                         [[ $has_global == false ]] && opts+=('--global:Set as global default')
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
@@ -150,19 +161,14 @@ _scuv() {
                 remove)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_force=false has_quiet=false has_nocolor=false has_color=false
+                        local has_force=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 --force) has_force=true ;;
-                                -q|--quiet) has_quiet=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
                         [[ $has_force == false ]] && opts+=('--force:Skip confirmation')
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
@@ -180,23 +186,18 @@ _scuv() {
                 info)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_json=false has_allpackages=false has_nosize=false has_quiet=false has_nocolor=false has_color=false
+                        local has_json=false has_allpackages=false has_nosize=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 --json) has_json=true ;;
                                 --all-packages) has_allpackages=true ;;
                                 --no-size) has_nosize=true ;;
-                                -q|--quiet) has_quiet=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
                         [[ $has_json == false ]] && opts+=('--json:Output as JSON')
                         [[ $has_allpackages == false ]] && opts+=('--all-packages:Show all installed packages')
                         [[ $has_nosize == false ]] && opts+=('--no-size:Skip directory size calculation')
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
@@ -226,36 +227,26 @@ _scuv() {
                 install)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_version_opt=false has_quiet=false has_nocolor=false has_color=false
+                        local has_version_opt=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 --latest|--stable) has_version_opt=true ;;
-                                -q|--quiet) has_quiet=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
                         [[ $has_version_opt == false ]] && opts+=('--latest:Install latest stable Python' '--stable:Install oldest fully-supported Python')
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     fi
                     ;;
                 uninstall)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_quiet=false has_nocolor=false has_color=false
+                        local
                         for w in "${words[@]}"; do
                             case "$w" in
-                                -q|--quiet) has_quiet=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     else
                         # Check if version already provided (exclude current word being typed)
@@ -288,23 +279,18 @@ _scuv() {
                     fi
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_pythons=false has_sort=false has_json=false has_quiet=false has_nocolor=false has_color=false
+                        local has_pythons=false has_sort=false has_json=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 --pythons) has_pythons=true ;;
                                 --sort|--sort=*) has_sort=true ;;
                                 --json) has_json=true ;;
-                                -q|--quiet) has_quiet=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
                         [[ $has_pythons == false ]] && opts+=('--pythons:Show installed Python versions')
                         [[ $has_sort == false ]] && opts+=('--sort:Sort order (name|created|last-used)')
                         [[ $has_json == false ]] && opts+=('--json:Output as JSON')
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     fi
                     ;;
@@ -312,41 +298,31 @@ _scuv() {
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
                         # Check which options are already used
-                        local has_verbose=false has_quiet=false has_json=false has_nocolor=false has_color=false
+                        local has_verbose=false has_json=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 -v|--verbose) has_verbose=true ;;
-                                -q|--quiet) has_quiet=true ;;
                                 --json) has_json=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
                         # Add only unused options
                         [[ $has_verbose == false ]] && opts+=('-v:Increase verbosity' '--verbose:Increase verbosity')
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
                         [[ $has_json == false ]] && opts+=('--json:Output as JSON')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     fi
                     ;;
                 create)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_force=false has_quiet=false has_nocolor=false has_color=false
+                        local has_force=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 --force) has_force=true ;;
-                                -q|--quiet) has_quiet=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
                         [[ $has_force == false ]] && opts+=('--force:Overwrite existing environment')
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     else
                         # Count positional args before current word
@@ -380,6 +356,7 @@ _scuv() {
                         [[ $has_list == false ]] && opts+=('--list:List supported languages')
                         [[ $has_reset == false ]] && opts+=('--reset:Reset to system default')
                         [[ $has_json == false ]] && opts+=('--json:Output as JSON')
+                        _scuv_global_opts
                         _describe 'option' opts
                     else
                         local langs=('en:English' 'ko:Korean' 'ja:Japanese' 'pt-BR:Portuguese (Brazilian)' 'es:Spanish')
@@ -389,19 +366,14 @@ _scuv() {
                 shell)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
-                        local has_unset=false has_quiet=false has_nocolor=false has_color=false
+                        local has_unset=false
                         for w in "${words[@]}"; do
                             case "$w" in
                                 --unset) has_unset=true ;;
-                                -q|--quiet) has_quiet=true ;;
-                                --color|--color=*) has_color=true ;;
-                                --no-color) has_nocolor=true ;;
                             esac
                         done
                         [[ $has_unset == false ]] && opts+=('--unset:Clear shell-specific environment')
-                        [[ $has_quiet == false ]] && opts+=('-q:Suppress all output' '--quiet:Suppress all output')
-                        [[ $has_color == false ]] && opts+=('--color:When to use color (auto, always, never)')
-                        [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
+                        _scuv_global_opts
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
@@ -419,6 +391,7 @@ _scuv() {
                 migrate)
                     if [[ $cur == -* ]]; then
                         local opts=('--help:Show help')
+                        _scuv_global_opts
                         _describe 'option' opts
                     else
                         local subcmds=('list:List environments available for migration' 'all:Migrate all environments' '@env:Migrate a specific environment')
