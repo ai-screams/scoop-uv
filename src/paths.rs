@@ -371,23 +371,6 @@ pub fn remove_symlink_if_unchanged(
     }
 }
 
-/// Locate `exe` on `PATH`, the way a shell would: the first directory, in
-/// order, that holds it.
-///
-/// # Examples
-///
-/// ```no_run
-/// use scoop_uv::paths::find_on_path;
-///
-/// if let Some(python) = find_on_path("python3") {
-///     println!("{}", python.display());
-/// }
-/// ```
-pub fn find_on_path(exe: &str) -> Option<PathBuf> {
-    let path = std::env::var_os("PATH")?;
-    std::env::split_paths(&path).find_map(|dir| find_executable_in(&dir, exe))
-}
-
 #[cfg(windows)]
 fn executable_candidates(exe: &str) -> Vec<String> {
     if exe.contains('.') {
@@ -460,21 +443,6 @@ mod tests {
         assert!(link.is_symlink());
     }
 
-    /// Fails if `find_on_path` skips PATH order or never finds anything.
-    #[test]
-    #[serial]
-    fn find_on_path_returns_first_match_in_path_order() {
-        let first = tempfile::tempdir().unwrap();
-        let second = tempfile::tempdir().unwrap();
-        std::fs::write(second.path().join("tool"), b"").unwrap();
-        std::fs::write(first.path().join("tool"), b"").unwrap();
-        let path = std::env::join_paths([first.path(), second.path()]).unwrap();
-        let path = path.to_str().unwrap();
-        let _g = crate::test_utils::env_guard(&[("PATH", Some(path))]);
-
-        assert_eq!(find_on_path("tool"), Some(first.path().join("tool")));
-        assert_eq!(find_on_path("missing-tool"), None);
-    }
     use super::*;
     use crate::test_utils::{with_no_scoop_home, with_temp_scoop_home};
     use serial_test::serial;

@@ -364,9 +364,10 @@ fn get_system_python_info() -> Option<(String, String)> {
         .unwrap_or(version_str.trim())
         .to_string();
 
-    // The same PATH lookup that ran `python_cmd` above, without spawning
-    // `which` (one process fewer, and `which` is not everywhere).
-    let path = crate::paths::find_on_path(python_cmd)?;
+    // The same PATH lookup that ran `python_cmd` above, in process (the
+    // `which` crate: execute bit and PATHEXT included) rather than spawning
+    // a `which` binary that is not everywhere.
+    let path = which::which(python_cmd).ok()?;
 
     Some((version, path.display().to_string()))
 }
