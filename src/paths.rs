@@ -336,18 +336,21 @@ pub fn find_executable_in(dir: &std::path::Path, exe: &str) -> Option<PathBuf> {
         .find(|p| p.is_file())
 }
 
-/// Removes `link` only if it is still a symlink whose raw target is
+/// Best-effort: removes `link` if it is still a symlink whose raw target is
 /// `expected`, the value the caller read when it decided to remove it.
 ///
-/// Returns `Ok(true)` when removed. Anything else now at that path — a
-/// regular file, a directory, a link to somewhere else, nothing — is left
-/// alone and gives `Ok(false)`. This shrinks the gap between deciding and
-/// deleting to the two syscalls here; without it, a `.venv` replaced while
-/// a slow env deletion ran in between could be deleted in its place.
+/// Returns `Ok(true)` when removed. A path that is gone, is no longer a
+/// symlink, or now points elsewhere is left alone and gives `Ok(false)`.
+///
+/// This narrows, but does not close, the gap between deciding and
+/// deleting: it shrinks from the caller's own work in between (seconds for
+/// an env deletion) to the two syscalls here. Closing it needs a
+/// directory-handle-relative unlink.
 ///
 /// # Errors
 ///
-/// Returns the I/O error if the unlink itself fails.
+/// Returns the I/O error if the link cannot be read for another reason
+/// (e.g. a permission error), or if the unlink itself fails.
 ///
 /// # Examples
 ///
@@ -367,7 +370,17 @@ pub fn remove_symlink_if_unchanged(
 ) -> std::io::Result<bool> {
     match std::fs::read_link(link) {
         Ok(dest) if dest == expected => std::fs::remove_file(link).map(|()| true),
-        _ => Ok(false),
+        Ok(_) => Ok(false),
+        // Gone, or not a symlink any more: changed, not ours.
+        Err(e)
+            if matches!(
+                e.kind(),
+                std::io::ErrorKind::NotFound | std::io::ErrorKind::InvalidInput
+            ) =>
+        {
+            Ok(false)
+        }
+        Err(e) => Err(e),
     }
 }
 
@@ -441,6 +454,19 @@ mod tests {
         symlink(tmp.path().join("other"), &link).unwrap();
         assert!(!remove_symlink_if_unchanged(&link, &target).unwrap());
         assert!(link.is_symlink());
+    }
+
+    /// A read failure that is not "changed" is reported, not mistaken for a
+    /// replaced link. Fails if every read error turns into `Ok(false)`.
+    #[cfg(unix)]
+    #[test]
+    fn remove_symlink_if_unchanged_reports_other_read_errors() {
+        let tmp = tempfile::tempdir().unwrap();
+        let file = tmp.path().join("file");
+        std::fs::write(&file, b"").unwrap();
+        // A path through a regular file: ENOTDIR, for any user.
+        let link = file.join(".venv");
+        assert!(remove_symlink_if_unchanged(&link, Path::new("/x")).is_err());
     }
 
     use super::*;

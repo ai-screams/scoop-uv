@@ -47,30 +47,35 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
         .ok()
         .map(|cwd| cwd.join(".venv"))
         .filter(|link| is_venv_symlink_to(link, &path))
-        .and_then(|link| std::fs::read_link(&link).ok().map(|target| (link, target)));
+        .map(|link| {
+            let recorded = std::fs::read_link(&link);
+            (link, recorded)
+        });
 
     output.info(&t!("remove.removing", name = name));
     service.delete(name)?;
 
-    // The env is already gone, so a link we cannot remove is a warning, not a
-    // failed `remove`. JSON carries it as `unlink_error`: `warn` is silent
-    // there, and a missing `unlinked` alone would read as "there was no link".
+    // The env is already gone, so a link we cannot remove (or could not
+    // even read back) is a warning, not a failed `remove`. JSON carries it
+    // as `unlink_error`: `warn` is silent there, and a missing `unlinked`
+    // alone would read as "there was no link".
     let mut unlink_error = None;
-    let unlinked =
-        link.and_then(|(link, recorded)| {
-            match crate::paths::remove_symlink_if_unchanged(&link, &recorded) {
-                Ok(removed) => removed.then_some(link),
-                Err(e) => {
-                    output.warn(&t!(
-                        "remove.unlink_failed",
-                        path = crate::paths::abbreviate_home(&link),
-                        error = e.to_string()
-                    ));
-                    unlink_error = Some(e.to_string());
-                    None
-                }
+    let unlinked = link.and_then(|(link, recorded)| {
+        let result = recorded
+            .and_then(|recorded| crate::paths::remove_symlink_if_unchanged(&link, &recorded));
+        match result {
+            Ok(removed) => removed.then_some(link),
+            Err(e) => {
+                output.warn(&t!(
+                    "remove.unlink_failed",
+                    path = crate::paths::abbreviate_home(&link),
+                    error = e.to_string()
+                ));
+                unlink_error = Some(e.to_string());
+                None
             }
-        });
+        }
+    });
 
     // JSON output
     if output.is_json() {
