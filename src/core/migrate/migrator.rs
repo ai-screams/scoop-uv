@@ -140,7 +140,14 @@ impl Migrator {
         match &source.status {
             EnvironmentStatus::Ready => Ok(()),
             EnvironmentStatus::NameConflict { existing } => {
-                if options.force {
+                // The conflict is with the source's own name; under a new
+                // name (--rename / --auto-rename) it no longer applies, and
+                // create_target_env checks the new name itself.
+                let renamed = options
+                    .rename_to
+                    .as_deref()
+                    .is_some_and(|to| to != source.name);
+                if options.force || renamed {
                     Ok(())
                 } else {
                     Err(ScoopError::MigrationNameConflict {
@@ -528,6 +535,39 @@ mod tests {
         let options = MigrateOptions::default();
 
         assert!(migrator.validate_source(&source, &options).is_ok());
+    }
+
+    /// A name conflict is about the source's name, so migrating under a new
+    /// name (--rename, --auto-rename) goes ahead; "renaming" to the same
+    /// name does not. Fails if the conflict check ignores `rename_to` (the
+    /// rename then always fails) or accepts a rename to the same name.
+    #[test]
+    fn validate_source_lets_a_renamed_conflict_through() {
+        let migrator = Migrator {
+            uv: UvClient::with_path(PathBuf::from("/mock/uv")),
+            extractor: PackageExtractor::new(),
+        };
+        let source = mock_source(
+            "test",
+            EnvironmentStatus::NameConflict {
+                existing: PathBuf::from("/home/u/.scuv/virtualenvs/test"),
+            },
+        );
+        let renamed = |to: &str| MigrateOptions {
+            rename_to: Some(to.to_string()),
+            ..MigrateOptions::default()
+        };
+        assert!(
+            migrator
+                .validate_source(&source, &MigrateOptions::default())
+                .is_err()
+        );
+        assert!(
+            migrator
+                .validate_source(&source, &renamed("test-pyenv"))
+                .is_ok()
+        );
+        assert!(migrator.validate_source(&source, &renamed("test")).is_err());
     }
 
     #[test]
