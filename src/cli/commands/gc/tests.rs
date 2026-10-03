@@ -3,13 +3,20 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 
 use super::remove::remove_candidates;
+#[cfg(unix)]
+use super::remove::uninstall_pythons;
 use super::scan::{
     recheck_stale, referenced_versions, scan_orphan_envs, scan_stale_envs, scan_unused_pythons,
 };
-use super::types::{EnvGcReason, EnvOutcome, EnvRecord, GcCandidate, PythonRecord, PythonSkip};
+use super::types::{
+    EnvGcReason, EnvOutcome, EnvRecord, GcCandidate, PythonOutcome, PythonRecord, PythonSkip,
+    UnusedPython,
+};
 use super::*;
 use crate::paths;
 use crate::test_utils::with_temp_scoop_home;
+#[cfg(unix)]
+use crate::test_utils::{FakeUv, env_guard};
 use serial_test::serial;
 use std::fs;
 
@@ -191,10 +198,14 @@ fn scan_skips_symlink_entries() {
 // cause gc --aggressive to claim that env's Python is unused. The
 // scan must bail conservatively and return zero unused pythons.
 // ==========================================================================
+#[cfg(unix)]
 #[test]
 #[serial]
 fn aggressive_bails_when_metadata_unreadable() {
-    with_temp_scoop_home(|_| {
+    // A fake uv reports an installed Python, so the scan reaches the
+    // metadata check on any machine (it used to need a real uv with a
+    // Python installed, or it returned early and proved nothing).
+    with_fake_uv_home(&["3.12.1"], |_, _| {
         let dir = paths::virtualenvs_dir().unwrap();
         fs::create_dir_all(&dir).unwrap();
 
@@ -676,5 +687,86 @@ fn referenced_versions_fails_closed_when_env_list_unreadable() {
             return;
         }
         assert_eq!(result, Err(PythonSkip::EnvListUnavailable));
+    });
+}
+
+/// Runs `f` with an isolated SCUV_HOME and a fake `uv` first on PATH that
+/// reports `versions` as installed. (`env_guard` alone: nesting it in
+/// `with_temp_scoop_home` would deadlock on ENV_LOCK.)
+#[cfg(unix)]
+fn with_fake_uv_home<T>(versions: &[&str], f: impl FnOnce(&Path, &FakeUv) -> T) -> T {
+    let home = tempfile::tempdir().unwrap();
+    let uv = FakeUv::new(versions);
+    let path = uv.path_var();
+    let _env = env_guard(&[
+        (paths::SCUV_HOME_ENV, Some(home.path().to_str().unwrap())),
+        ("PATH", Some(path.as_str())),
+    ]);
+    f(home.path(), &uv)
+}
+
+#[cfg(unix)]
+fn pending_python(version: &str) -> (UnusedPython, PythonRecord) {
+    (
+        UnusedPython {
+            version: version.to_string(),
+            path: None,
+        },
+        PythonRecord {
+            version: version.to_string(),
+            path: None,
+            outcome: PythonOutcome::Pending,
+            error: None,
+        },
+    )
+}
+
+/// The re-scan right before uninstalling fails closed: when it cannot tell
+/// what is in use (here the env list is unreadable), nothing is uninstalled.
+/// Fails if the re-scan error or skip is read as "everything still unused".
+#[cfg(unix)]
+#[test]
+#[serial]
+fn uninstall_pythons_skips_all_when_rescan_cannot_tell() {
+    use std::os::unix::fs::PermissionsExt;
+
+    with_fake_uv_home(&["3.12.1"], |home, uv| {
+        let venvs = home.join("virtualenvs");
+        fs::create_dir_all(&venvs).unwrap();
+        fs::set_permissions(&venvs, fs::Permissions::from_mode(0o000)).unwrap();
+        let enforced = fs::read_dir(&venvs).is_err(); // root ignores the mode
+
+        let (py, record) = pending_python("3.12.1");
+        let mut records = [record];
+        let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+        uninstall_pythons(&out, &[], std::slice::from_ref(&py), &mut records);
+        fs::set_permissions(&venvs, fs::Permissions::from_mode(0o755)).unwrap();
+
+        if !enforced {
+            eprintln!("skipped: directory permissions are not enforced (root?)");
+            return;
+        }
+        assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
+        assert_eq!(records[0].outcome, PythonOutcome::SkippedInUse);
+    });
+}
+
+/// The counterpart: a Python no env uses is uninstalled through uv. Fails
+/// if the re-scan stops yielding still-unused versions at all (which would
+/// also make the fail-closed test above pass vacuously).
+#[cfg(unix)]
+#[test]
+#[serial]
+fn uninstall_pythons_removes_a_python_still_unused() {
+    with_fake_uv_home(&["3.12.1"], |home, uv| {
+        fs::create_dir_all(home.join("virtualenvs")).unwrap();
+
+        let (py, record) = pending_python("3.12.1");
+        let mut records = [record];
+        let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+        uninstall_pythons(&out, &[], std::slice::from_ref(&py), &mut records);
+
+        assert_eq!(uv.uninstalled(), ["3.12.1"]);
+        assert_eq!(records[0].outcome, PythonOutcome::Removed);
     });
 }

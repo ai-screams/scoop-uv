@@ -115,7 +115,7 @@ fn remove_env(output: &Output, env: &GcCandidate, record: &mut EnvRecord) {
 
 /// `--aggressive --yes`: uninstalls the unused Pythons that are still
 /// unused right now.
-fn uninstall_pythons(
+pub(super) fn uninstall_pythons(
     output: &Output,
     envs: &[GcCandidate],
     pythons: &[UnusedPython],

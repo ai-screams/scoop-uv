@@ -572,6 +572,69 @@ where
     }
 }
 
+/// A fake `uv` for hermetic tests (unix only): a shell script that reports
+/// `versions` as installed and appends every `python uninstall <v>` to a
+/// log, so a test can reach uv-backed paths without a real uv or Python.
+///
+/// Put [`FakeUv::path_var`] first on `PATH` (via [`env_guard`]); `UvClient`
+/// finds `uv` through `which`.
+#[cfg(unix)]
+pub struct FakeUv {
+    dir: TempDir,
+}
+
+#[cfg(unix)]
+impl FakeUv {
+    pub fn new(versions: &[&str]) -> Self {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = TempDir::new().expect("fake uv dir");
+        let entries: Vec<String> = versions
+            .iter()
+            .map(|v| {
+                format!(
+                    r#"{{"version":"{v}","path":"/fake/python{v}","implementation":"cpython"}}"#
+                )
+            })
+            .collect();
+        std::fs::write(
+            dir.path().join("pythons.json"),
+            format!("[{}]", entries.join(",")),
+        )
+        .expect("write fake python list");
+        let d = dir.path().display();
+        let script = format!(
+            r#"#!/bin/sh
+case "$1 $2" in
+  "--version "*) echo "uv 0.12.22" ;;
+  "python list") cat "{d}/pythons.json" ;;
+  "python uninstall") echo "$3" >> "{d}/uninstalled.log" ;;
+  "cache prune") ;;
+  *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;
+esac
+"#
+        );
+        let uv = dir.path().join("uv");
+        std::fs::write(&uv, script).expect("write fake uv");
+        std::fs::set_permissions(&uv, std::fs::Permissions::from_mode(0o755))
+            .expect("chmod fake uv");
+        Self { dir }
+    }
+
+    /// `PATH` with the fake `uv` first.
+    pub fn path_var(&self) -> String {
+        let rest = std::env::var("PATH").unwrap_or_default();
+        format!("{}:{rest}", self.dir.path().display())
+    }
+
+    /// The versions `uv python uninstall` was called with, in order.
+    pub fn uninstalled(&self) -> Vec<String> {
+        std::fs::read_to_string(self.dir.path().join("uninstalled.log"))
+            .map(|s| s.lines().map(str::to_string).collect())
+            .unwrap_or_default()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
