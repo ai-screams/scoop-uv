@@ -34,7 +34,7 @@ echo 'eval "$(scuv init zsh)"' >> ~/.zshrc
 echo 'scuv init fish | source' >> ~/.config/fish/config.fish
 
 # PowerShell
-Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell)'
+Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell | Out-String)'
 ```
 
 ## Quick Start

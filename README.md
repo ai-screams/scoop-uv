@@ -321,7 +321,7 @@ source ~/.config/fish/config.fish
 **PowerShell** (Core or Windows PowerShell):
 
 ```powershell
-Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell)'
+Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell | Out-String)'
 . $PROFILE
 ```
 

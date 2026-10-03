@@ -265,7 +265,7 @@ Edit your shell config file and remove the scuv init line:
 | Bash | `~/.bashrc` | `eval "$(scuv init bash)"` |
 | Zsh | `~/.zshrc` | `eval "$(scuv init zsh)"` |
 | Fish | `~/.config/fish/config.fish` | `scuv init fish \| source` |
-| PowerShell | `$PROFILE` | `Invoke-Expression (& scuv init powershell)` |
+| PowerShell | `$PROFILE` | `Invoke-Expression (& scuv init powershell \| Out-String)` |
 
 ### 3. (Optional) Remove config
 
@@ -279,7 +279,7 @@ scuv supports **PowerShell** on Windows (both PowerShell Core 7.x+ and Windows P
 
 ```powershell
 # Add to $PROFILE
-Invoke-Expression (& scuv init powershell)
+Invoke-Expression (& scuv init powershell | Out-String)
 ```
 
 > **Note:** Command Prompt (cmd.exe) is not supported. Use PowerShell for the full scuv experience.

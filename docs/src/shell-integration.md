@@ -67,9 +67,14 @@ source ~/.config/fish/config.fish
 
 ```powershell
 # Add to $PROFILE
-Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell)'
+Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell | Out-String)'
 # Restart PowerShell
 ```
+
+Keep the `| Out-String`: `scuv init powershell` prints many lines, and
+`Invoke-Expression` takes one string, not the array of lines `&` returns.
+A profile line without it never defines the `scuv` function; if yours
+lacks it, update the line.
 
 ## Auto-Activation
 
