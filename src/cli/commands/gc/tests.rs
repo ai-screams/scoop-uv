@@ -7,6 +7,7 @@ use super::remove::remove_candidates;
 use super::remove::uninstall_pythons;
 use super::scan::{
     recheck_stale, referenced_versions, scan_orphan_envs, scan_stale_envs, scan_unused_pythons,
+    version_covers,
 };
 use super::types::{
     EnvGcReason, EnvOutcome, EnvRecord, GcCandidate, PythonOutcome, PythonRecord, PythonSkip,
@@ -736,6 +737,83 @@ fn pending_python(version: &str) -> (UnusedPython, PythonRecord) {
             error: None,
         },
     )
+}
+
+/// A recorded version covers each installed version it is a component-wise
+/// prefix of. Fails if the match goes back to exact strings (`3.12` vs
+/// `3.12.14`, the minor-version link uv records) or turns into a plain
+/// string prefix (`3.12.1` would then cover `3.12.10`, `3.1` cover `3.12`).
+#[rstest::rstest]
+#[case("3.12", "3.12.14", true)]
+#[case("3.12", "3.12", true)]
+#[case("3.12.1", "3.12.1", true)]
+#[case("3", "3.12.1", true)]
+#[case("3.12.1", "3.12.10", false)]
+#[case("3.1", "3.12.1", false)]
+#[case("3.12", "3.13.1", false)]
+#[case("3.12.14", "3.12", false)]
+fn recorded_version_covers_installed(
+    #[case] recorded: &str,
+    #[case] installed: &str,
+    #[case] expected: bool,
+) {
+    assert_eq!(version_covers(recorded, installed), expected);
+}
+
+/// uv links envs to a minor version and records `3.12`; the installed
+/// Python is `3.12.14`. That Python is in use and must not be reported
+/// unused (and then uninstalled by `--yes`). Fails if the comparison is an
+/// exact string match again, or the listing includes non-uv Pythons.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn aggressive_keeps_the_patch_version_a_minor_version_env_uses() {
+    with_fake_uv_home(&["3.12.14", "3.11.9"], |home, uv| {
+        let venvs = home.join("virtualenvs");
+        fs::create_dir_all(&venvs).unwrap();
+        make_env_with_last_used(&venvs, "web", None); // records "3.12"
+
+        let (pythons, skip) = scan_unused_pythons(&[]).unwrap();
+        assert_eq!(skip, None);
+        let versions: Vec<&str> = pythons.iter().map(|p| p.version.as_str()).collect();
+        assert_eq!(versions, ["3.11.9"]);
+
+        let calls = uv.list_calls();
+        assert!(!calls.is_empty(), "fake uv not in use");
+        for call in calls {
+            assert!(call.contains("--python-preference only-managed"), "{call}");
+        }
+    });
+}
+
+/// An env whose metadata names no comparable version — `unknown` (what
+/// create records when it cannot read a --python-path interpreter), an
+/// empty string, an empty component — cannot tell which Python it uses, so
+/// no Python is reported. Fails if such a version is taken as a reference
+/// that covers nothing.
+#[cfg(unix)]
+#[rstest::rstest]
+#[case("unknown")]
+#[case("")]
+#[case("3..12")]
+#[serial]
+fn aggressive_bails_when_an_env_records_no_comparable_version(#[case] recorded: &str) {
+    with_fake_uv_home(&["3.12.14"], |home, _| {
+        let venvs = home.join("virtualenvs");
+        fs::create_dir_all(&venvs).unwrap();
+        make_env(&venvs, "odd", true, true);
+        fs::write(
+            venvs.join("odd").join(".scoop-metadata.json"),
+            format!(
+                r#"{{"name":"odd","python_version":"{recorded}","created_at":"2024-01-01T00:00:00Z","created_by":"scoop test","uv_version":null,"python_path":null}}"#
+            ),
+        )
+        .unwrap();
+
+        let (pythons, skip) = scan_unused_pythons(&[]).unwrap();
+        assert!(pythons.is_empty(), "{pythons:?}");
+        assert_eq!(skip, Some(PythonSkip::UnreadableMetadata(1)));
+    });
 }
 
 /// The re-scan right before uninstalling fails closed: when it cannot tell

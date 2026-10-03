@@ -232,7 +232,8 @@ pub(super) fn scan_unused_pythons(
         // silently instead of failing the whole command.
         Err(_) => return Ok((Vec::new(), None)),
     };
-    let installed = uv.list_installed_pythons().unwrap_or_default();
+    // Only uv-managed Pythons: a system interpreter is not uv's to uninstall.
+    let installed = uv.list_managed_pythons().unwrap_or_default();
     if installed.is_empty() {
         return Ok((Vec::new(), None));
     }
@@ -245,7 +246,7 @@ pub(super) fn scan_unused_pythons(
     Ok((
         installed
             .into_iter()
-            .filter(|p| !used.contains(&p.version))
+            .filter(|p| !used.iter().any(|v| version_covers(v, &p.version)))
             .map(|p| UnusedPython {
                 version: p.version,
                 path: p.path.map(|p| p.display().to_string()),
@@ -253,6 +254,28 @@ pub(super) fn scan_unused_pythons(
             .collect(),
         None,
     ))
+}
+
+/// Whether an env's recorded Python version refers to `installed`.
+///
+/// uv links an env to a minor version (`cpython-3.12-…`) and records only
+/// `3.12` in pyvenv.cfg, which scuv copies into the metadata; that env uses
+/// whichever 3.12.x the link points at. So the recorded version covers
+/// every installed version it is a component-wise prefix of: `3.12` covers
+/// `3.12.14`, `3.12.1` covers only `3.12.1`, never `3.12.10`.
+pub(super) fn version_covers(recorded: &str, installed: &str) -> bool {
+    let mut installed = installed.split('.');
+    recorded
+        .split('.')
+        .all(|part| installed.next() == Some(part))
+}
+
+/// Whether a recorded version is the dotted numbers `version_covers` can
+/// compare (`3.12`, `3.12.1`); anything else (`unknown`) is unreadable.
+fn is_dotted_version(version: &str) -> bool {
+    version
+        .split('.')
+        .all(|part| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit()))
 }
 
 /// The Python versions the surviving (non-candidate) envs depend on.
@@ -280,12 +303,14 @@ pub(super) fn referenced_versions(
             .ok()
             .and_then(|path| service.read_metadata(&path));
         match meta {
-            Some(meta) => {
+            Some(meta) if is_dotted_version(&meta.python_version) => {
                 used.insert(meta.python_version);
             }
             // Metadata exists (the env wasn't classified as a candidate) but
-            // failed to parse: we can't tell which Python it depends on.
-            None => unreadable += 1,
+            // failed to parse, or names no version we can compare (`unknown`
+            // from an unreadable --python-path): we can't tell which Python
+            // it depends on.
+            _ => unreadable += 1,
         }
     }
 

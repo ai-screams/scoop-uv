@@ -125,6 +125,33 @@ impl UvClient {
         self.run_python_list(true)
     }
 
+    /// List only the installed Pythons uv itself manages — the ones
+    /// `uv python uninstall` can remove. System interpreters on `PATH`
+    /// (Homebrew, `/usr/bin/python3`) are left out.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ScoopError::UvCommandFailed`] if uv fails or prints
+    /// something other than the expected JSON.
+    pub fn list_managed_pythons(&self) -> Result<Vec<PythonInfo>> {
+        let mut cmd = Command::new(&self.path);
+        cmd.args([
+            "python",
+            "list",
+            "--only-installed",
+            "--python-preference",
+            "only-managed",
+            "--output-format=json",
+        ]);
+        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: "uv python list --only-installed --python-preference only-managed \
+                      --output-format=json"
+                .to_string(),
+            message,
+        })?;
+        parse_python_list_json(&String::from_utf8_lossy(&stdout))
+    }
+
     /// Run `uv python list --output-format=json` and parse the result.
     ///
     /// uv added this flag in 0.5.19 (our [`MIN_VERSION`] floor), so we rely on
