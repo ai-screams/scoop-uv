@@ -313,8 +313,8 @@ any of these being fixed.
   `main` still kept every lockfile generation of each rust cache (up to four
   per job, about 4.4 GB, by 2026-10-04); a weekly job in `cache-cleanup.yml`
   now keeps only the newest entry under each restore key (the cache key
-  minus its lockfile hash), the one the next run with that toolchain and
-  environment restores.
+  minus its lockfile hash), the one a later run with that toolchain and
+  environment falls back to.
 
 ### Recently closed
 

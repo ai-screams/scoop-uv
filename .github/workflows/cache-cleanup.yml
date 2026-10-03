@@ -15,9 +15,10 @@
 # The weekly job prunes main itself. `Swatinem/rust-cache` keys end in the
 # Cargo.lock hash, so every lockfile change (each release's `cargo update`)
 # saves a new generation and the old one stays until LRU eviction — four
-# per job by 2026-10-04, about 4.4 GB of the 10 GB allowance. A run restores
-# the newest entry under its restore key (the key minus the lockfile hash),
-# so the older entries under the same restore key are dropped.
+# per job by 2026-10-04, about 4.4 GB of the 10 GB allowance. Unless
+# Cargo.lock returns to an older hash, a run restores the newest entry under
+# its restore key (the key minus the lockfile hash), so the older entries
+# under the same restore key are dropped.
 
 name: Cache cleanup
 
@@ -66,12 +67,13 @@ jobs:
           REPO: ${{ github.repository }}
         # Key: v0-rust-<shared-key>-<os>-<arch>-<env hash>-<lockfile hash>.
         # Strip the lockfile hash to get the restore key rust-cache falls back
-        # to; keep the newest entry of each. Entries under a different env
-        # hash (another toolchain or env) stay: nothing else restores for them.
+        # to and keep the newest entry per restore key and cache version (the
+        # version covers cached paths and compression; a different one cannot
+        # stand in). Entries under another env hash or version stay.
         run: |
           ids=$(gh api --paginate "repos/$REPO/actions/caches?ref=refs/heads/main&key=v0-rust-" \
-            --jq '.actions_caches[] | {id, key, created_at}' \
-            | jq -rs 'group_by(.key | sub("-[^-]+$"; ""))
+            --jq '.actions_caches[] | {id, key, version, created_at}' \
+            | jq -rs 'group_by([(.key | sub("-[^-]+$"; "")), .version])
                       | map(sort_by(.created_at) | reverse | .[1:][])
                       | .[] | "\(.id) \(.key)"')
           if [ -z "$ids" ]; then
