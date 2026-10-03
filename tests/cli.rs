@@ -368,6 +368,38 @@ fn test_color_choice_reaches_clap_errors() {
     assert!(!stderr(&["--color", "always", "--no-color"]).contains(ESC));
 }
 
+/// The shell wrappers eval `activate`'s stdout, so a log line there runs as
+/// a command. Corrupt metadata makes activation log a warning. Fails if the
+/// tracing subscriber writes to stdout (its default) or ignores the color
+/// decision.
+#[test]
+fn test_activate_keeps_log_warnings_off_stdout() {
+    let fixture = fixture_with_active_env();
+    let env = fixture.scoop_home.join("virtualenvs").join("demo");
+    std::fs::write(env.join(".scoop-metadata.json"), "{ broken").unwrap();
+
+    let out = scoop_cmd(&fixture.scoop_home)
+        .env_remove("SCUV_ACTIVE")
+        .args(["activate", "demo", "--shell", "bash"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let stdout = String::from_utf8(out.stdout).unwrap();
+    let stderr = String::from_utf8(out.stderr).unwrap();
+    assert!(stdout.contains("export VIRTUAL_ENV="), "{stdout}");
+    assert!(
+        !stdout.contains("WARN"),
+        "log line on eval'd stdout: {stdout}"
+    );
+    assert!(
+        stderr.contains("WARN"),
+        "the warning should still be shown: {stderr}"
+    );
+    // stderr is a pipe here, so `auto` means no color, for the log line too.
+    // Fails if tracing keeps its own ANSI default (`with_ansi` dropped).
+    assert!(!stderr.contains(ESC), "tracing ignored --color: {stderr:?}");
+}
+
 #[test]
 fn test_remove_nonexistent_env() {
     let fixture = TestFixture::new();

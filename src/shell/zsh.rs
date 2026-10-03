@@ -70,7 +70,12 @@ _scuv() {
     typeset -A opt_args
     local cur="${words[$CURRENT]}"
 
-    # `--color` takes a value on every subcommand
+    # `--color` takes a value on every subcommand, as `--color <TAB>` or
+    # `--color=<TAB>`
+    if [[ "$cur" == --color=* ]]; then
+        compadd -P '--color=' auto always never
+        return 0
+    fi
     if [[ "${words[CURRENT-1]:-}" == "--color" ]]; then
         local color_vals=(
             'auto:Color on a terminal unless NO_COLOR is set'

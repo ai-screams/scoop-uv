@@ -10,30 +10,33 @@ fn main() -> Result<()> {
     // Initialize i18n (must be early, before any translated output)
     scoop_uv::i18n::init();
 
-    // Decide color before anything prints (#205). clap's help and parse
-    // errors come out before `Cli` exists, so the choice is read off the raw
-    // arguments first; scuv's own output uses the parsed flags below.
+    // Parse CLI arguments. clap prints help and parse errors before `Cli`
+    // exists, so it gets the color choice from a scan of the raw arguments
+    // (#205); everything after parsing uses the parsed flags instead, since
+    // the scan cannot tell `scuv run env --color x` apart from scuv's own.
     let early = color::choice_from_args(std::env::args_os());
+    let matches = Cli::command().color(early.into()).get_matches();
+    let cli = Cli::from_arg_matches(&matches).unwrap_or_else(|e| e.exit());
+    let colors = Colors::detect(cli.color_choice());
 
     // Initialize error handling (the panic report goes to stderr)
     let mut hook = color_eyre::config::HookBuilder::default();
-    if !Colors::detect(early).stderr {
+    if !colors.stderr {
         hook = hook.theme(color_eyre::config::Theme::new());
     }
     hook.install()?;
 
-    // Initialize logging
+    // Initialize logging. fmt() writes to stdout by default, which the
+    // shell wrappers eval: a warning there became a "command" in the user's
+    // shell. Send it to stderr, colored by the same decision as the rest.
     tracing_subscriber::fmt()
+        .with_writer(std::io::stderr)
+        .with_ansi(colors.stderr)
         .with_env_filter(
             tracing_subscriber::EnvFilter::from_default_env()
                 .add_directive(tracing::Level::WARN.into()),
         )
         .init();
-
-    // Parse CLI arguments
-    let matches = Cli::command().color(early.into()).get_matches();
-    let cli = Cli::from_arg_matches(&matches).unwrap_or_else(|e| e.exit());
-    let colors = Colors::detect(cli.color_choice());
 
     // Execute command
     let result = match cli.command {
