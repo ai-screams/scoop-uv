@@ -400,6 +400,62 @@ fn test_activate_keeps_log_warnings_off_stdout() {
     assert!(!stderr.contains(ESC), "tracing ignored --color: {stderr:?}");
 }
 
+/// Runs the real bash completion function over one command line and
+/// returns what it offers.
+fn bash_complete(fixture: &TestFixture, words: &[&str]) -> Vec<String> {
+    let script = scoop_cmd(&fixture.scoop_home)
+        .args(["init", "bash"])
+        .output()
+        .unwrap()
+        .stdout;
+    let quoted: Vec<String> = words.iter().map(|w| format!("'{w}'")).collect();
+    let driver = format!(
+        "COMP_WORDS=({}); COMP_CWORD=$((${{#COMP_WORDS[@]}}-1)); \
+         cur=\"${{COMP_WORDS[COMP_CWORD]}}\"; _scuv_complete; \
+         printf '%s\\n' \"${{COMPREPLY[@]}}\"",
+        quoted.join(" ")
+    );
+    let out = std::process::Command::new("bash")
+        .args(["--norc", "-c"])
+        .arg(format!("{}\n{driver}", String::from_utf8(script).unwrap()))
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("SCUV_NO_AUTO", "1")
+        .output()
+        .expect("bash runs");
+    String::from_utf8(out.stdout)
+        .unwrap()
+        .lines()
+        .map(str::to_string)
+        .collect()
+}
+
+/// The global options come from one list, so every subcommand offers them,
+/// and options already on the line (with their exclusive partners) drop
+/// out. Fails if `_scuv_offer` loses the global list, the `-q/--quiet` or
+/// subcommand groups, or the `--opt=value` form.
+#[test]
+fn test_bash_completion_offers_global_options_once() {
+    let fixture = TestFixture::new();
+    let has = |words: &[&str], opt: &str| bash_complete(&fixture, words).iter().any(|o| o == opt);
+
+    for cmd in ["list", "lang", "migrate", "status"] {
+        assert!(has(&["scuv", cmd, "--"], "--color"), "{cmd} lacks --color");
+    }
+    assert!(
+        !has(&["scuv", "list", "-q", "--"], "--quiet"),
+        "-q drops --quiet"
+    );
+    assert!(
+        !has(&["scuv", "use", "--link", "--"], "--no-link"),
+        "--link drops --no-link"
+    );
+    assert!(
+        !has(&["scuv", "list", "--sort=name", "--"], "--sort"),
+        "--sort=x drops --sort"
+    );
+    assert!(has(&["scuv", "list", "--sort=name", "--"], "--json"));
+}
+
 #[test]
 fn test_remove_nonexistent_env() {
     let fixture = TestFixture::new();
