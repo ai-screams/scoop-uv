@@ -224,6 +224,27 @@ impl PackageExtractor {
 mod tests {
     use super::*;
 
+    /// A package becomes `name==version`; an editable one with a path
+    /// becomes `-e <path>`, and without a path falls back to the pin.
+    /// Fails if either branch or the `&&` between its two conditions
+    /// changes.
+    #[test]
+    fn to_requirement_pins_or_points_at_the_editable_path() {
+        let spec = |editable, path: Option<&str>| PackageSpec {
+            name: "requests".into(),
+            version: "2.31.0".into(),
+            editable,
+            editable_path: path.map(PathBuf::from),
+        };
+        assert_eq!(spec(false, None).to_requirement(), "requests==2.31.0");
+        assert_eq!(spec(true, Some("/src/app")).to_requirement(), "-e /src/app");
+        assert_eq!(spec(true, None).to_requirement(), "requests==2.31.0");
+        assert_eq!(
+            spec(false, Some("/src/app")).to_requirement(),
+            "requests==2.31.0"
+        );
+    }
+
     fn spec(name: &str, editable: bool) -> PackageSpec {
         PackageSpec {
             name: name.to_string(),
