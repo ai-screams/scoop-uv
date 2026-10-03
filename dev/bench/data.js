@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791053992172,
+  "lastUpdate": 1791053993578,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -8472,6 +8472,42 @@ window.BENCHMARK_DATA = {
           {
             "name": "find_executable_in_miss",
             "value": 1085,
+            "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "af93db3b831964377446d4c24c0ee338e0dfad31",
+          "message": "Merge pull request #211 from ai-screams/refactor/split-large-modules\n\nrefactor: split large modules by responsibility and fix audit findings",
+          "timestamp": "2026-10-04T03:55:57+09:00",
+          "tree_id": "0b7e8fa41201543ec0be9362d7d902a2e2ffb8c8",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/af93db3b831964377446d4c24c0ee338e0dfad31"
+        },
+        "date": 1791053993489,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1488,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1046,
             "range": "± 2",
             "unit": "ns/iter"
           }
