@@ -1,6 +1,6 @@
 # CI/CD
 
-Eleven workflows guard this repository. This page explains what each one
+Thirteen workflows guard this repository. This page explains what each one
 protects, the decisions behind how they are wired, and the failure modes
 that shaped them.
 
@@ -20,7 +20,7 @@ that shaped them.
 | `docs-check.yml` | PR touching `docs/src/**`, `docs/po/**`, `docs/book.toml`, `docs/theme/**` | A docs edit that breaks the mdBook build or leaves `ko.po` stale reaching a release tag |
 | `docs.yml` | `v*` tags | Broken documentation site |
 | `release-plz.yml` | main | Manual release mistakes |
-| `cache-cleanup.yml` | PR closed | Closed PRs' cache copies eating the 10 GB allowance and forcing evictions mid-export |
+| `cache-cleanup.yml` | PR closed, weekly | Closed PRs' cache copies and superseded `main` rust caches eating the 10 GB allowance and forcing evictions mid-export |
 
 ## Cross-cutting decisions
 
@@ -310,8 +310,9 @@ any of these being fixed.
   is a warning rather than a failed build; and `cache-cleanup.yml` deletes
   whatever a PR still leaves when it closes. The one-time deletion of the
   PR copies and the stale-lockfile rust caches brought usage to 6.4 GB.
-  Still open: `main` keeps two lockfile generations of every rust cache
-  between releases, and nothing prunes the older one.
+  `main` still kept every lockfile generation of each rust cache (four per
+  job, about 4.4 GB, by 2026-10-04); a weekly job in `cache-cleanup.yml` now
+  keeps only each job's newest entry, the one its next run restores.
 
 ### Recently closed
 

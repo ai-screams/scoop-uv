@@ -13364,11 +13364,11 @@ msgstr "오류 메시지가 유용함"
 
 #: src/development/ci-cd.md:3
 msgid ""
-"Eleven workflows guard this repository. This page explains what each one "
+"Thirteen workflows guard this repository. This page explains what each one "
 "protects, the decisions behind how they are wired, and the failure modes "
 "that shaped them."
 msgstr ""
-"이 저장소는 11개의 워크플로가 지킵니다. 이 페이지는 각 워크플로가 무엇을 보호"
+"이 저장소는 13개의 워크플로가 지킵니다. 이 페이지는 각 워크플로가 무엇을 보호"
 "하는지, 지금처럼 배선한 이유가 무엇인지, 그리고 그 형태를 만든 실패 사례들을 "
 "설명합니다."
 
@@ -13533,16 +13533,16 @@ msgid "`cache-cleanup.yml`"
 msgstr "`cache-cleanup.yml`"
 
 #: src/development/ci-cd.md:23
-msgid "PR closed"
-msgstr "PR 닫힘"
+msgid "PR closed, weekly"
+msgstr "PR 닫힘, 매주"
 
 #: src/development/ci-cd.md:23
 msgid ""
-"Closed PRs' cache copies eating the 10 GB allowance and forcing evictions "
-"mid-export"
+"Closed PRs' cache copies and superseded `main` rust caches eating the 10 GB "
+"allowance and forcing evictions mid-export"
 msgstr ""
-"닫힌 PR이 남긴 캐시 복사본이 10 GB 한도를 잡아먹어 export 도중 축출을 일으키"
-"는 것"
+"닫힌 PR이 남긴 캐시 복사본과 `main`의 지난 세대 rust 캐시가 10 GB 한도를 잡아"
+"먹어 export 도중 축출을 일으키는 것"
 
 #: src/development/ci-cd.md:25
 msgid "Cross-cutting decisions"
@@ -14251,9 +14251,10 @@ msgid ""
 "exports are `ignore-error=true`, so a failed cache write is a warning rather "
 "than a failed build; and `cache-cleanup.yml` deletes whatever a PR still "
 "leaves when it closes. The one-time deletion of the PR copies and the stale-"
-"lockfile rust caches brought usage to 6.4 GB. Still open: `main` keeps two "
-"lockfile generations of every rust cache between releases, and nothing "
-"prunes the older one."
+"lockfile rust caches brought usage to 6.4 GB. `main` still kept every "
+"lockfile generation of each rust cache (four per job, about 4.4 GB, by "
+"2026-10-04); a weekly job in `cache-cleanup.yml` now keeps only each job's "
+"newest entry, the one its next run restores."
 msgstr ""
 "**캐시가 한도를 넘었다.** 2026-09-26에 10 GB 한도 대비 10.49 GB: `main` 캐시 "
 "139개(그중 약 2 GB는 0.16.0 `cargo update` 이전 Cargo.lock 해시에 묶인 `v0-"
@@ -14264,15 +14265,16 @@ msgstr ""
 "서만 쓴다 — PR 실행은 `main`의 항목을 복원하고 복사본을 남기지 않는다. "
 "BuildKit export는 `ignore-error=true`라 캐시 쓰기 실패가 빌드 실패가 아니라 "
 "경고가 된다. `cache-cleanup.yml`은 PR이 닫힐 때 그 PR이 남긴 것을 지운다. PR "
-"복사본과 낡은 lockfile의 rust 캐시를 한 번 지워 사용량은 6.4 GB가 됐다. 남은 "
-"것: `main`은 릴리스 사이에 rust 캐시를 lockfile 세대 둘로 갖고 있고, 오래된 "
-"쪽을 지우는 것이 없다."
+"복사본과 낡은 lockfile의 rust 캐시를 한 번 지워 사용량은 6.4 GB가 됐다. 그래"
+"도 `main`에는 rust 캐시의 lockfile 세대가 job마다 계속 쌓였다(2026-10-04 기"
+"준 job당 4개, 약 4.4 GB). 이제 `cache-cleanup.yml`의 주간 job이 job마다 가장 "
+"최근 항목, 즉 다음 실행이 복원할 항목만 남긴다."
 
-#: src/development/ci-cd.md:316
+#: src/development/ci-cd.md:317
 msgid "Recently closed"
 msgstr "최근에 해결된 것"
 
-#: src/development/ci-cd.md:318
+#: src/development/ci-cd.md:319
 msgid ""
 "Left here because the reasoning is worth keeping, not because anything is "
 "outstanding."
@@ -14280,7 +14282,7 @@ msgstr ""
 "남겨 둔 이유는 그 판단 과정이 기록할 만해서이지, 아직 남은 문제가 있어서가 아"
 "닙니다."
 
-#: src/development/ci-cd.md:321
+#: src/development/ci-cd.md:322
 msgid ""
 "Docs were only verified on release tags: the MSRV 1.89 bump edited pages "
 "under `docs/src/`, its PR went green, and the `v0.15.4` tag then failed at "
@@ -14295,7 +14297,7 @@ msgstr ""
 "조용한 절반이라 누군가 사이트를 열어 보기 전까지 아무도 몰랐다. 문서 경로를 "
 "건드리는 PR에서 빌드와 라운드트립을 돌리는 `docs-check.yml`로 닫음."
 
-#: src/development/ci-cd.md:328
+#: src/development/ci-cd.md:329
 msgid ""
 "Coverage uploads were rejected for months with `Token required because "
 "branch is protected` while the job reported success, because "
@@ -14313,7 +14315,7 @@ msgstr ""
 "릿 저장소를 읽기 때문에, 그쪽에도 토큰을 등록하기 전까지 모든 Dependabot PR"
 "이 같은 방식으로 계속 실패했습니다."
 
-#: src/development/ci-cd.md:336
+#: src/development/ci-cd.md:337
 msgid ""
 "Every release PR failed the Lint job because release-plz bumps `Cargo.toml` "
 "without touching the version samples in prose. Hand-fixed at v0.15.3, hit "
@@ -14327,7 +14329,7 @@ msgstr ""
 "니다. v0.15.3의 수정이 요구한 방향 그대로입니다 — 검사를 느슨하게 하는 대신 "
 "릴리스가 예시를 갱신하도록 가르치는 것입니다."
 
-#: src/development/ci-cd.md:341
+#: src/development/ci-cd.md:342
 msgid ""
 "Dependabot does not read `rust-version`, so it raised `rust-i18n` past the "
 "MSRV and every job died at dependency resolution before a line compiled. The "
@@ -14343,7 +14345,7 @@ msgstr ""
 "rustc 1.93.1을 요구)에 대한 `ignore`를 갖고 있으며, MSRV가 따라잡으면 지울 부"
 "채로 표시해 두었습니다."
 
-#: src/development/ci-cd.md:347
+#: src/development/ci-cd.md:348
 msgid ""
 "The weekly full mutation run had never once completed — 60 minutes killed it "
 "every time, and GitHub reports a timed-out job as _cancelled_, which reads "
@@ -14354,7 +14356,7 @@ msgstr ""
 "GitHub은 타임아웃된 잡을 _cancelled_ 로 보고하는데 이는 별일 아닌 것처럼 읽힙"
 "니다. 60분에 385/446개로 측정돼 타임아웃을 90분으로 올렸습니다."
 
-#: src/development/ci-cd.md:351
+#: src/development/ci-cd.md:352
 msgid ""
 "`aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now "
 "pinned to release tags. Dependabot could not follow either: it cannot bump a "
@@ -14365,7 +14367,7 @@ msgstr ""
 "올릴 수 없고, setup-uv는 v8부터 움직이는 메이저 태그 발행을 중단했기 때문입니"
 "다."
 
-#: src/development/ci-cd.md:355
+#: src/development/ci-cd.md:356
 msgid ""
 "`stable-ci` had four writers and, because `rust-cache` hashes workflow-level "
 "`env`, was never actually shared with `coverage.yml` or `mutants.yml` at "
@@ -14375,7 +14377,7 @@ msgstr ""
 "시에 넣기 때문에 `coverage.yml`이나 `mutants.yml`과는 애초에 공유된 적조차 없"
 "었습니다. 이제 각자 실제로 쓰는 키를 이름으로 밝힙니다."
 
-#: src/development/ci-cd.md:358
+#: src/development/ci-cd.md:359
 msgid ""
 "`release-plz.yml` had no concurrency group. It has one now, with `cancel-in-"
 "progress: false` — which delivers the \"must always complete\" intent that "

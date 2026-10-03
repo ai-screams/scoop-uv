@@ -11,12 +11,21 @@
 #
 # pull_request_target: the token has write access even for fork PRs, and this
 # workflow runs no code from the PR — only two API calls.
+#
+# The weekly job prunes main itself. `Swatinem/rust-cache` keys end in the
+# Cargo.lock hash, so every lockfile change (each release's `cargo update`)
+# saves a new generation and the old one stays until LRU eviction — four
+# per job by 2026-10-04, about 4.4 GB of the 10 GB allowance. A run restores
+# its job's newest entry, so everything older is dropped.
 
 name: Cache cleanup
 
 on:
   pull_request_target:
     types: [closed]
+  schedule:
+    - cron: '30 4 * * 1'  # Monday 04:30 UTC
+  workflow_dispatch:
 
 permissions:
   actions: write
@@ -24,6 +33,7 @@ permissions:
 jobs:
   cleanup:
     name: Delete caches for the closed PR
+    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -41,4 +51,31 @@ jobs:
           for id in $ids; do
             gh api -X DELETE "repos/$REPO/actions/caches/$id" > /dev/null
             echo "deleted cache $id"
+          done
+
+  prune-main:
+    name: Keep only the newest rust cache per job on main
+    if: github.event_name != 'pull_request_target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete superseded v0-rust-* caches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        # Key: v0-rust-<job>-<os>-<arch>-<env hash>-<lockfile hash>. Strip the
+        # two hashes to get the job, keep the newest entry of each job.
+        run: |
+          ids=$(gh api --paginate "repos/$REPO/actions/caches?ref=refs/heads/main&key=v0-rust-" \
+            --jq '.actions_caches[] | {id, key, created_at}' \
+            | jq -rs 'group_by(.key | sub("-[^-]+-[^-]+$"; ""))
+                      | map(sort_by(.created_at) | reverse | .[1:][])
+                      | .[] | "\(.id) \(.key)"')
+          if [ -z "$ids" ]; then
+            echo "nothing superseded"
+            exit 0
+          fi
+          echo "$ids" | while read -r id key; do
+            gh api -X DELETE "repos/$REPO/actions/caches/$id" > /dev/null
+            echo "deleted $key"
           done
