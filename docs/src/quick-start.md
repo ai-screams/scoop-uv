@@ -70,14 +70,18 @@ This:
 ## 5. Work With Your Environment
 
 ```bash
-(myproject) $ pip install -r requirements.txt
+(myproject) $ uv pip install -r requirements.txt
 
 # If the file is in a different location:
-(myproject) $ pip install -r path/to/requirements.txt
+(myproject) $ uv pip install -r path/to/requirements.txt
 
 # Verify installed packages
-(myproject) $ pip list
+(myproject) $ uv pip list
 ```
+
+Environments that `scuv create` makes have no `pip` of their own, so a bare
+`pip` would reach some other Python's pip. `uv pip` installs into the active
+environment (it reads `VIRTUAL_ENV`).
 
 ## 6. Auto-Activation
 

@@ -30,7 +30,7 @@ scuv create myproject 3.12
 
 # Use it (auto-activates!)
 scuv use myproject
-(myproject) $ pip install -r requirements.txt
+(myproject) $ uv pip install -r requirements.txt
 
 # Check what's available
 scuv list

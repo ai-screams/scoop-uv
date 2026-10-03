@@ -60,9 +60,9 @@ scuv import myenv.json --json
   "command": "import",
   "data": {
     "name": "myenv",
-    "python": "3.12.7",
+    "python": "3.12",
     "packages_installed": 42,
-    "source": "/path/to/myenv.json"
+    "source": "myenv.json"
   }
 }
 ```

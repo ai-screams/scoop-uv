@@ -262,11 +262,11 @@ Do not use `--global` if you only want project-scoped behavior.
 After activating an environment, install project dependencies with:
 
 ```bash
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
-Use `pip install -r path/to/requirements.txt` for alternate paths.
-Verify with `pip list`.
+Use `uv pip install -r path/to/requirements.txt` for alternate paths.
+Verify with `uv pip list`. scuv envs have no `pip` of their own; `uv pip` targets the active env.
 
 **List Python Versions + Associated Environments**:
 

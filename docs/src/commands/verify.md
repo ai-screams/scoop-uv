@@ -71,7 +71,7 @@ scuv verify --strict
       {
         "name": "myenv",
         "healthy": true,
-        "python": "3.12.0",
+        "python": "3.12",
         "checks": [
           { "name": "metadata", "status": "pass" },
           { "name": "python_binary", "status": "pass" },
@@ -82,9 +82,20 @@ scuv verify --strict
         ]
       }
     ],
-    "summary": { "total": 1, "healthy": 1, "issues": 0 }
+    "summary": { "total": 1, "healthy": 1, "warnings": 0, "issues": 0 }
   }
 }
+```
+
+`summary` puts each env in one bucket: `healthy` (every check Pass or
+Skip), `warnings` (at least one Warn, no Fail) or `issues` (at least one
+Fail). Only `issues` makes `--strict` exit 1.
+
+The human report goes to stderr:
+
+```
+✓ myproject (Python 3.12)
+• 1 env(s) checked: 1 healthy, 0 with issues
 ```
 
 ## See also

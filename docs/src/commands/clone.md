@@ -58,7 +58,7 @@ scuv clone myenv myenv-experiment --force
   "data": {
     "src": "myenv",
     "dst": "myenv-experiment",
-    "python": "3.12.7",
+    "python": "3.12",
     "path": "/Users/me/.scuv/virtualenvs/myenv-experiment",
     "packages_copied": 12,
     "packages_skipped": false

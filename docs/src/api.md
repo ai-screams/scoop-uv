@@ -153,10 +153,10 @@ impl Metadata {
 ```json
 {
   "name": "myproject",
-  "python_version": "3.12.1",
-  "created_at": "2024-01-15T10:30:00Z",
+  "python_version": "3.12",
+  "created_at": "2024-01-15T10:30:00.845598Z",
   "created_by": "scuv <version>",
-  "uv_version": "0.1.0"
+  "uv_version": "uv 0.x.y (<commit> <date> <target>)"
 }
 ```
 

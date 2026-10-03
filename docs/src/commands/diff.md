@@ -63,31 +63,35 @@ catchall exit `1` path; `--strict` is not required for those.
 
 ```bash
 $ scuv diff webapp webapp-mirror
-Environments are identical
+• Environments are identical
 ```
 
 ### Mixed differences
 
 ```bash
 $ scuv diff webapp webapp-mirror
-
-Python
-  ~ python           a: 3.12.0                   b: 3.11.9
-
-Packages (3 differences)
-  - numpy==1.26.0
-  + pandas==2.2.0
-  ~ requests: 2.31.0 → 2.32.0
-
-Metadata
-    python_version   a: 3.12.0                   b: 3.11.9
-  ~ created_at       a: 2025-01-10T00:00:00Z     b: 2025-03-22T00:00:00Z
-    last_used        a: -                        b: -
-    uv_version       a: 0.5.14                   b: 0.5.14
+• webapp vs webapp-mirror
+•
+• Python
+•   ~ python           a: 3.12                      b: 3.11
+•
+• Packages (3 differences)
+•   - six==1.17.0
+•   + certifi==2026.7.22
+•   ~ idna: 3.6 → 3.7
+•
+• Metadata
+•   ~ python_version   a: 3.12                      b: 3.11
+•   ~ created_at       a: 2026-01-10T09:12:44.398746+00:00  b: 2026-03-22T14:05:31.266187+00:00
+•     last_used        a: -                         b: -
+•     uv_version       a: uv 0.x.y (<commit> <date> <target>)  b: uv 0.x.y (<commit> <date> <target>)
 ```
 
 The `~` marker flags changed scalar fields; `-`/`+` flag removed/added
 packages; absent metadata values render as `-`.
+
+The human report goes to stderr, one `• `-prefixed line each; stdout
+stays empty unless `--json` is set.
 
 ### CI gate (fail the build on drift)
 
@@ -111,17 +115,17 @@ share the same `data` shape; only the top-level wrapper differs.
     "env_a": "webapp",
     "env_b": "webapp-mirror",
     "identical": false,
-    "python": { "a": "3.12.0", "b": "3.11.9", "changed": true },
+    "python": { "a": "3.12", "b": "3.11", "changed": true },
     "packages": {
-      "added":   [{"name": "pandas", "version": "2.2.0", "display_name": "pandas"}],
-      "removed": [{"name": "numpy",  "version": "1.26.0", "display_name": "numpy"}],
-      "changed": [{"name": "requests", "version_a": "2.31.0", "version_b": "2.32.0"}]
+      "added":   [{"name": "certifi", "version": "2026.7.22", "display_name": "certifi"}],
+      "removed": [{"name": "six", "version": "1.17.0", "display_name": "six"}],
+      "changed": [{"name": "idna", "version_a": "3.6", "version_b": "3.7"}]
     },
     "metadata": {
-      "python_version": { "a": "3.12.0", "b": "3.11.9", "changed": true },
-      "created_at":     { "a": "2025-01-10T00:00:00Z", "b": "2025-03-22T00:00:00Z", "changed": true },
+      "python_version": { "a": "3.12", "b": "3.11", "changed": true },
+      "created_at":     { "a": "2026-01-10T09:12:44.398746+00:00", "b": "2026-03-22T14:05:31.266187+00:00", "changed": true },
       "last_used":      { "a": null, "b": null, "changed": false },
-      "uv_version":     { "a": "0.5.14", "b": "0.5.14", "changed": false }
+      "uv_version":     { "a": "uv 0.x.y (<commit> <date> <target>)", "b": "uv 0.x.y (<commit> <date> <target>)", "changed": false }
     },
     "summary": {
       "differences": 5,
@@ -129,11 +133,15 @@ share the same `data` shape; only the top-level wrapper differs.
       "packages_added": 1,
       "packages_removed": 1,
       "packages_changed": 1,
-      "metadata_fields_changed": 2
+      "metadata_fields_changed": 1
     }
   }
 }
 ```
+
+`metadata_fields_changed` counts `created_at`, `last_used` and
+`uv_version` only. `metadata.python_version` repeats `data.python` and
+is left out, so a Python mismatch adds 1 to `differences`, not 2.
 
 ### Strict failure envelope (`--strict` with differences, exit 1)
 

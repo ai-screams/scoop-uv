@@ -163,17 +163,17 @@ Notes:
 
 ## Once a scuv environment is active, how would you install project dependencies from a `requirements.txt` file into it?
 
-Run pip inside the active environment:
+Run `uv pip` inside the active environment. Environments that `scuv create` makes have no `pip` of their own; `uv pip` installs into the active one (it reads `VIRTUAL_ENV`):
 
 ```bash
 # Prompt shows active environment, e.g. (myproject)
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 Useful variants:
 
-- Different file location: `pip install -r path/to/requirements.txt`
-- Verify installed dependencies: `pip list`
+- Different file location: `uv pip install -r path/to/requirements.txt`
+- Verify installed dependencies: `uv pip list`
 
 If `requirements.txt` is in the project root, run the command from that directory.
 
@@ -338,10 +338,13 @@ Yes. scuv can discover and migrate existing environments from pyenv-virtualenv, 
 ```bash
 # See what can be migrated
 scuv migrate list
-# pyenv-virtualenv:
-#   myproject (Python 3.12.0)
-# conda:
-#   ml-env (Python 3.10.4)
+# • Scanning all sources for environments...
+# ✓ Found 2 environment(s):
+#
+#   [virtualenvwrapper]
+#     ✓ myproject            Python 3.12              - MB
+#     ✓ webapp               Python 3.11              - MB
+# ...
 
 # Migrate a specific environment
 scuv migrate @env myproject

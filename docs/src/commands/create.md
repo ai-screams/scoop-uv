@@ -101,12 +101,13 @@ The path must point to a valid, executable Python binary. scuv will:
 2. Auto-detect the Python version from the binary
 3. Store the custom path in the environment's metadata
 
-You can verify the custom path with `scuv info`:
+`scuv info` shows the version detected from that binary; the path itself
+is stored as `python_path` in the env's `.scoop-metadata.json`:
 
 ```bash
 scuv info debug-env
-# Name:         debug-env
-# Python:       3.13.0
-# Python Path:  /opt/python-debug/bin/python3
-# Path:         ~/.scuv/virtualenvs/debug-env
+# Name:       debug-env
+# Python:     3.13.0
+# Path:       ~/.scuv/virtualenvs/debug-env
+# ...
 ```

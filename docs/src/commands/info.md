@@ -2,7 +2,7 @@
 
 Show detailed information about a virtual environment — heavier
 sibling of [`scuv status`](status.md). Reads metadata, walks the
-directory for size, and shells out to the venv's own `pip` for a
+directory for size, and runs `uv pip list` against the env for a
 package list.
 
 ## Usage
@@ -28,17 +28,24 @@ scuv info <name>
 ## Human Output
 
 ```
-Name:        myproject
-Python:      3.12.1
-Path:        ~/.scuv/virtualenvs/myproject
-Active:      yes
-Created:     2026-05-29 12:34:56
-Last used:   3 hours ago
-Size:        45 MB
-Packages:    8
-              requests==2.31.0
-              ...
+Name:       myproject
+Python:     3.12
+Path:       ~/.scuv/virtualenvs/myproject
+Active:     no
+Created:    2026-05-29 12:34:56
+Last used:  9 minutes ago
+Size:       8 MB
+Packages:   10
+            certifi==2026.7.22
+            charset-normalizer==3.5.2
+            idna==3.20
+            markdown-it-py==4.2.0
+            mdurl==0.1.2
+            ... (5 more)
 ```
+
+Packages are listed in name order. `... (N more)` closes a truncated list;
+`--all-packages` prints every package instead.
 
 The `Last used:` row reads `never` for envs whose metadata exists but
 have never been activated (`scuv activate` / `scuv run` /
@@ -57,14 +64,24 @@ scuv info myproject --json
   "command": "info",
   "data": {
     "name": "myproject",
-    "python": "3.12.1",
+    "python": "3.12",
     "path": "/Users/me/.scuv/virtualenvs/myproject",
-    "active": true,
-    "created_at": "2026-05-29T12:34:56+00:00",
-    "last_used": "2026-06-02T09:00:00+00:00",
-    "size_bytes": 47185920,
-    "size_display": "45 MB",
-    "packages": { "total": 8, "items": [{"name": "requests", "version": "2.31.0"}], "truncated": true }
+    "active": false,
+    "created_at": "2026-05-29T12:34:56.375271+00:00",
+    "last_used": "2026-06-02T09:00:00.746201+00:00",
+    "size_bytes": 8575712,
+    "size_display": "8 MB",
+    "packages": {
+      "total": 10,
+      "items": [
+        { "name": "certifi", "version": "2026.7.22" },
+        { "name": "charset-normalizer", "version": "3.5.2" },
+        { "name": "idna", "version": "3.20" },
+        { "name": "markdown-it-py", "version": "4.2.0" },
+        { "name": "mdurl", "version": "0.1.2" }
+      ],
+      "truncated": true
+    }
   }
 }
 ```

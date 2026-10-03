@@ -126,11 +126,11 @@ Use these without `--global` to avoid changing global settings.
 
 ```bash
 # environment already active (prompt shows: (myproject))
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
-Use `pip install -r path/to/requirements.txt` for non-root files.
-Verify with `pip list`.
+Use `uv pip install -r path/to/requirements.txt` for non-root files.
+Verify with `uv pip list`. scuv envs have no `pip` of their own; `uv pip` targets the active env.
 
 ### List Python Versions and Associated Environments
 
