@@ -71,9 +71,9 @@ mod tests {
     #[serial]
     fn execute_writes_file_when_dest_given() {
         with_temp_scoop_home(|temp_dir| {
-            // Build a minimal-but-real env layout: dir + metadata file. We
-            // can't run uv from a unit test so list_installed_packages will
-            // return an empty list — that's fine, we just need the export
+            // Build a minimal-but-real env layout: dir + metadata file. No
+            // interpreter, so `uv pip list` fails and list_installed_packages
+            // returns an empty list — that's fine, we just need the export
             // file to materialise with valid JSON.
             let env_dir = temp_dir.path().join("virtualenvs").join("snap");
             std::fs::create_dir_all(env_dir.join("bin")).unwrap();

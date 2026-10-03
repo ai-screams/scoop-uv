@@ -32,8 +32,8 @@ scuv clone <SRC> <DST> [--no-packages] [--force] [--json]
    clear `CorruptedEnvironment` error when metadata is missing so you know
    recreate-from-scratch is the right next step.
 4. Creates `<DST>` at the same Python version.
-5. Unless `--no-packages`, lists the source's installed packages via the
-   venv's own pip and re-installs them pinned (`name==version`) into the
+5. Unless `--no-packages`, lists the source's installed packages with
+   `uv pip list` and re-installs them pinned (`name==version`) into the
    destination.
 
 ## Examples

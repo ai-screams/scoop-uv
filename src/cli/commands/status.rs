@@ -2,7 +2,8 @@
 //!
 //! Summarises the current environment in one shot: which env is active, where
 //! it came from (shell-activated vs version file), and a few metadata fields.
-//! Designed to be fast — no package listing or directory size walk.
+//! Kept light: one `uv pip list` for the package count, no directory size
+//! walk.
 
 use rust_i18n::t;
 
@@ -129,8 +130,8 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
     let created_at = metadata.as_ref().map(|m| m.created_at.to_rfc3339());
     let last_used_ts = metadata.as_ref().and_then(|m| m.last_used);
     let last_used_rfc = last_used_ts.map(|t| t.to_rfc3339());
-    // Best-effort package count from the venv's own pip. `None` distinguishes
-    // "env has no pip" (broken / not yet bootstrapped) from "0 packages".
+    // Best-effort package count (`uv pip list`; 0 when uv cannot read the
+    // env). `None` only when there is no env path to look at.
     let packages = path.as_deref().map(|p| list_installed_packages(p).len());
 
     if json {

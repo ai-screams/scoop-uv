@@ -54,8 +54,8 @@ Field notes:
   (e.g. `3.12.7`), not the original specifier you typed.
 - `environment.created_at` is RFC 3339 and may be absent for hand-authored or
   pre-metadata exports.
-- `packages` is what the venv's own pip reports — versions are pinned exactly so
-  imports are reproducible.
+- `packages` is what `uv pip list` reports for the env — versions are pinned
+  exactly so imports are reproducible.
 
 > **Note:** The export schema is still v1
 > and intentionally does **not** include the new `last_used`
