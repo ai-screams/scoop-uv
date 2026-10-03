@@ -57,7 +57,7 @@ exclude_re = [
     # Without uv on the runner the success-path `Ok(Default::default())`
     # mutations can't be killed by unit tests — every test that would
     # observe a real returned PathBuf needs an actual uv subprocess.
-    # Integration tests under tests/cli.rs cover create end-to-end but
+    # Integration tests under tests/cli/ cover create end-to-end but
     # are `#[ignore]`d on CI runners that lack uv. Same exclusion
     # rationale as UvClient::create_venv.
     "VirtualenvService::create",

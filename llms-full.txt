@@ -793,8 +793,8 @@ Error response:
 
 - 1029 tests (957 unit + 45 integration + 2 i18n + 25 doctest), 0 clippy warnings
 - Unit tests: inline `mod tests` blocks in each source file
-- Integration tests: `tests/cli.rs` with `assert_cmd` + `predicates`
-- Test isolation: `tests/common::TestFixture` for `SCUV_HOME` isolation
+- Integration tests: `tests/cli/` (one binary, a module per topic) with `assert_cmd` + `predicates`
+- Test isolation: `tests/cli/support.rs::TestFixture` for `SCUV_HOME` isolation
 - Property-based: `proptest` for validation logic
 
 ```bash

@@ -124,9 +124,11 @@ Key test modules:
 | `paths::tests`            | 48    | Path utilities                  |
 | `shell::*::tests`         | 50    | Shell scripts (shellcheck)      |
 
-### Integration Tests (45 tests in `tests/cli.rs` + 2 in `tests/i18n_completeness.rs`)
+### Integration Tests (`tests/cli/` + `tests/i18n_completeness.rs`)
 
-Located in `tests/cli.rs`:
+`tests/cli/` is one test binary (`main.rs`) with a module per topic:
+`general`, `list`, `remove`, `color`, `shell`, `errors`, `output_format`,
+`requires_uv`, and shared fixtures in `support`.
 
 ```bash
 # Run only integration tests
@@ -261,7 +263,8 @@ mod tests {
 ### Integration Test Template
 
 ```rust
-// tests/cli.rs
+// tests/cli/<topic>.rs (declare it in tests/cli/main.rs)
+use crate::support::*;
 use assert_cmd::Command;
 use predicates::prelude::*;
 

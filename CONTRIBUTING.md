@@ -592,7 +592,8 @@ mod tests {
 Located in `tests/` directory:
 
 ```rust
-// tests/cli.rs
+// tests/cli/<topic>.rs (declare it in tests/cli/main.rs)
+use crate::support::*;
 
 use assert_cmd::Command;
 use predicates::prelude::*;
