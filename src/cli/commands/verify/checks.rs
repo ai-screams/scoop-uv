@@ -7,7 +7,7 @@ use std::process::Command;
 use rust_i18n::t;
 
 use crate::core::manifest::{ScoopManifest, find_manifest_from_cwd};
-use crate::core::{VirtualenvInfo, VirtualenvService};
+use crate::core::{Metadata, VirtualenvInfo, VirtualenvService};
 use crate::error::{Result, ScoopError};
 use crate::validate::{self, PythonVersion};
 
@@ -70,7 +70,7 @@ pub(super) fn verify_one(
     let recorded_python = metadata.as_ref().map(|m| m.python_version.clone());
     checks.push(if metadata.is_some() {
         CheckResult::pass("metadata")
-    } else if path.join(".scoop-metadata.json").exists() {
+    } else if path.join(Metadata::FILE_NAME).exists() {
         // File exists but failed to deserialize — read_metadata swallows the
         // error and returns None. From a user's view that's still a failure,
         // just a different reason. We surface "unreadable" so they can fix it.

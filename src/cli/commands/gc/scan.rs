@@ -6,7 +6,7 @@ use std::path::Path;
 
 use chrono::{DateTime, Utc};
 
-use crate::core::VirtualenvService;
+use crate::core::{Metadata, VirtualenvService};
 use crate::error::Result;
 use crate::paths;
 use crate::uv::UvClient;
@@ -154,7 +154,7 @@ pub(super) fn classify(path: &Path) -> Option<EnvGcReason> {
     // `.scoop-metadata.json` is the contract: every env scuv creates has
     // one. Its absence means the directory was made by hand or its metadata
     // was deleted — either way we can't safely interpret it.
-    if !path.join(".scoop-metadata.json").exists() {
+    if !path.join(Metadata::FILE_NAME).exists() {
         return Some(EnvGcReason::OrphanMissingMetadata);
     }
     // Check that the interpreter the env points at still exists. We avoid
