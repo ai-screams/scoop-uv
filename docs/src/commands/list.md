@@ -99,8 +99,9 @@ scuv list --python-version 3.12
 ```
 
 For scripting, combine `--bare` with per-version filtering. `--pythons
---bare` prints full versions (`3.12.14`) while envs record the minor
-version (`3.12`), so cut each version down to `major.minor` first:
+--bare` prints full versions (`3.12.14`), while an env may record only the
+minor version (current uv writes `3.12`), so cut each version down to
+`major.minor` first; a `3.12` filter also matches envs that record a patch:
 
 ```bash
 for v in $(scuv list --pythons --bare | cut -d. -f1,2 | sort -u); do

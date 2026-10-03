@@ -198,8 +198,8 @@ For automation:
 - Use `--bare` for name-only output in shell scripts.
 
 Example script to iterate each Python version and print associated environments
-(envs record the minor version, such as `3.12`, so cut the installed versions
-down to `major.minor` first):
+(an env may record only the minor version, such as `3.12`, so cut the installed
+versions down to `major.minor` first; a `3.12` filter also matches `3.12.x`):
 
 ```bash
 for v in $(scuv list --pythons --bare | cut -d. -f1,2 | sort -u); do

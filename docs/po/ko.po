@@ -2351,17 +2351,19 @@ msgstr "쉘 스크립트에서 이름만 출력하려면 `--bare`를 사용하�
 #: src/faq.md:200
 msgid ""
 "Example script to iterate each Python version and print associated "
-"environments (envs record the minor version, such as `3.12`, so cut the "
-"installed versions down to `major.minor` first):"
+"environments (an env may record only the minor version, such as `3.12`, so "
+"cut the installed versions down to `major.minor` first; a `3.12` filter also "
+"matches `3.12.x`):"
 msgstr ""
-"Python 버전별로 연결된 환경을 출력하는 스크립트 예시입니다(환경은 `3.12` 같"
-"은 마이너 버전을 기록하므로, 설치된 버전을 먼저 `major.minor`로 잘라냅니다):"
+"Python 버전별로 연결된 환경을 출력하는 스크립트 예시입니다(환경이 `3.12` 같"
+"은 마이너 버전만 기록할 수 있으므로 설치된 버전을 먼저 `major.minor`로 잘라냅"
+"니다. `3.12` 필터는 `3.12.x`와도 일치합니다):"
 
-#: src/faq.md:206 src/commands/list.md:107
+#: src/faq.md:206 src/commands/list.md:108
 msgid "\"== Python $v ==\""
 msgstr "\"== Python $v ==\""
 
-#: src/faq.md:207 src/commands/list.md:108
+#: src/faq.md:207 src/commands/list.md:109
 msgid "\"$v\""
 msgstr "\"$v\""
 
@@ -3294,57 +3296,59 @@ msgstr "# 3) 특정 Python 버전에 연결된 환경 표시\n"
 #: src/commands/list.md:101
 msgid ""
 "For scripting, combine `--bare` with per-version filtering. `--pythons --"
-"bare` prints full versions (`3.12.14`) while envs record the minor version "
-"(`3.12`), so cut each version down to `major.minor` first:"
+"bare` prints full versions (`3.12.14`), while an env may record only the "
+"minor version (current uv writes `3.12`), so cut each version down to "
+"`major.minor` first; a `3.12` filter also matches envs that record a patch:"
 msgstr ""
 "스크립팅 시에는 `--bare`와 버전별 필터링을 함께 사용하세요. `--pythons --"
-"bare`는 전체 버전(`3.12.14`)을 출력하지만 환경은 마이너 버전(`3.12`)을 기록하"
-"므로, 먼저 각 버전을 `major.minor`로 잘라내세요:"
+"bare`는 전체 버전(`3.12.14`)을 출력하지만 환경은 마이너 버전만 기록할 수 있으"
+"므로(최신 uv는 `3.12`로 적습니다), 먼저 각 버전을 `major.minor`로 잘라내세"
+"요. `3.12` 필터는 patch까지 기록한 환경과도 일치합니다:"
 
-#: src/commands/list.md:112
+#: src/commands/list.md:113
 msgid ""
 "The `system` row matches the filter for its own version, so it shows up "
 "under that version's heading."
 msgstr ""
 "`system` 행은 자기 버전의 필터와 일치하므로 그 버전의 제목 아래에 나타납니다."
 
-#: src/commands/list.md:115
+#: src/commands/list.md:116
 msgid "You can also use `--json` for machine-readable output:"
 msgstr "머신 판독 가능한 출력이 필요할 때는 `--json`을 사용할 수도 있습니다:"
 
-#: src/commands/list.md:122
+#: src/commands/list.md:123
 msgid "Version Filtering"
 msgstr "버전 필터링"
 
-#: src/commands/list.md:124
+#: src/commands/list.md:125
 msgid ""
 "The `--python-version` option uses prefix matching to filter environments:"
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
-#: src/commands/list.md:127 src/commands/uninstall.md:113
+#: src/commands/list.md:128 src/commands/uninstall.md:113
 #: src/commands/doctor.md:52
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
-#: src/commands/list.md:129 src/commands/uninstall.md:115
+#: src/commands/list.md:130 src/commands/uninstall.md:115
 msgid "#   webapp     3.12  ~/.scuv/virtualenvs/webapp\n"
 msgstr "#   webapp     3.12  ~/.scuv/virtualenvs/webapp\n"
 
-#: src/commands/list.md:134
+#: src/commands/list.md:135
 msgid ""
 "This is useful for identifying environments before uninstalling a Python "
 "version:"
 msgstr "Python 버전을 제거하기 전에 환경을 확인할 때 유용합니다:"
 
-#: src/commands/list.md:137
+#: src/commands/list.md:138
 msgid "# See which environments will be affected\n"
 msgstr "# 영향받을 환경 확인\n"
 
-#: src/commands/list.md:139
+#: src/commands/list.md:140
 msgid "# Then uninstall with cascade\n"
 msgstr "# 이후 cascade로 제거\n"
 
-#: src/commands/list.md:144
+#: src/commands/list.md:145
 msgid ""
 "**Note:** `--python-version` cannot be combined with `--pythons` (which "
 "lists Python installations, not environments)."
@@ -3352,18 +3356,18 @@ msgstr ""
 "**참고:** `--python-version`은 `--pythons`와 함께 사용할 수 없습니다 (후자는 "
 "환경이 아닌 Python 설치 목록을 나열합니다)."
 
-#: src/commands/list.md:146
+#: src/commands/list.md:147
 msgid "Empty Results"
 msgstr "결과 없음"
 
-#: src/commands/list.md:148
+#: src/commands/list.md:149
 msgid ""
 "If no Python versions are installed, `scuv list --pythons` shows no entries."
 msgstr ""
 "Python 버전이 설치되어 있지 않으면 `scuv list --pythons`는 항목을 표시하지 않"
 "습니다."
 
-#: src/commands/list.md:149
+#: src/commands/list.md:150
 msgid ""
 "If no environments exist, `scuv list` still shows the `system` row when a "
 "Python is on `PATH`. Only when there is none either does it print `No "
@@ -3373,7 +3377,7 @@ msgstr ""
 "시합니다. Python도 없을 때에만 `No environments yet`과 `scuv create` 힌트를 "
 "stderr에 출력합니다."
 
-#: src/commands/list.md:152
+#: src/commands/list.md:153
 msgid ""
 "If no environments match a filter, `scuv list --python-version <VERSION>` "
 "prints only the `system` row when the system Python matches, and otherwise "
@@ -4932,12 +4936,12 @@ msgstr "실제 환경(`active` / `configured`)의 경우:"
 #: src/commands/status.md:56
 msgid ""
 "These rows go to stdout. `Packages:` is the number of packages `uv pip list` "
-"reports for the env; it reads `0` when that listing fails (no uv, a broken "
+"reports for the env; it reads `0` when that listing fails (a broken "
 "interpreter), not only when nothing is installed."
 msgstr ""
 "이 행들은 stdout으로 출력됩니다. `Packages:`는 `uv pip list`가 그 환경에 대"
-"해 보고하는 패키지 수입니다. 목록 조회가 실패할 때(uv 없음, 깨진 인터프리터)"
-"도 `0`이 되므로, 설치된 패키지가 없다는 뜻만은 아닙니다."
+"해 보고하는 패키지 수입니다. 목록 조회가 실패할 때(깨진 인터프리터)도 `0`이 "
+"되므로, 설치된 패키지가 없다는 뜻만은 아닙니다."
 
 #: src/commands/status.md:60
 msgid ""
@@ -15140,13 +15144,15 @@ msgstr "Python 버전 및 관련 환경 목록"
 msgid ""
 "Use `--json` for automation and `--bare` for script-friendly output. For "
 "full mapping in shell scripts, iterate versions from `scuv list --pythons --"
-"bare`, cut each to `major.minor` (envs record `3.12`, not `3.12.14`), and "
-"query each with `scuv list --python-version <VERSION> --bare`."
+"bare`, cut each to `major.minor` (an env may record `3.12` rather than "
+"`3.12.14`), and query each with `scuv list --python-version <VERSION> --"
+"bare`."
 msgstr ""
 "자동화에는 `--json`을, 스크립트 친화적 출력에는 `--bare`를 사용하세요. shell "
 "스크립트에서 전체 매핑이 필요하면 `scuv list --pythons --bare`로 버전을 순회"
-"하되 각 버전을 `major.minor`로 잘라내고(환경은 `3.12.14`가 아니라 `3.12`를 기"
-"록합니다), `scuv list --python-version <VERSION> --bare`로 각각 조회하세요."
+"하되 각 버전을 `major.minor`로 잘라내고(환경이 `3.12.14` 대신 `3.12`를 기록"
+"할 수 있습니다), `scuv list --python-version <VERSION> --bare`로 각각 조회하"
+"세요."
 
 #: src/llms.md:148
 msgid "Integrate Custom or Pre-Existing Python"
