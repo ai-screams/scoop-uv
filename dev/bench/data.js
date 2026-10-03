@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791061424425,
+  "lastUpdate": 1791061425991,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -8833,6 +8833,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1118,
             "range": "± 6",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a58ba6d6a07c5731d35b5647bf74991fae40898c",
+          "message": "Merge pull request #215 from ai-screams/ci/cargo-package-check\n\nci: build the crate from its packaged files on every PR",
+          "timestamp": "2026-10-04T05:56:33+09:00",
+          "tree_id": "65052366ba6f9ea0f1e753cd878099ce51ac4c8f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/a58ba6d6a07c5731d35b5647bf74991fae40898c"
+        },
+        "date": 1791061425877,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1913,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1348,
+            "range": "± 15",
             "unit": "ns/iter"
           }
         ]
