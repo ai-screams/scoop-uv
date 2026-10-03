@@ -13396,10 +13396,11 @@ msgstr "PR, main"
 #: src/development/ci-cd.md:11
 msgid ""
 "Unformatted code, clippy warnings, failing tests, MSRV drift, broken shell "
-"scripts, stale reference docs, malformed `.po`"
+"scripts, stale reference docs, malformed `.po`, files missing from the "
+"published crate"
 msgstr ""
 "포맷 미적용, clippy 경고, 실패하는 테스트, MSRV 어긋남, 깨진 셸 스크립트, 낡"
-"은 참조 문서, 잘못된 `.po`"
+"은 참조 문서, 잘못된 `.po`, 배포 crate에서 빠진 파일"
 
 #: src/development/ci-cd.md:12
 msgid "`integration-test.yml`"
