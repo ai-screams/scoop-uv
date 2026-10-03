@@ -7,8 +7,8 @@ pub use tempfile::TempDir;
 
 /// Test fixture for scoop tests
 pub(crate) struct TestFixture {
-    /// Temporary directory - held to prevent cleanup until fixture is dropped
-    #[allow(dead_code)]
+    /// Temporary directory: holds `scoop_home` (and any project directory a
+    /// test creates) until the fixture is dropped
     pub(crate) temp_dir: TempDir,
     /// SCUV_HOME path
     pub(crate) scoop_home: PathBuf,

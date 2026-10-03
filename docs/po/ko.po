@@ -10171,8 +10171,8 @@ msgid "indicatif"
 msgstr "indicatif"
 
 #: src/development/architecture.md:330
-msgid "Progress bars & spinners"
-msgstr "진행 표시줄 및 스피너"
+msgid "Progress bars"
+msgstr "진행 막대"
 
 #: src/development/architecture.md:331
 msgid "dialoguer"
@@ -14929,6 +14929,9 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "Progress bars & spinners"
+#~ msgstr "진행 표시줄 및 스피너"
 
 #~ msgid "Located in `tests/cli.rs`:"
 #~ msgstr "`tests/cli.rs`에 위치합니다:"
