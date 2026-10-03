@@ -15,14 +15,18 @@ cargo clippy -- -D warnings         # Lint check
 
 ```
 tests/
-└── cli.rs                    # CLI integration tests
+├── cli/                      # CLI integration tests (one binary)
+│   ├── main.rs               # declares the topic modules
+│   ├── support.rs            # TestFixture, scoop_cmd, shared helpers
+│   └── <topic>.rs            # general, list, remove, color, shell, ...
+└── i18n_completeness.rs      # locale parity
 
 src/
 ├── error/                    # Unit tests for error types
 ├── validate.rs               # Unit tests for validation
 ├── paths.rs                  # Unit tests for path utilities
 ├── output/
-│   └── json.rs               # Unit tests for JSON output
+│   └── json/tests.rs         # Unit tests for JSON output
 ├── core/
 │   ├── virtualenv/           # virtualenv service (mod.rs + tests.rs)
 │   ├── version.rs            # Unit tests for version service
@@ -59,7 +63,7 @@ cargo test error                    # Tests containing "error"
 cargo test virtualenv               # Tests containing "virtualenv"
 
 # By module path
-cargo test output::json             # Tests in output/json.rs
+cargo test output::json             # Tests in output/json/tests.rs
 cargo test error::tests             # Tests in error.rs
 cargo test core::version            # Tests in core/version.rs
 cargo test cli::commands            # Tests in cli/commands/
@@ -124,9 +128,12 @@ Key test modules:
 | `paths::tests`            | 48    | Path utilities                  |
 | `shell::*::tests`         | 50    | Shell scripts (shellcheck)      |
 
-### Integration Tests (45 tests in `tests/cli.rs` + 2 in `tests/i18n_completeness.rs`)
+### Integration Tests (`tests/cli/` + `tests/i18n_completeness.rs`)
 
-Located in `tests/cli.rs`:
+`tests/cli/` is one test binary (`main.rs`) with a module per topic:
+`general`, `list`, `remove`, `color`, `shell`, `dispatch`, `errors`,
+`output_format`, `requires_uv`, and shared fixtures (including a fake `uv`)
+in `support`.
 
 ```bash
 # Run only integration tests
@@ -261,7 +268,8 @@ mod tests {
 ### Integration Test Template
 
 ```rust
-// tests/cli.rs
+// tests/cli/<topic>.rs (declare it in tests/cli/main.rs)
+use crate::support::*;
 use assert_cmd::Command;
 use predicates::prelude::*;
 

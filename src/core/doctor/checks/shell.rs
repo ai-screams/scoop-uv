@@ -1,5 +1,7 @@
 //! Check for shell configuration (scuv init).
 
+use std::path::{Path, PathBuf};
+
 use super::super::types::{Check, CheckResult};
 
 /// Check for shell configuration (scuv init).
@@ -15,106 +17,34 @@ impl Check for ShellCheck {
     }
 
     fn run(&self) -> Vec<CheckResult> {
-        let home = match dirs::home_dir() {
-            Some(h) => h,
-            None => {
-                return vec![CheckResult::error(
+        let Some(home) = dirs::home_dir() else {
+            return vec![CheckResult::error(
+                self.id(),
+                self.name(),
+                "could not determine home directory",
+            )];
+        };
+
+        let shell_name = current_shell_name();
+        let Some(rc_files) = rc_files(&shell_name, &home, cfg!(target_os = "macos")) else {
+            return vec![
+                CheckResult::warn(
                     self.id(),
                     self.name(),
-                    "could not determine home directory",
-                )];
-            }
+                    format!("unsupported shell: {}", shell_name),
+                )
+                .with_details("Supported shells: bash, zsh")
+                .with_suggestion("Manual setup may be required"),
+            ];
         };
-
-        // Detect current shell from $SHELL environment variable
-        let shell = std::env::var("SHELL").unwrap_or_default();
-        let shell_name = std::path::Path::new(&shell)
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("")
-            .to_lowercase();
-
-        // Determine config files to check based on shell
-        let config_files: Vec<(&str, std::path::PathBuf)> = match shell_name.as_str() {
-            "zsh" => vec![("zsh", home.join(".zshrc"))],
-            "bash" => {
-                // macOS uses .bash_profile, Linux uses .bashrc
-                if cfg!(target_os = "macos") {
-                    vec![
-                        ("bash", home.join(".bash_profile")),
-                        ("bash", home.join(".bashrc")),
-                    ]
-                } else {
-                    vec![("bash", home.join(".bashrc"))]
-                }
-            }
-            _ => {
-                // Unknown shell - check both common configs
-                return vec![
-                    CheckResult::warn(
-                        self.id(),
-                        self.name(),
-                        format!("unsupported shell: {}", shell_name),
-                    )
-                    .with_details("Supported shells: bash, zsh")
-                    .with_suggestion("Manual setup may be required"),
-                ];
-            }
-        };
-
         let shell_type = if shell_name == "zsh" { "zsh" } else { "bash" };
 
-        // Check if any config file contains scuv init. A stale `scoop init`
-        // line does NOT count as configured: `scoop` is not a command any
-        // more (renamed in 0.15.0, the transitional shell forwarder went in
-        // 0.16.0), so `eval "$(scoop init ...)"` fails at shell startup and
-        // integration never loads. That must be flagged as a warning, not
-        // treated as configured. This is a diagnostic for an old rc line,
-        // not a compatibility shim, so it stays.
-        for (_shell_type, config_path) in &config_files {
-            if config_path.exists() {
-                match std::fs::read_to_string(config_path) {
-                    Ok(content) => {
-                        if content.contains("scuv init") {
-                            return vec![
-                                CheckResult::ok(self.id(), self.name())
-                                    .with_details(format!("found in {}", config_path.display())),
-                            ];
-                        }
-                        if content.contains("scoop init") {
-                            return vec![
-                                CheckResult::warn(
-                                    self.id(),
-                                    self.name(),
-                                    "shell config still references the removed `scoop` command (init line fails at startup)",
-                                )
-                                .with_details(format!("found in {}", config_path.display()))
-                                .with_suggestion(format!(
-                                    "Replace with: eval \"$(scuv init {})\"",
-                                    shell_type
-                                )),
-                            ];
-                        }
-                    }
-                    Err(_) => {
-                        return vec![CheckResult::warn(
-                            self.id(),
-                            self.name(),
-                            format!("could not read {}", config_path.display()),
-                        )];
-                    }
-                }
-            }
+        if let Some(found) = rc_files
+            .iter()
+            .find_map(|rc| self.inspect_rc_file(rc, shell_type))
+        {
+            return vec![found];
         }
-
-        // No scuv init found
-        let config_file = if shell_name == "zsh" {
-            "~/.zshrc"
-        } else if cfg!(target_os = "macos") {
-            "~/.bash_profile"
-        } else {
-            "~/.bashrc"
-        };
 
         vec![
             CheckResult::error(
@@ -124,9 +54,89 @@ impl Check for ShellCheck {
             )
             .with_suggestion(format!(
                 "Add to {}: eval \"$(scuv init {})\"",
-                config_file, shell_type
+                default_rc_file(&shell_name),
+                shell_type
             )),
         ]
+    }
+}
+
+impl ShellCheck {
+    /// The verdict for one rc file, or `None` when it is absent or has no
+    /// init line (keep looking).
+    ///
+    /// A stale `scoop init` line does NOT count as configured: `scoop` is
+    /// not a command any more (renamed in 0.15.0, the transitional shell
+    /// forwarder went in 0.16.0), so `eval "$(scoop init ...)"` fails at
+    /// shell startup and integration never loads. That must be flagged as a
+    /// warning, not treated as configured. This is a diagnostic for an old
+    /// rc line, not a compatibility shim, so it stays.
+    fn inspect_rc_file(&self, rc: &Path, shell_type: &str) -> Option<CheckResult> {
+        if !rc.exists() {
+            return None;
+        }
+        let Ok(content) = std::fs::read_to_string(rc) else {
+            return Some(CheckResult::warn(
+                self.id(),
+                self.name(),
+                format!("could not read {}", rc.display()),
+            ));
+        };
+        if content.contains("scuv init") {
+            return Some(
+                CheckResult::ok(self.id(), self.name())
+                    .with_details(format!("found in {}", rc.display())),
+            );
+        }
+        if content.contains("scoop init") {
+            return Some(
+                CheckResult::warn(
+                    self.id(),
+                    self.name(),
+                    "shell config still references the removed `scoop` command (init line fails at startup)",
+                )
+                .with_details(format!("found in {}", rc.display()))
+                .with_suggestion(format!(
+                    "Replace with: eval \"$(scuv init {})\"",
+                    shell_type
+                )),
+            );
+        }
+        None
+    }
+}
+
+/// The current shell's name from `$SHELL` (`/bin/zsh` → `zsh`), lowercased.
+fn current_shell_name() -> String {
+    let shell = std::env::var("SHELL").unwrap_or_default();
+    Path::new(&shell)
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("")
+        .to_lowercase()
+}
+
+/// The rc files to look in for `shell_name`, in order; `None` for a shell
+/// this check does not know. macOS bash reads `.bash_profile`, Linux bash
+/// `.bashrc`. The platform is a parameter so both branches are testable on
+/// either OS.
+fn rc_files(shell_name: &str, home: &Path, macos: bool) -> Option<Vec<PathBuf>> {
+    match shell_name {
+        "zsh" => Some(vec![home.join(".zshrc")]),
+        "bash" if macos => Some(vec![home.join(".bash_profile"), home.join(".bashrc")]),
+        "bash" => Some(vec![home.join(".bashrc")]),
+        _ => None,
+    }
+}
+
+/// Where the suggestion tells the user to add the init line.
+fn default_rc_file(shell_name: &str) -> &'static str {
+    if shell_name == "zsh" {
+        "~/.zshrc"
+    } else if cfg!(target_os = "macos") {
+        "~/.bash_profile"
+    } else {
+        "~/.bashrc"
     }
 }
 
@@ -291,5 +301,27 @@ mod tests {
         let results = ShellCheck.run();
         assert_eq!(results.len(), 1, "got {results:#?}");
         assert!(results[0].is_ok(), "got {results:#?}");
+    }
+
+    /// Which rc files are read per shell and platform. Fails if a shell
+    /// arm or the macOS split is dropped, on any host OS.
+    #[test]
+    fn rc_files_per_shell_and_platform() {
+        let home = Path::new("/h");
+        for macos in [true, false] {
+            assert_eq!(
+                rc_files("zsh", home, macos),
+                Some(vec![home.join(".zshrc")])
+            );
+            assert_eq!(rc_files("fish", home, macos), None);
+        }
+        assert_eq!(
+            rc_files("bash", home, true),
+            Some(vec![home.join(".bash_profile"), home.join(".bashrc")])
+        );
+        assert_eq!(
+            rc_files("bash", home, false),
+            Some(vec![home.join(".bashrc")])
+        );
     }
 }

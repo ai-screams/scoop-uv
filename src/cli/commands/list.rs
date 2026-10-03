@@ -88,19 +88,17 @@ fn list_virtualenvs(
     } else {
         None
     };
+    let matches_filter = |version: &str| match &version_filter {
+        Some(filter) => PythonVersion::parse(version).is_some_and(|v| filter.matches(&v)),
+        None => true,
+    };
 
     let service = VirtualenvService::auto()?;
     let mut envs = service.list()?;
     let active_env = get_active_env();
 
-    // Apply python version filter
-    if let Some(ref filter) = version_filter {
-        envs.retain(|env| {
-            env.python_version
-                .as_ref()
-                .and_then(|v| PythonVersion::parse(v))
-                .is_some_and(|v| filter.matches(&v))
-        });
+    if version_filter.is_some() {
+        envs.retain(|env| env.python_version.as_deref().is_some_and(matches_filter));
     }
 
     // Sort *after* filtering so the user sees the requested ordering
@@ -108,147 +106,160 @@ fn list_virtualenvs(
     sort_envs(&mut envs, sort);
 
     // Check if "system" is the resolved version
-    let resolved = VersionService::resolve_current();
-    let system_active = resolved.as_deref() == Some("system");
+    let system_active = VersionService::resolve_current().as_deref() == Some("system");
+    let system_python = get_system_python_info().filter(|(version, _)| matches_filter(version));
 
-    // Get system Python info, filtered if needed
-    let system_python = get_system_python_info().filter(|(version, _)| match version_filter {
-        Some(ref filter) => PythonVersion::parse(version).is_some_and(|v| filter.matches(&v)),
-        None => true,
-    });
-
-    // JSON output
     if output.is_json() {
-        let mut virtualenvs: Vec<VirtualenvInfo> = envs
-            .iter()
-            .map(|env| VirtualenvInfo {
-                name: env.name.clone(),
-                python: env.python_version.clone(),
-                path: env.path.display().to_string(),
-                active: active_env.as_ref() == Some(&env.name),
-                created_at: env.created_at.map(|t| t.to_rfc3339()),
-                last_used: env.last_used.map(|t| t.to_rfc3339()),
-            })
-            .collect();
-
-        // Add system Python to JSON output
-        if let Some((version, path)) = &system_python {
-            virtualenvs.push(VirtualenvInfo {
-                name: "system".to_string(),
-                python: Some(version.clone()),
-                path: path.clone(),
-                active: system_active,
-                // System Python isn't a scuv-managed env, so there's
-                // no on-disk metadata to source these from.
-                created_at: None,
-                last_used: None,
-            });
-        }
-
-        let total = virtualenvs.len();
-        output.json_success("list", ListEnvsData { virtualenvs, total });
-        return Ok(());
-    }
-
-    if envs.is_empty() && system_python.is_none() {
+        emit_envs_json(
+            output,
+            &envs,
+            active_env.as_deref(),
+            system_python.as_ref(),
+            system_active,
+        );
+    } else if envs.is_empty() && system_python.is_none() {
         if !bare {
-            if let Some(ver_str) = python_version {
-                output.info(&t!("list.filtered_no_envs", version = ver_str));
-                output.info(&t!("list.filtered_hint"));
-            } else {
-                output.info(&t!("list.no_envs"));
-                output.info(&t!("list.no_envs_hint"));
-            }
+            print_no_envs(output, python_version);
         }
-        return Ok(());
-    }
-
-    if bare {
-        // Output names only, one per line (for completion)
+    } else if bare {
+        // Names only, one per line (for completion)
         for env in &envs {
             println!("{}", env.name);
         }
-        // Add system to bare output
         if system_python.is_some() {
             println!("system");
         }
     } else {
-        // Calculate column widths for alignment (include "system" in calculation)
-        let mut max_name_len = envs.iter().map(|e| e.name.len()).max().unwrap_or(0);
-        if system_python.is_some() {
-            max_name_len = max_name_len.max(6); // "system".len() == 6
-        }
+        print_env_table(
+            output,
+            &envs,
+            active_env.as_deref(),
+            system_python.as_ref(),
+            system_active,
+        );
+    }
+    Ok(())
+}
 
-        let mut max_ver_len = envs
-            .iter()
-            .filter_map(|e| e.python_version.as_ref())
-            .map(|v| v.len())
-            .max()
-            .unwrap_or(1);
-        if let Some((version, _)) = &system_python {
-            max_ver_len = max_ver_len.max(version.len());
-        }
+/// `list --json`: the envs plus, when found, the system Python.
+fn emit_envs_json(
+    output: &Output,
+    envs: &[crate::core::VirtualenvInfo],
+    active_env: Option<&str>,
+    system_python: Option<&(String, String)>,
+    system_active: bool,
+) {
+    let mut virtualenvs: Vec<VirtualenvInfo> = envs
+        .iter()
+        .map(|env| VirtualenvInfo {
+            name: env.name.clone(),
+            python: env.python_version.clone(),
+            path: env.path.display().to_string(),
+            active: active_env == Some(env.name.as_str()),
+            created_at: env.created_at.map(|t| t.to_rfc3339()),
+            last_used: env.last_used.map(|t| t.to_rfc3339()),
+        })
+        .collect();
 
-        // Output with marker, name, version, and path
-        for env in &envs {
-            let is_active = active_env.as_ref() == Some(&env.name);
-            let marker = if is_active { "*" } else { " " };
-            let version = env.python_version.as_deref().unwrap_or("-");
-            let path = abbreviate_home(&env.path);
-
-            if output.use_color_stdout() && is_active {
-                println!(
-                    "{} {:<name_w$}  {:<ver_w$}  {}",
-                    marker.green(),
-                    env.name.green(),
-                    version,
-                    path,
-                    name_w = max_name_len,
-                    ver_w = max_ver_len
-                );
-            } else {
-                println!(
-                    "{} {:<name_w$}  {:<ver_w$}  {}",
-                    marker,
-                    env.name,
-                    version,
-                    path,
-                    name_w = max_name_len,
-                    ver_w = max_ver_len
-                );
-            }
-        }
-
-        // Add system Python at the end
-        if let Some((version, path)) = system_python {
-            let marker = if system_active { "*" } else { " " };
-            let display_path = format!("{} (system)", path);
-
-            if output.use_color_stdout() && system_active {
-                println!(
-                    "{} {:<name_w$}  {:<ver_w$}  {}",
-                    marker.green(),
-                    "system".green(),
-                    version,
-                    display_path.dimmed(),
-                    name_w = max_name_len,
-                    ver_w = max_ver_len
-                );
-            } else {
-                println!(
-                    "{} {:<name_w$}  {:<ver_w$}  {}",
-                    marker,
-                    "system",
-                    version,
-                    display_path,
-                    name_w = max_name_len,
-                    ver_w = max_ver_len
-                );
-            }
-        }
+    if let Some((version, path)) = system_python {
+        virtualenvs.push(VirtualenvInfo {
+            name: "system".to_string(),
+            python: Some(version.clone()),
+            path: path.clone(),
+            active: system_active,
+            // System Python isn't a scuv-managed env, so there's
+            // no on-disk metadata to source these from.
+            created_at: None,
+            last_used: None,
+        });
     }
 
-    Ok(())
+    let total = virtualenvs.len();
+    output.json_success("list", ListEnvsData { virtualenvs, total });
+}
+
+/// The empty-list message, worded for whether a version filter was given.
+fn print_no_envs(output: &Output, python_version: Option<&str>) {
+    if let Some(ver_str) = python_version {
+        output.info(&t!("list.filtered_no_envs", version = ver_str));
+        output.info(&t!("list.filtered_hint"));
+    } else {
+        output.info(&t!("list.no_envs"));
+        output.info(&t!("list.no_envs_hint"));
+    }
+}
+
+/// One row of the human `list` table.
+struct EnvRow<'a> {
+    name: &'a str,
+    version: &'a str,
+    path: String,
+    active: bool,
+    /// The system Python row: its path is dimmed when highlighted.
+    system: bool,
+}
+
+/// The human `list` table: aligned columns, the active env marked (and
+/// highlighted on a color stdout), the system Python last.
+fn print_env_table(
+    output: &Output,
+    envs: &[crate::core::VirtualenvInfo],
+    active_env: Option<&str>,
+    system_python: Option<&(String, String)>,
+    system_active: bool,
+) {
+    let mut rows: Vec<EnvRow> = envs
+        .iter()
+        .map(|env| EnvRow {
+            name: &env.name,
+            version: env.python_version.as_deref().unwrap_or("-"),
+            path: abbreviate_home(&env.path),
+            active: active_env == Some(env.name.as_str()),
+            system: false,
+        })
+        .collect();
+    if let Some((version, path)) = system_python {
+        rows.push(EnvRow {
+            name: "system",
+            version,
+            path: format!("{} (system)", path),
+            active: system_active,
+            system: true,
+        });
+    }
+
+    let name_w = rows.iter().map(|r| r.name.len()).max().unwrap_or(0);
+    // Envs with no recorded version show "-" but don't widen the column.
+    let ver_w = envs
+        .iter()
+        .filter_map(|e| e.python_version.as_ref())
+        .map(|v| v.len())
+        .chain(system_python.map(|(v, _)| v.len()))
+        .max()
+        .unwrap_or(1);
+
+    for row in &rows {
+        let marker = if row.active { "*" } else { " " };
+        if output.use_color_stdout() && row.active {
+            let path = if row.system {
+                row.path.dimmed().to_string()
+            } else {
+                row.path.clone()
+            };
+            println!(
+                "{} {:<name_w$}  {:<ver_w$}  {}",
+                marker.green(),
+                row.name.green(),
+                row.version,
+                path,
+            );
+        } else {
+            println!(
+                "{} {:<name_w$}  {:<ver_w$}  {}",
+                marker, row.name, row.version, row.path,
+            );
+        }
+    }
 }
 
 /// List installed Python versions
@@ -353,18 +364,12 @@ fn get_system_python_info() -> Option<(String, String)> {
         .unwrap_or(version_str.trim())
         .to_string();
 
-    // Get path using 'which' on Unix
-    let path_output = Command::new("which").arg(python_cmd).output().ok()?;
+    // The same PATH lookup that ran `python_cmd` above, in process (the
+    // `which` crate: execute bit and PATHEXT included) rather than spawning
+    // a `which` binary that is not everywhere.
+    let path = which::which(python_cmd).ok()?;
 
-    if !path_output.status.success() {
-        return None;
-    }
-
-    let path = String::from_utf8_lossy(&path_output.stdout)
-        .trim()
-        .to_string();
-
-    Some((version, path))
+    Some((version, path.display().to_string()))
 }
 
 #[cfg(test)]

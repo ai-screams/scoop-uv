@@ -1,5 +1,22 @@
+use std::path::Path;
+
+use chrono::{DateTime, Utc};
+
+use super::remove::remove_candidates;
+#[cfg(unix)]
+use super::remove::uninstall_pythons;
+use super::scan::{
+    recheck_stale, referenced_versions, scan_orphan_envs, scan_stale_envs, scan_unused_pythons,
+};
+use super::types::{
+    EnvGcReason, EnvOutcome, EnvRecord, GcCandidate, PythonOutcome, PythonRecord, PythonSkip,
+    UnusedPython,
+};
 use super::*;
+use crate::paths;
 use crate::test_utils::with_temp_scoop_home;
+#[cfg(unix)]
+use crate::test_utils::{FakeUv, env_guard};
 use serial_test::serial;
 use std::fs;
 
@@ -181,10 +198,14 @@ fn scan_skips_symlink_entries() {
 // cause gc --aggressive to claim that env's Python is unused. The
 // scan must bail conservatively and return zero unused pythons.
 // ==========================================================================
+#[cfg(unix)]
 #[test]
 #[serial]
 fn aggressive_bails_when_metadata_unreadable() {
-    with_temp_scoop_home(|_| {
+    // A fake uv reports an installed Python, so the scan reaches the
+    // metadata check on any machine (it used to need a real uv with a
+    // Python installed, or it returned early and proved nothing).
+    with_fake_uv_home(&["3.12.1"], |_, _| {
         let dir = paths::virtualenvs_dir().unwrap();
         fs::create_dir_all(&dir).unwrap();
 
@@ -201,12 +222,17 @@ fn aggressive_bails_when_metadata_unreadable() {
         // silently dropped it from the "used" set.
         let orphans = scan_orphan_envs().unwrap();
         assert!(orphans.iter().all(|o| o.name != "corrupt"));
+        let leaving: Vec<&str> = orphans.iter().map(|o| o.name.as_str()).collect();
 
         // The scan must bail with `unreadable_envs > 0` and return
         // an empty pythons list — refusing to mark any Python as
         // unused, no matter what `uv python list` reports.
-        let (pythons, unreadable_envs) = scan_unused_pythons(&orphans).unwrap();
-        assert_eq!(unreadable_envs, 1, "should count one unreadable env");
+        let (pythons, skip) = scan_unused_pythons(&leaving).unwrap();
+        assert_eq!(
+            skip,
+            Some(PythonSkip::UnreadableMetadata(1)),
+            "should count one unreadable env"
+        );
         assert!(
             pythons.is_empty(),
             "must not claim any Python is unused when metadata is unreadable; got {:?}",
@@ -215,10 +241,31 @@ fn aggressive_bails_when_metadata_unreadable() {
     });
 }
 
+/// The same bail through the command itself: `gc --aggressive --yes` with
+/// an unreadable env warns and uninstalls nothing. Fails if the unreadable
+/// env stops blocking the Python scan (e.g. the bail in
+/// `referenced_versions` is dropped): the fake uv then logs an uninstall.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn aggressive_gc_uninstalls_nothing_when_metadata_unreadable() {
+    with_fake_uv_home(&["3.12.1"], |_, uv| {
+        let env_path = paths::virtualenvs_dir().unwrap().join("corrupt");
+        fs::create_dir_all(env_path.join("bin")).unwrap();
+        fs::write(env_path.join("bin/python"), "").unwrap();
+        fs::write(env_path.join(".scoop-metadata.json"), "{ not json").unwrap();
+
+        let output = Output::new(0, true, crate::output::Colors::NONE, false);
+        execute(&output, true, true, None).unwrap();
+        assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
+        assert!(env_path.exists(), "a healthy-shaped env is not an orphan");
+    });
+}
+
 // ==========================================================================
 // Q3 regression — TOCTOU between scan and remove. We simulate by
 // building a fake orphan record that points at a path which is
-// currently healthy. remove_orphans must re-classify and skip.
+// currently healthy. remove_candidates must re-classify and skip.
 // ==========================================================================
 #[test]
 #[serial]
@@ -236,7 +283,7 @@ fn remove_skips_env_that_became_healthy() {
 
         // Hand-construct an orphan record as if the original scan had
         // flagged it (before the user re-populated the dir).
-        let stale_orphan = OrphanEnv {
+        let stale_orphan = GcCandidate {
             name: "racy".to_string(),
             path: env_path.display().to_string(),
             reason: EnvGcReason::OrphanMissingMetadata,
@@ -252,7 +299,7 @@ fn remove_skips_env_that_became_healthy() {
         }];
 
         let output = Output::new(0, true, crate::output::Colors::NONE, false);
-        remove_orphans(
+        remove_candidates(
             &output,
             &[stale_orphan],
             &[],
@@ -266,7 +313,7 @@ fn remove_skips_env_that_became_healthy() {
         // outcome record need to agree on that.
         assert!(
             env_path.exists(),
-            "remove_orphans deleted an env that re-classified as healthy"
+            "remove_candidates deleted an env that re-classified as healthy"
         );
         assert_eq!(
             env_records[0].outcome,
@@ -553,7 +600,7 @@ fn remove_treats_not_found_as_already_removed() {
         let dir = paths::virtualenvs_dir().unwrap();
         fs::create_dir_all(&dir).unwrap();
 
-        let phantom = OrphanEnv {
+        let phantom = GcCandidate {
             name: "phantom".into(),
             path: dir.join("phantom-already-gone").display().to_string(),
             reason: EnvGcReason::OrphanMissingMetadata,
@@ -569,7 +616,7 @@ fn remove_treats_not_found_as_already_removed() {
         }];
 
         let output = Output::new(0, true, crate::output::Colors::NONE, false);
-        remove_orphans(
+        remove_candidates(
             &output,
             &[phantom],
             &[],
@@ -618,7 +665,7 @@ fn remove_records_actual_outcomes_for_each_env() {
             .collect();
 
         let output = Output::new(0, true, crate::output::Colors::NONE, false);
-        remove_orphans(
+        remove_candidates(
             &output,
             &orphans,
             &[],
@@ -637,5 +684,163 @@ fn remove_records_actual_outcomes_for_each_env() {
             );
             assert!(record.error.is_none());
         }
+    });
+}
+
+/// HIGH audit fix: an env list that cannot be read must not look like "no
+/// env uses any Python" — `gc --aggressive --yes` would then uninstall
+/// every Python. Fails if `referenced_versions` swallows the list error
+/// (e.g. `.unwrap_or_default()`), which returns an empty set instead.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn referenced_versions_fails_closed_when_env_list_unreadable() {
+    // A regular file where the virtualenvs directory should be makes the
+    // listing fail for any user, root included (a mode-000 directory does
+    // not stop root, and the test then proved nothing).
+    with_fake_uv_home(&["3.12.1"], |home, _| {
+        fs::write(home.join("virtualenvs"), b"not a directory").unwrap();
+        assert_eq!(
+            referenced_versions(&[]),
+            Err(PythonSkip::EnvListUnavailable)
+        );
+    });
+}
+
+/// Runs `f` with an isolated SCUV_HOME and a fake `uv` first on PATH that
+/// reports `versions` as installed. (`env_guard` alone: nesting it in
+/// `with_temp_scoop_home` would deadlock on ENV_LOCK.)
+#[cfg(unix)]
+fn with_fake_uv_home<T>(versions: &[&str], f: impl FnOnce(&Path, &FakeUv) -> T) -> T {
+    let home = tempfile::tempdir().unwrap();
+    let uv = FakeUv::new(versions);
+    let path = uv.path_var();
+    let _env = env_guard(&[
+        (paths::SCUV_HOME_ENV, Some(home.path().to_str().unwrap())),
+        ("PATH", Some(path.as_str())),
+    ]);
+    f(home.path(), &uv)
+}
+
+#[cfg(unix)]
+fn pending_python(version: &str) -> (UnusedPython, PythonRecord) {
+    (
+        UnusedPython {
+            version: version.to_string(),
+            path: None,
+        },
+        PythonRecord {
+            version: version.to_string(),
+            path: None,
+            outcome: PythonOutcome::Pending,
+            error: None,
+        },
+    )
+}
+
+/// The re-scan right before uninstalling fails closed: when it cannot tell
+/// what is in use (here the env list is unreadable), nothing is uninstalled.
+/// Fails if the re-scan error or skip is read as "everything still unused".
+#[cfg(unix)]
+#[test]
+#[serial]
+fn uninstall_pythons_skips_all_when_rescan_cannot_tell() {
+    with_fake_uv_home(&["3.12.1"], |home, uv| {
+        // Unreadable env list, for any user (see the test above).
+        fs::write(home.join("virtualenvs"), b"not a directory").unwrap();
+        // Sanity: the fake uv lists the Python, so a skip below comes from
+        // the unreadable env list, not from an empty uv listing.
+        let listed = crate::uv::UvClient::new()
+            .unwrap()
+            .list_installed_pythons()
+            .unwrap();
+        assert_eq!(listed.len(), 1, "fake uv not in use: {listed:?}");
+
+        let (py, record) = pending_python("3.12.1");
+        let mut records = [record];
+        let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+        uninstall_pythons(&out, std::slice::from_ref(&py), &mut records);
+
+        assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
+        assert_eq!(records[0].outcome, PythonOutcome::SkippedInUse);
+    });
+}
+
+/// The counterpart: a Python no env uses is uninstalled through uv. Fails
+/// if the re-scan stops yielding still-unused versions at all (which would
+/// also make the fail-closed test above pass vacuously).
+#[cfg(unix)]
+#[test]
+#[serial]
+fn uninstall_pythons_removes_a_python_still_unused() {
+    with_fake_uv_home(&["3.12.1"], |home, uv| {
+        fs::create_dir_all(home.join("virtualenvs")).unwrap();
+
+        let (py, record) = pending_python("3.12.1");
+        let mut records = [record];
+        let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+        uninstall_pythons(&out, std::slice::from_ref(&py), &mut records);
+
+        assert_eq!(uv.uninstalled(), ["3.12.1"]);
+        assert_eq!(records[0].outcome, PythonOutcome::Removed);
+    });
+}
+
+/// HIGH review fix: a candidate that `--yes` ends up keeping (here a stale
+/// env used again since the scan) still uses its Python, so the Python
+/// must survive. Fails if the re-scan excludes every candidate instead of
+/// only the ones actually removed.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn kept_candidate_keeps_its_python() {
+    with_fake_uv_home(&["3.12"], |home, uv| {
+        let venvs = home.join("virtualenvs");
+        fs::create_dir_all(&venvs).unwrap();
+        // Metadata says python 3.12 and "used just now".
+        make_env_with_last_used(&venvs, "kept", Some(Utc::now()));
+        // Sanity: the fake uv is the one in use and reports 3.12, so a
+        // skipped uninstall below means "in use", not "no uv".
+        let listed = crate::uv::UvClient::new()
+            .unwrap()
+            .list_installed_pythons()
+            .unwrap();
+        assert_eq!(listed.len(), 1, "fake uv not in use: {listed:?}");
+
+        let candidate = GcCandidate {
+            name: "kept".into(),
+            path: venvs.join("kept").display().to_string(),
+            reason: EnvGcReason::Stale,
+            age_days: Some(90),
+        };
+        let mut env_records = [EnvRecord {
+            name: "kept".into(),
+            path: candidate.path.clone(),
+            reason: EnvGcReason::Stale,
+            age_days: Some(90),
+            outcome: EnvOutcome::Pending,
+            error: None,
+        }];
+        let (py, py_record) = pending_python("3.12");
+        let mut py_records = [py_record];
+        let cutoff = Utc::now() - chrono::Duration::days(30);
+        let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+
+        remove_candidates(
+            &out,
+            std::slice::from_ref(&candidate),
+            std::slice::from_ref(&py),
+            &mut env_records,
+            &mut py_records,
+            Some(cutoff),
+        );
+
+        assert_eq!(env_records[0].outcome, EnvOutcome::SkippedRecentlyUsed);
+        assert!(venvs.join("kept").exists());
+        assert!(
+            uv.uninstalled().is_empty(),
+            "the kept env's Python was uninstalled"
+        );
+        assert_eq!(py_records[0].outcome, PythonOutcome::SkippedInUse);
     });
 }

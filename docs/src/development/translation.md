@@ -36,7 +36,7 @@ create.success:
 
 **Important:**
 
-- Add translations to all 224 keys
+- Add translations to all 225 keys
 - Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc.
 - Preserve special characters: `→`, quotes, backticks
 
@@ -91,7 +91,7 @@ Each shell module has a test (`lang_completion_list_matches_supported_langs`)
 that compares its list with `SUPPORTED_LANGS`, so a shell you miss fails
 `cargo test` instead of surfacing when a user presses Tab.
 
-**3. Locale loops in tests (optional)** — `src/error/mod.rs` and
+**3. Locale loops in tests (optional)** — `src/error/tests.rs` and
 `src/error/suggestion.rs` iterate the supported locales. Adding yours gives
 your translation unit-level coverage. Skip it if you would rather not touch
 Rust, and a maintainer can add it during review.
@@ -117,7 +117,7 @@ SCUV_LANG={lang} ./target/debug/scuv lang
 
 **Required files in PR:**
 
-- [ ] `locales/app.yml` - All 224 keys translated
+- [ ] `locales/app.yml` - All 225 keys translated
 - [ ] `src/i18n.rs` - Language registered in SUPPORTED_LANGS
 - [ ] `tests/i18n_completeness.rs` - Language added to LOCALES
 - [ ] `src/shell/bash.rs`, `src/shell/zsh.rs`, `src/shell/fish.rs`, `src/shell/powershell.rs` - Completion lists updated
@@ -349,7 +349,7 @@ All languages must have ALL keys. Missing keys fall back to English.
 
 Before submitting PR:
 
-- [ ] All 224 keys translated
+- [ ] All 225 keys translated
 - [ ] All placeholders preserved (`%{name}`, `%{version}`, etc.)
 - [ ] Language registered in SUPPORTED_LANGS
 - [ ] Language added to LOCALES in `tests/i18n_completeness.rs`

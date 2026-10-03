@@ -327,7 +327,7 @@ graph TD
 | serde_json | Metadata persistence |
 | thiserror | Error type definitions |
 | owo-colors | Terminal colors |
-| indicatif | Progress bars & spinners |
+| indicatif | Progress bars |
 | dialoguer | Interactive prompts |
 | dirs | Home directory resolution |
 | which | Binary lookup (uv, python) |

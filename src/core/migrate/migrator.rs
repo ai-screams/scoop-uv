@@ -345,7 +345,7 @@ impl Migrator {
         let uv_version = self.uv.version().ok();
         let metadata = Metadata::new(name.to_string(), python_version.to_string(), uv_version);
 
-        let metadata_path = target_path.join(".scoop-metadata.json");
+        let metadata_path = target_path.join(Metadata::FILE_NAME);
         let content = serde_json::to_string_pretty(&metadata)?;
         fs::write(metadata_path, content)?;
         Ok(())

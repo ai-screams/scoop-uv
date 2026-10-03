@@ -1621,6 +1621,13 @@ gc.unreadable_metadata_warn:
   ja: "%{count} 件の環境のメタデータを読み込めません。安全のため Python のクリーンアップをスキップします"
   es: "%{count} entorno(s) tienen metadatos ilegibles; se omite la limpieza de Python por seguridad"
 
+gc.env_list_unavailable_warn:
+  en: "Could not read the environment list; skipping Python cleanup to be safe"
+  ko: "환경 목록을 읽을 수 없어요. 안전을 위해 Python 정리는 건너뛸게요"
+  pt-BR: "Não foi possível ler a lista de ambientes; a limpeza de Python foi ignorada por segurança"
+  ja: "環境一覧を読み取れませんでした。安全のため Python の整理はスキップします"
+  es: "No se pudo leer la lista de entornos; se omite la limpieza de Python por seguridad"
+
 man.refuse_symlink:
   en: "Refusing to write into symlinked directory: %{path}"
   ko: "심볼릭 링크 디렉토리에는 쓰지 않을게요: %{path}"

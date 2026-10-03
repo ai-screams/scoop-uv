@@ -486,12 +486,12 @@ mod tests {
         /// Boundary value: all flags enabled simultaneously
         #[test]
         fn output_handles_all_flags_enabled() {
-            // quiet=true, no_color=true, json=true - potentially conflicting
+            // quiet, no color and json all at once - potentially conflicting
             let output = Output::new(0, true, Colors::NONE, true);
 
             // All flags should be set as specified
             assert!(output.is_quiet());
-            assert!(!output.use_color_stderr()); // no_color=true means use_color=false
+            assert!(!output.use_color_stderr());
             assert!(output.is_json());
         }
 

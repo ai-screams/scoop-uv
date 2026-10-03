@@ -57,7 +57,7 @@ exclude_re = [
     # Without uv on the runner the success-path `Ok(Default::default())`
     # mutations can't be killed by unit tests — every test that would
     # observe a real returned PathBuf needs an actual uv subprocess.
-    # Integration tests under tests/cli.rs cover create end-to-end but
+    # Integration tests under tests/cli/ cover create end-to-end but
     # are `#[ignore]`d on CI runners that lack uv. Same exclusion
     # rationale as UvClient::create_venv.
     "VirtualenvService::create",
@@ -191,11 +191,6 @@ exclude_re = [
     # missing dir and an existing-empty dir both yield vec![]. The valid/broken
     # counting and summary are covered by the symlink_check_* tests via cargo test.
     "<impl Check for SymlinkCheck>::run",
-    # SymlinkCheck::fix recreates a venv's python symlink: the deep branches
-    # (metadata parse, uv.find_python, remove/recreate) need a real installed
-    # Python + uv to reach. The early error branches are covered by
-    # fix_symlink_returns_some_for_parseable_error_name.
-    "<impl Check for SymlinkCheck>::fix",
 ]
 
 # `cargo test` runs in well under a second; give each mutant generous headroom

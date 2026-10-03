@@ -63,11 +63,10 @@ impl Check for HomeCheck {
             if let Ok(home) = paths::scoop_home() {
                 output.info(&format!("Creating {}...", home.display()));
 
-                match std::fs::create_dir_all(&home) {
+                // The home and its virtualenvs subdirectory: report
+                // "created" only when both exist.
+                match std::fs::create_dir_all(home.join("virtualenvs")) {
                     Ok(_) => {
-                        // Also create virtualenvs subdirectory
-                        let _ = std::fs::create_dir_all(home.join("virtualenvs"));
-
                         return Some(
                             CheckResult::ok("home", "SCUV_HOME directory")
                                 .with_details(format!("created {}", home.display())),
@@ -235,6 +234,27 @@ mod tests {
             missing_home.join("virtualenvs").is_dir(),
             "virtualenvs subdir must be created"
         );
+    }
+
+    /// If `virtualenvs/` cannot be created, the fix reports failure. Fails
+    /// if that error is ignored and "created" reported anyway (the old
+    /// behavior, which only checked creating the home itself).
+    #[test]
+    #[serial]
+    fn fix_home_reports_a_virtualenvs_dir_it_could_not_create() {
+        let tmp = tempfile::tempdir().unwrap();
+        let home = tmp.path().join("scuvhome");
+        std::fs::create_dir_all(&home).unwrap();
+        // A file where the directory must go: creation fails for any user.
+        std::fs::write(home.join("virtualenvs"), b"").unwrap();
+        let _g =
+            crate::test_utils::env_guard(&[(paths::SCUV_HOME_ENV, Some(home.to_str().unwrap()))]);
+
+        let output = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+        let broken = CheckResult::error("home", "SCUV_HOME directory", "directory not found");
+
+        let result = HomeCheck.fix(&broken, &output).expect("a fix is attempted");
+        assert!(result.is_error(), "got {result:#?}");
     }
 
     #[test]
