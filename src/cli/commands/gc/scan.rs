@@ -11,7 +11,7 @@ use crate::error::Result;
 use crate::paths;
 use crate::uv::UvClient;
 
-use super::types::{EnvGcReason, EnvOutcome, OrphanEnv, PythonSkip, UnusedPython};
+use super::types::{EnvGcReason, EnvOutcome, GcCandidate, PythonSkip, UnusedPython};
 
 /// Walk `~/.scuv/virtualenvs/` and flag any directory that fails the
 /// "looks like a working env" sniff test.
@@ -35,7 +35,7 @@ use super::types::{EnvGcReason, EnvOutcome, OrphanEnv, PythonSkip, UnusedPython}
 /// Per-entry IO errors (transient permission / disappearing file) are
 /// swallowed so one bad entry doesn't abort the entire scan and hide
 /// other orphans from the user.
-pub(super) fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
+pub(super) fn scan_orphan_envs() -> Result<Vec<GcCandidate>> {
     let dir = paths::virtualenvs_dir()?;
     if !dir.exists() {
         return Ok(Vec::new());
@@ -72,7 +72,7 @@ pub(super) fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
         }
 
         if let Some(reason) = classify(&path) {
-            orphans.push(OrphanEnv {
+            orphans.push(GcCandidate {
                 name,
                 path: path.display().to_string(),
                 reason,
@@ -105,7 +105,7 @@ pub(super) fn scan_orphan_envs() -> Result<Vec<OrphanEnv>> {
 ///   parse errors to `None`. The same `Some(last_used)` else-guard
 ///   that protects "never activated" therefore also skips "unreadable
 ///   metadata" — we don't need a separate corrupt branch here.
-pub(super) fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<OrphanEnv>> {
+pub(super) fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<GcCandidate>> {
     let service = match VirtualenvService::auto() {
         Ok(s) => s,
         Err(_) => return Ok(Vec::new()),
@@ -134,7 +134,7 @@ pub(super) fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<OrphanEnv>> {
         }
 
         let age_days = (Utc::now() - last_used).num_days().max(0) as u64;
-        stale.push(OrphanEnv {
+        stale.push(GcCandidate {
             name: info.name.clone(),
             path: info.path.display().to_string(),
             reason: EnvGcReason::Stale,
@@ -176,7 +176,7 @@ pub(super) fn classify(path: &Path) -> Option<EnvGcReason> {
 /// - `Some(SkippedNoData)` — metadata became unreadable or its
 ///   `last_used` is suddenly None.
 ///
-/// Pulled out of `remove_orphans` so the per-reason TOCTOU branches
+/// Pulled out of `remove_candidates` so the per-reason TOCTOU branches
 /// stay readable.
 pub(super) fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutcome> {
     // Validation guard — see VirtualenvService::delete for the path
@@ -222,7 +222,7 @@ pub(super) fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutc
 /// which the caller surfaces. Claiming a live Python is unused would let
 /// `gc --aggressive --yes` uninstall it and break the env.
 pub(super) fn scan_unused_pythons(
-    orphans: &[OrphanEnv],
+    orphans: &[GcCandidate],
 ) -> Result<(Vec<UnusedPython>, Option<PythonSkip>)> {
     let uv = match UvClient::new() {
         Ok(u) => u,
@@ -259,7 +259,7 @@ pub(super) fn scan_unused_pythons(
 /// metadata cannot, the answer is unknown and the caller must not treat any
 /// Python as unused. An empty set here would mean exactly that.
 pub(super) fn referenced_versions(
-    candidates: &[OrphanEnv],
+    candidates: &[GcCandidate],
 ) -> std::result::Result<HashSet<String>, PythonSkip> {
     let service = VirtualenvService::auto().map_err(|_| PythonSkip::EnvListUnavailable)?;
     let envs = service.list().map_err(|_| PythonSkip::EnvListUnavailable)?;

@@ -10,7 +10,7 @@ use crate::uv::UvClient;
 
 use super::scan::{classify, recheck_stale, scan_unused_pythons};
 use super::types::{
-    EnvGcReason, EnvOutcome, EnvRecord, OrphanEnv, PythonOutcome, PythonRecord, UnusedPython,
+    EnvGcReason, EnvOutcome, EnvRecord, GcCandidate, PythonOutcome, PythonRecord, UnusedPython,
 };
 
 /// Apply the deletions, mutating `env_records` / `python_records` in
@@ -21,9 +21,9 @@ use super::types::{
 /// a single failure doesn't hide the rest of the cleanup; the per-record
 /// `error` field carries the detail for JSON consumers, and human-mode
 /// users still get inline warn lines as before.
-pub(super) fn remove_orphans(
+pub(super) fn remove_candidates(
     output: &Output,
-    envs: &[OrphanEnv],
+    envs: &[GcCandidate],
     pythons: &[UnusedPython],
     env_records: &mut [EnvRecord],
     python_records: &mut [PythonRecord],

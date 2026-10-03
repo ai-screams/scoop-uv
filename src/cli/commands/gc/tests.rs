@@ -2,11 +2,11 @@ use std::path::Path;
 
 use chrono::{DateTime, Utc};
 
-use super::remove::remove_orphans;
+use super::remove::remove_candidates;
 use super::scan::{
     recheck_stale, referenced_versions, scan_orphan_envs, scan_stale_envs, scan_unused_pythons,
 };
-use super::types::{EnvGcReason, EnvOutcome, EnvRecord, OrphanEnv, PythonRecord, PythonSkip};
+use super::types::{EnvGcReason, EnvOutcome, EnvRecord, GcCandidate, PythonRecord, PythonSkip};
 use super::*;
 use crate::paths;
 use crate::test_utils::with_temp_scoop_home;
@@ -232,7 +232,7 @@ fn aggressive_bails_when_metadata_unreadable() {
 // ==========================================================================
 // Q3 regression — TOCTOU between scan and remove. We simulate by
 // building a fake orphan record that points at a path which is
-// currently healthy. remove_orphans must re-classify and skip.
+// currently healthy. remove_candidates must re-classify and skip.
 // ==========================================================================
 #[test]
 #[serial]
@@ -250,7 +250,7 @@ fn remove_skips_env_that_became_healthy() {
 
         // Hand-construct an orphan record as if the original scan had
         // flagged it (before the user re-populated the dir).
-        let stale_orphan = OrphanEnv {
+        let stale_orphan = GcCandidate {
             name: "racy".to_string(),
             path: env_path.display().to_string(),
             reason: EnvGcReason::OrphanMissingMetadata,
@@ -266,7 +266,7 @@ fn remove_skips_env_that_became_healthy() {
         }];
 
         let output = Output::new(0, true, crate::output::Colors::NONE, false);
-        remove_orphans(
+        remove_candidates(
             &output,
             &[stale_orphan],
             &[],
@@ -280,7 +280,7 @@ fn remove_skips_env_that_became_healthy() {
         // outcome record need to agree on that.
         assert!(
             env_path.exists(),
-            "remove_orphans deleted an env that re-classified as healthy"
+            "remove_candidates deleted an env that re-classified as healthy"
         );
         assert_eq!(
             env_records[0].outcome,
@@ -567,7 +567,7 @@ fn remove_treats_not_found_as_already_removed() {
         let dir = paths::virtualenvs_dir().unwrap();
         fs::create_dir_all(&dir).unwrap();
 
-        let phantom = OrphanEnv {
+        let phantom = GcCandidate {
             name: "phantom".into(),
             path: dir.join("phantom-already-gone").display().to_string(),
             reason: EnvGcReason::OrphanMissingMetadata,
@@ -583,7 +583,7 @@ fn remove_treats_not_found_as_already_removed() {
         }];
 
         let output = Output::new(0, true, crate::output::Colors::NONE, false);
-        remove_orphans(
+        remove_candidates(
             &output,
             &[phantom],
             &[],
@@ -632,7 +632,7 @@ fn remove_records_actual_outcomes_for_each_env() {
             .collect();
 
         let output = Output::new(0, true, crate::output::Colors::NONE, false);
-        remove_orphans(
+        remove_candidates(
             &output,
             &orphans,
             &[],

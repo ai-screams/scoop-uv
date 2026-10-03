@@ -21,7 +21,7 @@ use crate::error::Result;
 use crate::output::Output;
 
 use super::duration::parse_duration;
-use remove::remove_orphans;
+use remove::remove_candidates;
 use render::render_human;
 use scan::{scan_orphan_envs, scan_stale_envs, scan_unused_pythons};
 use types::{EnvOutcome, EnvRecord, GcData, PythonOutcome, PythonRecord, PythonSkip};
@@ -81,7 +81,7 @@ pub fn execute(
     }
 
     // Build records up-front. Dry-run leaves everything Pending; `--yes`
-    // mutates outcomes in remove_orphans so the JSON envelope reflects
+    // mutates outcomes in remove_candidates so the JSON envelope reflects
     // what actually happened, not just the original scan snapshot. (The
     // old JSON shape always claimed success — partial failures were only
     // visible in human warn output, which scripts can't see.)
@@ -107,7 +107,7 @@ pub fn execute(
         .collect();
 
     if yes {
-        remove_orphans(
+        remove_candidates(
             output,
             &envs,
             &pythons,

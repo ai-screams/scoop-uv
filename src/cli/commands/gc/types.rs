@@ -35,8 +35,10 @@ pub(super) enum EnvGcReason {
     Stale,
 }
 
+/// An env `gc` flagged: an orphan (unusable) or, with `--older-than`, a
+/// healthy env that has not been used for longer than the cutoff.
 #[derive(Debug, Serialize)]
-pub(super) struct OrphanEnv {
+pub(super) struct GcCandidate {
     pub(super) name: String,
     pub(super) path: String,
     pub(super) reason: EnvGcReason,
