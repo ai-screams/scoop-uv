@@ -30,12 +30,14 @@ Without `--aggressive`, Python versions are never touched — even ones that loo
 
 ### When Pythons are left alone
 
-A Python counts as unused only when every environment can be read and none of them uses it. If that cannot be established, `gc` skips Python cleanup instead of guessing:
+`gc` reports a Python as unused only when it can tell which Python every remaining environment uses — every environment it lists that is not itself being cleaned up. When it cannot, it skips Python cleanup instead of guessing:
 
-- **The environment list cannot be read** — if `~/.scuv/virtualenvs` is unreadable from the start, `gc` stops with an error before touching anything. If it becomes unreadable after the environment scan (during the Python scan or the re-scan before uninstalling), a warning is printed and no Python is uninstalled.
-- **An environment has unreadable metadata** — its Python version is unknown, so a warning is printed and no Python is reported or uninstalled.
+- **The environment directory cannot be read** — if `~/.scuv/virtualenvs` is unreadable from the start, `gc` stops with an error before touching anything. If it becomes unreadable later, during the Python scan, a warning is printed and no Python is reported.
+- **A remaining environment has unreadable metadata** — its Python version is unknown, so a warning is printed and no Python is reported. A cleanup candidate with unreadable metadata does not count: it is going away.
 
-With `--yes`, the Python scan runs again right before uninstalling. Any environment still on disk at that moment protects its Python, including a candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or failed to remove. Such a Python is reported as `SkippedInUse` instead of being uninstalled.
+Warnings are not printed under `--json` or `--quiet`; the JSON output then has an empty `pythons` array.
+
+With `--yes`, the Python scan runs again right before uninstalling. Any environment still on disk at that moment protects the Python it uses, including a candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or failed to remove. If this second scan cannot tell which Pythons are in use, nothing is uninstalled. Each Python left alone at this point gets a warning and the JSON outcome `skipped_in_use`.
 
 ## `--older-than <DURATION>`
 
