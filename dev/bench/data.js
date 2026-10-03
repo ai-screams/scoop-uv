@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791053993578,
+  "lastUpdate": 1791058990370,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -7096,6 +7096,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/reserved_reject",
             "value": 18,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 158,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f5926b97c83d4034c4d29054b95fc5326e681f1d",
+          "message": "Merge pull request #212 from ai-screams/docs/gc-aggressive-safety\n\ndocs(gc): say when --aggressive leaves Pythons alone",
+          "timestamp": "2026-10-04T05:19:19+09:00",
+          "tree_id": "42857284bbee56fe2864d6b3b8e88e2a547ef23e",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/f5926b97c83d4034c4d29054b95fc5326e681f1d"
+        },
+        "date": 1791058989423,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 73329,
+            "range": "± 1232",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 87221,
+            "range": "± 424",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 2546,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 611,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 74,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 77,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 67,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 60,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 17,
             "range": "± 0",
             "unit": "ns/iter"
           },
