@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791063138032,
+  "lastUpdate": 1791063139697,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -9433,6 +9433,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 494,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a7150edc4c3c21d4d5e3e7421ab9b538169aac02",
+          "message": "Merge pull request #220 from ai-screams/fix/package-list-without-pip\n\nfix(core): list an env's packages with uv, not the env's own pip",
+          "timestamp": "2026-10-04T06:28:24+09:00",
+          "tree_id": "d358af2e603ab9b78b8e978d6f5f3c2f94c38b92",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/a7150edc4c3c21d4d5e3e7421ab9b538169aac02"
+        },
+        "date": 1791063139589,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1706,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1122,
+            "range": "± 16",
             "unit": "ns/iter"
           }
         ]
