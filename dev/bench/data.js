@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791064886668,
+  "lastUpdate": 1791064888108,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -9673,6 +9673,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1117,
             "range": "± 10",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "58d54b3cd32d4da73fea7c76c05ec78bfb0119bb",
+          "message": "Merge pull request #222 from ai-screams/docs/command-output-samples\n\ndocs: match command output samples to the binary and use uv pip",
+          "timestamp": "2026-10-04T06:57:34+09:00",
+          "tree_id": "6b7618f101f462490c89cca3cfa467f857eadd65",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/58d54b3cd32d4da73fea7c76c05ec78bfb0119bb"
+        },
+        "date": 1791064887999,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1648,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1097,
+            "range": "± 1",
             "unit": "ns/iter"
           }
         ]
