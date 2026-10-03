@@ -281,6 +281,266 @@ fn powershell_wrapper_and_hook_evaluate_multiline_scripts() {
     }
 }
 
+/// A home with two envs, `alpha` and `beta`, plus a fake uv, for the
+/// completion tests: completing an env name lists them via `scuv list --bare`.
+#[cfg(unix)]
+fn completion_fixture() -> (TestFixture, TempDir, String) {
+    let fixture = TestFixture::new();
+    for env in ["alpha", "beta"] {
+        let dir = fixture.scoop_home.join("virtualenvs").join(env);
+        std::fs::create_dir_all(dir.join("bin")).unwrap();
+        std::fs::write(dir.join("pyvenv.cfg"), "version = 3.12.1\n").unwrap();
+    }
+    let fake_uv = fake_uv_dir();
+    let bin = assert_cmd::cargo::cargo_bin("scuv");
+    let path = format!(
+        "{}:{}:{}",
+        bin.parent().unwrap().display(),
+        fake_uv.path().display(),
+        std::env::var("PATH").unwrap_or_default()
+    );
+    (fixture, fake_uv, path)
+}
+
+/// Each line is `<command line> => <candidates>`; asserts the shell's
+/// output holds every line.
+#[cfg(unix)]
+fn assert_completions(shell: &str, stdout: &str, stderr: &str, expected: &[&str]) {
+    for line in expected {
+        assert!(
+            stdout.lines().any(|l| l.trim_end() == *line),
+            "{shell}: missing {line:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        );
+    }
+}
+
+/// Env names are offered only where an env name goes: after an option's
+/// value (`-o out.json`, `--color auto`), at diff's second slot but not its
+/// third, and not at clone's destination, run's command, a second `use`
+/// argument or an option's own value (`-o <TAB>`; `--shell <TAB>` gets the
+/// shells). Fails if the
+/// position count includes option values or loses its limits.
+#[cfg(unix)]
+#[test]
+fn bash_completion_offers_env_names_only_where_they_go() {
+    let Some(bash) = find_shell("bash") else {
+        eprintln!("skipping: no bash binary found");
+        return;
+    };
+    let (fixture, _fake_uv, path) = completion_fixture();
+    let script = concat!(
+        "eval \"$(command scuv init bash)\" 2>/dev/null\n",
+        "t() { COMP_WORDS=(\"$@\"); COMP_CWORD=$((${#COMP_WORDS[@]}-1)); COMPREPLY=();",
+        " _scuv_complete; echo \"${COMP_WORDS[*]} => ${COMPREPLY[*]}\"; }\n",
+        "t scuv export -o out.json ''\n",
+        "t scuv verify --color auto ''\n",
+        "t scuv clone alpha ''\n",
+        "t scuv diff alpha ''\n",
+        "t scuv diff alpha beta ''\n",
+        "t scuv self ''\n",
+        "t scuv self update ''\n",
+        "t scuv use alpha ''\n",
+        "t scuv activate --shell ''\n",
+        "t scuv export -o ''\n",
+    );
+    let output = std::process::Command::new(bash)
+        .args(["--norc", "--noprofile", "-c", script])
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("PATH", path)
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("bash must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_completions(
+        "bash",
+        &stdout,
+        &stderr,
+        &[
+            "scuv export -o out.json  => alpha beta system",
+            "scuv verify --color auto  => alpha beta system",
+            "scuv clone alpha  =>",
+            "scuv diff alpha  => alpha beta system",
+            "scuv diff alpha beta  =>",
+            "scuv self  => update",
+            "scuv self update  =>",
+            "scuv use alpha  =>",
+            "scuv activate --shell  => bash zsh fish powershell",
+        ],
+    );
+    // The value of -o is a path: no env names there.
+    let line = stdout.lines().find(|l| l.starts_with("scuv export -o  =>"));
+    assert!(
+        line.is_some_and(|l| !l.contains("alpha")),
+        "bash: {line:?}\n{stdout}"
+    );
+}
+
+/// zsh's position helpers, called directly with `words`/`CURRENT` set as
+/// the completion system sets them (driving `compadd` itself needs a
+/// terminal). Fails if `_scuv_positionals` counts an option's value or
+/// `_scuv_at_option_value` misses one.
+#[cfg(unix)]
+#[test]
+fn zsh_completion_counts_positions_past_option_values() {
+    let Some(zsh) = find_shell("zsh") else {
+        eprintln!("skipping: no zsh binary found");
+        return;
+    };
+    let (fixture, _fake_uv, path) = completion_fixture();
+    let script = concat!(
+        "eval \"$(command scuv init zsh)\" 2>/dev/null\n",
+        "t() { words=(\"$@\"); CURRENT=${#words}; _scuv_positionals;",
+        " if _scuv_at_option_value; then v=yes; else v=no; fi;",
+        " echo \"${words[*]} => $REPLY $v\"; }\n",
+        "t scuv export -o out.json ''\n",
+        "t scuv verify --color auto ''\n",
+        "t scuv diff alpha ''\n",
+        "t scuv use alpha ''\n",
+        "t scuv export -o ''\n",
+        "t scuv activate --shell ''\n",
+    );
+    let output = std::process::Command::new(zsh)
+        .args(["-f", "-c", script])
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("PATH", path)
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("zsh must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_completions(
+        "zsh",
+        &stdout,
+        &stderr,
+        &[
+            "scuv export -o out.json  => 0 no",
+            "scuv verify --color auto  => 0 no",
+            "scuv diff alpha  => 1 no",
+            "scuv use alpha  => 1 no",
+            "scuv export -o  => 0 yes",
+            "scuv activate --shell  => 0 yes",
+        ],
+    );
+}
+
+/// The same positions in fish, read back with `complete -C`. Fails if the
+/// env-name or `update` rules lose their `__fish_is_nth_token` limits.
+#[cfg(unix)]
+#[test]
+fn fish_completion_offers_env_names_only_where_they_go() {
+    let Some(fish) = find_shell("fish") else {
+        eprintln!("skipping: no fish binary found");
+        return;
+    };
+    let (fixture, _fake_uv, path) = completion_fixture();
+    let config_home = fixture.temp_dir.path().join("xdg-config");
+    std::fs::create_dir_all(&config_home).unwrap();
+    let script = concat!(
+        "command scuv init fish | source\n",
+        "for l in 'scuv clone ' 'scuv clone alpha ' 'scuv run alpha ' 'scuv diff alpha ' ",
+        "'scuv diff alpha beta ' 'scuv self ' 'scuv self update ' 'scuv use alpha ' ",
+        "'scuv export -o out.json ' 'scuv export -o ' 'scuv activate --shell ' 'scuv import --name '\n",
+        "    set -l c (complete -C $l | string split -f1 \\t | string join ' ')\n",
+        "    echo \"$l=> $c\"\n",
+        "end\n",
+    );
+    let output = std::process::Command::new(fish)
+        .args(["-c", script])
+        .env("XDG_CONFIG_HOME", &config_home)
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("PATH", path)
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("fish must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_completions(
+        "fish",
+        &stdout,
+        &stderr,
+        &[
+            "scuv clone => alpha beta system",
+            "scuv clone alpha =>",
+            "scuv run alpha =>",
+            "scuv diff alpha => alpha beta system",
+            "scuv diff alpha beta =>",
+            "scuv self => update",
+            "scuv self update =>",
+            "scuv use alpha =>",
+            "scuv export -o out.json => alpha beta system",
+            "scuv activate --shell => bash fish powershell zsh", // fish sorts
+            "scuv import --name =>",
+        ],
+    );
+    // The value of -o is a path: files, never env names.
+    let line = stdout.lines().find(|l| l.starts_with("scuv export -o =>"));
+    assert!(
+        line.is_some_and(|l| !l.contains("alpha") && l.len() > "scuv export -o =>".len()),
+        "fish: {line:?}\n{stdout}"
+    );
+}
+
+/// The same positions in PowerShell, through `TabExpansion2`. Fails if
+/// `scuv use <TAB>` is taken for the subcommand slot again (the AST text
+/// drops the trailing space), or the position count includes option values
+/// or loses its limits. Paths are PowerShell's fallback when the completer
+/// returns nothing, so a slot with no candidates is checked by the absence
+/// of env names.
+#[cfg(unix)]
+#[test]
+fn powershell_completion_offers_env_names_only_where_they_go() {
+    let Some(pwsh) = find_shell("pwsh") else {
+        eprintln!("skipping: no pwsh binary found");
+        return;
+    };
+    let (fixture, _fake_uv, path) = completion_fixture();
+    let script = concat!(
+        "Invoke-Expression (& scuv init powershell | Out-String)\n",
+        "foreach ($l in 'scuv use ', 'scuv clone ', 'scuv clone alpha ', 'scuv diff alpha ',\n",
+        "             'scuv diff alpha beta ', 'scuv export -o out.json ', 'scuv self ',\n",
+        "             'scuv self update ', 'scuv use alpha ', 'scuv export -o \"out file.json\" ',\n",
+        "             'scuv activate --shell ', 'scuv export -o ') {\n",
+        "    $r = TabExpansion2 -inputScript $l -cursorColumn $l.Length\n",
+        "    $c = @($r.CompletionMatches | ForEach-Object CompletionText |\n",
+        "          Where-Object { $_ -in 'alpha', 'beta', 'system', 'update', 'list', 'bash' })\n",
+        "    $l + '=> ' + ($c -join ' ')\n",
+        "}\n",
+    );
+    let output = std::process::Command::new(pwsh)
+        .args(["-NoProfile", "-NonInteractive", "-Command", script])
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("PATH", path)
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("pwsh must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_completions(
+        "pwsh",
+        &stdout,
+        &stderr,
+        &[
+            "scuv use => alpha beta system",
+            "scuv clone => alpha beta system",
+            "scuv clone alpha =>",
+            "scuv diff alpha => alpha beta system",
+            "scuv diff alpha beta =>",
+            "scuv export -o out.json => alpha beta system",
+            "scuv self => update",
+            "scuv self update =>",
+            "scuv use alpha =>",
+            "scuv export -o \"out file.json\" => alpha beta system",
+            "scuv activate --shell => bash",
+            "scuv export -o =>",
+        ],
+    );
+}
+
 #[test]
 fn test_init_bash() {
     Command::cargo_bin("scuv")

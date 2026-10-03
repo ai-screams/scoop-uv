@@ -2,7 +2,7 @@
 complete -c scuv -f
 
 # Subcommands
-set -l commands list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang
+set -l commands list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang self status clone export import sync run which prune gc man verify diff
 
 # Options every subcommand takes (`global = true` in the CLI), defined once.
 # `--color`'s values stay on offer right after it (`--color <TAB>`), which
@@ -26,6 +26,19 @@ complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "deactivate" 
 complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "shell" -d "Set shell-specific environment"
 complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "migrate" -d "Migrate environments from other tools"
 complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "lang" -d "Set or show language preference"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "self" -d "Manage scuv itself"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "status" -d "Show the current environment status"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "clone" -d "Clone an environment"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "export" -d "Export an environment as JSON"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "import" -d "Import an environment from an export file"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "sync" -d "Sync an environment from .scuv.toml"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "run" -d "Run a command inside an environment"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "which" -d "Print the path to an executable in an environment"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "prune" -d "Prune the uv cache"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "gc" -d "Garbage-collect orphan virtual environments"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "man" -d "Generate man pages"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "verify" -d "Verify environment health"
+complete -c scuv -n "not __fish_seen_subcommand_from $commands" -a "diff" -d "Compare two virtual environments"
 
 # Options for 'list' (with duplicate prevention)
 complete -c scuv -n "__fish_seen_subcommand_from list; and not __fish_contains_opt pythons" -l pythons -d "Show installed Python versions"
@@ -63,7 +76,38 @@ complete -c scuv -n "__fish_seen_subcommand_from doctor; and not __fish_contains
 complete -c scuv -n "__fish_seen_subcommand_from shell; and not __fish_contains_opt unset" -l unset -d "Clear shell-specific environment"
 
 # Dynamic completions: virtual environment names
-complete -c scuv -n "__fish_seen_subcommand_from use remove info activate shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
+# Positional arguments before the cursor. Options are skipped, and so is the
+# value of an option that takes one (`__fish_is_nth_token` would count it).
+function __scuv_positionals
+    set -l count 0
+    set -l skip 0
+    for t in (commandline -opc)[3..-1]
+        if test $skip -eq 1
+            set skip 0
+            continue
+        end
+        switch $t
+            case --color -o --output --name --shell
+                set skip 1
+            case '-*'
+            case '*'
+                set count (math $count + 1)
+        end
+    end
+    echo $count
+end
+
+# Env names only where one goes: the first argument (diff: either of two),
+# and not as the value of an option
+complete -c scuv -n "__fish_seen_subcommand_from use remove info activate shell clone export run verify; and test (__scuv_positionals) -eq 0; and not __fish_prev_arg_in -o --output --name --shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
+complete -c scuv -n "__fish_seen_subcommand_from diff; and test (__scuv_positionals) -lt 2; and not __fish_prev_arg_in -o --output --name --shell" -a "(command scuv list --bare 2>/dev/null)" -d "Virtual environment"
+
+# self has one subcommand; import reads a file and man writes to a directory
+complete -c scuv -n "__fish_seen_subcommand_from self; and test (__scuv_positionals) -eq 0" -a "update" -d "Reinstall scuv from crates.io"
+complete -c scuv -n "__fish_seen_subcommand_from import man; and test (__scuv_positionals) -eq 0; and not __fish_prev_arg_in -o --output --name --shell" -F
+
+# --shell takes a shell name (fish already offers paths after -o/--output)
+complete -c scuv -n "__fish_prev_arg_in --shell" -x -a "bash zsh fish powershell" -d "Shell type"
 
 # Dynamic completions: Python versions for uninstall
 # Note: scuv list --pythons --bare already returns unique, sorted versions

@@ -47,9 +47,26 @@ _scuv_complete() {
         return
     fi
 
+    # The word being completed is an option's value: shells for --shell,
+    # paths for -o/--output, nothing for --name
+    case "${COMP_WORDS[COMP_CWORD-1]}" in
+        --shell)
+            COMPREPLY=($(compgen -W "bash zsh fish powershell" -- "$cur"))
+            return
+            ;;
+        -o|--output)
+            local IFS=$'\n'
+            COMPREPLY=($(compgen -f -- "$cur"))
+            return
+            ;;
+        --name)
+            return
+            ;;
+    esac
+
     # First argument: complete subcommands
     if [[ ${COMP_CWORD} -eq 1 ]]; then
-        COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang" -- "$cur"))
+        COMPREPLY=($(compgen -W "list use create remove info install uninstall doctor init completions activate deactivate shell migrate lang self status clone export import sync run which prune gc man verify diff" -- "$cur"))
         return
     fi
 
@@ -85,19 +102,46 @@ _scuv_complete() {
         return
     fi
 
+    # Positional arguments already on the line: options are skipped, and so
+    # is the value of an option that takes one
+    local positionals=0 skip=false
+    for ((i=2; i<COMP_CWORD; i++)); do
+        if [[ $skip == true ]]; then
+            skip=false
+            continue
+        fi
+        case "${COMP_WORDS[i]}" in
+            --color|-o|--output|--name|--shell) skip=true ;;
+            -*) ;;
+            *) ((positionals++)) ;;
+        esac
+    done
+
     # Argument completion (by subcommand)
     case "$cmd" in
-        use|remove|info|activate|shell)
-            # Check if env name already provided
-            local has_arg=false
-            for ((i=2; i<COMP_CWORD; i++)); do
-                if [[ "${COMP_WORDS[i]}" != -* ]]; then
-                    has_arg=true
-                    break
-                fi
-            done
-            if [[ "$has_arg" == false ]]; then
+        use|remove|info|activate|shell|clone|export|run|verify)
+            # The environment name comes first
+            if [[ $positionals -eq 0 ]]; then
                 COMPREPLY=($(compgen -W "$(command scuv list --bare 2>/dev/null)" -- "$cur"))
+            fi
+            ;;
+        diff)
+            # Two environment names
+            if [[ $positionals -lt 2 ]]; then
+                COMPREPLY=($(compgen -W "$(command scuv list --bare 2>/dev/null)" -- "$cur"))
+            fi
+            ;;
+        self)
+            if [[ $positionals -eq 0 ]]; then
+                COMPREPLY=($(compgen -W "update" -- "$cur"))
+            fi
+            ;;
+        import|man)
+            # A file (import) or a directory (man); one name per line, so a
+            # path with spaces stays one candidate
+            if [[ $positionals -eq 0 ]]; then
+                local IFS=$'\n'
+                COMPREPLY=($(compgen -f -- "$cur"))
             fi
             ;;
         uninstall)
@@ -108,13 +152,7 @@ _scuv_complete() {
             ;;
         create)
             # First arg: name, second arg: python version
-            local arg_count=0
-            for ((i=2; i<COMP_CWORD; i++)); do
-                if [[ "${COMP_WORDS[i]}" != -* ]]; then
-                    ((arg_count++))
-                fi
-            done
-            if [[ $arg_count -eq 1 ]]; then
+            if [[ $positionals -eq 1 ]]; then
                 # Second positional arg: python version
                 COMPREPLY=($(compgen -W "$(command scuv list --pythons --bare 2>/dev/null | sort -u)" -- "$cur"))
             fi

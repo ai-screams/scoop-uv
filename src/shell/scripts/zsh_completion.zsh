@@ -15,6 +15,33 @@ _scuv_global_opts() {
     [[ $has_nocolor == false ]] && opts+=('--no-color:Disable colored output')
 }
 
+# Count the positional arguments before the cursor into REPLY: options are
+# skipped, and so is the value of an option that takes one.
+_scuv_positionals() {
+    local w skip=false
+    REPLY=0
+    for w in "${words[@]:2:$((CURRENT-3))}"; do
+        if [[ $skip == true ]]; then
+            skip=false
+            continue
+        fi
+        case "$w" in
+            --color|-o|--output|--name|--shell) skip=true ;;
+            -*|'') ;;
+            *) ((REPLY++)) ;;
+        esac
+    done
+}
+
+# True when the word being completed is the value of an option that takes
+# one (`-o <TAB>`, `--shell <TAB>`): no positional candidates there.
+_scuv_at_option_value() {
+    case "${words[CURRENT-1]:-}" in
+        -o|--output|--name|--shell) return 0 ;;
+    esac
+    return 1
+}
+
 _scuv() {
     local curcontext="$curcontext" state line
     typeset -A opt_args
@@ -35,6 +62,19 @@ _scuv() {
         _describe 'color' color_vals
         return 0
     fi
+
+    # Values of the options that take one: shells for --shell, paths for -o
+    case "${words[CURRENT-1]:-}" in
+        --shell)
+            local shells=('bash:Bash shell' 'zsh:Zsh shell' 'fish:Fish shell' 'powershell:PowerShell')
+            _describe 'shell' shells
+            return 0
+            ;;
+        -o|--output)
+            _files
+            return 0
+            ;;
+    esac
 
     _arguments -C \
         '1: :->command' \
@@ -58,6 +98,19 @@ _scuv() {
                 'shell:Set shell-specific environment'
                 'migrate:Migrate environments from other tools'
                 'lang:Set or show language preference'
+                'self:Manage scuv itself'
+                'status:Show the current environment status'
+                'clone:Clone an environment'
+                'export:Export an environment as a portable JSON file'
+                'import:Import an environment from a scuv export file'
+                'sync:Sync an environment from .scuv.toml'
+                'run:Run a command inside an environment'
+                'which:Print the full path to an executable in an environment'
+                'prune:Prune the uv cache'
+                'gc:Garbage-collect orphan virtual environments'
+                'man:Generate man pages'
+                'verify:Verify environment health'
+                'diff:Compare two virtual environments'
             )
             _describe -V 'command' commands
             ;;
@@ -81,12 +134,8 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
-                        local has_env=false
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && has_env=true && break
-                        done
-                        if [[ $has_env == false ]]; then
+                        _scuv_positionals
+                        if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -106,12 +155,8 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
-                        local has_env=false
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && has_env=true && break
-                        done
-                        if [[ $has_env == false ]]; then
+                        _scuv_positionals
+                        if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -135,12 +180,8 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
-                        local has_env=false
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && has_env=true && break
-                        done
-                        if [[ $has_env == false ]]; then
+                        _scuv_positionals
+                        if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
@@ -148,12 +189,8 @@ _scuv() {
                     ;;
                 activate)
                     # Check if env name already provided (exclude current word being typed)
-                    local has_env=false
-                    local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                    for w in "${prev_args[@]}"; do
-                        [[ $w != -* && -n $w ]] && has_env=true && break
-                    done
-                    if [[ $has_env == false ]]; then
+                    _scuv_positionals
+                    if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                         local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                         compadd -a envs
                     fi
@@ -311,15 +348,58 @@ _scuv() {
                         _describe 'option' opts
                     else
                         # Check if env name already provided (exclude current word being typed)
-                        local has_env=false
-                        local prev_args=("${words[@]:2:$((CURRENT-3))}")
-                        for w in "${prev_args[@]}"; do
-                            [[ $w != -* && -n $w ]] && has_env=true && break
-                        done
-                        if [[ $has_env == false ]]; then
+                        _scuv_positionals
+                        if (( REPLY == 0 )) && ! _scuv_at_option_value; then
                             local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
                             compadd -a envs
                         fi
+                    fi
+                    ;;
+                clone|export|run|verify|diff)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _scuv_global_opts
+                        _describe 'option' opts
+                    else
+                        # Environment names: diff takes two, the others one
+                        local max=1
+                        [[ ${line[1]} == diff ]] && max=2
+                        _scuv_positionals
+                        if (( REPLY < max )) && ! _scuv_at_option_value; then
+                            local envs=(${(f)"$(command scuv list --bare 2>/dev/null)"})
+                            compadd -a envs
+                        fi
+                    fi
+                    ;;
+                self)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _scuv_global_opts
+                        _describe 'option' opts
+                    else
+                        _scuv_positionals
+                        if (( REPLY == 0 )); then
+                            local subcmds=('update:Reinstall scuv from crates.io')
+                            _describe 'subcommand' subcmds
+                        fi
+                    fi
+                    ;;
+                import|man)
+                    # A file (import) or a directory (man)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _scuv_global_opts
+                        _describe 'option' opts
+                    else
+                        _scuv_positionals
+                        (( REPLY == 0 )) && ! _scuv_at_option_value && _files
+                    fi
+                    ;;
+                status|sync|which|prune|gc)
+                    if [[ $cur == -* ]]; then
+                        local opts=('--help:Show help')
+                        _scuv_global_opts
+                        _describe 'option' opts
                     fi
                     ;;
                 migrate)
