@@ -37,7 +37,7 @@ Without `--aggressive`, Python versions are never touched — even ones that loo
 
 Warnings are not printed under `--json` or `--quiet`; the JSON output then has an empty `pythons` array.
 
-With `--yes`, the Python scan runs again right before uninstalling. Any environment still on disk at that moment protects the Python it uses, including a candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or failed to remove. If this second scan cannot tell which Pythons are in use, nothing is uninstalled. Each Python left alone at this point gets a warning and the JSON outcome `skipped_in_use`.
+With `--yes`, the Python scan runs again right before uninstalling. Every environment it lists at that moment protects the Python it uses, including a candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or failed to remove. If this second scan cannot tell which Pythons are in use, nothing is uninstalled, and each Python left alone gets a warning and the JSON outcome `skipped_in_use`. If uv itself can no longer be found at that point, nothing is uninstalled either; those Pythons get the outcome `skipped_no_uv`.
 
 ## `--older-than <DURATION>`
 
