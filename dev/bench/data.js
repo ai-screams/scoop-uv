@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791061173805,
+  "lastUpdate": 1791061175157,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -8713,6 +8713,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1048,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "af42e8b6bd7475b401203d42e92cd2127510c326",
+          "message": "Merge pull request #213 from ai-screams/chore/tidy-tests-and-features\n\ntest: move test-heavy modules' tests out and run uv tests in Docker",
+          "timestamp": "2026-10-04T05:55:37+09:00",
+          "tree_id": "f73aabc80f00d81df4f63806e46dcbda3e2eb770",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/af42e8b6bd7475b401203d42e92cd2127510c326"
+        },
+        "date": 1791061175049,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1699,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1118,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
