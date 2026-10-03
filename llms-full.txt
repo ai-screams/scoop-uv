@@ -182,7 +182,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 225 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 221 keys
 ```
 
 ### Design Principles
@@ -480,7 +480,6 @@ pub struct UvClient {
 
 impl UvClient {
     pub fn new() -> Result<Self>;               // Find uv in PATH
-    pub fn with_path(path: PathBuf) -> Self;
     pub fn version(&self) -> Result<String>;
     pub fn create_venv(&self, path: &Path, python_version: &str) -> Result<()>;
     pub fn install_python(&self, version: &str) -> Result<()>;
@@ -489,8 +488,6 @@ impl UvClient {
     pub fn list_installed_pythons(&self) -> Result<Vec<PythonInfo>>;
     pub fn find_python(&self, version_pattern: &str) -> Result<Option<PythonInfo>>;
     pub fn pip_install(&self, venv_path: &Path, packages: &[String]) -> Result<()>;
-    pub fn pip_install_requirements(&self, venv_path: &Path, req_file: &Path) -> Result<()>;
-    pub fn latest_installed_python(&self) -> Result<Option<PythonInfo>>;
     pub fn pip_list(&self, venv_path: &Path) -> Result<Vec<UvPipListEntry>>;  // scuv diff
     pub fn cache_prune(&self) -> Result<String>;                              // scuv prune
 }
@@ -525,14 +522,11 @@ pub const VERSION_FILE: &str = ".scuv-version";
 
 pub fn scoop_home() -> Result<PathBuf>;             // SCUV_HOME or ~/.scuv
 pub fn virtualenvs_dir() -> Result<PathBuf>;
-pub fn pythons_dir() -> Result<PathBuf>;
 pub fn global_version_file() -> Result<PathBuf>;
 pub fn local_version_file(dir: &Path) -> PathBuf;
 pub fn virtualenv_path(name: &str) -> Result<PathBuf>;
 pub fn virtualenv_bin(name: &str) -> Result<PathBuf>;
-pub fn virtualenv_python(name: &str) -> Result<PathBuf>;
 pub fn virtualenv_activate(name: &str) -> Result<PathBuf>;
-pub fn ensure_scoop_dirs() -> Result<()>;
 pub fn virtualenv_exists(name: &str) -> Result<bool>;
 pub fn calculate_dir_size(path: &Path) -> std::io::Result<u64>;
 pub fn abbreviate_home(path: &Path) -> String;
@@ -546,7 +540,6 @@ pub fn validate_env_name(name: &str) -> Result<()>;
 pub fn is_valid_python_version(version: &str) -> bool;
 pub fn validate_python_version(version: &str) -> Result<()>;
 impl PythonVersion { pub fn parse(version: &str) -> Option<Self>; }
-pub fn normalize_python_version(version: &str) -> String;
 pub fn validate_python_path(path: &Path) -> Result<()>;       // Validate Python executable path
 pub fn detect_python_version(path: &Path) -> Option<String>;  // Detect version from Python binary
 ```
@@ -584,7 +577,6 @@ impl Output {
     pub fn use_color_stderr(&self) -> bool; // stderr
     pub fn use_color_stdout(&self) -> bool; // stdout
     pub fn json_success<T: Serialize>(&self, command: &'static str, data: T);
-    pub fn json_error(&self, command: &'static str, error: &ScoopError);
 }
 
 pub fn format_size(bytes: u64) -> String;

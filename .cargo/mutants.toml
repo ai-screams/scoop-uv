@@ -109,12 +109,6 @@ exclude_re = [
     # The symlink guard's other mutant (`delete !`) stays gated, and the test
     # pins the behaviour either way.
     "replace \\|\\| with && in <impl EnvironmentSource for PyenvDiscovery>::scan_environments",
-    # Equivalent: `extract_major_minor` matches `[major, minor, ..]`, then
-    # `[major]`, then a catchall of `version.to_string()`. Deleting the
-    # `[major]` arm sends a single-segment version to the catchall, which
-    # produces the same string. The function's three other mutants are killed
-    # by extract_major_minor_handles_each_shape and stay gated.
-    "delete match arm \\[major\\] in extract_major_minor",
     # Needs a real pip. `PackageExtractor::extract` spawns `bin/pip freeze` and
     # branches on `!output.status.success()`; reaching the failure arm requires
     # a pip that runs and exits non-zero, which a fixture cannot provide
@@ -131,12 +125,11 @@ exclude_re = [
     # PackageSpec::to_requirement, which is unit-tested.
     "Migrator::install_packages",
     # Needs a real uv: `migrate` creates the target with `uv venv` before it
-    # reaches the `packages.len() - failed.len()` arithmetic, and `migrate_all`
-    # is a loop over it. The pieces that can be exercised offline —
+    # reaches the `packages.len() - failed.len()` arithmetic. The pieces that
+    # can be exercised offline —
     # create_target_env's conflict guard, RollbackGuard, write_metadata,
     # delete_source — have their own tests.
     "Migrator::migrate",
-    "Migrator::migrate_all",
     # `cfg(windows)` branch of the cross-platform extension probe. On non-
     # Windows hosts the variant doesn't compile, so its mutations can't be
     # tested locally; on Windows hosts the existing rstest cases cover it.

@@ -72,8 +72,9 @@ impl UvClient {
         Ok(Self { path })
     }
 
-    /// Create a new UvClient with a specific path
-    pub fn with_path(path: PathBuf) -> Self {
+    /// Create a new UvClient with a specific path (tests only).
+    #[cfg(test)]
+    pub(crate) fn with_path(path: PathBuf) -> Self {
         Self { path }
     }
 
@@ -232,36 +233,6 @@ impl UvClient {
         Ok(())
     }
 
-    /// Install packages from a requirements file into a virtual environment.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`ScoopError::UvCommandFailed`] if installation fails.
-    pub fn pip_install_requirements(
-        &self,
-        venv_path: &Path,
-        requirements_path: &Path,
-    ) -> Result<()> {
-        let mut cmd = Command::new(&self.path);
-        cmd.arg("pip")
-            .arg("install")
-            .arg("--python")
-            .arg(crate::paths::virtualenv_python_exe(venv_path))
-            .arg("-r")
-            .arg(requirements_path);
-        let display = format!("uv pip install -r {}", requirements_path.display());
-        run_uv(cmd, |message| ScoopError::UvCommandFailed {
-            command: display.clone(),
-            message,
-        })?;
-        Ok(())
-    }
-
-    /// Get the latest installed Python version.
-    pub fn latest_installed_python(&self) -> Result<Option<PythonInfo>> {
-        Ok(pick_latest_python(self.list_installed_pythons()?))
-    }
-
     /// List packages installed in `venv_path` via `uv pip list --format=json`.
     ///
     /// Used by `scuv diff` to enumerate packages on each side. Calls uv
@@ -309,21 +280,6 @@ fn run_uv(mut cmd: Command, make_err: impl Fn(String) -> ScoopError) -> Result<V
         ));
     }
     Ok(output.stdout)
-}
-
-/// Pick the highest-versioned entry using [`PythonVersion`]'s full `Ord`
-/// (major.minor.patch.suffix).
-///
-/// The previous hand-rolled comparator only compared major then minor, so
-/// ties on minor (e.g. `3.12.1` vs `3.12.9`) were left in input order and
-/// could return an older patch as "latest". Entries whose version string
-/// doesn't parse are skipped; returns `None` if nothing parses.
-fn pick_latest_python(pythons: Vec<PythonInfo>) -> Option<PythonInfo> {
-    pythons
-        .into_iter()
-        .filter_map(|info| PythonVersion::parse(&info.version).map(|v| (v, info)))
-        .max_by(|(a, _), (b, _)| a.cmp(b))
-        .map(|(_, info)| info)
 }
 
 /// Parse `uv python list --output-format=json` stdout into structured info.
@@ -553,51 +509,6 @@ mod tests {
 
         assert!(info.path.is_none());
         assert!(!info.installed);
-    }
-
-    // =========================================================================
-    // pick_latest_python Tests
-    // =========================================================================
-
-    fn py_info(version: &str) -> PythonInfo {
-        PythonInfo {
-            version: version.to_string(),
-            path: None,
-            installed: true,
-            implementation: "cpython".to_string(),
-        }
-    }
-
-    /// Regression: ties on minor must compare patch (was returning input order).
-    #[test]
-    fn pick_latest_python_picks_highest_patch() {
-        let got = pick_latest_python(vec![
-            py_info("3.12.1"),
-            py_info("3.12.9"),
-            py_info("3.12.3"),
-        ]);
-        assert_eq!(got.unwrap().version, "3.12.9");
-    }
-
-    #[test]
-    fn pick_latest_python_compares_major_then_minor() {
-        let got = pick_latest_python(vec![
-            py_info("3.9.18"),
-            py_info("3.13.0"),
-            py_info("3.12.12"),
-        ]);
-        assert_eq!(got.unwrap().version, "3.13.0");
-    }
-
-    #[test]
-    fn pick_latest_python_skips_unparseable() {
-        let got = pick_latest_python(vec![py_info("garbage"), py_info("3.10.1")]);
-        assert_eq!(got.unwrap().version, "3.10.1");
-    }
-
-    #[test]
-    fn pick_latest_python_empty_is_none() {
-        assert!(pick_latest_python(vec![]).is_none());
     }
 
     // ====== parse_pip_list_json fixtures ======

@@ -6441,12 +6441,12 @@ msgstr "\"no source tool installed\""
 msgid ""
 "The exit-2 path (batch failure) is the only `migrate all` failure path that "
 "emits a structured envelope on stdout. Bridging the exit-3 asymmetry would "
-"require `batch/` (and `single.rs`) to call `Output::json_error` before "
+"require `batch/` (and `single.rs`) to emit a JSON error envelope before "
 "returning Err; tracked for a follow-up."
 msgstr ""
 "exit-2 경로(배치 실패)는 stdout에 구조화된 envelope를 출력하는 유일한 "
 "`migrate all` 실패 경로입니다. exit-3의 비대칭성을 해소하려면 `batch/`(및 "
-"`single.rs`)가 Err를 반환하기 전에 `Output::json_error`를 호출해야 합니다. 이"
+"`single.rs`)가 Err를 반환하기 전에 JSON 오류 envelope를 출력해야 합니다. 이"
 "는 후속 작업으로 추적 중입니다."
 
 #: src/commands/migrate.md:328
@@ -8717,8 +8717,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:39
-msgid "Add translations to all 225 keys"
-msgstr "모든 225개 키에 번역을 추가합니다"
+msgid "Add translations to all 221 keys"
+msgstr "모든 221개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:40
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -8915,8 +8915,8 @@ msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
 #: src/development/translation.md:120
-msgid "`locales/app.yml` - All 225 keys translated"
-msgstr "`locales/app.yml` - 225개 키 모두 번역"
+msgid "`locales/app.yml` - All 221 keys translated"
+msgstr "`locales/app.yml` - 221개 키 모두 번역"
 
 #: src/development/translation.md:121
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
@@ -9614,8 +9614,8 @@ msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
 #: src/development/translation.md:352
-msgid "All 225 keys translated"
-msgstr "225개 키 전체 번역 완료"
+msgid "All 221 keys translated"
+msgstr "221개 키 전체 번역 완료"
 
 #: src/development/translation.md:353
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
@@ -9670,11 +9670,11 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the 225 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 221 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 225개 키) 번역에 대"
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 221개 키) 번역에 대"
 "해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
 "역만 다룹니다."
 

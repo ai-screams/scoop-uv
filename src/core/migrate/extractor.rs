@@ -42,15 +42,6 @@ pub struct ExtractionResult {
 }
 
 impl ExtractionResult {
-    /// Generates requirements.txt content from extracted packages.
-    pub fn to_requirements(&self) -> String {
-        self.packages
-            .iter()
-            .map(|p| p.to_requirement())
-            .collect::<Vec<_>>()
-            .join("\n")
-    }
-
     /// Returns only non-editable packages.
     pub fn regular_packages(&self) -> Vec<&PackageSpec> {
         self.packages.iter().filter(|p| !p.editable).collect()
@@ -361,31 +352,5 @@ mod tests {
 
         assert_eq!(result.packages.len(), 1);
         assert_eq!(result.packages[0].name, "requests");
-    }
-
-    #[test]
-    fn test_to_requirements() {
-        let result = ExtractionResult {
-            packages: vec![
-                PackageSpec {
-                    name: "requests".to_string(),
-                    version: "2.31.0".to_string(),
-                    editable: false,
-                    editable_path: None,
-                },
-                PackageSpec {
-                    name: "flask".to_string(),
-                    version: "3.0.0".to_string(),
-                    editable: false,
-                    editable_path: None,
-                },
-            ],
-            failed: vec![],
-            total_found: 2,
-        };
-
-        let requirements = result.to_requirements();
-        assert!(requirements.contains("requests==2.31.0"));
-        assert!(requirements.contains("flask==3.0.0"));
     }
 }

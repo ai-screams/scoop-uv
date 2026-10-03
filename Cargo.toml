@@ -78,7 +78,6 @@ assert_cmd = "2.2"
 predicates = "3.1"
 serial_test = "3.2"
 proptest = "1.11"
-insta = { version = "1.47", features = ["yaml"] }
 rstest = "0.27"
 # YAML for the locale-parity test. serde-saphyr is already in the lock file --
 # rust-i18n parses this same app.yml with it at build time -- so this adds no

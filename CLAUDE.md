@@ -394,7 +394,7 @@ t!("error.virtualenv_not_found", name = name)
 ```
 
 **Translation file**: `locales/app.yml`
-- 225 keys total (error.* 41, suggestion.* 16); parity across all 5 locales enforced by tests/i18n_completeness.rs
+- 221 keys total (error.* 41, suggestion.* 16); parity across all 5 locales enforced by tests/i18n_completeness.rs
 - Adding a locale touches 7 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the hand-written `scuv lang` completion lists in all four shells (`src/shell/{bash,zsh,fish,powershell}.rs`). Missing `LOCALES` fails silently — CI passes with that locale unverified. A missed completion list fails `lang_completion_list_matches_supported_langs` in that shell's module, and a doc that still enumerates the old list fails `check-doc-references.py`. Contributor guide: `docs/src/development/translation.md`.
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
 - `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical. Install the versions `docs.yml` pins (mdbook 0.5.3, mdbook-i18n-helpers 0.4.0) — latest produces a different `.pot`. `messages.pot` is untracked; only `ko.po` is committed.
