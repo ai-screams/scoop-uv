@@ -16,7 +16,8 @@
 # Cargo.lock hash, so every lockfile change (each release's `cargo update`)
 # saves a new generation and the old one stays until LRU eviction — four
 # per job by 2026-10-04, about 4.4 GB of the 10 GB allowance. A run restores
-# its job's newest entry, so everything older is dropped.
+# the newest entry under its restore key (the key minus the lockfile hash),
+# so the older entries under the same restore key are dropped.
 
 name: Cache cleanup
 
@@ -54,7 +55,7 @@ jobs:
           done
 
   prune-main:
-    name: Keep only the newest rust cache per job on main
+    name: Keep only the newest rust cache per restore key on main
     if: github.event_name != 'pull_request_target'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -63,12 +64,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-        # Key: v0-rust-<job>-<os>-<arch>-<env hash>-<lockfile hash>. Strip the
-        # two hashes to get the job, keep the newest entry of each job.
+        # Key: v0-rust-<shared-key>-<os>-<arch>-<env hash>-<lockfile hash>.
+        # Strip the lockfile hash to get the restore key rust-cache falls back
+        # to; keep the newest entry of each. Entries under a different env
+        # hash (another toolchain or env) stay: nothing else restores for them.
         run: |
           ids=$(gh api --paginate "repos/$REPO/actions/caches?ref=refs/heads/main&key=v0-rust-" \
             --jq '.actions_caches[] | {id, key, created_at}' \
-            | jq -rs 'group_by(.key | sub("-[^-]+-[^-]+$"; ""))
+            | jq -rs 'group_by(.key | sub("-[^-]+$"; ""))
                       | map(sort_by(.created_at) | reverse | .[1:][])
                       | .[] | "\(.id) \(.key)"')
           if [ -z "$ids" ]; then

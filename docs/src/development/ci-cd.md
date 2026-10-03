@@ -310,9 +310,11 @@ any of these being fixed.
   is a warning rather than a failed build; and `cache-cleanup.yml` deletes
   whatever a PR still leaves when it closes. The one-time deletion of the
   PR copies and the stale-lockfile rust caches brought usage to 6.4 GB.
-  `main` still kept every lockfile generation of each rust cache (four per
-  job, about 4.4 GB, by 2026-10-04); a weekly job in `cache-cleanup.yml` now
-  keeps only each job's newest entry, the one its next run restores.
+  `main` still kept every lockfile generation of each rust cache (up to four
+  per job, about 4.4 GB, by 2026-10-04); a weekly job in `cache-cleanup.yml`
+  now keeps only the newest entry under each restore key (the cache key
+  minus its lockfile hash), the one the next run with that toolchain and
+  environment restores.
 
 ### Recently closed
 
