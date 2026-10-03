@@ -114,6 +114,50 @@ pub struct MigrateExecuteOptions {
 
 #[cfg(test)]
 mod tests {
+
+    // =========================================================================
+    // MigrateAllSummary / MigrateSkipped / MigrateFailure shape
+    // =========================================================================
+
+    #[test]
+    fn migrate_all_summary_counts_match() {
+        let summary = MigrateAllSummary {
+            total: 10,
+            success: 5,
+            failed: 2,
+            skipped: 3,
+        };
+        assert_eq!(summary.success + summary.failed + summary.skipped, 10);
+    }
+
+    #[test]
+    fn migrate_skipped_serializable() {
+        let skipped = MigrateSkipped {
+            name: "testenv".to_string(),
+            reason: "Test reason".to_string(),
+        };
+
+        let json = serde_json::to_string(&skipped).unwrap();
+        assert!(json.contains("testenv"));
+        assert!(json.contains("Test reason"));
+    }
+
+    #[test]
+    fn migrate_failure_serializable_with_new_fields() {
+        // Inc 4: source_type + error_code are additive (Codex MUST FIX #4).
+        let failure = MigrateFailure {
+            name: "failedenv".to_string(),
+            source_type: SourceType::Pyenv,
+            error_code: "MIGRATE_FAILED",
+            error: "Something went wrong".to_string(),
+        };
+
+        let json = serde_json::to_string(&failure).unwrap();
+        assert!(json.contains("failedenv"));
+        assert!(json.contains("Something went wrong"));
+        assert!(json.contains("\"source_type\":\"pyenv\""));
+        assert!(json.contains("\"error_code\":\"MIGRATE_FAILED\""));
+    }
     use super::*;
 
     /// Default 트레잇 구현 검증
