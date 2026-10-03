@@ -597,17 +597,15 @@ impl FakeUv {
                 )
             })
             .collect();
-        std::fs::write(
-            dir.path().join("pythons.json"),
-            format!("[{}]", entries.join(",")),
-        )
-        .expect("write fake python list");
+        // Shell builtins only (printf/echo): no external command whose
+        // absence from PATH would make the fake list nothing.
+        let json = format!("[{}]", entries.join(","));
         let d = dir.path().display();
         let script = format!(
             r#"#!/bin/sh
 case "$1 $2" in
   "--version "*) echo "uv 0.12.22" ;;
-  "python list") cat "{d}/pythons.json" ;;
+  "python list") printf '%s\n' '{json}' ;;
   "python uninstall") echo "$3" >> "{d}/uninstalled.log" ;;
   "cache prune") ;;
   *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;

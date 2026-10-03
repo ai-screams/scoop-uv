@@ -47,9 +47,18 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
         .ok()
         .map(|cwd| cwd.join(".venv"))
         .filter(|link| is_venv_symlink_to(link, &path))
-        .map(|link| {
-            let recorded = std::fs::read_link(&link);
-            (link, recorded)
+        .and_then(|link| match std::fs::read_link(&link) {
+            Ok(target) => Some((link, Ok(target))),
+            // Gone or no longer a symlink since it was judged: not ours.
+            Err(e)
+                if matches!(
+                    e.kind(),
+                    std::io::ErrorKind::NotFound | std::io::ErrorKind::InvalidInput
+                ) =>
+            {
+                None
+            }
+            Err(e) => Some((link, Err(e))),
         });
 
     output.info(&t!("remove.removing", name = name));

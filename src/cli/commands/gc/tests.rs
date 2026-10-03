@@ -727,11 +727,18 @@ fn uninstall_pythons_skips_all_when_rescan_cannot_tell() {
     with_fake_uv_home(&["3.12.1"], |home, uv| {
         // Unreadable env list, for any user (see the test above).
         fs::write(home.join("virtualenvs"), b"not a directory").unwrap();
+        // Sanity: the fake uv lists the Python, so a skip below comes from
+        // the unreadable env list, not from an empty uv listing.
+        let listed = crate::uv::UvClient::new()
+            .unwrap()
+            .list_installed_pythons()
+            .unwrap();
+        assert_eq!(listed.len(), 1, "fake uv not in use: {listed:?}");
 
         let (py, record) = pending_python("3.12.1");
         let mut records = [record];
         let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
-        uninstall_pythons(&out, &[], std::slice::from_ref(&py), &mut records);
+        uninstall_pythons(&out, std::slice::from_ref(&py), &mut records);
 
         assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
         assert_eq!(records[0].outcome, PythonOutcome::SkippedInUse);
@@ -751,7 +758,7 @@ fn uninstall_pythons_removes_a_python_still_unused() {
         let (py, record) = pending_python("3.12.1");
         let mut records = [record];
         let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
-        uninstall_pythons(&out, &[], std::slice::from_ref(&py), &mut records);
+        uninstall_pythons(&out, std::slice::from_ref(&py), &mut records);
 
         assert_eq!(uv.uninstalled(), ["3.12.1"]);
         assert_eq!(records[0].outcome, PythonOutcome::Removed);
@@ -771,6 +778,13 @@ fn kept_candidate_keeps_its_python() {
         fs::create_dir_all(&venvs).unwrap();
         // Metadata says python 3.12 and "used just now".
         make_env_with_last_used(&venvs, "kept", Some(Utc::now()));
+        // Sanity: the fake uv is the one in use and reports 3.12, so a
+        // skipped uninstall below means "in use", not "no uv".
+        let listed = crate::uv::UvClient::new()
+            .unwrap()
+            .list_installed_pythons()
+            .unwrap();
+        assert_eq!(listed.len(), 1, "fake uv not in use: {listed:?}");
 
         let candidate = GcCandidate {
             name: "kept".into(),
