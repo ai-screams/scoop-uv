@@ -66,7 +66,37 @@ pub(crate) fn parse_duration(s: &str) -> Result<Duration> {
     if s.is_empty() {
         return Err(invalid("duration cannot be empty"));
     }
+    let (value, suffix) = split_value_and_suffix(s)?;
+    let days_per_unit = days_per_unit(suffix)?;
 
+    // Multiply in u64 to avoid the `(u64 as i64)` silent-truncation
+    // trap Codex flagged on the previous commit: `18446744073709551615d`
+    // would have cast to `-1`, producing a "tomorrow" cutoff that
+    // matched every env. Stay in u64 until we've capped the day count;
+    // only then convert to the i64 chrono needs.
+    let total_days_u64 = value
+        .checked_mul(days_per_unit)
+        .ok_or_else(|| invalid("duration arithmetic overflowed"))?;
+
+    if total_days_u64 > MAX_DAYS as u64 {
+        return Err(invalid(&format!(
+            "duration too large (max {MAX_DAYS} days ≈ 200 years)"
+        )));
+    }
+
+    let total_days =
+        i64::try_from(total_days_u64).map_err(|_| invalid("duration arithmetic overflowed"))?;
+
+    // `Duration::days` panics on internal overflow; `try_days` returns
+    // None instead. Within the MAX_DAYS cap we'll never trip this, but
+    // keeping the checked path means a future cap bump can't silently
+    // re-introduce a panic.
+    Duration::try_days(total_days).ok_or_else(|| invalid("duration arithmetic overflowed"))
+}
+
+/// Splits `30d` into `(30, "d")`, rejecting a missing, signed, zero or
+/// unparsable number and a suffix that is not a single alphabetic unit.
+fn split_value_and_suffix(s: &str) -> Result<(u64, &str)> {
     // Locate the suffix as the first non-digit run, so multi-char
     // suffixes (`mo`, `min`, ...) are detected as a unit instead of
     // collapsing into the numeric prefix. Without this, `1mo` would
@@ -116,51 +146,29 @@ pub(crate) fn parse_duration(s: &str) -> Result<Duration> {
         )));
     }
 
-    let days_per_unit: u64 = match suffix {
-        "d" => 1,
-        "w" => 7,
+    Ok((value, suffix))
+}
+
+/// Days in one `suffix` unit (`d`, `w`, `y`); month spellings get their own
+/// error because they are the likeliest mistake.
+fn days_per_unit(suffix: &str) -> Result<u64> {
+    match suffix {
+        "d" => Ok(1),
+        "w" => Ok(7),
         // 365 d — calendar years dropped on purpose (see module doc).
-        "y" => 365,
+        "y" => Ok(365),
         // Month variants get the most-likely-mistake error so users
         // don't get bounced by a generic "unknown suffix" hint. `m` is
         // also ambiguous with "minute"; the message calls out both
         // readings instead of guessing.
-        "m" | "mo" | "mon" | "month" | "months" => {
-            return Err(invalid(
-                "month suffixes (m/mo/month) are ambiguous between minutes \
+        "m" | "mo" | "mon" | "month" | "months" => Err(invalid(
+            "month suffixes (m/mo/month) are ambiguous between minutes \
                  and months; use 'd' (days), 'w' (weeks), or 'y' (years=365d)",
-            ));
-        }
-        _ => {
-            return Err(invalid(&format!(
-                "unknown duration suffix '{suffix}'; expected 'd', 'w', or 'y'"
-            )));
-        }
-    };
-
-    // Multiply in u64 to avoid the `(u64 as i64)` silent-truncation
-    // trap Codex flagged on the previous commit: `18446744073709551615d`
-    // would have cast to `-1`, producing a "tomorrow" cutoff that
-    // matched every env. Stay in u64 until we've capped the day count;
-    // only then convert to the i64 chrono needs.
-    let total_days_u64 = value
-        .checked_mul(days_per_unit)
-        .ok_or_else(|| invalid("duration arithmetic overflowed"))?;
-
-    if total_days_u64 > MAX_DAYS as u64 {
-        return Err(invalid(&format!(
-            "duration too large (max {MAX_DAYS} days ≈ 200 years)"
-        )));
+        )),
+        _ => Err(invalid(&format!(
+            "unknown duration suffix '{suffix}'; expected 'd', 'w', or 'y'"
+        ))),
     }
-
-    let total_days =
-        i64::try_from(total_days_u64).map_err(|_| invalid("duration arithmetic overflowed"))?;
-
-    // `Duration::days` panics on internal overflow; `try_days` returns
-    // None instead. Within the MAX_DAYS cap we'll never trip this, but
-    // keeping the checked path means a future cap bump can't silently
-    // re-introduce a panic.
-    Duration::try_days(total_days).ok_or_else(|| invalid("duration arithmetic overflowed"))
 }
 
 /// Build an `InvalidArgument` error. The error's `Display` impl
