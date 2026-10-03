@@ -11,7 +11,8 @@ scuv uses a shell wrapper pattern (like pyenv) where the CLI outputs shell code 
 └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-The `scuv` shell function wraps the CLI binary:
+The `scuv` shell function wraps the CLI binary (simplified; the real one also
+passes help flags through and respects an explicit `--shell`):
 
 ```bash
 scuv() {
@@ -26,12 +27,17 @@ scuv() {
                     *) name="$arg"; break ;;
                 esac
             done
-            if [[ -n "$name" ]]; then
+            if [[ "$name" == [Ss][Yy][Ss][Tt][Ee][Mm] ]]; then
+                eval "$(command scuv deactivate --shell bash)"
+            elif [[ -n "$name" ]]; then
                 eval "$(command scuv activate --shell bash "$name")"
             fi
             ;;
         activate|deactivate|shell)
-            eval "$(command scuv "$1" --shell bash "${@:2}")"
+            # Capture first, so a failed call keeps its exit status
+            local script
+            script="$(command scuv "$1" --shell bash "${@:2}")" || return
+            eval "$script"
             ;;
         *)
             command scuv "$@"

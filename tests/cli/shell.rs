@@ -51,8 +51,12 @@ fn fish_wrapper_and_hook_source_multiline_scripts() {
         "set -gx SCUV_ACTIVE stale2; set -gx VIRTUAL_ENV /stale2; ",
         "scuv use SYSTEM; ",
         "echo \"use-system SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"; ",
-        "scuv activate no-such-env 2>/dev/null; ",
-        "echo \"missing-status=$status\"",
+        "scuv activate --shell fish no-such-env 2>/dev/null; ",
+        "echo \"missing-status=$status\"; ",
+        // A usage error exits 2; the wrapper's own `string match` before it
+        // leaves 1, so only scuv's status can make this read 2.
+        "scuv activate --no-such-flag 2>/dev/null; ",
+        "echo \"usage-status=$status\"",
     );
     let output = std::process::Command::new(fish)
         .args(["-c", script])
@@ -78,6 +82,7 @@ fn fish_wrapper_and_hook_source_multiline_scripts() {
         "explicit-status=0 SCUV_VERSION=[system]",
         "use-system SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
         "missing-status=1",
+        "usage-status=2",
     ] {
         assert!(
             stdout.contains(expected),

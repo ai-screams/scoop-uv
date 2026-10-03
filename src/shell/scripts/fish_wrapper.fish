@@ -31,8 +31,12 @@ function scuv
             else if string match -q -- '--shell*' $argv
                 # The user chose the shell; a second --shell would be rejected
                 command scuv $argv | source
+                return $pipestatus[1]
             else
                 command scuv $argv[1] --shell fish $argv[2..-1] | source
+                # source leaves $status alone on empty input, so name
+                # scuv's own status instead of whatever ran before
+                return $pipestatus[1]
             end
 
         case '*'
