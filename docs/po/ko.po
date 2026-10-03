@@ -588,7 +588,7 @@ msgstr "1. 셸 통합 설정"
 msgid "**Zsh** (macOS default):"
 msgstr "**Zsh** (macOS 기본값):"
 
-#: src/quick-start.md:10 src/shell-integration.md:48
+#: src/quick-start.md:10 src/shell-integration.md:54
 msgid "'eval \"$(scuv init zsh)\"'"
 msgstr "'eval \"$(scuv init zsh)\"'"
 
@@ -596,7 +596,7 @@ msgstr "'eval \"$(scuv init zsh)\"'"
 msgid "**Bash**:"
 msgstr "**Bash**:"
 
-#: src/quick-start.md:17 src/shell-integration.md:55
+#: src/quick-start.md:17 src/shell-integration.md:61
 msgid "'eval \"$(scuv init bash)\"'"
 msgstr "'eval \"$(scuv init bash)\"'"
 
@@ -604,7 +604,7 @@ msgstr "'eval \"$(scuv init bash)\"'"
 msgid "**Fish**:"
 msgstr "**Fish**:"
 
-#: src/quick-start.md:24 src/shell-integration.md:62
+#: src/quick-start.md:24 src/shell-integration.md:68
 msgid "'scuv init fish | source'"
 msgstr ""
 
@@ -775,163 +775,191 @@ msgid "How It Works"
 msgstr "동작 방식"
 
 #: src/shell-integration.md:14
-msgid "The `scuv` shell function wraps the CLI binary:"
-msgstr "`scuv` 셸 함수는 CLI 바이너리를 래핑합니다:"
+msgid ""
+"The `scuv` shell function wraps the CLI binary (simplified; the real one "
+"also passes help flags through and respects an explicit `--shell`):"
+msgstr ""
+"`scuv` 셸 함수가 CLI 바이너리를 감쌉니다(간략화한 형태로, 실제 함수는 help 플"
+"래그를 그대로 넘기고 명시한 `--shell`을 존중합니다):"
 
-#: src/shell-integration.md:18
+#: src/shell-integration.md:19
 msgid "\"$1\""
 msgstr "\"$1\""
 
-#: src/shell-integration.md:20 src/shell-integration.md:23
-#: src/shell-integration.md:37
+#: src/shell-integration.md:21 src/shell-integration.md:24
+#: src/shell-integration.md:43
 msgid "\"$@\""
 msgstr "\"$@\""
 
-#: src/shell-integration.md:21 src/development/docs-translation.md:58
+#: src/shell-integration.md:22 src/development/docs-translation.md:58
 #: src/development/testing.md:262
 msgid "\"\""
 msgstr "\"\""
 
-#: src/shell-integration.md:24 src/shell-integration.md:26
+#: src/shell-integration.md:25 src/shell-integration.md:27
 msgid "\"$arg\""
 msgstr "\"$arg\""
 
-#: src/shell-integration.md:29
+#: src/shell-integration.md:30 src/shell-integration.md:32
 msgid "\"$name\""
 msgstr "\"$name\""
 
-#: src/shell-integration.md:30
-msgid "\"$(command scuv activate \"$name\")\""
-msgstr "\"$(command scuv activate \"$name\")\""
+#: src/shell-integration.md:31
+msgid "\"$(command scuv deactivate --shell bash)\""
+msgstr "\"$(command scuv deactivate --shell bash)\""
 
-#: src/shell-integration.md:34
-msgid "\"$(command scuv \"$@\")\""
-msgstr "\"$(command scuv \"$@\")\""
+#: src/shell-integration.md:33
+msgid "\"$(command scuv activate --shell bash \"$name\")\""
+msgstr "\"$(command scuv activate --shell bash \"$name\")\""
 
-#: src/shell-integration.md:43 src/commands/init.md:17
+#: src/shell-integration.md:37
+msgid "# Capture first, so a failed call keeps its exit status\n"
+msgstr "# 먼저 받아 두어야 실패한 호출의 종료 상태가 유지됩니다\n"
+
+#: src/shell-integration.md:39
+msgid "\"$(command scuv \"$1\" --shell bash \"${@:2}\")\""
+msgstr "\"$(command scuv \"$1\" --shell bash \"${@:2}\")\""
+
+#: src/shell-integration.md:40
+msgid "\"$script\""
+msgstr "\"$script\""
+
+#: src/shell-integration.md:49 src/commands/init.md:17
 #: src/development/contributing.md:11 src/development/code-quality.md:138
 msgid "Setup"
 msgstr "설정"
 
-#: src/shell-integration.md:45 src/shell-integration.md:208 src/faq.md:266
+#: src/shell-integration.md:51 src/shell-integration.md:219 src/faq.md:266
 msgid "Zsh"
 msgstr "Zsh"
 
-#: src/shell-integration.md:52 src/shell-integration.md:209 src/faq.md:265
+#: src/shell-integration.md:58 src/shell-integration.md:220 src/faq.md:265
 msgid "Bash"
 msgstr "Bash"
 
-#: src/shell-integration.md:59 src/shell-integration.md:210 src/faq.md:267
+#: src/shell-integration.md:65 src/shell-integration.md:221 src/faq.md:267
 msgid "Fish"
 msgstr "Fish"
 
-#: src/shell-integration.md:66 src/shell-integration.md:211 src/faq.md:268
+#: src/shell-integration.md:72 src/shell-integration.md:222 src/faq.md:268
 msgid "PowerShell"
 msgstr "PowerShell"
 
-#: src/shell-integration.md:74
+#: src/shell-integration.md:80
+msgid ""
+"Keep the `| Out-String`: `scuv init powershell` prints many lines, and "
+"`Invoke-Expression` takes one string, not the array of lines `&` returns. A "
+"profile line without it never defines the `scuv` function; if yours lacks "
+"it, update the line."
+msgstr ""
+"`| Out-String`을 빼지 마세요. `scuv init powershell`은 여러 줄을 출력하는데, "
+"`Invoke-Expression`은 `&`가 돌려주는 줄 배열이 아니라 문자열 하나를 받습니"
+"다. 이 부분이 없는 프로필 줄로는 `scuv` 함수가 정의되지 않으니, 빠져 있다면 "
+"그 줄을 고쳐 주세요."
+
+#: src/shell-integration.md:85
 msgid "Auto-Activation"
 msgstr "자동 활성화"
 
-#: src/shell-integration.md:76
+#: src/shell-integration.md:87
 msgid ""
 "When enabled, scuv automatically activates environments based on version "
 "files."
 msgstr "활성화하면 scuv가 버전 파일을 기반으로 환경을 자동으로 활성화합니다."
 
-#: src/shell-integration.md:78
+#: src/shell-integration.md:89
 msgid "**Zsh**: Uses `chpwd` hook (runs on directory change)"
 msgstr "**Zsh**: `chpwd` 훅 사용 (디렉터리 변경 시 실행)"
 
-#: src/shell-integration.md:85
+#: src/shell-integration.md:96
 msgid "**Bash**: Uses `PROMPT_COMMAND`"
 msgstr "**Bash**: `PROMPT_COMMAND` 사용"
 
-#: src/shell-integration.md:88
+#: src/shell-integration.md:99
 msgid "\"_scuv_hook;$PROMPT_COMMAND\""
 msgstr "\"_scuv_hook;$PROMPT_COMMAND\""
 
-#: src/shell-integration.md:91
+#: src/shell-integration.md:102
 msgid "**Fish**: Uses `--on-variable PWD` event handler"
 msgstr "**Fish**: `--on-variable PWD` 이벤트 핸들러 사용"
 
-#: src/shell-integration.md:95
+#: src/shell-integration.md:106
 msgid "# Check for version file and activate/deactivate\n"
 msgstr "# 버전 파일 확인 후 활성화/비활성화\n"
 
-#: src/shell-integration.md:99
+#: src/shell-integration.md:110
 msgid ""
 "The hook checks for version files and activates/deactivates accordingly."
 msgstr ""
 "훅은 버전 파일을 확인하고 그에 따라 환경을 활성화하거나 비활성화합니다."
 
-#: src/shell-integration.md:101
+#: src/shell-integration.md:112
 msgid "Version Resolution Priority"
 msgstr "버전 결정 우선순위"
 
-#: src/shell-integration.md:103
+#: src/shell-integration.md:114
 msgid "scuv checks these sources in order (first match wins):"
 msgstr ""
 "scuv는 다음 소스를 순서대로 확인합니다 (처음 일치하는 항목이 우선 적용됩니"
 "다):"
 
-#: src/shell-integration.md:105 src/commands/shell.md:39
+#: src/shell-integration.md:116 src/commands/shell.md:39
 msgid "Priority"
 msgstr "우선순위"
 
-#: src/shell-integration.md:105 src/commands/status.md:27
+#: src/shell-integration.md:116 src/commands/status.md:27
 #: src/commands/migrate.md:28
 msgid "Source"
 msgstr "소스"
 
-#: src/shell-integration.md:105
+#: src/shell-integration.md:116
 msgid "Set by"
 msgstr "설정 방법"
 
-#: src/shell-integration.md:107 src/shell-integration.md:133
-#: src/shell-integration.md:141 src/faq.md:141 src/commands/which.md:49
+#: src/shell-integration.md:118 src/shell-integration.md:144
+#: src/shell-integration.md:152 src/faq.md:141 src/commands/which.md:49
 #: src/commands/sync.md:116 src/commands/export.md:72 src/commands/import.md:75
 #: src/commands/clone.md:74 src/api.md:719 src/llms.md:111
 msgid "1"
 msgstr "1"
 
-#: src/shell-integration.md:107
+#: src/shell-integration.md:118
 msgid "`SCUV_VERSION` env var"
 msgstr "`SCUV_VERSION` 환경 변수"
 
-#: src/shell-integration.md:107
+#: src/shell-integration.md:118
 msgid "`scuv shell`"
 msgstr "`scuv shell`"
 
-#: src/shell-integration.md:108 src/api.md:719
+#: src/shell-integration.md:119 src/api.md:719
 msgid "2"
 msgstr "2"
 
-#: src/shell-integration.md:108
+#: src/shell-integration.md:119
 msgid "`.scuv-version` file"
 msgstr "`.scuv-version` 파일"
 
-#: src/shell-integration.md:108
+#: src/shell-integration.md:119
 msgid "`scuv use` (walks parent directories)"
 msgstr "`scuv use` (부모 디렉터리를 순서대로 탐색)"
 
-#: src/shell-integration.md:109 src/shell-integration.md:178 src/api.md:719
+#: src/shell-integration.md:120 src/shell-integration.md:189 src/api.md:719
 msgid "3"
 msgstr "3"
 
-#: src/shell-integration.md:109
+#: src/shell-integration.md:120
 msgid "`~/.scuv/version` file"
 msgstr "`~/.scuv/version` 파일"
 
-#: src/shell-integration.md:109
+#: src/shell-integration.md:120
 msgid "`scuv use --global`"
 msgstr "`scuv use --global`"
 
-#: src/shell-integration.md:111
+#: src/shell-integration.md:122
 msgid "The \"system\" Value"
 msgstr "\"system\" 값"
 
-#: src/shell-integration.md:113
+#: src/shell-integration.md:124
 msgid ""
 "When any source contains the value `system`, scuv deactivates the current "
 "virtual environment and uses the system Python."
@@ -939,23 +967,23 @@ msgstr ""
 "어떤 소스든 `system` 값이 포함되어 있으면 scuv는 현재 가상 환경을 비활성화하"
 "고 시스템 Python을 사용합니다."
 
-#: src/shell-integration.md:116
+#: src/shell-integration.md:127
 msgid "# Write \"system\" to .scuv-version\n"
 msgstr "# .scuv-version에 \"system\" 기록\n"
 
-#: src/shell-integration.md:117
+#: src/shell-integration.md:128
 msgid "# Set SCUV_VERSION=system (this terminal only)\n"
 msgstr "# SCUV_VERSION=system 설정 (현재 터미널에만 적용)\n"
 
-#: src/shell-integration.md:120 src/commands/index.md:47
+#: src/shell-integration.md:131 src/commands/index.md:47
 msgid "Environment Variables"
 msgstr "환경 변수"
 
-#: src/shell-integration.md:122 src/commands/index.md:49 src/commands/run.md:26
+#: src/shell-integration.md:133 src/commands/index.md:49 src/commands/run.md:26
 msgid "Variable"
 msgstr "변수"
 
-#: src/shell-integration.md:122 src/commands/index.md:7
+#: src/shell-integration.md:133 src/commands/index.md:7
 #: src/commands/index.md:39 src/commands/index.md:49 src/commands/list.md:15
 #: src/commands/create.md:13 src/commands/create.md:20 src/commands/use.md:15
 #: src/commands/use.md:21 src/commands/remove.md:15 src/commands/remove.md:21
@@ -976,209 +1004,209 @@ msgstr "변수"
 msgid "Description"
 msgstr "설명"
 
-#: src/shell-integration.md:122 src/commands/index.md:49
+#: src/shell-integration.md:133 src/commands/index.md:49
 #: src/commands/create.md:13 src/commands/install.md:13
 msgid "Default"
 msgstr "기본값"
 
-#: src/shell-integration.md:124 src/commands/index.md:51
+#: src/shell-integration.md:135 src/commands/index.md:51
 msgid "`SCUV_HOME`"
 msgstr "`SCUV_HOME`"
 
-#: src/shell-integration.md:124
+#: src/shell-integration.md:135
 msgid "Base directory"
 msgstr "기본 디렉터리"
 
-#: src/shell-integration.md:124 src/commands/index.md:51
+#: src/shell-integration.md:135 src/commands/index.md:51
 msgid "`~/.scuv`"
 msgstr "`~/.scuv`"
 
-#: src/shell-integration.md:125 src/commands/index.md:55
+#: src/shell-integration.md:136 src/commands/index.md:55
 #: src/commands/status.md:34
 msgid "`SCUV_VERSION`"
 msgstr "`SCUV_VERSION`"
 
-#: src/shell-integration.md:125
+#: src/shell-integration.md:136
 msgid "Override version (highest priority)"
 msgstr "버전 재정의 (최우선 순위)"
 
-#: src/shell-integration.md:125 src/shell-integration.md:126
+#: src/shell-integration.md:136 src/shell-integration.md:137
 #: src/commands/index.md:52 src/commands/index.md:54 src/commands/index.md:55
 #: src/commands/index.md:56 src/commands/index.md:57
 msgid "(unset)"
 msgstr "(미설정)"
 
-#: src/shell-integration.md:126 src/commands/index.md:52
+#: src/shell-integration.md:137 src/commands/index.md:52
 msgid "`SCUV_NO_AUTO`"
 msgstr "`SCUV_NO_AUTO`"
 
-#: src/shell-integration.md:126 src/commands/index.md:52
+#: src/shell-integration.md:137 src/commands/index.md:52
 msgid "Disable auto-activation"
 msgstr "자동 활성화 비활성화"
 
-#: src/shell-integration.md:127 src/commands/index.md:56 src/commands/run.md:29
+#: src/shell-integration.md:138 src/commands/index.md:56 src/commands/run.md:29
 msgid "`SCUV_ACTIVE`"
 msgstr "`SCUV_ACTIVE`"
 
-#: src/shell-integration.md:127
+#: src/shell-integration.md:138
 msgid "Currently active environment"
 msgstr "현재 활성화된 환경"
 
-#: src/shell-integration.md:127
+#: src/shell-integration.md:138
 msgid "(set by scuv)"
 msgstr "(scuv가 자동으로 설정)"
 
-#: src/shell-integration.md:128 src/commands/index.md:57
+#: src/shell-integration.md:139 src/commands/index.md:57
 msgid "`SCUV_RESOLVE_MAX_DEPTH`"
 msgstr "`SCUV_RESOLVE_MAX_DEPTH`"
 
-#: src/shell-integration.md:128
+#: src/shell-integration.md:139
 msgid "Limit parent directory traversal"
 msgstr "부모 디렉터리 탐색 깊이 제한"
 
-#: src/shell-integration.md:128
+#: src/shell-integration.md:139
 msgid "(unlimited)"
 msgstr "(제한 없음)"
 
-#: src/shell-integration.md:130
+#: src/shell-integration.md:141
 msgid "Disable Auto-Activation"
 msgstr "자동 활성화 끄기"
 
-#: src/shell-integration.md:136
+#: src/shell-integration.md:147
 msgid "Temporary and Project-Scoped Control"
 msgstr "임시 및 프로젝트 단위 제어"
 
-#: src/shell-integration.md:138
+#: src/shell-integration.md:149
 msgid ""
 "Disable only in the current shell session (does not affect global settings):"
 msgstr ""
 "현재 셸 세션에서만 비활성화합니다 (전역 설정에는 영향을 주지 않습니다):"
 
-#: src/shell-integration.md:141
+#: src/shell-integration.md:152
 msgid "# ...work without auto-activation...\n"
 msgstr "# ...자동 활성화 없이 작업...\n"
 
-#: src/shell-integration.md:146
+#: src/shell-integration.md:157
 msgid ""
 "For one project directory, use local version files instead of global "
 "settings:"
 msgstr ""
 "특정 프로젝트 디렉터리에서는 전역 설정 대신 로컬 버전 파일을 사용하세요:"
 
-#: src/shell-integration.md:150
+#: src/shell-integration.md:161
 msgid "# Keep auto-activation, but force system Python in this project only\n"
 msgstr "# 자동 활성화는 유지하되, 이 프로젝트에서만 시스템 Python 강제 사용\n"
 
-#: src/shell-integration.md:153
+#: src/shell-integration.md:164
 msgid "# Or pin a specific environment for this project only\n"
 msgstr "# 또는 이 프로젝트에서만 특정 환경 고정\n"
 
-#: src/shell-integration.md:158
+#: src/shell-integration.md:169
 msgid "For temporary per-terminal overrides without changing files:"
 msgstr "파일을 변경하지 않고 터미널별로 임시 재정의하려면:"
 
-#: src/shell-integration.md:161
+#: src/shell-integration.md:172
 msgid "# this terminal only\n"
 msgstr "# 현재 터미널에만 적용\n"
 
-#: src/shell-integration.md:163
+#: src/shell-integration.md:174
 msgid "# return to file-based behavior\n"
 msgstr "# 파일 기반 동작으로 복원\n"
 
-#: src/shell-integration.md:166
+#: src/shell-integration.md:177
 msgid "Custom Home Directory"
 msgstr "커스텀 홈 디렉터리"
 
-#: src/shell-integration.md:169
+#: src/shell-integration.md:180
 msgid "/custom/path"
 msgstr "/custom/path"
 
-#: src/shell-integration.md:172
+#: src/shell-integration.md:183
 msgid "Network Filesystem Optimization"
 msgstr "네트워크 파일시스템 최적화"
 
-#: src/shell-integration.md:174
+#: src/shell-integration.md:185
 msgid ""
 "For slow network filesystems (NFS, SSHFS), limit directory traversal depth:"
 msgstr ""
 "느린 네트워크 파일시스템(NFS, SSHFS)에서는 디렉터리 탐색 깊이를 제한하세요:"
 
-#: src/shell-integration.md:177
+#: src/shell-integration.md:188
 msgid "# Only check current directory and up to 3 parents\n"
 msgstr "# 현재 디렉터리 및 최대 3단계 부모 디렉터리까지만 확인\n"
 
-#: src/shell-integration.md:179
+#: src/shell-integration.md:190
 msgid "# Only check current directory (fastest)\n"
 msgstr "# 현재 디렉터리만 확인 (가장 빠름)\n"
 
-#: src/shell-integration.md:181 src/commands/which.md:48
+#: src/shell-integration.md:192 src/commands/which.md:48
 #: src/commands/sync.md:115 src/commands/export.md:71 src/commands/import.md:74
 #: src/commands/clone.md:73 src/api.md:719
 msgid "0"
 msgstr "0"
 
-#: src/shell-integration.md:184
+#: src/shell-integration.md:195
 msgid "Using with pyenv"
 msgstr "pyenv와 함께 사용하기"
 
-#: src/shell-integration.md:186
+#: src/shell-integration.md:197
 msgid "Add scuv **after** pyenv in your shell config:"
 msgstr "셸 설정 파일에서 pyenv **다음에** scuv를 추가하세요:"
 
-#: src/shell-integration.md:189
+#: src/shell-integration.md:200
 msgid "# ~/.zshrc\n"
 msgstr "# ~/.zshrc\n"
 
-#: src/shell-integration.md:190
+#: src/shell-integration.md:201
 msgid "\"$(pyenv init -)\"       # 1. pyenv first\n"
 msgstr "\"$(pyenv init -)\"       # 1. pyenv 먼저\n"
 
-#: src/shell-integration.md:191
+#: src/shell-integration.md:202
 msgid "\"$(scuv init zsh)\"     # 2. scuv second (takes precedence)\n"
 msgstr "\"$(scuv init zsh)\"     # 2. scuv 다음 (우선 적용)\n"
 
-#: src/shell-integration.md:194
+#: src/shell-integration.md:205
 msgid "Tab Completion"
 msgstr "탭 완성"
 
-#: src/shell-integration.md:196
+#: src/shell-integration.md:207
 msgid "Shell integration includes completion for:"
 msgstr "셸 통합에는 다음 항목에 대한 자동 완성이 포함됩니다:"
 
-#: src/shell-integration.md:197
+#: src/shell-integration.md:208
 msgid "Commands and subcommands"
 msgstr "명령어 및 하위 명령어"
 
-#: src/shell-integration.md:198
+#: src/shell-integration.md:209
 msgid "Environment names"
 msgstr "환경 이름"
 
-#: src/shell-integration.md:199
+#: src/shell-integration.md:210
 msgid "Python versions"
 msgstr "Python 버전"
 
-#: src/shell-integration.md:200
+#: src/shell-integration.md:211
 msgid "Command options"
 msgstr "명령어 옵션"
 
-#: src/shell-integration.md:202
+#: src/shell-integration.md:213
 msgid "Completion is automatically enabled by `scuv init`."
 msgstr "`scuv init`을 실행하면 자동 완성이 자동으로 활성화됩니다."
 
-#: src/shell-integration.md:204
+#: src/shell-integration.md:215
 msgid "Supported Shells"
 msgstr "지원 셸"
 
-#: src/shell-integration.md:206 src/faq.md:263
+#: src/shell-integration.md:217 src/faq.md:263
 msgid "Shell"
 msgstr "셸"
 
-#: src/shell-integration.md:206 src/commands/verify.md:18
+#: src/shell-integration.md:217 src/commands/verify.md:18
 msgid "Status"
 msgstr "지원 상태"
 
-#: src/shell-integration.md:208 src/shell-integration.md:209
-#: src/shell-integration.md:210 src/shell-integration.md:211
+#: src/shell-integration.md:219 src/shell-integration.md:220
+#: src/shell-integration.md:221 src/shell-integration.md:222
 msgid "Full support (auto-activation, completion)"
 msgstr "완전 지원 (자동 활성화, 자동 완성)"
 
@@ -2462,8 +2490,8 @@ msgid "`$PROFILE`"
 msgstr "`$PROFILE`"
 
 #: src/faq.md:268
-msgid "`Invoke-Expression (& scuv init powershell)`"
-msgstr "`Invoke-Expression (& scuv init powershell)`"
+msgid "`Invoke-Expression (& scuv init powershell \\| Out-String)`"
+msgstr "`Invoke-Expression (& scuv init powershell \\| Out-String)`"
 
 #: src/faq.md:270
 msgid "3. (Optional) Remove config"
@@ -8085,8 +8113,8 @@ msgstr ""
 "`SCUV_VERSION` 환경 변수를 설정합니다."
 
 #: src/commands/shell.md:10
-msgid "\"$(scuv shell <name>)\"    # Bash/Zsh\n"
-msgstr "\"$(scuv shell <name>)\"    # Bash/Zsh\n"
+msgid "\"$(scuv shell --shell bash <name>)\"   # Bash (Zsh: --shell zsh)\n"
+msgstr "\"$(scuv shell --shell bash <name>)\"   # Bash (Zsh: --shell zsh)\n"
 
 #: src/commands/shell.md:11
 msgid "# Fish (fish does not export FISH_VERSION, so name the shell)\n"
@@ -10072,8 +10100,8 @@ msgid "# Shell wrapper evaluates this output\n"
 msgstr "# shell 래퍼가 이 출력을 평가(eval)합니다\n"
 
 #: src/development/architecture.md:133
-msgid "\"$(command scuv activate myenv)\""
-msgstr "\"$(command scuv activate myenv)\""
+msgid "\"$(command scuv activate --shell bash myenv)\""
+msgstr "\"$(command scuv activate --shell bash myenv)\""
 
 #: src/development/architecture.md:136
 msgid "This pattern is used by pyenv, rbenv, and other version managers."
@@ -15000,6 +15028,9 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "The `scuv` shell function wraps the CLI binary:"
+#~ msgstr "`scuv` 셸 함수는 CLI 바이너리를 래핑합니다:"
 
 #~ msgid "Progress bars & spinners"
 #~ msgstr "진행 표시줄 및 스피너"

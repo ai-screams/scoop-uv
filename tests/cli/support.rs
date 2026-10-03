@@ -35,29 +35,27 @@ pub(crate) fn scoop_cmd(scoop_home: &std::path::Path) -> Command {
     cmd
 }
 
-/// Locate a fish binary: PATH first, then the usual install prefixes. When
-/// `SCUV_REQUIRE_FISH` is set a missing fish is a failure, not a skip: the CI
-/// Test and MSRV jobs install fish and set that variable, so a silently
+/// Locate a shell binary: PATH first, then the usual install prefixes. When
+/// `SCUV_REQUIRE_<NAME>` is set (`SCUV_REQUIRE_FISH`, `SCUV_REQUIRE_ZSH`,
+/// `SCUV_REQUIRE_PWSH`) a missing shell is a failure, not a skip: the CI Test
+/// and MSRV jobs install those shells and set the variables, so a silently
 /// skipped test cannot look like a pass there. Jobs that run the suite
-/// without fish (coverage, mutants) leave it unset and skip.
-pub(crate) fn find_fish() -> Option<std::path::PathBuf> {
+/// without them (coverage, mutants) leave the variables unset and skip.
+pub(crate) fn find_shell(name: &str) -> Option<std::path::PathBuf> {
     let from_path = std::env::var_os("PATH").and_then(|paths| {
         std::env::split_paths(&paths)
-            .map(|dir| dir.join("fish"))
+            .map(|dir| dir.join(name))
             .find(|p| p.is_file())
     });
     let found = from_path.or_else(|| {
-        [
-            "/opt/homebrew/bin/fish",
-            "/usr/local/bin/fish",
-            "/usr/bin/fish",
-        ]
-        .iter()
-        .map(std::path::PathBuf::from)
-        .find(|p| p.is_file())
+        ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"]
+            .iter()
+            .map(|dir| std::path::Path::new(dir).join(name))
+            .find(|p| p.is_file())
     });
-    if found.is_none() && std::env::var_os("SCUV_REQUIRE_FISH").is_some() {
-        panic!("SCUV_REQUIRE_FISH is set but no fish binary was found");
+    let require = format!("SCUV_REQUIRE_{}", name.to_ascii_uppercase());
+    if found.is_none() && std::env::var_os(&require).is_some() {
+        panic!("{require} is set but no {name} binary was found");
     }
     found
 }

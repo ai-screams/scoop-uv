@@ -11,13 +11,14 @@ scuv uses a shell wrapper pattern (like pyenv) where the CLI outputs shell code 
 └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-The `scuv` shell function wraps the CLI binary:
+The `scuv` shell function wraps the CLI binary (simplified; the real one also
+passes help flags through and respects an explicit `--shell`):
 
 ```bash
 scuv() {
     case "$1" in
         use)
-            command scuv "$@"
+            command scuv "$@" || return
             local name=""
             shift
             for arg in "$@"; do
@@ -26,12 +27,17 @@ scuv() {
                     *) name="$arg"; break ;;
                 esac
             done
-            if [[ -n "$name" ]]; then
-                eval "$(command scuv activate "$name")"
+            if [[ "$name" == [Ss][Yy][Ss][Tt][Ee][Mm] ]]; then
+                eval "$(command scuv deactivate --shell bash)"
+            elif [[ -n "$name" ]]; then
+                eval "$(command scuv activate --shell bash "$name")"
             fi
             ;;
         activate|deactivate|shell)
-            eval "$(command scuv "$@")"
+            # Capture first, so a failed call keeps its exit status
+            local script
+            script="$(command scuv "$1" --shell bash "${@:2}")" || return
+            eval "$script"
             ;;
         *)
             command scuv "$@"
@@ -67,9 +73,14 @@ source ~/.config/fish/config.fish
 
 ```powershell
 # Add to $PROFILE
-Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell)'
+Add-Content $PROFILE 'Invoke-Expression (& scuv init powershell | Out-String)'
 # Restart PowerShell
 ```
+
+Keep the `| Out-String`: `scuv init powershell` prints many lines, and
+`Invoke-Expression` takes one string, not the array of lines `&` returns.
+A profile line without it never defines the `scuv` function; if yours
+lacks it, update the line.
 
 ## Auto-Activation
 

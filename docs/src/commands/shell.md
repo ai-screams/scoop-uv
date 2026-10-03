@@ -7,7 +7,7 @@ Unlike `scuv use` which writes to a file, `scuv shell` sets the `SCUV_VERSION` e
 ## Usage
 
 ```bash
-eval "$(scuv shell <name>)"    # Bash/Zsh
+eval "$(scuv shell --shell bash <name>)"   # Bash (Zsh: --shell zsh)
 scuv shell --shell fish <name> | source   # Fish (fish does not export FISH_VERSION, so name the shell)
 ```
 

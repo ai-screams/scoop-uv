@@ -130,7 +130,7 @@ export PATH="/Users/x/.scuv/virtualenvs/myenv/bin:$PATH"
 export SCUV_ACTIVE="myenv"
 
 # Shell wrapper evaluates this output
-eval "$(command scuv activate myenv)"
+eval "$(command scuv activate --shell bash myenv)"
 ```
 
 This pattern is used by pyenv, rbenv, and other version managers.

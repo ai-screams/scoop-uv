@@ -117,15 +117,15 @@ end"#
     # Restore original PATH
     if ($env:_SCUV_OLD_PATH) {{
         $env:PATH = $env:_SCUV_OLD_PATH
-        Remove-Item Env:\\_SCUV_OLD_PATH -ErrorAction SilentlyContinue
+        Remove-Item Env:\_SCUV_OLD_PATH -ErrorAction SilentlyContinue
     }}
     # Restore PYTHONHOME if it was saved
     if ($env:_SCUV_OLD_PYTHONHOME) {{
         $env:PYTHONHOME = $env:_SCUV_OLD_PYTHONHOME
-        Remove-Item Env:\\_SCUV_OLD_PYTHONHOME -ErrorAction SilentlyContinue
+        Remove-Item Env:\_SCUV_OLD_PYTHONHOME -ErrorAction SilentlyContinue
     }}
-    Remove-Item Env:\\VIRTUAL_ENV -ErrorAction SilentlyContinue
-    Remove-Item Env:\\SCUV_ACTIVE -ErrorAction SilentlyContinue
+    Remove-Item Env:\VIRTUAL_ENV -ErrorAction SilentlyContinue
+    Remove-Item Env:\SCUV_ACTIVE -ErrorAction SilentlyContinue
 }}"#
             );
         }

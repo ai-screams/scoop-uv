@@ -4,7 +4,7 @@
 use crate::support::*;
 
 /// Runs the real fish integration end to end when a `fish` binary is
-/// installed (skipped otherwise; see `find_fish`). Every path here sources
+/// installed (skipped otherwise; see `find_shell`). Every path here sources
 /// a multi-line fish script, which only works if the wrapper pipes it to
 /// `source` with an explicit `--shell fish`:
 ///
@@ -14,16 +14,17 @@ use crate::support::*;
 ///   activate/deactivate/shell arm (its output always carries the
 ///   deactivation block);
 /// - `scuv shell --shell fish system` must not get a second `--shell`;
-/// - `scuv use system` must deactivate instead of activating the reserved
-///   name.
+/// - `scuv use SYSTEM` must deactivate instead of activating the reserved
+///   name (`use` takes it in any case);
+/// - a failed `scuv activate` must keep its exit status.
 ///
 /// Fails if a call site evals the output (fish rejoins the lines with
 /// spaces and errors out), lets scuv guess the shell (fish does not export
-/// FISH_VERSION, so the guess is bash), duplicates `--shell`, or routes
-/// `use system` to `activate`.
+/// FISH_VERSION, so the guess is bash), duplicates `--shell`, routes
+/// `use system` to `activate`, or loses scuv's exit status.
 #[test]
 fn fish_wrapper_and_hook_source_multiline_scripts() {
-    let Some(fish) = find_fish() else {
+    let Some(fish) = find_shell("fish") else {
         eprintln!("skipping: no fish binary found");
         return;
     };
@@ -48,8 +49,14 @@ fn fish_wrapper_and_hook_source_multiline_scripts() {
         "scuv shell --shell fish system; ",
         "echo \"explicit-status=$status SCUV_VERSION=[$SCUV_VERSION]\"; ",
         "set -gx SCUV_ACTIVE stale2; set -gx VIRTUAL_ENV /stale2; ",
-        "scuv use system; ",
-        "echo \"use-system SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"",
+        "scuv use SYSTEM; ",
+        "echo \"use-system SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"; ",
+        "scuv activate --shell fish no-such-env 2>/dev/null; ",
+        "echo \"missing-status=$status\"; ",
+        // A usage error exits 2; the wrapper's own `string match` before it
+        // leaves 1, so only scuv's status can make this read 2.
+        "scuv activate --no-such-flag 2>/dev/null; ",
+        "echo \"usage-status=$status\"",
     );
     let output = std::process::Command::new(fish)
         .args(["-c", script])
@@ -74,6 +81,198 @@ fn fish_wrapper_and_hook_source_multiline_scripts() {
         "shell-status=0 SCUV_VERSION=[system]",
         "explicit-status=0 SCUV_VERSION=[system]",
         "use-system SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+        "missing-status=1",
+        "usage-status=2",
+    ] {
+        assert!(
+            stdout.contains(expected),
+            "missing {expected:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        );
+    }
+}
+
+/// A home with one env, `data-hub`: its name contains `-h`, which the
+/// wrappers once took for a help flag. A fake uv lets `activate` find it.
+#[cfg(unix)]
+fn fixture_with_data_hub() -> (TestFixture, TempDir) {
+    let fixture = TestFixture::new();
+    let env = fixture.scoop_home.join("virtualenvs").join("data-hub");
+    std::fs::create_dir_all(env.join("bin")).unwrap();
+    std::fs::write(env.join("pyvenv.cfg"), "version = 3.12.1\n").unwrap();
+    (fixture, fake_uv_dir())
+}
+
+/// PATH with the built scuv first, then the fake uv's directory holding a
+/// second `scuv` (a link to the same binary): two installs on PATH, as a
+/// user with both a cargo and a package-manager copy has.
+#[cfg(unix)]
+fn shell_test_path(fake_uv: &TempDir) -> String {
+    let bin = assert_cmd::cargo::cargo_bin("scuv");
+    let second = fake_uv.path().join("scuv");
+    if !second.exists() {
+        std::os::unix::fs::symlink(&bin, &second).unwrap();
+    }
+    format!(
+        "{}:{}:{}",
+        bin.parent().unwrap().display(),
+        fake_uv.path().display(),
+        std::env::var("PATH").unwrap_or_default()
+    )
+}
+
+/// Runs the real bash and zsh integration end to end (each skipped when the
+/// shell is missing; see `find_shell`). `PSModulePath` is set, as Windows
+/// sets it for every process (Git Bash included): shell detection reads it
+/// before `ZSH_VERSION`, so any call that lets scuv guess the shell gets
+/// PowerShell syntax.
+///
+/// Fails if a wrapper or hook call omits `--shell` (the stale activation
+/// survives init, or eval chokes on PowerShell), duplicates an explicit
+/// `--shell`, routes `use system` (in any case) to `activate`, loses scuv's
+/// exit status behind `eval`, or treats an env name
+/// containing `-h` as a help flag (`activate data-hub` then prints instead
+/// of activating). On bash older than 4.4 (macOS's 3.2) it also fails if
+/// completion registration depends on `complete -o nosort`.
+#[cfg(unix)]
+#[test]
+fn posix_wrappers_and_hook_name_their_shell() {
+    let shells: [(&str, &[&str]); 2] = [("bash", &["--norc", "--noprofile"]), ("zsh", &["-f"])];
+    for (shell, flags) in shells {
+        let Some(binary) = find_shell(shell) else {
+            eprintln!("skipping: no {shell} binary found");
+            continue;
+        };
+        let (fixture, fake_uv) = fixture_with_data_hub();
+        let script = format!(
+            concat!(
+                "eval \"$(command scuv init {sh})\"\n",
+                "echo \"after-init SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"\n",
+                "scuv activate data-hub\n",
+                "echo \"activate SCUV_ACTIVE=[$SCUV_ACTIVE]\"\n",
+                "scuv deactivate\n",
+                "echo \"deactivate SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"\n",
+                "scuv shell --shell {sh} system\n",
+                "echo \"explicit-status=$? SCUV_VERSION=[$SCUV_VERSION]\"\n",
+                "unset SCUV_VERSION\n",
+                "export SCUV_ACTIVE=stale2 VIRTUAL_ENV=/stale2\n",
+                "scuv use SYSTEM\n",
+                "echo \"use-system SCUV_ACTIVE=[$SCUV_ACTIVE] VIRTUAL_ENV=[$VIRTUAL_ENV]\"\n",
+                "scuv activate no-such-env 2>/dev/null\n",
+                "echo \"missing-status=$?\"\n",
+                "{completion}",
+            ),
+            sh = shell,
+            // bash < 4.4 (macOS ships 3.2) rejects `complete -o nosort`
+            // outright; the init script must still register completion.
+            completion = if shell == "bash" {
+                "complete -p scuv\n"
+            } else {
+                ""
+            }
+        );
+        let output = std::process::Command::new(&binary)
+            .args(flags)
+            .args(["-c", &script])
+            .env("HOME", fixture.temp_dir.path())
+            .env("SCUV_HOME", &fixture.scoop_home)
+            .env("SCUV_LANG", "en")
+            .env("PATH", shell_test_path(&fake_uv))
+            .env("PSModulePath", "C:\\Program Files\\PowerShell\\Modules")
+            .env_remove("SCUV_VERSION")
+            .env_remove("SCUV_NO_AUTO")
+            .env_remove("_SCUV_OLD_PATH")
+            .env_remove("_SCUV_OLD_PYTHONHOME")
+            .env_remove("FISH_VERSION")
+            .env_remove("ZSH_VERSION")
+            // A stale activation the startup hook must clear.
+            .env("SCUV_ACTIVE", "stale")
+            .env("VIRTUAL_ENV", "/stale")
+            .current_dir(fixture.temp_dir.path())
+            .output()
+            .unwrap_or_else(|e| panic!("{shell} must run: {e}"));
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        for expected in [
+            "after-init SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+            "activate SCUV_ACTIVE=[data-hub]",
+            "deactivate SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+            "explicit-status=0 SCUV_VERSION=[system]",
+            "use-system SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+            "missing-status=1",
+            if shell == "bash" {
+                "-F _scuv_complete scuv"
+            } else {
+                ""
+            },
+        ] {
+            assert!(
+                stdout.contains(expected),
+                "{shell}: missing {expected:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+            );
+        }
+    }
+}
+
+/// Runs the real PowerShell integration end to end when `pwsh` is installed
+/// (skipped otherwise; see `find_shell`), starting from the documented
+/// profile line. Every scuv output it evaluates spans several lines.
+///
+/// Fails if a call hands `Invoke-Expression` the raw output (an array of
+/// lines it refuses to bind), the deactivation script names variables as
+/// `Env:\\X` (removes nothing, silently), `use system` activates instead of
+/// deactivating, an env name containing `-h` counts as a help flag, a
+/// failed scuv call reports success, or the
+/// binary lookup breaks with more than one `scuv` on PATH.
+#[cfg(unix)]
+#[test]
+fn powershell_wrapper_and_hook_evaluate_multiline_scripts() {
+    let Some(pwsh) = find_shell("pwsh") else {
+        eprintln!("skipping: no pwsh binary found");
+        return;
+    };
+    let (fixture, fake_uv) = fixture_with_data_hub();
+    let script = concat!(
+        "Invoke-Expression (& scuv init powershell | Out-String)\n",
+        "\"after-init SCUV_ACTIVE=[$env:SCUV_ACTIVE] VIRTUAL_ENV=[$env:VIRTUAL_ENV]\"\n",
+        "scuv activate data-hub\n",
+        "\"activate SCUV_ACTIVE=[$env:SCUV_ACTIVE]\"\n",
+        "scuv deactivate\n",
+        "\"deactivate SCUV_ACTIVE=[$env:SCUV_ACTIVE] VIRTUAL_ENV=[$env:VIRTUAL_ENV]\"\n",
+        "scuv shell system\n",
+        "\"shell SCUV_VERSION=[$env:SCUV_VERSION]\"\n",
+        "scuv shell --unset\n",
+        "\"unset SCUV_VERSION=[$env:SCUV_VERSION]\"\n",
+        "$env:SCUV_ACTIVE = 'stale2'; $env:VIRTUAL_ENV = '/stale2'\n",
+        "scuv use SYSTEM\n",
+        "\"use-system SCUV_ACTIVE=[$env:SCUV_ACTIVE] VIRTUAL_ENV=[$env:VIRTUAL_ENV]\"\n",
+        "scuv activate no-such-env 2>$null\n",
+        "\"missing-status=$LASTEXITCODE\"\n",
+    );
+    let output = std::process::Command::new(pwsh)
+        .args(["-NoProfile", "-NonInteractive", "-Command", script])
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("SCUV_LANG", "en")
+        .env("PATH", shell_test_path(&fake_uv))
+        .env_remove("SCUV_VERSION")
+        .env_remove("SCUV_NO_AUTO")
+        .env_remove("_SCUV_OLD_PATH")
+        .env_remove("_SCUV_OLD_PYTHONHOME")
+        .env("SCUV_ACTIVE", "stale")
+        .env("VIRTUAL_ENV", "/stale")
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("pwsh must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    for expected in [
+        "after-init SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+        "activate SCUV_ACTIVE=[data-hub]",
+        "deactivate SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+        "shell SCUV_VERSION=[system]",
+        "unset SCUV_VERSION=[]",
+        "use-system SCUV_ACTIVE=[] VIRTUAL_ENV=[]",
+        "missing-status=1",
     ] {
         assert!(
             stdout.contains(expected),

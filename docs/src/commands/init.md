@@ -33,7 +33,7 @@ scuv init fish | source
 
 ```powershell
 # PowerShell ($PROFILE)
-Invoke-Expression (& scuv init powershell)
+Invoke-Expression (& scuv init powershell | Out-String)
 ```
 
 ## Features Enabled

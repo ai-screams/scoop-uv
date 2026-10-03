@@ -27,22 +27,32 @@
 #[macro_export]
 macro_rules! scoop_version_check {
     (bash) => {
-        r#"
+        scoop_version_check!(@posix "bash")
+    };
+    (zsh) => {
+        scoop_version_check!(@posix "zsh")
+    };
+    // bash and zsh share the script; only the `--shell` they name differs.
+    (@posix $shell:literal) => {
+        concat!(
+            r#"
     # Priority 1: SCUV_VERSION environment variable (scuv shell)
     if [[ -n "$SCUV_VERSION" ]]; then
         if [[ "$SCUV_VERSION" == "system" ]]; then
             if [[ -n "$SCUV_ACTIVE" ]]; then
-                eval "$(command scuv deactivate)"
+                eval "$(command scuv deactivate --shell "#,
+            $shell,
+            r#")"
             fi
         elif [[ "$SCUV_VERSION" != "$SCUV_ACTIVE" ]]; then
-            eval "$(command scuv activate "$SCUV_VERSION")"
+            eval "$(command scuv activate --shell "#,
+            $shell,
+            r#" "$SCUV_VERSION")"
         fi
         return
     fi
 "#
-    };
-    (zsh) => {
-        scoop_version_check!(bash)
+        )
     };
     (fish) => {
         r#"
@@ -65,10 +75,10 @@ macro_rules! scoop_version_check {
     if ($env:SCUV_VERSION) {
         if ($env:SCUV_VERSION -eq 'system') {
             if ($env:SCUV_ACTIVE) {
-                Invoke-Expression (& $script:ScuvBin deactivate)
+                Invoke-Expression (& $script:ScuvBin deactivate --shell powershell | Out-String)
             }
         } elseif ($env:SCUV_VERSION -ne $env:SCUV_ACTIVE) {
-            Invoke-Expression (& $script:ScuvBin activate $env:SCUV_VERSION)
+            Invoke-Expression (& $script:ScuvBin activate --shell powershell $env:SCUV_VERSION | Out-String)
         }
         return
     }
@@ -85,23 +95,34 @@ macro_rules! scoop_version_check {
 #[macro_export]
 macro_rules! file_resolution_check {
     (bash) => {
-        r#"
+        file_resolution_check!(@posix "bash")
+    };
+    (zsh) => {
+        file_resolution_check!(@posix "zsh")
+    };
+    (@posix $shell:literal) => {
+        concat!(
+            r#"
     # Priority 2-3: File-based resolution
     local env_name
     env_name="$(command scuv resolve 2>/dev/null)"
 
     if [[ "$env_name" == "system" ]]; then
         if [[ -n "$SCUV_ACTIVE" ]]; then
-            eval "$(command scuv deactivate)"
+            eval "$(command scuv deactivate --shell "#,
+            $shell,
+            r#")"
         fi
     elif [[ -n "$env_name" && "$env_name" != "$SCUV_ACTIVE" ]]; then
-        eval "$(command scuv activate "$env_name")"
+        eval "$(command scuv activate --shell "#,
+            $shell,
+            r#" "$env_name")"
     elif [[ -z "$env_name" && -n "$SCUV_ACTIVE" ]]; then
-        eval "$(command scuv deactivate)"
+        eval "$(command scuv deactivate --shell "#,
+            $shell,
+            r#")"
     fi"#
-    };
-    (zsh) => {
-        file_resolution_check!(bash)
+        )
     };
     (fish) => {
         r#"
@@ -125,12 +146,12 @@ macro_rules! file_resolution_check {
 
     if ($env_name -eq 'system') {
         if ($env:SCUV_ACTIVE) {
-            Invoke-Expression (& $script:ScuvBin deactivate)
+            Invoke-Expression (& $script:ScuvBin deactivate --shell powershell | Out-String)
         }
     } elseif ($env_name -and ($env_name -ne $env:SCUV_ACTIVE)) {
-        Invoke-Expression (& $script:ScuvBin activate $env_name)
+        Invoke-Expression (& $script:ScuvBin activate --shell powershell $env_name | Out-String)
     } elseif ((-not $env_name) -and $env:SCUV_ACTIVE) {
-        Invoke-Expression (& $script:ScuvBin deactivate)
+        Invoke-Expression (& $script:ScuvBin deactivate --shell powershell | Out-String)
     }"#
     };
 }
@@ -196,12 +217,60 @@ mod tests {
         assert!(script.contains("set -l env_name"));
     }
 
-    /// Verify zsh delegates to bash (same syntax)
+    /// zsh shares bash's hook; only the shell it names differs. Fails if
+    /// the two drift apart in anything else.
     #[test]
-    fn test_zsh_delegates_to_bash() {
-        let bash_version = scoop_version_check!(bash);
-        let zsh_version = scoop_version_check!(zsh);
-        assert_eq!(bash_version, zsh_version);
+    fn zsh_hook_is_bash_hook_naming_zsh() {
+        for (bash, zsh) in [
+            (scoop_version_check!(bash), scoop_version_check!(zsh)),
+            (file_resolution_check!(bash), file_resolution_check!(zsh)),
+        ] {
+            assert_eq!(bash.replace("--shell bash", "--shell zsh"), zsh);
+        }
+    }
+
+    /// Every activate/deactivate call in the bash, zsh and PowerShell hooks
+    /// names its shell, and PowerShell joins the output into one string.
+    /// Detection reads PSModulePath first, which Windows sets for every
+    /// process, so a bare call in Git Bash gets PowerShell syntax; and
+    /// Invoke-Expression refuses the array of lines `& scuv` returns. Fails
+    /// if any call drops `--shell` or `| Out-String`.
+    #[test]
+    fn hooks_name_their_shell_on_every_activation_call() {
+        let posix = [
+            ("bash", scoop_version_check!(bash)),
+            ("bash", file_resolution_check!(bash)),
+            ("zsh", scoop_version_check!(zsh)),
+            ("zsh", file_resolution_check!(zsh)),
+        ];
+        for (shell, script) in posix {
+            let calls: Vec<&str> = script
+                .lines()
+                .filter(|l| {
+                    l.contains("command scuv activate") || l.contains("command scuv deactivate")
+                })
+                .collect();
+            assert!(!calls.is_empty(), "{script}");
+            for call in calls {
+                assert!(call.contains(&format!("--shell {shell}")), "{call}");
+            }
+        }
+        for script in [
+            scoop_version_check!(powershell),
+            file_resolution_check!(powershell),
+        ] {
+            let calls: Vec<&str> = script
+                .lines()
+                .filter(|l| l.contains("ScuvBin activate") || l.contains("ScuvBin deactivate"))
+                .collect();
+            assert!(!calls.is_empty(), "{script}");
+            for call in calls {
+                assert!(
+                    call.contains("--shell powershell") && call.contains("| Out-String)"),
+                    "{call}"
+                );
+            }
+        }
     }
 
     /// Verify PowerShell hook uses PowerShell syntax
