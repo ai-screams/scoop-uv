@@ -180,7 +180,7 @@ pub(super) fn render_human_summary(
 
 /// JSON envelope helper for `migrate all`.
 ///
-/// Modelled on [`crate::cli::commands::verify::emit_strict_json_failure`]
+/// Modelled on `verify`'s `report::emit_strict_json_failure`
 /// — one helper that emits either a `success` or `error` envelope based
 /// on `is_failure`. Both carry the full `MigrateAllData` so consumers
 /// don't lose detail on either path; the failure side adds an
@@ -275,7 +275,7 @@ pub(super) fn emit_migrate_all_json_outcome(
 /// The migrate envelopes embed `PathBuf` (via `MigrationResult.path` and
 /// `MigrationConflictDetail.existing`). serde's default `PathBuf` adapter
 /// fails on non-UTF-8 paths, so the canonical `unwrap()` pattern from
-/// `verify.rs::emit_strict_json_failure` (whose data is all UTF-8 owned
+/// `verify::report::emit_strict_json_failure` (whose data is all UTF-8 owned
 /// strings) is unsafe here.
 ///
 /// On serde failure the fallback always says `status: "error"` even
