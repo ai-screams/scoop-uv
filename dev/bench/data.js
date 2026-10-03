@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791062560970,
+  "lastUpdate": 1791062562706,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -9313,6 +9313,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 871,
             "range": "± 29",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4f8781ec2dc18a66472c26006b4faf4fa4963552",
+          "message": "Merge pull request #219 from ai-screams/fix/completion-subcommands\n\nfix(completions): offer every subcommand and complete arguments by position",
+          "timestamp": "2026-10-04T06:18:23+09:00",
+          "tree_id": "e4c3f744618353d0c887c5b52aaebd1a1c52be31",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/4f8781ec2dc18a66472c26006b4faf4fa4963552"
+        },
+        "date": 1791062562604,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 676,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 494,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
