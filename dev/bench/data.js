@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791062012476,
+  "lastUpdate": 1791062014040,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -9073,6 +9073,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1132,
             "range": "± 6",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0683271061e7719c766292dde8f633e04f1b9d3c",
+          "message": "Merge pull request #217 from ai-screams/fix/gc-minor-version-pythons\n\nfix(gc): keep the Pythons that minor-version envs use",
+          "timestamp": "2026-10-04T06:05:12+09:00",
+          "tree_id": "79d999a736ca514e9fce2d490f2931586e701071",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/0683271061e7719c766292dde8f633e04f1b9d3c"
+        },
+        "date": 1791062013941,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 716,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 538,
+            "range": "± 13",
             "unit": "ns/iter"
           }
         ]
