@@ -71,12 +71,16 @@ fn normalize_pyvenv_version(raw: &str) -> String {
     }
 }
 
-/// List `(name, version)` pairs of packages installed in `venv_path` by asking
-/// the venv's own `pip list --format=json`.
+/// List `(name, version)` pairs of packages installed in `venv_path`, via
+/// `uv pip list --python <venv>`.
 ///
-/// Best-effort: missing pip, non-zero exit, and unparseable JSON all collapse
-/// to an empty vector so callers (`scuv info`, `scuv status`) can degrade
-/// gracefully when the env is broken or pip simply isn't present.
+/// Not the venv's own pip: `scuv create` makes envs with uv, which installs
+/// no pip into them, so asking pip found nothing and `clone` copied no
+/// packages. uv reads the env's site-packages without needing pip in it.
+///
+/// Best-effort: no uv, a non-zero exit and unparseable JSON all collapse to
+/// an empty vector so callers (`scuv info`, `scuv status`) can degrade
+/// gracefully when the env is broken.
 ///
 /// # Examples
 ///
@@ -88,29 +92,10 @@ fn normalize_pyvenv_version(raw: &str) -> String {
 /// println!("{} packages installed", pkgs.len());
 /// ```
 pub fn list_installed_packages(venv_path: &std::path::Path) -> Vec<(String, String)> {
-    let pip_path = crate::paths::virtualenv_pip_exe(venv_path);
-    if !pip_path.exists() {
-        return Vec::new();
-    }
-    let output = std::process::Command::new(&pip_path)
-        .args(["list", "--format=json"])
-        .output();
-    match output {
-        Ok(out) if out.status.success() => {
-            let stdout = String::from_utf8_lossy(&out.stdout);
-            serde_json::from_str::<Vec<serde_json::Value>>(&stdout)
-                .unwrap_or_default()
-                .into_iter()
-                .filter_map(|p| {
-                    Some((
-                        p.get("name")?.as_str()?.to_string(),
-                        p.get("version")?.as_str()?.to_string(),
-                    ))
-                })
-                .collect()
-        }
-        _ => Vec::new(),
-    }
+    crate::uv::UvClient::new()
+        .and_then(|uv| uv.pip_list(venv_path))
+        .map(|entries| entries.into_iter().map(|e| (e.name, e.version)).collect())
+        .unwrap_or_default()
 }
 
 /// Get the currently active environment name from $SCUV_ACTIVE
@@ -192,11 +177,22 @@ mod tests {
         assert!(pkgs.is_empty());
     }
 
+    /// `scuv create` makes envs with uv, which puts no pip in them; the
+    /// packages come from `uv pip list` (here a fake uv that reports six).
+    /// Fails if the lookup goes back to the env's own pip, which finds
+    /// nothing, so clone copies nothing and export writes an empty list.
+    #[cfg(unix)]
     #[test]
-    fn list_installed_packages_no_pip_returns_empty() {
-        // Bin dir exists but pip is missing — must not panic, must return [].
+    #[serial_test::serial]
+    fn list_installed_packages_reads_an_env_without_pip() {
+        let uv = crate::test_utils::FakeUv::new(&[]);
+        let path = uv.path_var();
+        let _env = crate::test_utils::env_guard(&[("PATH", Some(path.as_str()))]);
         let temp = tempfile::TempDir::new().unwrap();
         std::fs::create_dir_all(temp.path().join("bin")).unwrap();
-        assert!(list_installed_packages(temp.path()).is_empty());
+        assert_eq!(
+            list_installed_packages(temp.path()),
+            [("six".to_string(), "1.16.0".to_string())]
+        );
     }
 }

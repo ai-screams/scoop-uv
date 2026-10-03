@@ -607,6 +607,7 @@ case "$1 $2" in
   "--version "*) echo "uv 0.12.22" ;;
   "python list") echo "$*" >> "{d}/list.log"; printf '%s\n' '{json}' ;;
   "python uninstall") echo "$3" >> "{d}/uninstalled.log" ;;
+  "pip list") printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
   "cache prune") ;;
   *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;
 esac

@@ -5388,11 +5388,11 @@ msgstr ""
 
 #: src/commands/export.md:57
 msgid ""
-"`packages` is what the venv's own pip reports — versions are pinned exactly "
-"so imports are reproducible."
+"`packages` is what `uv pip list` reports for the env — versions are pinned "
+"exactly so imports are reproducible."
 msgstr ""
-"`packages`는 virtualenv 자체 pip이 보고하는 내용입니다 — 버전이 정확히 고정되"
-"어 import가 재현 가능합니다."
+"`packages`는 `uv pip list`가 그 환경에 대해 보고하는 내용입니다 — 버전이 정확"
+"히 고정되어 import가 재현 가능합니다."
 
 #: src/commands/export.md:60
 msgid ""
@@ -5613,11 +5613,11 @@ msgstr "동일한 Python 버전으로 `<DST>`를 생성합니다."
 
 #: src/commands/clone.md:35
 msgid ""
-"Unless `--no-packages`, lists the source's installed packages via the venv's "
-"own pip and re-installs them pinned (`name==version`) into the destination."
+"Unless `--no-packages`, lists the source's installed packages with `uv pip "
+"list` and re-installs them pinned (`name==version`) into the destination."
 msgstr ""
-"`--no-packages`가 지정되지 않은 경우, virtualenv 자체 pip을 통해 원본의 설치"
-"된 패키지 목록을 가져와 고정된 버전(`name==version`)으로 대상에 재설치합니다."
+"`--no-packages`가 지정되지 않은 경우, `uv pip list`로 원본의 설치된 패키지 목"
+"록을 가져와 고정된 버전(`name==version`)으로 대상에 재설치합니다."
 
 #: src/commands/clone.md:42
 msgid "# Full copy\n"
