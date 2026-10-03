@@ -26,7 +26,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Prevent runaway linting jobs
+    timeout-minutes: 15  # Prevent runaway linting jobs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -49,6 +49,14 @@ jobs:
 
       - name: Run Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
+
+      # Cargo.toml `include` decides which files reach crates.io. A file the
+      # build reads but `include` misses (the include_str! shell scripts
+      # nearly were) compiles everywhere above and fails only at
+      # `cargo publish` in the release job. `cargo package` builds the crate
+      # from the packaged files alone, so the gap fails here instead.
+      - name: Build the crate from its packaged files
+        run: cargo package --locked
 
       # llms.txt, llms-full.txt and docs/src/llms.md are three hand-kept
       # copies of the same reference material, so a fact corrected in one
