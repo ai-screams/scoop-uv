@@ -8,7 +8,9 @@ const RC: &str = "cpython-3.12.14rc1-macos-aarch64-none";
 
 /// A home whose envs `(name, install)` each sit on that uv install, and a
 /// fake `uv` reporting `uv_version` whose uninstall deletes the installs
-/// named by the request (`cpython-<request>-*`, so not its pre-releases).
+/// named by the request (`cpython-<request>-*`, so not its pre-releases),
+/// then fails if `FAKE_UV_FAIL_AFTER` is set (`FAKE_UV_FAIL_BEFORE`: fails
+/// without removing anything).
 #[cfg(unix)]
 fn home_with_envs(uv_version: &str, envs: &[(&str, &str)]) -> (TestFixture, TempDir) {
     use std::os::unix::fs::PermissionsExt;
@@ -30,7 +32,7 @@ fn home_with_envs(uv_version: &str, envs: &[(&str, &str)]) -> (TestFixture, Temp
     std::fs::write(
         uv.path().join("uv"),
         format!(
-            "#!/bin/sh\ncase \"$1 $2\" in\n  \"--version \"*) echo \"{uv_version}\" ;;\n  \"python dir\") echo \"{d}/py\" ;;\n  \"python uninstall\") /bin/rm -rf \"{d}/py/cpython-$3-\"* ;;\n  *) echo \"fake uv: unsupported: $*\" >&2; exit 2 ;;\nesac\n"
+            "#!/bin/sh\ncase \"$1 $2\" in\n  \"--version \"*) echo \"{uv_version}\" ;;\n  \"python dir\") echo \"{d}/py\" ;;\n  \"python uninstall\") [ -n \"$FAKE_UV_FAIL_BEFORE\" ] && exit 1; /bin/rm -rf \"{d}/py/cpython-$3-\"*; [ -z \"$FAKE_UV_FAIL_AFTER\" ] ;;\n  *) echo \"fake uv: unsupported: $*\" >&2; exit 2 ;;\nesac\n"
         ),
     )
     .unwrap();
@@ -130,4 +132,127 @@ fn cascade_plan_for_a_patch_follows_uv_on_pre_releases(
         fixture.scoop_home.join("virtualenvs").join("rc").exists(),
         "the pre-release survives, and so does its env"
     );
+}
+
+/// An env whose interpreter cannot be read is left alone and reported:
+/// warned before the uninstall in human output, listed with its reason in
+/// JSON. Fails if it is removed, or left out silently.
+#[cfg(unix)]
+#[test]
+fn cascade_reports_an_env_it_cannot_judge() {
+    for json in [false, true] {
+        let (fixture, uv) = home_with_envs("uv 0.12.22", &[("web", P14), ("nocfg", P14)]);
+        let envs = fixture.scoop_home.join("virtualenvs");
+        std::fs::remove_file(envs.join("nocfg").join("pyvenv.cfg")).unwrap();
+        let mut cmd = scoop_cmd(&fixture.scoop_home);
+        cmd.env("PATH", uv.path())
+            .args(["uninstall", "3.12.14", "--cascade", "--force"]);
+        if json {
+            cmd.arg("--json");
+        }
+        let out = cmd.output().unwrap();
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(out.status.success(), "{stderr}");
+        assert!(!envs.join("web").exists());
+        assert!(envs.join("nocfg").exists(), "an env it cannot judge stays");
+        if json {
+            let data: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+            assert_eq!(data["data"]["unverified_envs"][0]["name"], "nocfg");
+            assert_eq!(
+                data["data"]["unverified_envs"][0]["reason"],
+                "no pyvenv.cfg"
+            );
+        } else {
+            let warned = stderr
+                .find("Cannot tell which Python 'nocfg' uses (no pyvenv.cfg)")
+                .expect(&stderr);
+            let uninstalling = stderr.find("Uninstalling").expect(&stderr);
+            assert!(
+                warned < uninstalling,
+                "warned before the uninstall: {stderr}"
+            );
+        }
+    }
+}
+
+/// With only an env it cannot judge, the cascade does not go on to claim
+/// that no environment uses the Python. Fails if "No environments" follows
+/// the warning.
+#[cfg(unix)]
+#[test]
+fn cascade_does_not_claim_no_envs_after_an_unverified_warning() {
+    let (fixture, uv) = home_with_envs("uv 0.12.22", &[("nocfg", P14)]);
+    let envs = fixture.scoop_home.join("virtualenvs");
+    std::fs::remove_file(envs.join("nocfg").join("pyvenv.cfg")).unwrap();
+    let out = scoop_cmd(&fixture.scoop_home)
+        .env("PATH", uv.path())
+        .args(["uninstall", "3.12.14", "--cascade", "--force"])
+        .output()
+        .unwrap();
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(out.status.success(), "{stderr}");
+    assert!(
+        stderr.contains("Cannot tell which Python 'nocfg'"),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("No environments"), "{stderr}");
+}
+
+/// uv removed the install and then failed: under `--json` the envs the
+/// cascade removed afterwards still reach stdout, in an error envelope.
+/// Fails if scripts are left with nothing but the text error.
+#[cfg(unix)]
+#[test]
+fn cascade_reports_its_cleanup_as_json_when_uv_fails() {
+    let (fixture, uv) = home_with_envs("uv 0.12.22", &[("web", P14)]);
+    let out = scoop_cmd(&fixture.scoop_home)
+        .env("PATH", uv.path())
+        .env("FAKE_UV_FAIL_AFTER", "1")
+        .args(["uninstall", "3.12.14", "--cascade", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(json["status"], "error");
+    assert_eq!(json["data"]["removed_envs"], serde_json::json!(["web"]));
+    assert!(!fixture.scoop_home.join("virtualenvs").join("web").exists());
+}
+
+/// uv failed before removing anything: nothing was cleaned up, so `--json`
+/// keeps the usual error behaviour (the text error, no envelope on stdout).
+/// Fails if an empty cleanup is reported as JSON.
+#[cfg(unix)]
+#[test]
+fn cascade_emits_no_json_when_uv_fails_before_removing() {
+    let (fixture, uv) = home_with_envs("uv 0.12.22", &[("web", P14)]);
+    let out = scoop_cmd(&fixture.scoop_home)
+        .env("PATH", uv.path())
+        .env("FAKE_UV_FAIL_BEFORE", "1")
+        .args(["uninstall", "3.12.14", "--cascade", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    assert!(
+        out.stdout.is_empty(),
+        "{}",
+        String::from_utf8_lossy(&out.stdout)
+    );
+    assert!(fixture.scoop_home.join("virtualenvs").join("web").exists());
+}
+
+/// The same when the cleanup removed nothing but failed on an env: that
+/// failure still reaches stdout. Fails if only removals count as cleanup.
+#[cfg(unix)]
+#[test]
+fn cascade_reports_a_failed_cleanup_as_json_when_uv_fails() {
+    let (fixture, uv) = home_with_envs("uv 0.12.22", &[("1bad", P14)]);
+    let out = scoop_cmd(&fixture.scoop_home)
+        .env("PATH", uv.path())
+        .env("FAKE_UV_FAIL_AFTER", "1")
+        .args(["uninstall", "3.12.14", "--cascade", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(json["data"]["failed_envs"][0]["name"], "1bad");
 }

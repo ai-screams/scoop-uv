@@ -603,15 +603,17 @@ impl FakeUv {
         // exact key for a patch request (`3.12.14`), every patch for a minor
         // request (`3.12` → `cpython-3.12.*`), and the minor link with it.
         // `/bin/rm` by absolute path, as tests often put only the fake on PATH.
+        // `FAKE_UV_UNINSTALL_FAILS` makes it fail before removing anything,
+        // or after removing when set to `after`.
         let json = format!("[{}]", entries.join(","));
         let d = dir.path().display();
         std::fs::create_dir_all(dir.path().join("py")).expect("fake uv python dir");
         let script = format!(
             r#"#!/bin/sh
 case "$1 $2" in
-  "--version "*) echo "uv 0.12.22" ;;
+  "--version "*) echo "$*" >> "{d}/version.log"; echo "uv 0.12.22" ;;
   "python list") echo "$*" >> "{d}/list.log"; printf '%s\n' '{json}' ;;
-  "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* "{d}/py/cpython-$3."*-* ;;
+  "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && [ "$FAKE_UV_UNINSTALL_FAILS" != after ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* "{d}/py/cpython-$3."*-*; [ "$FAKE_UV_UNINSTALL_FAILS" != after ] ;;
   "python dir") echo "{d}/py" ;;
   "pip list") echo "$*" >> "{d}/pip.log"; printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
   "cache prune") ;;
@@ -648,6 +650,13 @@ esac
     pub fn pip_calls(&self) -> Vec<String> {
         std::fs::read_to_string(self.dir.path().join("pip.log"))
             .map(|s| s.lines().map(str::to_string).collect())
+            .unwrap_or_default()
+    }
+
+    /// How many times `uv --version` was called.
+    pub fn version_calls(&self) -> usize {
+        std::fs::read_to_string(self.dir.path().join("version.log"))
+            .map(|s| s.lines().count())
             .unwrap_or_default()
     }
 
