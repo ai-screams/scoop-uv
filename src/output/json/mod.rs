@@ -167,6 +167,17 @@ pub struct UninstallData {
     /// none failed)
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub failed_envs: Vec<CascadeFailure>,
+    /// Environments the cascade left alone because their interpreter could
+    /// not be read from `pyvenv.cfg` (absent when there are none)
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub unverified_envs: Vec<UnverifiedEnv>,
+}
+
+/// An environment a cascade could not judge, and why
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct UnverifiedEnv {
+    pub name: String,
+    pub reason: String,
 }
 
 /// An environment a cascade could not remove, and why

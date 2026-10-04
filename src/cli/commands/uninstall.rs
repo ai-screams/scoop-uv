@@ -7,7 +7,7 @@ use rust_i18n::t;
 
 use crate::core::VirtualenvService;
 use crate::error::{Result, ScoopError};
-use crate::output::{CascadeFailure, Output, UninstallData};
+use crate::output::{CascadeFailure, Output, UninstallData, UnverifiedEnv};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
@@ -31,7 +31,7 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
     // Decide (and confirm) which envs go before anything is removed, but
     // remove them only once uv has uninstalled the Python: if that fails,
     // every env is still there.
-    let planned = if cascade {
+    let plan = if cascade {
         Some(plan_cascade(output, &uv, version, force)?)
     } else {
         None
@@ -41,18 +41,19 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
 
     uv.uninstall_python(version)?;
 
-    let (removed_envs, failed_envs) = match planned {
-        Some(planned) => {
-            let (removed, failed) = remove_envs(output, &planned);
-            (Some(removed), failed)
+    let (removed_envs, failed_envs, unverified_envs) = match plan {
+        Some(plan) => {
+            let (removed, failed) = remove_envs(output, &plan.planned);
+            (Some(removed), failed, plan.unverified)
         }
-        None => (None, Vec::new()),
+        None => (None, Vec::new(), Vec::new()),
     };
 
     let data = UninstallData {
         version: version.to_string(),
         removed_envs,
         failed_envs,
+        unverified_envs,
     };
 
     // Envs left without a Python must not pass as a success: the Python is
@@ -92,61 +93,97 @@ fn incomplete_json(err: &ScoopError, data: &UninstallData) -> String {
     .unwrap_or_default()
 }
 
-/// An env the cascade plans to remove, with the interpreter directory its
-/// `pyvenv.cfg` points at (checked again after the uninstall).
+/// An env the cascade plans to remove: where it is, which directory that
+/// was when planned, and the interpreter directory its `pyvenv.cfg` pointed
+/// at. All three are checked again after the uninstall.
 struct Planned {
     name: String,
+    path: PathBuf,
+    identity: Option<DirIdentity>,
     home: PathBuf,
+}
+
+/// What the cascade decided before uninstalling: the envs to remove, and
+/// the envs whose interpreter could not be read and are left alone.
+struct Plan {
+    planned: Vec<Planned>,
+    unverified: Vec<UnverifiedEnv>,
 }
 
 /// Work out which envs the uninstall takes the Python away from, list them
 /// and ask for confirmation (unless `--force` or `--json`).
-fn plan_cascade(
-    output: &Output,
-    uv: &UvClient,
-    version: &str,
-    force: bool,
-) -> Result<Vec<Planned>> {
+fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> Result<Plan> {
     let service = VirtualenvService::auto()?;
     let envs = service.list()?;
 
+    let mut unverified = Vec::new();
     let planned: Vec<Planned> = match PythonVersion::parse(version) {
         Some(filter) => {
             let install_dir = uv.python_dir()?;
-            let skips = patch_request_skips_prereleases(uv.version().ok().as_deref());
+            // Only a request naming the patch depends on the uv version.
+            let skips = filter.patch.is_some()
+                && patch_request_skips_prereleases(uv.version().ok().as_deref());
             let (removed, remaining): (Vec<String>, Vec<String>) = installed_keys(&install_dir)
                 .into_iter()
                 .partition(|key| removed_by(key, &filter, skips));
-            let links: Vec<(String, Option<String>, Option<PathBuf>)> = envs
-                .into_iter()
-                .map(|e| {
-                    let home = env_home(&e.path);
-                    let linked = home
-                        .as_deref()
-                        .and_then(|h| linked_install(h, &install_dir));
-                    (e.name, linked, home)
-                })
-                .collect();
+            // Resolved once; a directory that does not resolve holds no
+            // install any env can be linked to.
+            let install_root = std::fs::canonicalize(&install_dir).ok();
+            let mut links: Vec<(String, Option<String>, PathBuf, PathBuf)> = Vec::new();
+            for e in envs {
+                match env_home(&e.path) {
+                    Ok(home) => {
+                        let linked = install_root
+                            .as_deref()
+                            .and_then(|root| linked_install(&home, root));
+                        links.push((e.name, linked, e.path, home));
+                    }
+                    Err(unknown) => unverified.push(UnverifiedEnv {
+                        name: e.name,
+                        reason: unknown.reason(),
+                    }),
+                }
+            }
             let doomed = affected_envs(
-                links.iter().map(|(n, l, _)| (n.clone(), l.clone())),
+                links.iter().map(|(n, l, _, _)| (n.clone(), l.clone())),
                 &removed,
                 &remaining,
             );
             links
                 .into_iter()
-                .filter(|(name, _, _)| doomed.contains(name))
-                .filter_map(|(name, _, home)| Some(Planned { name, home: home? }))
+                .filter(|(name, _, _, _)| doomed.contains(name))
+                .map(|(name, _, path, home)| Planned {
+                    // Unreadable now means "no identity": the recheck then
+                    // sees a mismatch and keeps the env.
+                    identity: dir_identity(&path).ok().flatten(),
+                    name,
+                    path,
+                    home,
+                })
                 .collect()
         }
         None => Vec::new(),
     };
+
+    // An env whose interpreter cannot be read may or may not lose it: it is
+    // never removed, but the user hears about it before deciding.
+    for env in &unverified {
+        output.warn(&t!(
+            "uninstall.cascade_unverified",
+            name = &env.name,
+            reason = &env.reason
+        ));
+    }
 
     // No matching environments
     if planned.is_empty() {
         if !output.is_json() {
             output.info(&t!("uninstall.cascade_none", version = version));
         }
-        return Ok(planned);
+        return Ok(Plan {
+            planned,
+            unverified,
+        });
     }
 
     // Show matching environments and confirm (unless --force or --json)
@@ -177,15 +214,18 @@ fn plan_cascade(
         }
     }
 
-    Ok(planned)
+    Ok(Plan {
+        planned,
+        unverified,
+    })
 }
 
 /// Remove the planned envs whose interpreter is really gone now.
 ///
-/// The plan was made before uv ran: if uv kept a link alive (another patch
-/// installed meanwhile took it over) the env still works and is kept. Every
-/// env is attempted; failures are reported, not fatal, so one stuck env
-/// does not leave the rest broken and unreported.
+/// The plan was made before uv ran, so each env is checked again (see
+/// [`recheck`]): one uv kept working, or that was replaced in the meantime,
+/// is kept. Every env is attempted; failures are reported, not fatal, so
+/// one stuck env does not leave the rest broken and unreported.
 fn remove_envs(output: &Output, planned: &[Planned]) -> (Vec<String>, Vec<CascadeFailure>) {
     let mut removed = Vec::new();
     let mut failed = Vec::new();
@@ -202,8 +242,26 @@ fn remove_envs(output: &Output, planned: &[Planned]) -> (Vec<String>, Vec<Cascad
         }
     };
     for env in planned {
-        if env.home.exists() {
-            continue;
+        match recheck(env) {
+            Recheck::Remove => {}
+            Recheck::Gone => continue,
+            Recheck::Replaced => {
+                output.warn(&t!("uninstall.cascade_replaced", name = &env.name));
+                continue;
+            }
+            Recheck::Works => continue,
+            Recheck::Unknown(error) => {
+                output.warn(&t!(
+                    "uninstall.cascade_remove_failed",
+                    name = &env.name,
+                    error = &error
+                ));
+                failed.push(CascadeFailure {
+                    name: env.name.clone(),
+                    error,
+                });
+                continue;
+            }
         }
         if !output.is_json() {
             output.info(&t!("uninstall.cascade_removing", name = &env.name));
@@ -231,22 +289,102 @@ fn remove_envs(output: &Output, planned: &[Planned]) -> (Vec<String>, Vec<Cascad
     (removed, failed)
 }
 
+/// What a planned env turned out to be once uv has run.
+#[derive(Debug, PartialEq)]
+enum Recheck {
+    /// Same env, and its interpreter is gone: remove it.
+    Remove,
+    /// Its interpreter is still there (uv kept a link alive): keep it.
+    Works,
+    /// The env directory is already gone.
+    Gone,
+    /// Another env now has the name (other directory or other `home`): keep it.
+    Replaced,
+    /// Could not tell; not removed, and reported as a failure.
+    Unknown(String),
+}
+
+/// Check a planned env again after the uninstall. It is removed only when
+/// every question has a definite answer: still the same directory, still
+/// the same `home`, and that `home` confirmed absent. An error on the way
+/// (`Path::exists` would read it as "absent") keeps the env and reports it.
+fn recheck(env: &Planned) -> Recheck {
+    match dir_identity(&env.path) {
+        Ok(now) if now == env.identity => {}
+        Ok(_) => return Recheck::Replaced,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Recheck::Gone,
+        Err(e) => return Recheck::Unknown(e.to_string()),
+    }
+    match env_home(&env.path) {
+        Ok(home) if home == env.home => {}
+        Ok(_) => return Recheck::Replaced,
+        Err(unknown) => return Recheck::Unknown(unknown.reason()),
+    }
+    match env.home.try_exists() {
+        Ok(true) => Recheck::Works,
+        Ok(false) => Recheck::Remove,
+        Err(e) => Recheck::Unknown(format!("{}: {e}", env.home.display())),
+    }
+}
+
+/// Identifies a directory beyond its path, so an env removed and created
+/// again under the same name is told apart (device and inode on unix; none
+/// elsewhere, where the `home` comparison is the only check). Reading it
+/// fails, with `NotFound`, when the directory is gone.
+type DirIdentity = (u64, u64);
+
+#[cfg(unix)]
+fn dir_identity(path: &Path) -> std::io::Result<Option<DirIdentity>> {
+    use std::os::unix::fs::MetadataExt;
+    let meta = std::fs::symlink_metadata(path)?;
+    Ok(Some((meta.dev(), meta.ino())))
+}
+
+#[cfg(not(unix))]
+fn dir_identity(path: &Path) -> std::io::Result<Option<DirIdentity>> {
+    std::fs::symlink_metadata(path).map(|_| None)
+}
+
+/// Why an env's interpreter could not be read from its `pyvenv.cfg`.
+#[derive(Debug, PartialEq)]
+enum HomeUnknown {
+    NoConfig,
+    Unreadable(String),
+    NoHomeLine,
+}
+
+impl HomeUnknown {
+    fn reason(&self) -> String {
+        match self {
+            Self::NoConfig => "no pyvenv.cfg".to_string(),
+            Self::Unreadable(e) => format!("pyvenv.cfg unreadable: {e}"),
+            Self::NoHomeLine => "no home line in pyvenv.cfg".to_string(),
+        }
+    }
+}
+
 /// The `home` line of an env's `pyvenv.cfg`: the directory its interpreter
-/// lives in. `None` when the file or the line is missing.
-fn env_home(env_path: &Path) -> Option<PathBuf> {
-    let cfg = std::fs::read_to_string(env_path.join("pyvenv.cfg")).ok()?;
-    cfg.lines().find_map(|line| {
-        let (key, value) = line.split_once('=')?;
-        (key.trim() == "home").then(|| PathBuf::from(value.trim()))
-    })
+/// lives in.
+fn env_home(env_path: &Path) -> std::result::Result<PathBuf, HomeUnknown> {
+    let cfg = match std::fs::read_to_string(env_path.join("pyvenv.cfg")) {
+        Ok(cfg) => cfg,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Err(HomeUnknown::NoConfig),
+        Err(e) => return Err(HomeUnknown::Unreadable(e.to_string())),
+    };
+    cfg.lines()
+        .find_map(|line| {
+            let (key, value) = line.split_once('=')?;
+            (key.trim() == "home").then(|| PathBuf::from(value.trim()))
+        })
+        .ok_or(HomeUnknown::NoHomeLine)
 }
 
 /// The uv-managed install an env's interpreter `home` lies in: the
-/// directory name under `install_dir` (`cpython-3.12.14-…` for a patch
-/// install, `cpython-3.12-…` for uv's minor-version link). `None` for a
-/// Python outside uv's install directory (Homebrew, a `--python-path`
-/// interpreter): uninstalling a uv Python cannot break it.
-fn linked_install(home: &Path, install_dir: &Path) -> Option<String> {
+/// directory name under `install_root` (uv's install directory, already
+/// canonical) — `cpython-3.12.14-…` for a patch install, `cpython-3.12-…`
+/// for uv's minor-version link. `None` for a Python outside it (Homebrew,
+/// a `--python-path` interpreter): uninstalling a uv Python cannot break it.
+fn linked_install(home: &Path, install_root: &Path) -> Option<String> {
     // `<key>/bin` on POSIX; on Windows the interpreter sits in `<key>`
     // itself; older uv layouts add an `install` level (`<key>/install[/bin]`).
     let mut entry = home.to_path_buf();
@@ -258,7 +396,7 @@ fn linked_install(home: &Path, install_dir: &Path) -> Option<String> {
     // Compare real paths (`/tmp` vs `/private/tmp`); the entry itself may be
     // the minor-version symlink, so resolve only its parent.
     let parent = std::fs::canonicalize(entry.parent()?).ok()?;
-    if parent != std::fs::canonicalize(install_dir).ok()? {
+    if parent != install_root {
         return None;
     }
     Some(entry.file_name()?.to_string_lossy().into_owned())
@@ -404,6 +542,7 @@ mod tests {
             version: "3.12".to_string(),
             removed_envs: Some(vec!["web".to_string()]),
             failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
         };
         assert!(
             serde_json::to_value(&data)
@@ -431,6 +570,7 @@ mod tests {
                 name: "1bad".to_string(),
                 error: "Invalid".to_string(),
             }],
+            unverified_envs: Vec::new(),
         };
         let err = ScoopError::CascadeIncomplete { failed_count: 1 };
         let json: serde_json::Value = serde_json::from_str(&incomplete_json(&err, &data)).unwrap();
@@ -447,6 +587,7 @@ mod tests {
             version: "3.12.0".to_string(),
             removed_envs: None,
             failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
         };
 
         let json = serde_json::to_string(&data).unwrap();
@@ -467,6 +608,7 @@ mod tests {
             version: "3.11.5".to_string(),
             removed_envs: None,
             failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
         };
 
         let json = serde_json::to_string(&original).unwrap();
@@ -481,6 +623,7 @@ mod tests {
             version: "3.12".to_string(),
             removed_envs: Some(vec!["env1".to_string(), "env2".to_string()]),
             failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
         };
 
         let json = serde_json::to_string(&data).unwrap();
@@ -499,6 +642,7 @@ mod tests {
             version: "3.12".to_string(),
             removed_envs: Some(vec!["web".to_string(), "api".to_string()]),
             failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
         };
 
         let json = serde_json::to_string(&original).unwrap();
@@ -513,6 +657,7 @@ mod tests {
             version: "3.12".to_string(),
             removed_envs: Some(vec![]),
             failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
         };
 
         let json = serde_json::to_string(&data).unwrap();
@@ -532,6 +677,7 @@ mod tests {
             version: String::new(),
             removed_envs: None,
             failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
         };
 
         let json = serde_json::to_string(&original).unwrap();
@@ -557,6 +703,7 @@ mod tests {
                 version: version.to_string(),
                 removed_envs: None,
                 failed_envs: Vec::new(),
+                unverified_envs: Vec::new(),
             };
 
             let json = serde_json::to_string(&original).unwrap();
@@ -588,6 +735,7 @@ mod tests {
                 version: version.to_string(),
                 removed_envs: None,
                 failed_envs: Vec::new(),
+                unverified_envs: Vec::new(),
             };
 
             let json = serde_json::to_string(&original).unwrap();
@@ -608,6 +756,7 @@ mod tests {
             version: long_version,
             removed_envs: None,
             failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
         };
 
         let json = serde_json::to_string(&original).unwrap();
@@ -774,7 +923,8 @@ mod tests {
         std::fs::create_dir_all(installs.join(P14).join("bin")).unwrap();
         std::fs::create_dir_all(installs.join(P13).join("install").join("bin")).unwrap();
         std::os::unix::fs::symlink(installs.join(P14), installs.join(LINK)).unwrap();
-        let at = |p: &Path| linked_install(p, &installs);
+        let root = std::fs::canonicalize(&installs).unwrap();
+        let at = |p: &Path| linked_install(p, &root);
         assert_eq!(at(&installs.join(LINK).join("bin")).as_deref(), Some(LINK));
         assert_eq!(at(&installs.join(P14).join("bin")).as_deref(), Some(P14));
         assert_eq!(at(&installs.join(P14)).as_deref(), Some(P14));
@@ -785,17 +935,173 @@ mod tests {
         assert_eq!(at(Path::new("/opt/homebrew/opt/python@3.12/bin")), None);
     }
 
-    /// `pyvenv.cfg`'s `home` line, or `None` without the file.
+    /// `pyvenv.cfg`'s `home` line, or why it cannot be read. Fails if a
+    /// missing file, an unreadable one (here a directory) and a file without
+    /// the line stop being told apart, or the line stops being found.
     #[test]
     fn env_home_reads_the_home_line() {
         let dir = tempfile::tempdir().unwrap();
-        assert_eq!(env_home(dir.path()), None);
+        assert_eq!(env_home(dir.path()), Err(HomeUnknown::NoConfig));
+        let cfg = dir.path().join("pyvenv.cfg");
+        std::fs::create_dir(&cfg).unwrap();
+        assert!(matches!(
+            env_home(dir.path()),
+            Err(HomeUnknown::Unreadable(_))
+        ));
+        std::fs::remove_dir(&cfg).unwrap();
+        std::fs::write(&cfg, "version_info = 3.12\n").unwrap();
+        assert_eq!(env_home(dir.path()), Err(HomeUnknown::NoHomeLine));
+        std::fs::write(&cfg, "version_info = 3.12\nhome = /x/bin\n").unwrap();
+        assert_eq!(env_home(dir.path()), Ok(PathBuf::from("/x/bin")));
+    }
+
+    /// A planned env `envs/<name>`, linked to a `home` under `py` that
+    /// exists until the test removes it.
+    #[cfg(unix)]
+    fn planned_env(envs: &Path, name: &str, py: &Path) -> Planned {
+        let path = envs.join(name);
+        let home = py.join(P14).join("bin");
+        std::fs::create_dir_all(&path).unwrap();
+        std::fs::create_dir_all(&home).unwrap();
         std::fs::write(
-            dir.path().join("pyvenv.cfg"),
-            "version_info = 3.12\nhome = /x/bin\n",
+            path.join("pyvenv.cfg"),
+            format!("home = {}\n", home.display()),
         )
         .unwrap();
-        assert_eq!(env_home(dir.path()), Some(PathBuf::from("/x/bin")));
+        Planned {
+            name: name.to_string(),
+            identity: dir_identity(&path).unwrap(),
+            path,
+            home,
+        }
+    }
+
+    /// Each answer of the recheck. Fails if a gone interpreter is not
+    /// removed, a working one is, or a replaced or unreadable env is
+    /// removed instead of kept.
+    #[cfg(unix)]
+    #[test]
+    fn recheck_removes_only_the_same_env_whose_interpreter_is_gone() {
+        let root = tempfile::tempdir().unwrap();
+        let env = planned_env(root.path(), "web", &root.path().join("py"));
+        assert_eq!(recheck(&env), Recheck::Works);
+        std::fs::remove_dir_all(root.path().join("py")).unwrap();
+        assert_eq!(recheck(&env), Recheck::Remove);
+
+        // Another env under the name, pointing at the same home.
+        let cfg = std::fs::read_to_string(env.path.join("pyvenv.cfg")).unwrap();
+        std::fs::rename(&env.path, root.path().join("old")).unwrap();
+        std::fs::create_dir_all(&env.path).unwrap();
+        std::fs::write(env.path.join("pyvenv.cfg"), &cfg).unwrap();
+        assert_eq!(recheck(&env), Recheck::Replaced);
+
+        // Same directory, another home.
+        let env = Planned {
+            identity: dir_identity(&env.path).unwrap(),
+            ..env
+        };
+        std::fs::write(env.path.join("pyvenv.cfg"), "home = /elsewhere/bin\n").unwrap();
+        assert_eq!(recheck(&env), Recheck::Replaced);
+
+        // pyvenv.cfg unreadable (a directory): cannot tell.
+        std::fs::remove_file(env.path.join("pyvenv.cfg")).unwrap();
+        std::fs::create_dir(env.path.join("pyvenv.cfg")).unwrap();
+        assert!(matches!(recheck(&env), Recheck::Unknown(_)));
+
+        std::fs::remove_dir_all(&env.path).unwrap();
+        assert_eq!(recheck(&env), Recheck::Gone);
+    }
+
+    /// What `remove_envs` does with each recheck answer: an env replaced
+    /// meanwhile and one it cannot judge both stay; only the latter is a
+    /// failure. Fails if either is removed, or the undecided one is not
+    /// reported.
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn remove_envs_keeps_replaced_and_undecided_envs() {
+        use crate::test_utils::env_guard;
+        let home = tempfile::tempdir().unwrap();
+        let _env = env_guard(&[(
+            crate::paths::SCUV_HOME_ENV,
+            Some(home.path().to_str().unwrap()),
+        )]);
+        let envs = home.path().join("virtualenvs");
+        let py = home.path().join("py");
+        let swap = planned_env(&envs, "swap", &py);
+        let odd = planned_env(&envs, "odd", &py);
+        std::fs::remove_dir_all(&py).unwrap();
+        // "swap" is replaced: another directory under the name, same home.
+        std::fs::rename(&swap.path, home.path().join("old")).unwrap();
+        std::fs::create_dir_all(&swap.path).unwrap();
+        std::fs::copy(
+            home.path().join("old").join("pyvenv.cfg"),
+            swap.path.join("pyvenv.cfg"),
+        )
+        .unwrap();
+        // "odd" cannot be read: its pyvenv.cfg is a directory.
+        std::fs::remove_file(odd.path.join("pyvenv.cfg")).unwrap();
+        std::fs::create_dir(odd.path.join("pyvenv.cfg")).unwrap();
+
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        let (removed, failed) = remove_envs(&out, &[swap, odd]);
+        assert!(removed.is_empty(), "{removed:?}");
+        assert_eq!(failed.len(), 1);
+        assert_eq!(failed[0].name, "odd");
+        assert!(envs.join("swap").exists() && envs.join("odd").exists());
+    }
+
+    /// A `home` (or env directory) that cannot be checked is not taken as
+    /// gone: `Path::exists` says false for it, `try_exists` reports the
+    /// error. Fails if the recheck reads an error as absence and removes the
+    /// env.
+    #[cfg(unix)]
+    #[test]
+    fn recheck_keeps_an_env_whose_home_cannot_be_checked() {
+        let root = tempfile::tempdir().unwrap();
+        let mut env = planned_env(root.path(), "web", &root.path().join("py"));
+        // A regular file where a directory of the path should be: stat
+        // fails with ENOTDIR, not "not found".
+        let blocker = root.path().join("blocker");
+        std::fs::write(&blocker, "").unwrap();
+        env.home = blocker.join("bin");
+        std::fs::write(
+            env.path.join("pyvenv.cfg"),
+            format!("home = {}\n", env.home.display()),
+        )
+        .unwrap();
+        assert!(!env.home.exists(), "exists() would read it as gone");
+        assert!(matches!(recheck(&env), Recheck::Unknown(_)));
+        // The same for the env directory itself: an error is not "gone".
+        env.path = blocker.join("web");
+        assert!(matches!(recheck(&env), Recheck::Unknown(_)));
+    }
+
+    /// Only a request that names the patch needs the uv version. Fails if a
+    /// minor request asks uv for it, or a patch request stops asking.
+    #[cfg(unix)]
+    #[rstest::rstest]
+    #[case("3.12", 0)]
+    #[case("3.12.14", 1)]
+    #[serial_test::serial]
+    fn cascade_asks_the_uv_version_only_for_a_patch_request(
+        #[case] request: &str,
+        #[case] calls: usize,
+    ) {
+        use crate::test_utils::{FakeUv, env_guard};
+        let home = tempfile::tempdir().unwrap();
+        let uv = FakeUv::new(&[]);
+        let path = uv.path_var();
+        let _env = env_guard(&[
+            (
+                crate::paths::SCUV_HOME_ENV,
+                Some(home.path().to_str().unwrap()),
+            ),
+            ("PATH", Some(path.as_str())),
+        ]);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        execute(&out, request, true, true).unwrap();
+        assert_eq!(uv.version_calls(), calls);
     }
 
     /// How an env's `home` is laid out under the fake uv's install dir.

@@ -87,10 +87,18 @@ Which environments count as using it is read from each environment's
   installed.
 - An environment on a Python uv does not manage (Homebrew, a
   `--python-path` interpreter) is never removed.
+- An environment whose `pyvenv.cfg` is missing, unreadable or has no
+  `home` line is never removed either: which Python it uses cannot be
+  told. It is named in a warning before anything is uninstalled (and in
+  `unverified_envs` under `--json`).
 
 Environments are removed only after uv has uninstalled the Python, and
 only those whose interpreter is actually gone by then: if the uninstall
-fails, or uv kept a link alive, the environment is left in place. If one
+fails, or uv kept a link alive, the environment is left in place. Each
+one is checked again just before removal: an environment that was
+replaced in the meantime (another directory under the name, or another
+`home`) is kept with a warning, and one that cannot be checked (an I/O
+or permission error) is kept and counted as not removed. If one
 environment cannot be removed, the others still are; it is reported with
 a warning, and the command exits with status 1 although the Python is
 gone.
@@ -122,7 +130,9 @@ scuv uninstall 3.12 --cascade --force
 With `--json`, the output includes the list of removed environments. When
 any could not be removed, `status` is `"error"` (code
 `UNINSTALL_CASCADE_INCOMPLETE`) and `data` adds `failed_envs`, with `name`
-and `error` for each:
+and `error` for each. Environments left alone because their interpreter
+could not be read are listed in `unverified_envs`, with `name` and
+`reason`:
 
 ```bash
 scuv uninstall 3.12 --cascade --json

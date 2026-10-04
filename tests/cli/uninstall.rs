@@ -131,3 +131,44 @@ fn cascade_plan_for_a_patch_follows_uv_on_pre_releases(
         "the pre-release survives, and so does its env"
     );
 }
+
+/// An env whose interpreter cannot be read is left alone and reported:
+/// warned before the uninstall in human output, listed with its reason in
+/// JSON. Fails if it is removed, or left out silently.
+#[cfg(unix)]
+#[test]
+fn cascade_reports_an_env_it_cannot_judge() {
+    for json in [false, true] {
+        let (fixture, uv) = home_with_envs("uv 0.12.22", &[("web", P14), ("nocfg", P14)]);
+        let envs = fixture.scoop_home.join("virtualenvs");
+        std::fs::remove_file(envs.join("nocfg").join("pyvenv.cfg")).unwrap();
+        let mut cmd = scoop_cmd(&fixture.scoop_home);
+        cmd.env("PATH", uv.path())
+            .args(["uninstall", "3.12.14", "--cascade", "--force"]);
+        if json {
+            cmd.arg("--json");
+        }
+        let out = cmd.output().unwrap();
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(out.status.success(), "{stderr}");
+        assert!(!envs.join("web").exists());
+        assert!(envs.join("nocfg").exists(), "an env it cannot judge stays");
+        if json {
+            let data: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+            assert_eq!(data["data"]["unverified_envs"][0]["name"], "nocfg");
+            assert_eq!(
+                data["data"]["unverified_envs"][0]["reason"],
+                "no pyvenv.cfg"
+            );
+        } else {
+            let warned = stderr
+                .find("Cannot tell which Python 'nocfg' uses (no pyvenv.cfg)")
+                .expect(&stderr);
+            let uninstalling = stderr.find("Uninstalling").expect(&stderr);
+            assert!(
+                warned < uninstalling,
+                "warned before the uninstall: {stderr}"
+            );
+        }
+    }
+}

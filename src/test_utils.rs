@@ -609,7 +609,7 @@ impl FakeUv {
         let script = format!(
             r#"#!/bin/sh
 case "$1 $2" in
-  "--version "*) echo "uv 0.12.22" ;;
+  "--version "*) echo "$*" >> "{d}/version.log"; echo "uv 0.12.22" ;;
   "python list") echo "$*" >> "{d}/list.log"; printf '%s\n' '{json}' ;;
   "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* "{d}/py/cpython-$3."*-* ;;
   "python dir") echo "{d}/py" ;;
@@ -648,6 +648,13 @@ esac
     pub fn pip_calls(&self) -> Vec<String> {
         std::fs::read_to_string(self.dir.path().join("pip.log"))
             .map(|s| s.lines().map(str::to_string).collect())
+            .unwrap_or_default()
+    }
+
+    /// How many times `uv --version` was called.
+    pub fn version_calls(&self) -> usize {
+        std::fs::read_to_string(self.dir.path().join("version.log"))
+            .map(|s| s.lines().count())
             .unwrap_or_default()
     }
 

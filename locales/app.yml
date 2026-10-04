@@ -534,6 +534,18 @@ uninstall.cascade_remove_failed:
   pt-BR: "Não foi possível remover '%{name}': %{error}"
   ja: "'%{name}' を削除できませんでした: %{error}"
   es: "No se pudo eliminar '%{name}': %{error}"
+uninstall.cascade_unverified:
+  en: "Cannot tell which Python '%{name}' uses (%{reason}); it is not removed"
+  ko: "'%{name}'이(가) 어떤 Python을 쓰는지 알 수 없어 삭제하지 않아요 (%{reason})"
+  pt-BR: "Não é possível saber qual Python '%{name}' usa (%{reason}); ele não será removido"
+  ja: "'%{name}' が使う Python を判別できないため削除しません (%{reason})"
+  es: "No se puede saber qué Python usa '%{name}' (%{reason}); no se eliminará"
+uninstall.cascade_replaced:
+  en: "'%{name}' changed during the uninstall; it is kept"
+  ko: "'%{name}'이(가) 제거 중에 바뀌어 그대로 둬요"
+  pt-BR: "'%{name}' mudou durante a desinstalação; ele será mantido"
+  ja: "'%{name}' はアンインストール中に変更されたため残します"
+  es: "'%{name}' cambió durante la desinstalación; se conserva"
 uninstall.cascade_cancelled:
   en: "Cancelled"
   ko: "취소됨"
