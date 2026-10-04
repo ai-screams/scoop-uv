@@ -80,7 +80,9 @@ Which environments count as using it is read from each environment's
   with its own link.
 - A plain version removes the default builds only, as uv does: an
   environment on a free-threaded install (`cpython-3.12.13+freethreaded-…`)
-  is not affected by `uninstall 3.12.13`.
+  is not affected by `uninstall 3.12.13`. A version that names the patch
+  leaves that patch's pre-releases: `uninstall 3.14.0` does not take
+  3.14.0rc1, while `uninstall 3.14` takes both.
 - An environment on a Python uv does not manage (Homebrew, a
   `--python-path` interpreter) is never removed.
 
@@ -88,7 +90,8 @@ Environments are removed only after uv has uninstalled the Python, and
 only those whose interpreter is actually gone by then: if the uninstall
 fails, or uv kept a link alive, the environment is left in place. If one
 environment cannot be removed, the others still are; it is reported with
-a warning (and in `failed_envs` under `--json`).
+a warning, and the command exits with status 1 although the Python is
+gone.
 
 `--cascade` takes plain version numbers only (`3`, `3.12`, `3.12.14`). A
 request such as `3.13t`, `3.12.0rc1` or `cpython@3.12` is refused before
@@ -114,8 +117,10 @@ With `--force`, the confirmation prompt is skipped:
 scuv uninstall 3.12 --cascade --force
 ```
 
-With `--json`, the output includes the list of removed environments, and
-`failed_envs` (`name` and `error` for each) when any could not be removed:
+With `--json`, the output includes the list of removed environments. When
+any could not be removed, `status` is `"error"` (code
+`UNINSTALL_CASCADE_INCOMPLETE`) and `data` adds `failed_envs`, with `name`
+and `error` for each:
 
 ```bash
 scuv uninstall 3.12 --cascade --json

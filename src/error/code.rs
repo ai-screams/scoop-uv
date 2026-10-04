@@ -38,6 +38,7 @@ impl ScoopError {
             Self::MigrationNameConflict { .. } => "MIGRATE_NAME_CONFLICT",
             Self::InvalidPythonPath { .. } => "PYTHON_INVALID_PATH",
             Self::CascadeAborted => "UNINSTALL_CASCADE_ABORTED",
+            Self::CascadeIncomplete { .. } => "UNINSTALL_CASCADE_INCOMPLETE",
             Self::SelfUpdateFailed { .. } => "SELF_UPDATE_FAILED",
             Self::NoActiveEnvironment => "NO_ACTIVE_ENV",
             Self::ExecutableNotFound { .. } => "EXE_NOT_FOUND",

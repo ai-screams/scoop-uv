@@ -114,6 +114,12 @@ pub enum ScoopError {
     /// Cascade uninstall aborted by user
     CascadeAborted,
 
+    /// `uninstall --cascade` removed the Python but could not remove some
+    /// of the envs it left without one. The command already warned per env
+    /// (and emitted its JSON envelope) before returning this Err, so render
+    /// policy is `Quiet`.
+    CascadeIncomplete { failed_count: usize },
+
     /// `scuv self update` failed (search, install, or post-install verify).
     SelfUpdateFailed { message: String },
 

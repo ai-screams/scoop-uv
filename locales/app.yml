@@ -1022,6 +1022,13 @@ error.cascade_aborted:
   ja: "連鎖アンインストールがユーザーによりキャンセルされました"
   es: "Desinstalación en cascada cancelada por el usuario"
 
+error.cascade_incomplete:
+  en: "Python uninstalled, but %{failed} environment(s) could not be removed"
+  ko: "Python은 제거했지만 환경 %{failed}개를 지우지 못함"
+  pt-BR: "Python desinstalado, mas %{failed} ambiente(s) não puderam ser removidos"
+  ja: "Python はアンインストールしましたが、%{failed} 個の環境を削除できませんでした"
+  es: "Python desinstalado, pero no se pudieron eliminar %{failed} entorno(s)"
+
 error.use_missing_name:
   en: "Environment name required (use --unset to remove setting)"
   ko: "환경 이름 필요 (설정 제거는 --unset 사용)"

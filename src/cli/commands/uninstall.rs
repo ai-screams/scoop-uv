@@ -49,22 +49,47 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
         None => (None, Vec::new()),
     };
 
-    // JSON output
+    let data = UninstallData {
+        version: version.to_string(),
+        removed_envs,
+        failed_envs,
+    };
+
+    // Envs left without a Python must not pass as a success: the Python is
+    // gone either way, so report what was removed and what was not, and
+    // exit non-zero.
+    if !data.failed_envs.is_empty() {
+        let err = ScoopError::CascadeIncomplete {
+            failed_count: data.failed_envs.len(),
+        };
+        if output.is_json() {
+            println!("{}", incomplete_json(&err, &data));
+        } else {
+            output.error(&err.to_string());
+        }
+        return Err(err);
+    }
+
     if output.is_json() {
-        output.json_success(
-            "uninstall",
-            UninstallData {
-                version: version.to_string(),
-                removed_envs,
-                failed_envs,
-            },
-        );
+        output.json_success("uninstall", data);
         return Ok(());
     }
 
     output.success(&t!("uninstall.success", version = version));
 
     Ok(())
+}
+
+/// The JSON for a cascade that left envs behind: the error, plus the same
+/// `data` a success carries, so scripts see which envs went and which did not.
+fn incomplete_json(err: &ScoopError, data: &UninstallData) -> String {
+    serde_json::to_string_pretty(&serde_json::json!({
+        "status": "error",
+        "command": "uninstall",
+        "error": { "code": err.code(), "message": err.to_string() },
+        "data": data,
+    }))
+    .unwrap_or_default()
 }
 
 /// An env the cascade plans to remove, with the interpreter directory its
@@ -268,10 +293,16 @@ fn version_part(key: &str) -> Option<(&str, Option<&str>)> {
 /// Whether `uv python uninstall <plain version>` removes the install `key`:
 /// its numbers match and it is the default build. A plain request means
 /// the default variant to uv; free-threaded and debug builds need their own
-/// request (`3.13t`).
+/// request (`3.13t`). A request that names the patch (`3.14.0`) means that
+/// release, not its pre-releases (`3.14.0rc1`), while `3.14` takes both.
 fn removed_by(key: &str, filter: &PythonVersion) -> bool {
     version_part(key).is_some_and(|(numbers, variant)| {
-        variant.is_none() && PythonVersion::parse(numbers).is_some_and(|v| filter.matches(&v))
+        let prerelease = !numbers
+            .split('.')
+            .all(|part| part.bytes().all(|b| b.is_ascii_digit()));
+        variant.is_none()
+            && !(prerelease && filter.patch.is_some())
+            && PythonVersion::parse(numbers).is_some_and(|v| filter.matches(&v))
     })
 }
 
@@ -373,6 +404,27 @@ mod tests {
         let json = serde_json::to_value(&data).unwrap();
         assert_eq!(json["failed_envs"][0]["name"], "1bad");
         assert_eq!(json["failed_envs"][0]["error"], "Invalid");
+    }
+
+    /// A cascade that left envs behind reports an error envelope that still
+    /// carries the data. Fails if the status, code or data is dropped.
+    #[test]
+    fn incomplete_json_is_an_error_with_the_data() {
+        let data = UninstallData {
+            version: "3.12".to_string(),
+            removed_envs: Some(vec!["web".to_string()]),
+            failed_envs: vec![CascadeFailure {
+                name: "1bad".to_string(),
+                error: "Invalid".to_string(),
+            }],
+        };
+        let err = ScoopError::CascadeIncomplete { failed_count: 1 };
+        let json: serde_json::Value = serde_json::from_str(&incomplete_json(&err, &data)).unwrap();
+        assert_eq!(json["status"], "error");
+        assert_eq!(json["command"], "uninstall");
+        assert_eq!(json["error"]["code"], "UNINSTALL_CASCADE_INCOMPLETE");
+        assert_eq!(json["data"]["removed_envs"][0], "web");
+        assert_eq!(json["data"]["failed_envs"][0]["name"], "1bad");
     }
 
     #[test]
@@ -596,14 +648,18 @@ mod tests {
     }
 
     /// A plain request removes default builds whose numbers match; a
-    /// variant (free-threaded) needs its own request. Fails if a variant is
-    /// counted as removed, or the numbers stop deciding.
+    /// variant (free-threaded) needs its own request, and a patch request
+    /// leaves that patch's pre-releases. Fails if a variant or a pre-release
+    /// of an exact patch is counted as removed, or the numbers stop deciding.
     #[rstest::rstest]
     #[case("3.12.14", "cpython-3.12.14-macos-aarch64-none", true)]
     #[case("3.12", "cpython-3.12.14-macos-aarch64-none", true)]
     #[case("3.12.14", "cpython-3.12.13-macos-aarch64-none", false)]
     #[case("3.12.14", "cpython-3.12.14+freethreaded-macos-aarch64-none", false)]
     #[case("3.12", "pypy-3.12.9-macos-aarch64-none", true)]
+    #[case("3.14.0", "cpython-3.14.0rc1-macos-aarch64-none", false)]
+    #[case("3.14", "cpython-3.14.0rc1-macos-aarch64-none", true)]
+    #[case("3.14.0", "cpython-3.14.0-macos-aarch64-none", true)]
     fn removed_by_cases(#[case] request: &str, #[case] key: &str, #[case] removed: bool) {
         assert_eq!(
             removed_by(key, &PythonVersion::parse(request).unwrap()),
@@ -708,6 +764,8 @@ mod tests {
     enum Home {
         /// uv's minor-version link, a symlink to this install.
         LinkTo(&'static str),
+        /// This install's own directory, not the link.
+        Install(&'static str),
         /// A minor-version link that is a real directory: it survives the
         /// fake uninstall, as when uv relinks it to another patch.
         LinkThatSurvives,
@@ -751,6 +809,7 @@ mod tests {
                     }
                     link.join("bin")
                 }
+                Home::Install(key) => py.join(key).join("bin"),
                 Home::LinkThatSurvives => {
                     std::fs::create_dir_all(py.join(LINK).join("bin")).unwrap();
                     py.join(LINK).join("bin")
@@ -774,6 +833,26 @@ mod tests {
             .filter(|n| home.path().join("virtualenvs").join(n).exists())
             .collect();
         (left, uv.uninstalled(), result)
+    }
+
+    /// A minor request takes every patch of that minor: the env on the minor
+    /// link and the env on a patch install both lose their Python, although
+    /// two patches were installed. Fails if a remaining patch is counted as
+    /// keeping the link for a minor request, or the minor request path stops
+    /// removing envs (or the fake stops removing every patch it names).
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_on_a_minor_request_removes_the_env_every_patch_served() {
+        let (left, uninstalled, result) = cascade_run(
+            "3.12",
+            &[P14, P13],
+            &[("web", Home::LinkTo(P14)), ("pinned", Home::Install(P13))],
+            false,
+        );
+        result.unwrap();
+        assert!(left.is_empty(), "no 3.12 is left for either env: {left:?}");
+        assert_eq!(uninstalled, ["3.12"]);
     }
 
     /// An env on uv's 3.12 minor link, with 3.12.14 the only 3.12 install:
@@ -856,7 +935,13 @@ mod tests {
             &[("1bad", Home::LinkTo(P14)), ("web", Home::LinkTo(P14))],
             false,
         );
-        result.unwrap();
+        assert!(
+            matches!(
+                result,
+                Err(ScoopError::CascadeIncomplete { failed_count: 1 })
+            ),
+            "a failed removal must not pass as a success: {result:?}"
+        );
         assert_eq!(left, ["1bad"], "web goes; 1bad fails and is reported");
     }
 

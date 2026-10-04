@@ -123,6 +123,7 @@ impl ScoopError {
             // so `main.rs` must not append the generic `error:` prefix.
             Self::VerifyFailed { .. }
             | Self::MigrationBatchFailed { .. }
+            | Self::CascadeIncomplete { .. }
             | Self::DiffMismatch { .. } => ErrorRenderPolicy::Quiet,
             _ => ErrorRenderPolicy::Default,
         }
@@ -193,6 +194,15 @@ mod tests {
         };
         // Quiet because batch.rs prints the full per-env summary itself
         // before returning Err; the global `error:` prefix would be noise.
+        assert_eq!(err.render_policy(), ErrorRenderPolicy::Quiet);
+    }
+
+    #[test]
+    fn cascade_incomplete_exits_one_and_renders_quiet() {
+        // `uninstall --cascade` already warned per env and printed (or
+        // emitted as JSON) the summary before returning it.
+        let err = ScoopError::CascadeIncomplete { failed_count: 1 };
+        assert_eq!(err.exit_code(), 1);
         assert_eq!(err.render_policy(), ErrorRenderPolicy::Quiet);
     }
 

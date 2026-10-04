@@ -140,6 +140,12 @@ impl ScoopError {
             )
             .to_string(),
             Self::CascadeAborted => t!("error.cascade_aborted", locale = locale).to_string(),
+            Self::CascadeIncomplete { failed_count } => t!(
+                "error.cascade_incomplete",
+                locale = locale,
+                failed = failed_count.to_string()
+            )
+            .to_string(),
             Self::SelfUpdateFailed { message } => t!(
                 "error.self_update_failed",
                 locale = locale,

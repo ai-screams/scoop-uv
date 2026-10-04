@@ -1064,6 +1064,7 @@ fn every_variant() -> Vec<ScoopError> {
             reason: "why-aav".into(),
         },
         ScoopError::CascadeAborted,
+        ScoopError::CascadeIncomplete { failed_count: 2 },
         ScoopError::SelfUpdateFailed {
             message: "msg-aaw".into(),
         },
@@ -1135,6 +1136,7 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::MigrationNameConflict { .. }
         | ScoopError::InvalidPythonPath { .. }
         | ScoopError::CascadeAborted
+        | ScoopError::CascadeIncomplete { .. }
         | ScoopError::SelfUpdateFailed { .. }
         | ScoopError::NoActiveEnvironment
         | ScoopError::ExecutableNotFound { .. }

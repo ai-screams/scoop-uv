@@ -597,8 +597,12 @@ impl FakeUv {
                 )
             })
             .collect();
-        // Shell builtins only (printf/echo): no external command whose
-        // absence from PATH would make the fake list nothing.
+        // The list path uses shell builtins only (printf/echo): no external
+        // command whose absence from PATH would make the fake list nothing.
+        // `python uninstall` removes what uv would under `python dir`: the
+        // exact key for a patch request (`3.12.14`), every patch for a minor
+        // request (`3.12` → `cpython-3.12.*`), and the minor link with it.
+        // `/bin/rm` by absolute path, as tests often put only the fake on PATH.
         let json = format!("[{}]", entries.join(","));
         let d = dir.path().display();
         std::fs::create_dir_all(dir.path().join("py")).expect("fake uv python dir");
@@ -607,7 +611,7 @@ impl FakeUv {
 case "$1 $2" in
   "--version "*) echo "uv 0.12.22" ;;
   "python list") echo "$*" >> "{d}/list.log"; printf '%s\n' '{json}' ;;
-  "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* ;;
+  "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* "{d}/py/cpython-$3."*-* ;;
   "python dir") echo "{d}/py" ;;
   "pip list") echo "$*" >> "{d}/pip.log"; printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
   "cache prune") ;;
