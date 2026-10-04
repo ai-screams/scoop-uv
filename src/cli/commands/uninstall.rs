@@ -166,7 +166,9 @@ fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> R
                             name: e.name.clone(),
                             path: e.path,
                             identity,
-                            home_existed: home.try_exists().unwrap_or(false),
+                            // Unknown counts as there: the recheck then
+                            // decides, and reports what it cannot check.
+                            home_existed: home.try_exists().unwrap_or(true),
                             home,
                         };
                         links.push((e.name, linked, planned));
@@ -1465,6 +1467,43 @@ mod tests {
             cascade_run("3.12.14", &[P14], &[("old", Home::LinkTo(P13))], Some("1"));
         assert!(result.is_err());
         assert_eq!(left, ["old"]);
+    }
+
+    /// A home that could not be checked when planned is not taken as
+    /// already broken: after uv removed it and failed, the env still goes.
+    /// Fails if a planning-time check error drops the env from the cleanup.
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_cleans_up_an_env_whose_home_could_not_be_checked() {
+        use crate::test_utils::{FakeUv, env_guard};
+        let home = tempfile::tempdir().unwrap();
+        let uv = FakeUv::new(&[]);
+        let path = uv.path_var();
+        let _env = env_guard(&[
+            (
+                crate::paths::SCUV_HOME_ENV,
+                Some(home.path().to_str().unwrap()),
+            ),
+            ("PATH", Some(path.as_str())),
+            ("FAKE_UV_UNINSTALL_FAILS", Some("after")),
+        ]);
+        // The install is a regular file: `<install>/bin` fails to stat with
+        // ENOTDIR when planned, then is gone once uv has run.
+        std::fs::write(uv.python_dir().join(P14), "").unwrap();
+        let env = home.path().join("virtualenvs").join("web");
+        std::fs::create_dir_all(&env).unwrap();
+        std::fs::write(
+            env.join("pyvenv.cfg"),
+            format!(
+                "home = {}\n",
+                uv.python_dir().join(P14).join("bin").display()
+            ),
+        )
+        .unwrap();
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        assert!(execute(&out, "3.12.14", true, true).is_err());
+        assert!(!env.exists(), "uv broke it, so it goes");
     }
 
     /// One env that cannot be removed (a name `delete` refuses) does not stop
