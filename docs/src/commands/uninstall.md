@@ -76,8 +76,14 @@ Which environments count as using it:
   (`3.12`), when you name a patch release (`uninstall 3.12.14 --cascade`):
   uv points it at the newest compatible 3.12.x left, so it is removed only
   if no other uv-managed 3.12.x remains. With 3.12.3 still installed it is
-  left alone. This applies to plain version numbers only; for requests such
-  as `3.12.0rc1` or `cpython@3.12` only the first rule applies.
+  left alone. Any remaining 3.12.x counts, whatever its build, so an env
+  whose only other 3.12.x is a PyPy or free-threaded build is kept even
+  though it may no longer run.
+
+`--cascade` takes plain version numbers only (`3`, `3.12`, `3.12.14`). A
+request such as `3.13t`, `3.12.0rc1` or `cpython@3.12` is refused before
+anything is removed, because its numbers alone do not say which installs
+uv would remove.
 
 ```bash
 scuv uninstall 3.12 --cascade

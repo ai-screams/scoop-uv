@@ -522,6 +522,12 @@ uninstall.cascade_none:
   ja: "Python %{version} を使用している環境はありません"
   es: "No hay entornos que usen Python %{version}"
 
+uninstall.cascade_needs_plain_version:
+  en: "--cascade needs a plain version number such as 3.12 or 3.12.14, not '%{version}'"
+  ko: "--cascade에는 3.12나 3.12.14 같은 버전 숫자만 쓸 수 있어요 ('%{version}' 불가)"
+  pt-BR: "--cascade exige um número de versão simples como 3.12 ou 3.12.14, não '%{version}'"
+  ja: "--cascade には 3.12 や 3.12.14 のようなバージョン番号のみ指定できます ('%{version}' は不可)"
+  es: "--cascade necesita un número de versión simple como 3.12 o 3.12.14, no '%{version}'"
 uninstall.cascade_cancelled:
   en: "Cancelled"
   ko: "취소됨"

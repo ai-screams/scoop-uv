@@ -13,6 +13,16 @@ use crate::validate::PythonVersion;
 
 /// Execute the uninstall command
 pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Result<()> {
+    // A cascade decides which envs lose their Python from the version
+    // numbers alone; for a request that names more (`3.13t`, `3.12.0rc1`,
+    // `cpython@3.12`) the numbers do not say what uv removes, and a working
+    // env could be deleted. Refuse before anything is touched.
+    if cascade && !is_plain_version(version) {
+        return Err(ScoopError::InvalidArgument {
+            message: t!("uninstall.cascade_needs_plain_version", version = version).to_string(),
+        });
+    }
+
     let uv = UvClient::new()?;
 
     let mut removed_envs: Option<Vec<String>> = None;
@@ -67,7 +77,7 @@ fn handle_cascade(
             affected_envs(
                 envs.into_iter().map(|e| (e.name, e.python_version)),
                 &filter,
-                is_plain_version(version).then_some(remaining.as_slice()),
+                &remaining,
             )
         }
         None => Vec::new(),
@@ -133,15 +143,14 @@ fn handle_cascade(
 /// than `filter` names — `3.12` against `uninstall 3.12.14`, what current uv
 /// writes for an env linked to the 3.12 minor version — runs on whichever
 /// 3.12.x is installed, so it is affected only when no install it accepts
-/// is left in `remaining`. That second rule needs `remaining` and is off
-/// when it is `None`: for a request other than plain digits (`3.12.0rc1`,
-/// `3.13t`) the numbers alone do not say what uv removes, so a remaining
-/// install could be miscounted and a working env deleted. Envs with no
-/// recorded version are skipped.
+/// is left in `remaining`. Any remaining install with those numbers counts,
+/// whatever its build (PyPy, free-threaded): that can keep an env that will
+/// break, never delete one that still works. Envs with no recorded version
+/// are skipped. `filter` comes from a plain version (see `execute`).
 fn affected_envs(
     envs: impl IntoIterator<Item = (String, Option<String>)>,
     filter: &PythonVersion,
-    remaining: Option<&[PythonVersion]>,
+    remaining: &[PythonVersion],
 ) -> Vec<String> {
     envs.into_iter()
         .filter(|(_, recorded)| {
@@ -149,20 +158,20 @@ fn affected_envs(
                 return false;
             };
             filter.matches(&recorded)
-                || remaining.is_some_and(|remaining| {
-                    recorded.matches(filter) && !remaining.iter().any(|p| recorded.matches(p))
-                })
+                || (recorded.matches(filter) && !remaining.iter().any(|p| recorded.matches(p)))
         })
         .map(|(name, _)| name)
         .collect()
 }
 
-/// Whether `version` is only dot-separated digits (`3.12`, `3.12.14`): a
-/// request whose meaning to uv is its numbers.
+/// Whether `version` is one to three dot-separated numbers (`3`, `3.12`,
+/// `3.12.14`): a request whose meaning to uv is its numbers.
 fn is_plain_version(version: &str) -> bool {
-    version
-        .split('.')
-        .all(|part| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit()))
+    let parts: Vec<&str> = version.split('.').collect();
+    parts.len() <= 3
+        && parts
+            .iter()
+            .all(|part| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit()))
 }
 
 // ============================================================================
@@ -398,7 +407,7 @@ mod tests {
         let got = affected_envs(
             [("web".to_string(), Some(recorded.to_string()))],
             &v(uninstall),
-            Some(&remaining),
+            &remaining,
         );
         assert_eq!(got == ["web"], affected, "{got:?}");
     }
@@ -407,21 +416,11 @@ mod tests {
     /// version is read as matching everything.
     #[test]
     fn affected_envs_skips_an_env_without_a_version() {
-        assert!(affected_envs([("bare".to_string(), None)], &v("3.12"), Some(&[])).is_empty());
+        assert!(affected_envs([("bare".to_string(), None)], &v("3.12"), &[]).is_empty());
     }
 
-    /// Without a trustworthy `remaining` (a non-plain request), only the
-    /// exact-match rule applies: a `3.12` env is not taken for 3.12.0rc1.
-    /// Fails if the less-specific rule runs without `remaining`.
-    #[test]
-    fn affected_envs_needs_remaining_for_a_less_specific_record() {
-        let env = || [("web".to_string(), Some("3.12".to_string()))];
-        assert!(affected_envs(env(), &v("3.12.0"), None).is_empty());
-        assert_eq!(affected_envs(env(), &v("3.12.0"), Some(&[])), ["web"]);
-    }
-
-    /// Only digits and dots are a plain request. Fails if a suffix
-    /// (`rc1`, `t`), an implementation prefix or an empty part passes.
+    /// One to three numbers are a plain request. Fails if a suffix (`rc1`,
+    /// `t`), an implementation prefix, an empty part or a fourth part passes.
     #[rstest::rstest]
     #[case("3.12.14", true)]
     #[case("3.12", true)]
@@ -429,6 +428,8 @@ mod tests {
     #[case("3.13t", false)]
     #[case("cpython@3.12", false)]
     #[case("3..12", false)]
+    #[case("3.12.14.1", false)]
+    #[case("3", true)]
     fn is_plain_version_cases(#[case] version: &str, #[case] plain: bool) {
         assert_eq!(is_plain_version(version), plain);
     }
@@ -483,16 +484,54 @@ mod tests {
         assert_eq!(uninstalled, ["3.12.14"]);
     }
 
-    /// A pre-release request: its numbers say 3.12.0, but the stable 3.12.0
-    /// that stays still serves the env, and the numbers cannot tell the two
-    /// apart. Fails if the less-specific rule runs for a non-plain request
-    /// (the stable 3.12.0 drops out of what remains and the env is deleted).
+    /// A request that names more than numbers is refused before anything
+    /// is removed: `3.13t` would otherwise match a GIL `3.13` env, and
+    /// `3.12.0rc1` a stable `3.12.0` one. Fails if --cascade proceeds for a
+    /// non-plain request (the env goes, or uv is asked to uninstall).
+    #[cfg(unix)]
+    #[rstest::rstest]
+    #[case("3.13t")]
+    #[case("3.12.0rc1")]
+    #[case("cpython@3.12")]
+    #[serial_test::serial]
+    fn cascade_refuses_a_request_that_is_not_a_plain_version(#[case] request: &str) {
+        use crate::test_utils::{FakeUv, env_guard};
+        let home = tempfile::tempdir().unwrap();
+        let uv = FakeUv::new(&["3.12.0", "3.13.1"]);
+        let path = uv.path_var();
+        let _env = env_guard(&[
+            (
+                crate::paths::SCUV_HOME_ENV,
+                Some(home.path().to_str().unwrap()),
+            ),
+            ("PATH", Some(path.as_str())),
+        ]);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        let err = execute(&out, request, true, true).unwrap_err();
+        assert!(matches!(err, ScoopError::InvalidArgument { .. }), "{err:?}");
+        assert!(uv.uninstalled().is_empty());
+    }
+
+    /// The refusal is about --cascade only: a plain uninstall of the same
+    /// request still goes to uv. Fails if the check runs without --cascade.
     #[cfg(unix)]
     #[test]
     #[serial_test::serial]
-    fn cascade_leaves_a_minor_version_env_for_a_pre_release_request() {
-        let (env_left, _) = cascade_uninstalling("3.12.0rc1", &["3.12.0"]);
-        assert!(env_left, "3.12.0 stays and serves the env");
+    fn uninstall_without_cascade_passes_any_request_to_uv() {
+        use crate::test_utils::{FakeUv, env_guard};
+        let home = tempfile::tempdir().unwrap();
+        let uv = FakeUv::new(&["3.12.0"]);
+        let path = uv.path_var();
+        let _env = env_guard(&[
+            (
+                crate::paths::SCUV_HOME_ENV,
+                Some(home.path().to_str().unwrap()),
+            ),
+            ("PATH", Some(path.as_str())),
+        ]);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        execute(&out, "cpython@3.12", false, false).unwrap();
+        assert_eq!(uv.uninstalled(), ["cpython@3.12"]);
     }
 
     /// The same env with 3.12.3 also installed keeps working after 3.12.14
