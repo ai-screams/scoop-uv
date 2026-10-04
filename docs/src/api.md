@@ -732,4 +732,4 @@ Per-command exit code table:
 
 ---
 
-> **scuv Version:** 0.16.2
+> **scuv Version:** 0.17.0
