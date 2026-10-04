@@ -175,7 +175,7 @@ src/
 │   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
 ├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
-├── error/         # ScoopError enum (38 variants, i18n Display; code/display/exit/migrate/suggestion)
+├── error/         # ScoopError enum (39 variants, i18n Display; code/display/exit/migrate/suggestion)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
@@ -673,6 +673,7 @@ pub enum ScoopError {
 
     // Cascade errors
     CascadeAborted,
+    CascadeIncomplete { failed_count: usize },
 
     // Self-update
     SelfUpdateFailed { message: String },

@@ -80,9 +80,11 @@ Which environments count as using it is read from each environment's
   with its own link.
 - A plain version removes the default builds only, as uv does: an
   environment on a free-threaded install (`cpython-3.12.13+freethreaded-…`)
-  is not affected by `uninstall 3.12.13`. A version that names the patch
-  leaves that patch's pre-releases: `uninstall 3.14.0` does not take
-  3.14.0rc1, while `uninstall 3.14` takes both.
+  is not affected by `uninstall 3.12.13`. From uv 0.9.1, a version that
+  names the patch leaves that patch's pre-releases: `uninstall 3.14.0` does
+  not take 3.14.0rc1, while `uninstall 3.14` takes both. Older uv takes
+  the pre-releases with the patch, and the cascade follows whichever uv is
+  installed.
 - An environment on a Python uv does not manage (Homebrew, a
   `--python-path` interpreter) is never removed.
 

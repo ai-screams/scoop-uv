@@ -113,9 +113,10 @@ fn plan_cascade(
     let planned: Vec<Planned> = match PythonVersion::parse(version) {
         Some(filter) => {
             let install_dir = uv.python_dir()?;
+            let skips = patch_request_skips_prereleases(uv.version().ok().as_deref());
             let (removed, remaining): (Vec<String>, Vec<String>) = installed_keys(&install_dir)
                 .into_iter()
-                .partition(|key| removed_by(key, &filter));
+                .partition(|key| removed_by(key, &filter, skips));
             let links: Vec<(String, Option<String>, Option<PathBuf>)> = envs
                 .into_iter()
                 .map(|e| {
@@ -290,18 +291,31 @@ fn version_part(key: &str) -> Option<(&str, Option<&str>)> {
     })
 }
 
+/// Whether this uv leaves a patch's pre-releases when asked to uninstall the
+/// patch (`3.14.0` keeps `3.14.0rc1`): uv 0.9.1 and later
+/// (astral-sh/uv#16210); earlier releases take them too. An unknown version
+/// counts as taking them, the safe side: an env planned for removal is
+/// still kept if its interpreter survives the uninstall.
+fn patch_request_skips_prereleases(uv_version: Option<&str>) -> bool {
+    uv_version
+        .and_then(crate::uv::version::parse)
+        .is_some_and(|v| v >= (0, 9, 1))
+}
+
 /// Whether `uv python uninstall <plain version>` removes the install `key`:
 /// its numbers match and it is the default build. A plain request means
 /// the default variant to uv; free-threaded and debug builds need their own
-/// request (`3.13t`). A request that names the patch (`3.14.0`) means that
-/// release, not its pre-releases (`3.14.0rc1`), while `3.14` takes both.
-fn removed_by(key: &str, filter: &PythonVersion) -> bool {
+/// request (`3.13t`). With `patch_skips_prereleases` (see
+/// [`patch_request_skips_prereleases`]), a request that names the patch
+/// (`3.14.0`) means that release, not its pre-releases (`3.14.0rc1`); `3.14`
+/// takes both either way.
+fn removed_by(key: &str, filter: &PythonVersion, patch_skips_prereleases: bool) -> bool {
     version_part(key).is_some_and(|(numbers, variant)| {
         let prerelease = !numbers
             .split('.')
             .all(|part| part.bytes().all(|b| b.is_ascii_digit()));
         variant.is_none()
-            && !(prerelease && filter.patch.is_some())
+            && !(prerelease && filter.patch.is_some() && patch_skips_prereleases)
             && PythonVersion::parse(numbers).is_some_and(|v| filter.matches(&v))
     })
 }
@@ -662,9 +676,34 @@ mod tests {
     #[case("3.14.0", "cpython-3.14.0-macos-aarch64-none", true)]
     fn removed_by_cases(#[case] request: &str, #[case] key: &str, #[case] removed: bool) {
         assert_eq!(
-            removed_by(key, &PythonVersion::parse(request).unwrap()),
+            removed_by(key, &PythonVersion::parse(request).unwrap(), true),
             removed
         );
+    }
+
+    /// Before uv 0.9.1 a patch request takes that patch's pre-releases too.
+    /// Fails if the pre-release is left out of the plan regardless of uv.
+    #[test]
+    fn removed_by_counts_prereleases_for_an_older_uv() {
+        let filter = PythonVersion::parse("3.14.0").unwrap();
+        assert!(removed_by(
+            "cpython-3.14.0rc1-macos-aarch64-none",
+            &filter,
+            false
+        ));
+    }
+
+    /// Fails if the cut-over moves off 0.9.1, or an unknown version is
+    /// taken to leave pre-releases.
+    #[rstest::rstest]
+    #[case(Some("uv 0.9.1"), true)]
+    #[case(Some("uv 0.12.22 (Homebrew 2026-05-21 aarch64-apple-darwin)"), true)]
+    #[case(Some("uv 0.9.0"), false)]
+    #[case(Some("uv 0.5.19"), false)]
+    #[case(Some("garbage"), false)]
+    #[case(None, false)]
+    fn patch_request_skips_prereleases_cases(#[case] raw: Option<&str>, #[case] skips: bool) {
+        assert_eq!(patch_request_skips_prereleases(raw), skips);
     }
 
     /// Only real install directories with a patch version count: not the

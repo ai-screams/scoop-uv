@@ -23,3 +23,4 @@ mod output_format;
 mod remove;
 mod requires_uv;
 mod shell;
+mod uninstall;
