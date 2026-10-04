@@ -8,7 +8,7 @@ that shaped them.
 
 | Workflow | Trigger | Guards against |
 |----------|---------|----------------|
-| `ci.yml` | PR, main | Unformatted code, clippy warnings, failing tests, MSRV drift, broken shell scripts, stale reference docs, malformed `.po`, files missing from the published crate |
+| `ci.yml` | PR, main | Unformatted code, clippy warnings, failing tests (including the shell integration in real bash, zsh, fish and pwsh), MSRV drift, broken shell scripts, stale reference docs, malformed `.po`, files missing from the published crate |
 | `integration-test.yml` | PR, main | Migration breaking for pyenv / conda / virtualenvwrapper users |
 | `coverage.yml` | PR, main | Untested code paths going unnoticed |
 | `bench.yml` | PR, main | Performance regressions in parsing and validation |

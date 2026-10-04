@@ -71,8 +71,8 @@ jobs:
       - name: Install dependencies
         run: |
           eval "$(scuv shell test-env)"
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
+          uv pip install -r requirements.txt
+          uv pip install pytest pytest-cov
 
       # 9. Run tests
       - name: Run tests
@@ -111,7 +111,7 @@ jobs:
       - name: Install linting tools
         run: |
           eval "$(scuv shell lint-env)"
-          pip install ruff black mypy
+          uv pip install ruff black mypy
 
       - name: Run ruff
         run: |
@@ -146,13 +146,13 @@ jobs:
       - name: Build package
         run: |
           eval "$(scuv shell build-env)"
-          pip install build
+          uv pip install build
           python -m build
 
       - name: Test installation
         run: |
           eval "$(scuv shell build-env)"
-          pip install dist/*.whl
+          uv pip install dist/*.whl
           # Verify package works
           python -c "import mypackage; print(mypackage.__version__)"
 
