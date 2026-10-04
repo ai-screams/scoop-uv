@@ -74,9 +74,10 @@ Which environments count as using it:
   or `3.12.1`.
 - An environment that records only the minor version, as current uv writes
   (`3.12`), when you name a patch release (`uninstall 3.12.14 --cascade`):
-  it runs on whichever 3.12.x is installed, so it is removed only if no
-  other uv-managed 3.12.x remains. With 3.12.3 still installed it keeps
-  working and is left alone.
+  uv points it at the newest compatible 3.12.x left, so it is removed only
+  if no other uv-managed 3.12.x remains. With 3.12.3 still installed it is
+  left alone. This applies to plain version numbers only; for requests such
+  as `3.12.0rc1` or `cpython@3.12` only the first rule applies.
 
 ```bash
 scuv uninstall 3.12 --cascade
