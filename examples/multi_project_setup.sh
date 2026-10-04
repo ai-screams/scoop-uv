@@ -49,7 +49,7 @@ sqlalchemy==1.4.46
 requests==2.28.2
 EOF
     eval "$(scuv shell legacy-api)"
-    pip install -r requirements.txt --quiet
+    uv pip install -r requirements.txt --quiet
 fi
 
 # Current WebApp - Python 3.11
@@ -66,7 +66,7 @@ uvicorn==0.24.0
 pydantic==2.5.0
 EOF
     eval "$(scuv shell current-webapp)"
-    pip install -r requirements.txt --quiet
+    uv pip install -r requirements.txt --quiet
 fi
 
 # Next-Gen - Python 3.12
@@ -83,7 +83,7 @@ psycopg==3.1.16
 celery==5.3.4
 EOF
     eval "$(scuv shell next-gen)"
-    pip install -r requirements.txt --quiet
+    uv pip install -r requirements.txt --quiet
 fi
 echo
 

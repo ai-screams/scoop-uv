@@ -145,8 +145,15 @@ Categories:
 - **Error cases** - Invalid inputs, missing arguments
 - **Output format** - Help, version, JSON output
 - **Command behavior** - list, create, use, remove
+- **Real shells** - the `shell` module sources `scuv init` in real bash, zsh,
+  fish and PowerShell (`pwsh`) and drives the wrapper, hook and completion
+  through them. Each test skips when its shell is not installed; the CI Test
+  and MSRV jobs install them and set `SCUV_REQUIRE_FISH`, `SCUV_REQUIRE_ZSH`
+  and `SCUV_REQUIRE_PWSH`, so a missing shell fails there instead.
 
-Some tests are marked `#[ignore]` because they require `uv` installed:
+Some tests are marked `#[ignore]` because they require `uv` installed. The
+Docker integration jobs run them with `cargo test -- --include-ignored`, as
+their images carry uv and Python 3.12:
 
 ```bash
 # Run ignored tests (requires uv)
@@ -416,6 +423,10 @@ cargo test
 ```
 
 ### Shell Tests Fail
+
+The real-shell tests in `tests/cli/shell.rs` skip a shell that is not
+installed; install bash, zsh, fish and `pwsh` to run them all locally, or set
+`SCUV_REQUIRE_<SHELL>` to make a missing one fail.
 
 ShellCheck must be installed for shell script tests:
 

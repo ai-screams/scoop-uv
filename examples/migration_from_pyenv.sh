@@ -86,7 +86,7 @@ echo
 echo "8. Testing migrated environment..."
 echo "   scuv use myproject"
 echo "   python --version"
-echo "   pip list"
+echo "   uv pip list"
 echo
 
 # 9. Clean up old pyenv environments (manual step)

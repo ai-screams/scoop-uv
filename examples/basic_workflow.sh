@@ -59,7 +59,7 @@ echo "6. Verifying activation..."
     if [ -n "$VIRTUAL_ENV" ]; then
         echo "✅ Environment is active: $SCUV_ACTIVE"
         echo "   Python: $(python --version)"
-        echo "   pip: $(pip --version)"
+        echo "   uv: $(uv --version)"
     else
         echo "⚠️  Environment not activated (you may need to cd into the directory)"
     fi
@@ -72,7 +72,7 @@ echo "7. Installing requests package..."
     # Activate environment
     eval "$(scuv shell demo-project)"
 
-    pip install requests --quiet
+    uv pip install requests --quiet
     echo "✅ requests installed"
 
     # Verify installation

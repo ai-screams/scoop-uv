@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Language**: Rust (Edition 2024, MSRV 1.89)
 - **License**: MIT OR Apache-2.0
 - **Version**: scuv 0.16.2 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
-- **Tests**: ~1080 (unit, `tests/cli/` integration, i18n parity, doctests), 0 clippy warnings — counts drift; `cargo test` is the source of truth
+- **Tests**: ~1090 (unit, `tests/cli/` integration, i18n parity, doctests), 0 clippy warnings — counts drift; `cargo test` is the source of truth
 - **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
 - **CI/CD design**: `docs/src/development/ci-cd.md` documents what each of the 13 workflows guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
 - **Test tooling**: rstest (table tests), proptest, cargo-mutants (mutation), cargo-fuzz (nightly `fuzz/` workspace); see `.docs/dev/testing-strategy.md`
@@ -198,6 +198,10 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 # CLI outputs: export VIRTUAL_ENV="..." export PATH="..."
 # Shell wrapper: eval "$(command scuv activate --shell bash myenv)"
 ```
+
+**Envs have no pip**: `scuv create` runs a plain `uv venv`, so nothing may shell out to `<env>/bin/pip`. Packages are listed with `uv pip list --python <env>` (`core::list_installed_packages`), and docs say `uv pip install`, not `pip install`.
+
+**Recorded Python versions**: current uv links an env to a minor version and writes `version_info = 3.12` into pyvenv.cfg, which the metadata copies. Never compare a recorded version with `uv python list`'s `3.12.14` by string equality; `gc` uses a component-wise prefix (`gc::scan::version_covers`).
 
 **Version File Priority**: `SCUV_VERSION` env > `.scuv-version` (local + parent walk) > `~/.scuv/version`
 
