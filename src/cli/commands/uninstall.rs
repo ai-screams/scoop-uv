@@ -487,7 +487,8 @@ mod tests {
     /// A request that names more than numbers is refused before anything
     /// is removed: `3.13t` would otherwise match a GIL `3.13` env, and
     /// `3.12.0rc1` a stable `3.12.0` one. Fails if --cascade proceeds for a
-    /// non-plain request (the env goes, or uv is asked to uninstall).
+    /// non-plain request, or refuses only after looking for uv or removing
+    /// an env.
     #[cfg(unix)]
     #[rstest::rstest]
     #[case("3.13t")]
@@ -495,21 +496,29 @@ mod tests {
     #[case("cpython@3.12")]
     #[serial_test::serial]
     fn cascade_refuses_a_request_that_is_not_a_plain_version(#[case] request: &str) {
-        use crate::test_utils::{FakeUv, env_guard};
+        use crate::test_utils::env_guard;
+        // No uv on PATH and an env the numbers would match: the refusal must
+        // come before the uv lookup and before any env is removed.
         let home = tempfile::tempdir().unwrap();
-        let uv = FakeUv::new(&["3.12.0", "3.13.1"]);
-        let path = uv.path_var();
+        let no_uv = tempfile::tempdir().unwrap();
         let _env = env_guard(&[
             (
                 crate::paths::SCUV_HOME_ENV,
                 Some(home.path().to_str().unwrap()),
             ),
-            ("PATH", Some(path.as_str())),
+            ("PATH", Some(no_uv.path().to_str().unwrap())),
         ]);
+        let env = home.path().join("virtualenvs").join("gil");
+        std::fs::create_dir_all(env.join("bin")).unwrap();
+        std::fs::write(
+            env.join(crate::core::Metadata::FILE_NAME),
+            r#"{"name":"gil","python_version":"3.13","created_at":"2026-01-01T00:00:00Z","created_by":"test","uv_version":null,"python_path":null}"#,
+        )
+        .unwrap();
         let out = Output::new(0, true, crate::output::Colors::NONE, false);
         let err = execute(&out, request, true, true).unwrap_err();
         assert!(matches!(err, ScoopError::InvalidArgument { .. }), "{err:?}");
-        assert!(uv.uninstalled().is_empty());
+        assert!(env.exists(), "nothing may be removed");
     }
 
     /// The refusal is about --cascade only: a plain uninstall of the same
