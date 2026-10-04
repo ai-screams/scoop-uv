@@ -65,20 +65,24 @@ scuv list --pythons
 
 ## Cascade Removal
 
-The `--cascade` flag automatically removes all virtual environments that use the target Python version before uninstalling it. This replaces the manual multi-step workflow.
+The `--cascade` flag also removes the virtual environments that lose their Python when it is uninstalled. This replaces the manual multi-step workflow.
 
-Which environments count as using it:
+Which environments count as using it is read from each environment's
+`pyvenv.cfg` (`home`), not from the version it records:
 
-- An environment that records the version you name, or a more specific
-  one: `uninstall 3.12 --cascade` removes environments recording `3.12`
-  or `3.12.1`.
-- An environment that records only the minor version, as current uv writes
-  (`3.12`), when you name a patch release (`uninstall 3.12.14 --cascade`):
-  uv points it at the newest compatible 3.12.x left, so it is removed only
-  if no other uv-managed 3.12.x remains. With 3.12.3 still installed it is
-  left alone. Any remaining 3.12.x counts, whatever its build, so an env
-  whose only other 3.12.x is a PyPy or free-threaded build is kept even
-  though it may no longer run.
+- An environment linked to an install being removed (`cpython-3.12.14-…`)
+  is removed.
+- An environment linked to uv's minor-version link (`cpython-3.12-…`, what
+  current uv creates) is removed only if no other install of the same build
+  is left to take that link over. With CPython 3.12.13 still installed,
+  `uninstall 3.12.14 --cascade` keeps it, and uv points it at 3.12.13. A
+  remaining PyPy or free-threaded 3.12 does not count: it is a different
+  build.
+- An environment on a Python uv does not manage (Homebrew, a
+  `--python-path` interpreter) is never removed.
+
+Environments are removed only after uv has uninstalled the Python; if the
+uninstall fails, every environment is left in place.
 
 `--cascade` takes plain version numbers only (`3`, `3.12`, `3.12.14`). A
 request such as `3.13t`, `3.12.0rc1` or `cpython@3.12` is refused before
@@ -91,10 +95,10 @@ scuv uninstall 3.12 --cascade
 # •   - myproject
 # •   - webapp
 # Remove these environments and uninstall Python 3.12? [y/N]
+# • Uninstalling Python 3.12...
 # • Removing 'myproject'...
 # • Removing 'webapp'...
 # • Removed 2 environment(s)
-# • Uninstalling Python 3.12...
 # ✓ Python 3.12 uninstalled
 ```
 

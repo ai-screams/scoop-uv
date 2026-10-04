@@ -8,15 +8,18 @@ use rust_i18n::t;
 use crate::core::VirtualenvService;
 use crate::error::{Result, ScoopError};
 use crate::output::{Output, UninstallData};
-use crate::uv::UvClient;
+use std::collections::HashSet;
+use std::path::{Path, PathBuf};
+
+use crate::uv::{ManagedInstall, UvClient};
 use crate::validate::PythonVersion;
 
 /// Execute the uninstall command
 pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Result<()> {
-    // A cascade decides which envs lose their Python from the version
-    // numbers alone; for a request that names more (`3.13t`, `3.12.0rc1`,
-    // `cpython@3.12`) the numbers do not say what uv removes, and a working
-    // env could be deleted. Refuse before anything is touched.
+    // A cascade works out from the version numbers which installs uv will
+    // remove; for a request that names more (`3.13t`, `3.12.0rc1`,
+    // `cpython@3.12`) the numbers do not say, and a working env could be
+    // deleted. Refuse before anything is touched.
     if cascade && !is_plain_version(version) {
         return Err(ScoopError::InvalidArgument {
             message: t!("uninstall.cascade_needs_plain_version", version = version).to_string(),
@@ -25,16 +28,23 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
 
     let uv = UvClient::new()?;
 
-    let mut removed_envs: Option<Vec<String>> = None;
-
-    // Handle cascade: remove environments using this Python version
-    if cascade {
-        removed_envs = Some(handle_cascade(output, &uv, version, force)?);
-    }
+    // Decide (and confirm) which envs go before anything is removed, but
+    // remove them only once uv has uninstalled the Python: if that fails,
+    // every env is still there.
+    let doomed = if cascade {
+        Some(plan_cascade(output, &uv, version, force)?)
+    } else {
+        None
+    };
 
     output.info(&t!("uninstall.uninstalling", version = version));
 
     uv.uninstall_python(version)?;
+
+    let removed_envs = match doomed {
+        Some(names) => Some(remove_envs(output, &names)?),
+        None => None,
+    };
 
     // JSON output
     if output.is_json() {
@@ -53,30 +63,25 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
     Ok(())
 }
 
-/// Handle cascade removal of environments using the target Python version.
+/// Work out which envs the uninstall takes the Python away from, list them
+/// and ask for confirmation (unless `--force` or `--json`).
 ///
-/// Returns the list of environment names that were removed.
-fn handle_cascade(
-    output: &Output,
-    uv: &UvClient,
-    version: &str,
-    force: bool,
-) -> Result<Vec<String>> {
+/// Returns the env names to remove once the Python is gone.
+fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> Result<Vec<String>> {
     let service = VirtualenvService::auto()?;
     let envs = service.list()?;
 
     let matching_envs = match PythonVersion::parse(version) {
         Some(filter) => {
-            // The uv-managed Pythons this uninstall leaves behind.
-            let remaining: Vec<PythonVersion> = uv
-                .list_managed_pythons()?
-                .iter()
-                .filter_map(|p| PythonVersion::parse(&p.version))
-                .filter(|p| !filter.matches(p))
-                .collect();
+            let (removed, remaining): (Vec<ManagedInstall>, Vec<ManagedInstall>) =
+                uv.list_managed_installs()?.into_iter().partition(|i| {
+                    PythonVersion::parse(&i.version).is_some_and(|v| filter.matches(&v))
+                });
+            let install_dir = uv.python_dir()?;
             affected_envs(
-                envs.into_iter().map(|e| (e.name, e.python_version)),
-                &filter,
+                envs.into_iter()
+                    .map(|e| (e.name, linked_install(&e.path, &install_dir))),
+                &removed,
                 &remaining,
             )
         }
@@ -119,9 +124,14 @@ fn handle_cascade(
         }
     }
 
-    // Remove matching environments
+    Ok(matching_envs)
+}
+
+/// Remove the envs a cascade planned to remove.
+fn remove_envs(output: &Output, names: &[String]) -> Result<Vec<String>> {
+    let service = VirtualenvService::auto()?;
     let mut removed = Vec::new();
-    for name in &matching_envs {
+    for name in names {
         if !output.is_json() {
             output.info(&t!("uninstall.cascade_removing", name = name));
         }
@@ -136,29 +146,86 @@ fn handle_cascade(
     Ok(removed)
 }
 
-/// The envs an uninstall of `filter` takes the Python away from.
+/// The uv-managed install an env's interpreter comes from: the directory
+/// name under `install_dir` that the `home` line of its `pyvenv.cfg` points
+/// into (`cpython-3.12.14-…` for a patch install, `cpython-3.12-…` for uv's
+/// minor-version link). `None` when the env uses a Python outside uv's
+/// install directory (Homebrew, a `--python-path` interpreter) or its
+/// `pyvenv.cfg` cannot be read: uninstalling a uv Python cannot break it, or
+/// there is no telling.
+fn linked_install(env_path: &Path, install_dir: &Path) -> Option<String> {
+    let cfg = std::fs::read_to_string(env_path.join("pyvenv.cfg")).ok()?;
+    let home = cfg.lines().find_map(|line| {
+        let (key, value) = line.split_once('=')?;
+        (key.trim() == "home").then(|| PathBuf::from(value.trim()))
+    })?;
+    // POSIX homes end in `bin`; on Windows the interpreter sits in the
+    // install directory itself.
+    let entry = if home.file_name().is_some_and(|n| n == "bin") {
+        home.parent()?.to_path_buf()
+    } else {
+        home
+    };
+    // Compare real paths (`/tmp` vs `/private/tmp`); the entry itself may be
+    // the minor-version symlink, so resolve only its parent.
+    let parent = std::fs::canonicalize(entry.parent()?).ok()?;
+    if parent != std::fs::canonicalize(install_dir).ok()? {
+        return None;
+    }
+    Some(entry.file_name()?.to_string_lossy().into_owned())
+}
+
+/// The name of uv's minor-version link for an install key: the patch dropped
+/// from the version part, any variant kept (`cpython-3.12.14-macos-…` →
+/// `cpython-3.12-macos-…`, `cpython-3.13.1+freethreaded-…` →
+/// `cpython-3.13+freethreaded-…`).
+fn minor_link_name(key: &str) -> Option<String> {
+    let mut parts: Vec<&str> = key.split('-').collect();
+    let version = parts.get(1)?;
+    let (numbers, variant) = match version.split_once('+') {
+        Some((n, v)) => (n, Some(v)),
+        None => (*version, None),
+    };
+    let minor: Vec<&str> = numbers.split('.').take(2).collect();
+    if minor.len() < 2 {
+        return None;
+    }
+    let mut minor = minor.join(".");
+    if let Some(variant) = variant {
+        minor = format!("{minor}+{variant}");
+    }
+    parts[1] = &minor;
+    Some(parts.join("-"))
+}
+
+/// The envs an uninstall takes the Python away from, given what each env's
+/// interpreter is linked to (see [`linked_install`]).
 ///
-/// An env whose recorded version `filter` matches is affected, as before
-/// (`uninstall 3.12` and an env recording `3.12.1`). An env recording less
-/// than `filter` names — `3.12` against `uninstall 3.12.14`, what current uv
-/// writes for an env linked to the 3.12 minor version — runs on whichever
-/// 3.12.x is installed, so it is affected only when no install it accepts
-/// is left in `remaining`. Any remaining install with those numbers counts,
-/// whatever its build (PyPy, free-threaded): that can keep an env that will
-/// break, never delete one that still works. Envs with no recorded version
-/// are skipped. `filter` comes from a plain version (see `execute`).
+/// An env linked to a removed install directly is affected. An env linked
+/// to uv's minor-version link is affected only when no remaining install of
+/// the same implementation, variant and platform takes over that link (uv
+/// points it at the newest such install left). Envs linked to nothing uv
+/// manages, or to an install that stays, are not.
 fn affected_envs(
     envs: impl IntoIterator<Item = (String, Option<String>)>,
-    filter: &PythonVersion,
-    remaining: &[PythonVersion],
+    removed: &[ManagedInstall],
+    remaining: &[ManagedInstall],
 ) -> Vec<String> {
+    let removed_keys: HashSet<&str> = removed.iter().map(|i| i.key.as_str()).collect();
+    let removed_links: HashSet<String> = removed
+        .iter()
+        .filter_map(|i| minor_link_name(&i.key))
+        .collect();
+    let kept_links: HashSet<String> = remaining
+        .iter()
+        .filter_map(|i| minor_link_name(&i.key))
+        .collect();
     envs.into_iter()
-        .filter(|(_, recorded)| {
-            let Some(recorded) = recorded.as_deref().and_then(PythonVersion::parse) else {
-                return false;
-            };
-            filter.matches(&recorded)
-                || (recorded.matches(filter) && !remaining.iter().any(|p| recorded.matches(p)))
+        .filter(|(_, linked)| {
+            linked.as_deref().is_some_and(|name| {
+                removed_keys.contains(name)
+                    || (removed_links.contains(name) && !kept_links.contains(name))
+            })
         })
         .map(|(name, _)| name)
         .collect()
@@ -381,42 +448,210 @@ mod tests {
     // CascadeAborted Error Tests
     // =========================================================================
 
-    fn v(s: &str) -> PythonVersion {
-        PythonVersion::parse(s).unwrap()
+    fn install(key: &str) -> ManagedInstall {
+        let version = key.split('-').nth(1).unwrap().split('+').next().unwrap();
+        ManagedInstall {
+            key: key.to_string(),
+            version: version.to_string(),
+        }
     }
 
-    /// Which envs lose their Python. Fails if the exact-match rule changes,
-    /// if an env recording less than the uninstalled version (`3.12` vs
-    /// `3.12.14`) is skipped when nothing it accepts remains, or is taken
-    /// although another install it accepts remains.
+    /// uv's minor-version link name for an install key. Fails if the patch
+    /// is not dropped, the variant or platform is lost, or a key without a
+    /// minor version yields a name.
     #[rstest::rstest]
-    #[case::exact_patch("3.12.14", "3.12.14", &[], true)]
-    #[case::minor_filter_covers_patch_env("3.12", "3.12.1", &["3.13.1"], true)]
-    #[case::minor_env_nothing_left("3.12.14", "3.12", &["3.13.1"], true)]
-    #[case::minor_env_other_patch_left("3.12.14", "3.12", &["3.12.3"], false)]
-    #[case::other_patch_env("3.12.14", "3.12.3", &["3.12.3"], false)]
-    #[case::other_minor_env("3.12.14", "3.11", &[], false)]
-    #[case::major_env_other_minor_left("3.12.14", "3", &["3.11.9"], false)]
+    #[case(
+        "cpython-3.12.14-macos-aarch64-none",
+        Some("cpython-3.12-macos-aarch64-none")
+    )]
+    #[case(
+        "cpython-3.13.1+freethreaded-linux-x86_64-gnu",
+        Some("cpython-3.13+freethreaded-linux-x86_64-gnu")
+    )]
+    #[case(
+        "pypy-3.10.14-macos-aarch64-none",
+        Some("pypy-3.10-macos-aarch64-none")
+    )]
+    #[case("cpython-3-macos-aarch64-none", None)]
+    #[case("garbage", None)]
+    fn minor_link_name_cases(#[case] key: &str, #[case] link: Option<&str>) {
+        assert_eq!(minor_link_name(key).as_deref(), link);
+    }
+
+    const LINK: &str = "cpython-3.12-macos-aarch64-none";
+    const P14: &str = "cpython-3.12.14-macos-aarch64-none";
+    const P13: &str = "cpython-3.12.13-macos-aarch64-none";
+    const FT13: &str = "cpython-3.12.13+freethreaded-macos-aarch64-none";
+    const PYPY: &str = "pypy-3.12.9-macos-aarch64-none";
+
+    /// Which envs lose their Python, by what their interpreter links to.
+    /// Fails if a pinned removed install is missed, if a minor link is kept
+    /// with no compatible install left (or taken with one left), if another
+    /// build (free-threaded, PyPy) is counted as taking over, or if an env
+    /// outside uv's installs is touched.
+    #[rstest::rstest]
+    #[case::pinned_to_removed(Some(P14), &[P14], &[P13], true)]
+    #[case::pinned_to_kept(Some(P13), &[P14], &[P13], false)]
+    #[case::minor_link_nothing_left(Some(LINK), &[P14], &[], true)]
+    #[case::minor_link_other_patch_left(Some(LINK), &[P14], &[P13], false)]
+    #[case::minor_link_only_freethreaded_left(Some(LINK), &[P14], &[FT13], true)]
+    #[case::minor_link_only_pypy_left(Some(LINK), &[P14], &[PYPY], true)]
+    #[case::minor_link_untouched(Some(LINK), &[FT13], &[P14], false)]
+    #[case::outside_uv(None, &[P14, P13], &[], false)]
     fn affected_envs_cases(
-        #[case] uninstall: &str,
-        #[case] recorded: &str,
+        #[case] linked: Option<&str>,
+        #[case] removed: &[&str],
         #[case] remaining: &[&str],
         #[case] affected: bool,
     ) {
-        let remaining: Vec<PythonVersion> = remaining.iter().map(|r| v(r)).collect();
+        let removed: Vec<_> = removed.iter().map(|k| install(k)).collect();
+        let remaining: Vec<_> = remaining.iter().map(|k| install(k)).collect();
         let got = affected_envs(
-            [("web".to_string(), Some(recorded.to_string()))],
-            &v(uninstall),
+            [("web".to_string(), linked.map(str::to_string))],
+            &removed,
             &remaining,
         );
         assert_eq!(got == ["web"], affected, "{got:?}");
     }
 
-    /// An env with no recorded version is never removed. Fails if a missing
-    /// version is read as matching everything.
+    /// The install an env is linked to: the directory under uv's install dir
+    /// its `pyvenv.cfg` `home` points into, through a symlinked minor link
+    /// too, and on Windows where `home` is the install directory itself.
+    /// Fails if a `home` outside the install dir (Homebrew, a --python-path
+    /// interpreter) or a missing `pyvenv.cfg` yields a name, or a `bin`-less
+    /// `home` is not recognised.
+    #[cfg(unix)]
     #[test]
-    fn affected_envs_skips_an_env_without_a_version() {
-        assert!(affected_envs([("bare".to_string(), None)], &v("3.12"), &[]).is_empty());
+    fn linked_install_reads_the_home_line() {
+        let root = tempfile::tempdir().unwrap();
+        let installs = root.path().join("py");
+        std::fs::create_dir_all(installs.join(P14).join("bin")).unwrap();
+        std::os::unix::fs::symlink(installs.join(P14), installs.join(LINK)).unwrap();
+        let env = |name: &str, home: Option<&Path>| {
+            let dir = root.path().join(name);
+            std::fs::create_dir_all(&dir).unwrap();
+            if let Some(home) = home {
+                std::fs::write(
+                    dir.join("pyvenv.cfg"),
+                    format!("home = {}\nversion_info = 3.12\n", home.display()),
+                )
+                .unwrap();
+            }
+            dir
+        };
+        let minor = env("minor", Some(&installs.join(LINK).join("bin")));
+        let pinned = env("pinned", Some(&installs.join(P14).join("bin")));
+        let brew = env("brew", Some(Path::new("/opt/homebrew/opt/python@3.12/bin")));
+        let bare = env("bare", None);
+        // Windows: `home` is the install directory itself, no `bin`.
+        let windows = env("windows", Some(&installs.join(P14)));
+        assert_eq!(linked_install(&windows, &installs).as_deref(), Some(P14));
+        assert_eq!(linked_install(&minor, &installs).as_deref(), Some(LINK));
+        assert_eq!(linked_install(&pinned, &installs).as_deref(), Some(P14));
+        assert_eq!(linked_install(&brew, &installs), None);
+        assert_eq!(linked_install(&bare, &installs), None);
+    }
+
+    /// A cascade run against a fake uv listing `installed`, with one env
+    /// `web` whose `pyvenv.cfg` points at `home_in_installs` under the fake
+    /// uv's install dir (or, with `None`, at a Homebrew path). Returns
+    /// whether `web` still exists, what uv was asked to uninstall, and the
+    /// command's result.
+    #[cfg(unix)]
+    fn cascade_run(
+        request: &str,
+        installed: &[&str],
+        home_in_installs: Option<&str>,
+        uninstall_fails: bool,
+    ) -> (bool, Vec<String>, Result<()>) {
+        use crate::test_utils::{FakeUv, env_guard};
+        let home = tempfile::tempdir().unwrap();
+        let uv = FakeUv::new(installed);
+        let path = uv.path_var();
+        let _env = env_guard(&[
+            (
+                crate::paths::SCUV_HOME_ENV,
+                Some(home.path().to_str().unwrap()),
+            ),
+            ("PATH", Some(path.as_str())),
+            ("FAKE_UV_UNINSTALL_FAILS", uninstall_fails.then_some("1")),
+        ]);
+        let target = match home_in_installs {
+            Some(dir) => {
+                let target = uv.python_dir().join(dir).join("bin");
+                std::fs::create_dir_all(&target).unwrap();
+                target
+            }
+            None => PathBuf::from("/opt/homebrew/opt/python@3.12/bin"),
+        };
+        let env = home.path().join("virtualenvs").join("web");
+        std::fs::create_dir_all(env.join("bin")).unwrap();
+        std::fs::write(
+            env.join("pyvenv.cfg"),
+            format!("home = {}\nversion_info = 3.12\n", target.display()),
+        )
+        .unwrap();
+        std::fs::write(
+            env.join(crate::core::Metadata::FILE_NAME),
+            r#"{"name":"web","python_version":"3.12","created_at":"2026-01-01T00:00:00Z","created_by":"test","uv_version":null,"python_path":null}"#,
+        )
+        .unwrap();
+
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        let result = execute(&out, request, true, true);
+        (env.exists(), uv.uninstalled(), result)
+    }
+
+    /// An env on uv's 3.12 minor link, with 3.12.14 the only 3.12 install:
+    /// uninstalling 3.12.14 breaks it, so --cascade removes it. Fails if the
+    /// cascade matches by recorded version (`3.12` vs `3.12.14`: the bug —
+    /// the Python went and the broken env stayed).
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_removes_a_minor_link_env_when_no_install_takes_over() {
+        let (left, uninstalled, result) = cascade_run("3.12.14", &["3.12.14"], Some(LINK), false);
+        result.unwrap();
+        assert!(!left, "the env lost its only Python and must go");
+        assert_eq!(uninstalled, ["3.12.14"]);
+    }
+
+    /// The same env with 3.12.13 also installed: uv repoints the minor link
+    /// at it, the env keeps working and is kept. Fails if remaining installs
+    /// are not considered (a working env would be deleted).
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_keeps_a_minor_link_env_another_patch_takes_over() {
+        let (left, uninstalled, result) =
+            cascade_run("3.12.14", &["3.12.13", "3.12.14"], Some(LINK), false);
+        result.unwrap();
+        assert!(left, "3.12.13 takes over the link");
+        assert_eq!(uninstalled, ["3.12.14"]);
+    }
+
+    /// An env on a Python outside uv's installs (Homebrew) that also
+    /// records `3.12` is never removed by uninstalling a uv Python. Fails
+    /// if the cascade goes by recorded version instead of the env's link.
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_keeps_an_env_on_a_python_uv_does_not_manage() {
+        let (left, _, result) = cascade_run("3.12", &["3.12.14"], None, false);
+        result.unwrap();
+        assert!(left, "a Homebrew env is not uv's to remove");
+    }
+
+    /// When uv fails to uninstall, no env has been removed. Fails if envs
+    /// are deleted before the Python uninstall succeeds.
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_removes_nothing_when_the_uninstall_fails() {
+        let (left, uninstalled, result) = cascade_run("3.12.14", &["3.12.14"], Some(LINK), true);
+        assert!(result.is_err());
+        assert!(left, "the env must survive a failed uninstall");
+        assert!(uninstalled.is_empty());
     }
 
     /// One to three numbers are a plain request. Fails if a suffix (`rc1`,
@@ -432,56 +667,6 @@ mod tests {
     #[case("3", true)]
     fn is_plain_version_cases(#[case] version: &str, #[case] plain: bool) {
         assert_eq!(is_plain_version(version), plain);
-    }
-
-    /// Runs `uninstall 3.12.14 --cascade --force` against a fake uv that
-    /// lists `installed`, with one env `web` recording `3.12`. Returns
-    /// whether `web` still exists and what uv was asked to uninstall.
-    #[cfg(unix)]
-    fn cascade_with_installed(installed: &[&str]) -> (bool, Vec<String>) {
-        cascade_uninstalling("3.12.14", installed)
-    }
-
-    /// As [`cascade_with_installed`], uninstalling `version`.
-    #[cfg(unix)]
-    fn cascade_uninstalling(version: &str, installed: &[&str]) -> (bool, Vec<String>) {
-        use crate::test_utils::{FakeUv, env_guard};
-        let home = tempfile::tempdir().unwrap();
-        let uv = FakeUv::new(installed);
-        let path = uv.path_var();
-        let _env = env_guard(&[
-            (
-                crate::paths::SCUV_HOME_ENV,
-                Some(home.path().to_str().unwrap()),
-            ),
-            ("PATH", Some(path.as_str())),
-        ]);
-        let env = home.path().join("virtualenvs").join("web");
-        std::fs::create_dir_all(env.join("bin")).unwrap();
-        std::fs::write(env.join("pyvenv.cfg"), "version_info = 3.12\n").unwrap();
-        std::fs::write(
-            env.join(crate::core::Metadata::FILE_NAME),
-            r#"{"name":"web","python_version":"3.12","created_at":"2026-01-01T00:00:00Z","created_by":"test","uv_version":null,"python_path":null}"#,
-        )
-        .unwrap();
-
-        let out = Output::new(0, true, crate::output::Colors::NONE, false);
-        execute(&out, version, true, true).unwrap();
-        (env.exists(), uv.uninstalled())
-    }
-
-    /// The env was created against uv's 3.12 minor-version link and records
-    /// `3.12`; 3.12.14 is the only 3.12 install, so uninstalling it breaks
-    /// the env and --cascade must remove it. Fails if the cascade filter only
-    /// matches envs that record the full version (the bug: the Python went
-    /// and the broken env stayed).
-    #[cfg(unix)]
-    #[test]
-    #[serial_test::serial]
-    fn cascade_removes_a_minor_version_env_when_no_other_patch_remains() {
-        let (env_left, uninstalled) = cascade_with_installed(&["3.12.14"]);
-        assert!(!env_left, "the env lost its only Python and must go");
-        assert_eq!(uninstalled, ["3.12.14"]);
     }
 
     /// A request that names more than numbers is refused before anything
@@ -541,19 +726,6 @@ mod tests {
         let out = Output::new(0, true, crate::output::Colors::NONE, false);
         execute(&out, "cpython@3.12", false, false).unwrap();
         assert_eq!(uv.uninstalled(), ["cpython@3.12"]);
-    }
-
-    /// The same env with 3.12.3 also installed keeps working after 3.12.14
-    /// goes, so --cascade must leave it. Fails if a less specific record is
-    /// matched without looking at what remains (it would delete a working
-    /// env).
-    #[cfg(unix)]
-    #[test]
-    #[serial_test::serial]
-    fn cascade_keeps_a_minor_version_env_another_patch_still_serves() {
-        let (env_left, uninstalled) = cascade_with_installed(&["3.12.14", "3.12.3"]);
-        assert!(env_left, "3.12.3 still serves the env");
-        assert_eq!(uninstalled, ["3.12.14"]);
     }
 
     #[test]

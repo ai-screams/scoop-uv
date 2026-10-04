@@ -593,7 +593,7 @@ impl FakeUv {
             .iter()
             .map(|v| {
                 format!(
-                    r#"{{"version":"{v}","path":"/fake/python{v}","implementation":"cpython"}}"#
+                    r#"{{"key":"cpython-{v}-macos-aarch64-none","version":"{v}","path":"/fake/python{v}","implementation":"cpython"}}"#
                 )
             })
             .collect();
@@ -601,12 +601,14 @@ impl FakeUv {
         // absence from PATH would make the fake list nothing.
         let json = format!("[{}]", entries.join(","));
         let d = dir.path().display();
+        std::fs::create_dir_all(dir.path().join("py")).expect("fake uv python dir");
         let script = format!(
             r#"#!/bin/sh
 case "$1 $2" in
   "--version "*) echo "uv 0.12.22" ;;
   "python list") echo "$*" >> "{d}/list.log"; printf '%s\n' '{json}' ;;
-  "python uninstall") echo "$3" >> "{d}/uninstalled.log" ;;
+  "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && exit 1; echo "$3" >> "{d}/uninstalled.log" ;;
+  "python dir") echo "{d}/py" ;;
   "pip list") echo "$*" >> "{d}/pip.log"; printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
   "cache prune") ;;
   *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;
@@ -618,6 +620,11 @@ esac
         std::fs::set_permissions(&uv, std::fs::Permissions::from_mode(0o755))
             .expect("chmod fake uv");
         Self { dir }
+    }
+
+    /// What the fake answers to `uv python dir` (an existing, empty directory).
+    pub fn python_dir(&self) -> std::path::PathBuf {
+        self.dir.path().join("py")
     }
 
     /// `PATH` with the fake `uv` first.

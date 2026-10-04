@@ -22,6 +22,15 @@ pub struct UvPipListEntry {
     pub editable_project_location: Option<PathBuf>,
 }
 
+/// One uv-managed Python installation: the directory uv keeps it in under
+/// [`UvClient::python_dir`] (`key`, e.g. `cpython-3.12.14-macos-aarch64-none`)
+/// and its version.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Hash)]
+pub struct ManagedInstall {
+    pub key: String,
+    pub version: String,
+}
+
 /// Information about an installed Python version
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PythonInfo {
@@ -151,6 +160,51 @@ impl UvClient {
             message,
         })?;
         parse_python_list_json(&String::from_utf8_lossy(&stdout))
+    }
+
+    /// List the uv-managed installations by their install directory name,
+    /// each once (uv also lists a managed install under its `bin` link and
+    /// its minor-version link).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ScoopError::UvCommandFailed`] if uv fails, or
+    /// [`ScoopError::Json`] if its output is not the expected JSON.
+    pub fn list_managed_installs(&self) -> Result<Vec<ManagedInstall>> {
+        let mut cmd = Command::new(&self.path);
+        cmd.args([
+            "python",
+            "list",
+            "--only-installed",
+            "--python-preference",
+            "only-managed",
+            "--output-format=json",
+        ]);
+        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: "uv python list --only-installed --python-preference only-managed \
+                      --output-format=json"
+                .to_string(),
+            message,
+        })?;
+        let mut installs: Vec<ManagedInstall> = serde_json::from_slice(&stdout)?;
+        let mut seen = std::collections::HashSet::new();
+        installs.retain(|i| seen.insert(i.key.clone()));
+        Ok(installs)
+    }
+
+    /// The directory uv installs managed Pythons into (`uv python dir`).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ScoopError::UvCommandFailed`] if uv fails.
+    pub fn python_dir(&self) -> Result<PathBuf> {
+        let mut cmd = Command::new(&self.path);
+        cmd.args(["python", "dir"]);
+        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: "uv python dir".to_string(),
+            message,
+        })?;
+        Ok(PathBuf::from(String::from_utf8_lossy(&stdout).trim()))
     }
 
     /// Run `uv python list --output-format=json` and parse the result.
