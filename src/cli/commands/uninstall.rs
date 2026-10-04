@@ -19,7 +19,7 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
 
     // Handle cascade: remove environments using this Python version
     if cascade {
-        removed_envs = Some(handle_cascade(output, version, force)?);
+        removed_envs = Some(handle_cascade(output, &uv, version, force)?);
     }
 
     output.info(&t!("uninstall.uninstalling", version = version));
@@ -46,26 +46,32 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
 /// Handle cascade removal of environments using the target Python version.
 ///
 /// Returns the list of environment names that were removed.
-fn handle_cascade(output: &Output, version: &str, force: bool) -> Result<Vec<String>> {
+fn handle_cascade(
+    output: &Output,
+    uv: &UvClient,
+    version: &str,
+    force: bool,
+) -> Result<Vec<String>> {
     let service = VirtualenvService::auto()?;
     let envs = service.list()?;
 
-    // Parse the target version for prefix matching
-    let version_filter = PythonVersion::parse(version);
-
-    // Find environments using this Python version
-    let matching_envs: Vec<String> = envs
-        .into_iter()
-        .filter(|env| {
-            match (&version_filter, &env.python_version) {
-                (Some(filter), Some(env_ver)) => {
-                    PythonVersion::parse(env_ver).is_some_and(|v| filter.matches(&v))
-                }
-                _ => false, // Skip envs with no metadata
-            }
-        })
-        .map(|env| env.name)
-        .collect();
+    let matching_envs = match PythonVersion::parse(version) {
+        Some(filter) => {
+            // The uv-managed Pythons this uninstall leaves behind.
+            let remaining: Vec<PythonVersion> = uv
+                .list_managed_pythons()?
+                .iter()
+                .filter_map(|p| PythonVersion::parse(&p.version))
+                .filter(|p| !filter.matches(p))
+                .collect();
+            affected_envs(
+                envs.into_iter().map(|e| (e.name, e.python_version)),
+                &filter,
+                &remaining,
+            )
+        }
+        None => Vec::new(),
+    };
 
     // No matching environments
     if matching_envs.is_empty() {
@@ -118,6 +124,31 @@ fn handle_cascade(output: &Output, version: &str, force: bool) -> Result<Vec<Str
     }
 
     Ok(removed)
+}
+
+/// The envs an uninstall of `filter` takes the Python away from.
+///
+/// An env whose recorded version `filter` matches is affected, as before
+/// (`uninstall 3.12` and an env recording `3.12.1`). An env recording less
+/// than `filter` names — `3.12` against `uninstall 3.12.14`, what current uv
+/// writes for an env linked to the 3.12 minor version — runs on whichever
+/// 3.12.x is installed, so it is affected only when no install it accepts
+/// is left in `remaining`. Envs with no recorded version are skipped.
+fn affected_envs(
+    envs: impl IntoIterator<Item = (String, Option<String>)>,
+    filter: &PythonVersion,
+    remaining: &[PythonVersion],
+) -> Vec<String> {
+    envs.into_iter()
+        .filter(|(_, recorded)| {
+            let Some(recorded) = recorded.as_deref().and_then(PythonVersion::parse) else {
+                return false;
+            };
+            filter.matches(&recorded)
+                || (recorded.matches(filter) && !remaining.iter().any(|p| recorded.matches(p)))
+        })
+        .map(|(name, _)| name)
+        .collect()
 }
 
 // ============================================================================
@@ -326,6 +357,101 @@ mod tests {
     // =========================================================================
     // CascadeAborted Error Tests
     // =========================================================================
+
+    fn v(s: &str) -> PythonVersion {
+        PythonVersion::parse(s).unwrap()
+    }
+
+    /// Which envs lose their Python. Fails if the exact-match rule changes,
+    /// if an env recording less than the uninstalled version (`3.12` vs
+    /// `3.12.14`) is skipped when nothing it accepts remains, or is taken
+    /// although another install it accepts remains.
+    #[rstest::rstest]
+    #[case::exact_patch("3.12.14", "3.12.14", &[], true)]
+    #[case::minor_filter_covers_patch_env("3.12", "3.12.1", &["3.13.1"], true)]
+    #[case::minor_env_nothing_left("3.12.14", "3.12", &["3.13.1"], true)]
+    #[case::minor_env_other_patch_left("3.12.14", "3.12", &["3.12.3"], false)]
+    #[case::other_patch_env("3.12.14", "3.12.3", &["3.12.3"], false)]
+    #[case::other_minor_env("3.12.14", "3.11", &[], false)]
+    #[case::major_env_other_minor_left("3.12.14", "3", &["3.11.9"], false)]
+    fn affected_envs_cases(
+        #[case] uninstall: &str,
+        #[case] recorded: &str,
+        #[case] remaining: &[&str],
+        #[case] affected: bool,
+    ) {
+        let remaining: Vec<PythonVersion> = remaining.iter().map(|r| v(r)).collect();
+        let got = affected_envs(
+            [("web".to_string(), Some(recorded.to_string()))],
+            &v(uninstall),
+            &remaining,
+        );
+        assert_eq!(got == ["web"], affected, "{got:?}");
+    }
+
+    /// An env with no recorded version is never removed. Fails if a missing
+    /// version is read as matching everything.
+    #[test]
+    fn affected_envs_skips_an_env_without_a_version() {
+        assert!(affected_envs([("bare".to_string(), None)], &v("3.12"), &[]).is_empty());
+    }
+
+    /// Runs `uninstall 3.12.14 --cascade --force` against a fake uv that
+    /// lists `installed`, with one env `web` recording `3.12`. Returns
+    /// whether `web` still exists and what uv was asked to uninstall.
+    #[cfg(unix)]
+    fn cascade_with_installed(installed: &[&str]) -> (bool, Vec<String>) {
+        use crate::test_utils::{FakeUv, env_guard};
+        let home = tempfile::tempdir().unwrap();
+        let uv = FakeUv::new(installed);
+        let path = uv.path_var();
+        let _env = env_guard(&[
+            (
+                crate::paths::SCUV_HOME_ENV,
+                Some(home.path().to_str().unwrap()),
+            ),
+            ("PATH", Some(path.as_str())),
+        ]);
+        let env = home.path().join("virtualenvs").join("web");
+        std::fs::create_dir_all(env.join("bin")).unwrap();
+        std::fs::write(env.join("pyvenv.cfg"), "version_info = 3.12\n").unwrap();
+        std::fs::write(
+            env.join(crate::core::Metadata::FILE_NAME),
+            r#"{"name":"web","python_version":"3.12","created_at":"2026-01-01T00:00:00Z","created_by":"test","uv_version":null,"python_path":null}"#,
+        )
+        .unwrap();
+
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        execute(&out, "3.12.14", true, true).unwrap();
+        (env.exists(), uv.uninstalled())
+    }
+
+    /// The env was created against uv's 3.12 minor-version link and records
+    /// `3.12`; 3.12.14 is the only 3.12 install, so uninstalling it breaks
+    /// the env and --cascade must remove it. Fails if the cascade filter only
+    /// matches envs that record the full version (the bug: the Python went
+    /// and the broken env stayed).
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_removes_a_minor_version_env_when_no_other_patch_remains() {
+        let (env_left, uninstalled) = cascade_with_installed(&["3.12.14"]);
+        assert!(!env_left, "the env lost its only Python and must go");
+        assert_eq!(uninstalled, ["3.12.14"]);
+    }
+
+    /// The same env with 3.12.3 also installed keeps working after 3.12.14
+    /// goes, so --cascade must leave it. Fails if a less specific record is
+    /// matched without looking at what remains (it would delete a working
+    /// env).
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_keeps_a_minor_version_env_another_patch_still_serves() {
+        let (env_left, uninstalled) = cascade_with_installed(&["3.12.14", "3.12.3"]);
+        assert!(env_left, "3.12.3 still serves the env");
+        assert_eq!(uninstalled, ["3.12.14"]);
+    }
 
     #[test]
     fn cascade_aborted_error_code() {

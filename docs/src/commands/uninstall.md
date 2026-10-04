@@ -67,6 +67,17 @@ scuv list --pythons
 
 The `--cascade` flag automatically removes all virtual environments that use the target Python version before uninstalling it. This replaces the manual multi-step workflow.
 
+Which environments count as using it:
+
+- An environment that records the version you name, or a more specific
+  one: `uninstall 3.12 --cascade` removes environments recording `3.12`
+  or `3.12.1`.
+- An environment that records only the minor version, as current uv writes
+  (`3.12`), when you name a patch release (`uninstall 3.12.14 --cascade`):
+  it runs on whichever 3.12.x is installed, so it is removed only if no
+  other uv-managed 3.12.x remains. With 3.12.3 still installed it keeps
+  working and is left alone.
+
 ```bash
 scuv uninstall 3.12 --cascade
 # • Found 2 environment(s) using Python 3.12:
