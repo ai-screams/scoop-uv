@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791118988892,
+  "lastUpdate": 1791118990534,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -10033,6 +10033,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1112,
             "range": "± 13",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "158bd64e8e27db4cbfab5bfe77930856986b1f00",
+          "message": "Merge pull request #224 from ai-screams/fix/uninstall-cascade-minor-version\n\nfix(uninstall): decide --cascade by each env's interpreter link and uninstall first",
+          "timestamp": "2026-10-04T21:59:35+09:00",
+          "tree_id": "a0bb326c03ec9fdd4e540170923d1757d8fd4a0f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/158bd64e8e27db4cbfab5bfe77930856986b1f00"
+        },
+        "date": 1791118990467,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1380,
+            "range": "± 32",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 884,
+            "range": "± 15",
             "unit": "ns/iter"
           }
         ]
