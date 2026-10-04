@@ -147,9 +147,10 @@ Categories:
 - **Command behavior** - list, create, use, remove
 - **Real shells** - the `shell` module sources `scuv init` in real bash, zsh,
   fish and PowerShell (`pwsh`) and drives the wrapper, hook and completion
-  through them. Each test skips when its shell is not installed; the CI Test
-  and MSRV jobs install them and set `SCUV_REQUIRE_FISH`, `SCUV_REQUIRE_ZSH`
-  and `SCUV_REQUIRE_PWSH`, so a missing shell fails there instead.
+  through them. Each test skips when its shell is not installed. The CI Test
+  and MSRV jobs install fish and zsh (bash and `pwsh` come with the runner)
+  and set `SCUV_REQUIRE_FISH`, `SCUV_REQUIRE_ZSH` and `SCUV_REQUIRE_PWSH`, so
+  a missing fish, zsh or `pwsh` fails there instead.
 
 Some tests are marked `#[ignore]` because they require `uv` installed. The
 Docker integration jobs run them with `cargo test -- --include-ignored`, as
