@@ -305,6 +305,10 @@ enum Recheck {
 /// every question has a definite answer: still the same directory, still
 /// the same `home`, and that `home` confirmed absent. An error on the way
 /// (`Path::exists` would read it as "absent") keeps the env and reports it.
+///
+/// This catches an env replaced while uv ran. It does not serialize scuv
+/// commands: an env recreated under the name between this check and the
+/// removal by name is not caught (a lock across commands would be needed).
 fn recheck(env: &Planned) -> Recheck {
     match dir_identity(&env.path) {
         Ok(now) if now == env.identity => {}
@@ -315,7 +319,7 @@ fn recheck(env: &Planned) -> Recheck {
     match env_home(&env.path) {
         Ok(home) if home == env.home => {}
         Ok(_) => return Recheck::Replaced,
-        Err(unknown) => return Recheck::Unknown(unknown.reason("en")),
+        Err(unknown) => return Recheck::Unknown(unknown.reason(&rust_i18n::locale())),
     }
     match env.home.try_exists() {
         Ok(true) => Recheck::Works,
@@ -326,8 +330,12 @@ fn recheck(env: &Planned) -> Recheck {
 
 /// Identifies a directory beyond its path, so an env removed and created
 /// again under the same name is told apart: device and inode on unix, the
-/// creation time elsewhere (Windows). Reading it fails, with `NotFound`,
-/// when the directory is gone.
+/// creation time elsewhere (Windows). Neither is unique for all time: a
+/// filesystem may reuse an inode once the old directory is gone, and a copy
+/// can keep the original's creation time; with the same `home` such a
+/// replacement passes. (The crate does not build for Windows yet, so that
+/// branch is not exercised.) Reading it fails, with `NotFound`, when the
+/// directory is gone.
 type DirIdentity = (u64, u64);
 
 #[cfg(unix)]
@@ -1138,6 +1146,24 @@ mod tests {
         assert_eq!(failed.len(), 1);
         assert_eq!(failed[0].name, "odd");
         assert!(envs.join("swap").exists() && envs.join("odd").exists());
+    }
+
+    /// A pyvenv.cfg that turns unreadable during the recheck is reported in
+    /// the user's language, like the other removal failures. Fails if the
+    /// recheck falls back to the English reason.
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn recheck_reports_an_unreadable_cfg_in_the_users_language() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        rust_i18n::set_locale("ko");
+        let root = tempfile::tempdir().unwrap();
+        let env = planned_env(root.path(), "web", &root.path().join("py"));
+        std::fs::remove_file(env.path.join("pyvenv.cfg")).unwrap();
+        assert_eq!(
+            recheck(&env),
+            Recheck::Unknown("pyvenv.cfg 없음".to_string())
+        );
     }
 
     /// A `home` (or env directory) that cannot be checked is not taken as

@@ -95,10 +95,12 @@ Which environments count as using it is read from each environment's
 Environments are removed only after uv has uninstalled the Python, and
 only those whose interpreter is actually gone by then: if the uninstall
 fails, or uv kept a link alive, the environment is left in place. Each
-one is checked again just before removal: an environment that was
-replaced in the meantime (another directory under the name, or another
-`home`) is kept with a warning, and one that cannot be checked (an I/O
-or permission error) is kept and counted as not removed. If one
+one is checked again just before removal: an environment replaced while
+the Python was being uninstalled (another directory under the name, or
+another `home`) is kept with a warning, and one that cannot be checked
+(an I/O or permission error) is kept and counted as not removed. scuv
+commands do not lock each other out yet, so avoid creating or removing
+the same environment from another shell while a cascade runs. If one
 environment cannot be removed, the others still are; it is reported with
 a warning, and the command exits with status 1 although the Python is
 gone.
