@@ -99,7 +99,7 @@ fn incomplete_json(err: &ScoopError, data: &UninstallData) -> String {
 struct Planned {
     name: String,
     path: PathBuf,
-    identity: Option<DirIdentity>,
+    identity: DirIdentity,
     home: PathBuf,
 }
 
@@ -129,37 +129,33 @@ fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> R
             // Resolved once; a directory that does not resolve holds no
             // install any env can be linked to.
             let install_root = std::fs::canonicalize(&install_dir).ok();
-            let mut links: Vec<(String, Option<String>, PathBuf, PathBuf)> = Vec::new();
+            let mut links: Vec<(String, Option<String>, Planned)> = Vec::new();
             for e in envs {
-                match env_home(&e.path) {
-                    Ok(home) => {
+                match snapshot(&e.path) {
+                    Ok((identity, home)) => {
                         let linked = install_root
                             .as_deref()
                             .and_then(|root| linked_install(&home, root));
-                        links.push((e.name, linked, e.path, home));
+                        let planned = Planned {
+                            name: e.name.clone(),
+                            path: e.path,
+                            identity,
+                            home,
+                        };
+                        links.push((e.name, linked, planned));
                     }
-                    Err(unknown) => unverified.push(UnverifiedEnv {
-                        name: e.name,
-                        reason: unknown.reason(),
-                    }),
+                    Err(unknown) => unverified.push(unknown.into_unverified(e.name)),
                 }
             }
             let doomed = affected_envs(
-                links.iter().map(|(n, l, _, _)| (n.clone(), l.clone())),
+                links.iter().map(|(n, l, _)| (n.clone(), l.clone())),
                 &removed,
                 &remaining,
             );
             links
                 .into_iter()
-                .filter(|(name, _, _, _)| doomed.contains(name))
-                .map(|(name, _, path, home)| Planned {
-                    // Unreadable now means "no identity": the recheck then
-                    // sees a mismatch and keeps the env.
-                    identity: dir_identity(&path).ok().flatten(),
-                    name,
-                    path,
-                    home,
-                })
+                .filter(|(name, _, _)| doomed.contains(name))
+                .map(|(_, _, planned)| planned)
                 .collect()
         }
         None => Vec::new(),
@@ -167,13 +163,14 @@ fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> R
 
     // An env whose interpreter cannot be read may or may not lose it: it is
     // never removed, but the user hears about it before deciding.
-    for env in &unverified {
+    for (env, localized) in &unverified {
         output.warn(&t!(
             "uninstall.cascade_unverified",
             name = &env.name,
-            reason = &env.reason
+            reason = localized
         ));
     }
+    let unverified: Vec<UnverifiedEnv> = unverified.into_iter().map(|(env, _)| env).collect();
 
     // No matching environments
     if planned.is_empty() {
@@ -318,7 +315,7 @@ fn recheck(env: &Planned) -> Recheck {
     match env_home(&env.path) {
         Ok(home) if home == env.home => {}
         Ok(_) => return Recheck::Replaced,
-        Err(unknown) => return Recheck::Unknown(unknown.reason()),
+        Err(unknown) => return Recheck::Unknown(unknown.reason("en")),
     }
     match env.home.try_exists() {
         Ok(true) => Recheck::Works,
@@ -328,21 +325,34 @@ fn recheck(env: &Planned) -> Recheck {
 }
 
 /// Identifies a directory beyond its path, so an env removed and created
-/// again under the same name is told apart (device and inode on unix; none
-/// elsewhere, where the `home` comparison is the only check). Reading it
-/// fails, with `NotFound`, when the directory is gone.
+/// again under the same name is told apart: device and inode on unix, the
+/// creation time elsewhere (Windows). Reading it fails, with `NotFound`,
+/// when the directory is gone.
 type DirIdentity = (u64, u64);
 
 #[cfg(unix)]
-fn dir_identity(path: &Path) -> std::io::Result<Option<DirIdentity>> {
+fn dir_identity(path: &Path) -> std::io::Result<DirIdentity> {
     use std::os::unix::fs::MetadataExt;
     let meta = std::fs::symlink_metadata(path)?;
-    Ok(Some((meta.dev(), meta.ino())))
+    Ok((meta.dev(), meta.ino()))
 }
 
 #[cfg(not(unix))]
-fn dir_identity(path: &Path) -> std::io::Result<Option<DirIdentity>> {
-    std::fs::symlink_metadata(path).map(|_| None)
+fn dir_identity(path: &Path) -> std::io::Result<DirIdentity> {
+    let created = std::fs::symlink_metadata(path)?.created()?;
+    let since = created
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(std::io::Error::other)?;
+    Ok((since.as_secs(), u64::from(since.subsec_nanos())))
+}
+
+/// An env's identity and the `home` its `pyvenv.cfg` points at, read in
+/// that order: if the env is replaced between the two reads, the identity
+/// is the old directory's, so the recheck sees a different directory and
+/// keeps the replacement.
+fn snapshot(env_path: &Path) -> std::result::Result<(DirIdentity, PathBuf), HomeUnknown> {
+    let identity = dir_identity(env_path).map_err(|e| HomeUnknown::DirUnreadable(e.to_string()))?;
+    Ok((identity, env_home(env_path)?))
 }
 
 /// Why an env's interpreter could not be read from its `pyvenv.cfg`.
@@ -351,15 +361,39 @@ enum HomeUnknown {
     NoConfig,
     Unreadable(String),
     NoHomeLine,
+    DirUnreadable(String),
 }
 
 impl HomeUnknown {
-    fn reason(&self) -> String {
+    /// The reason in `locale`.
+    fn reason(&self, locale: &str) -> String {
         match self {
-            Self::NoConfig => "no pyvenv.cfg".to_string(),
-            Self::Unreadable(e) => format!("pyvenv.cfg unreadable: {e}"),
-            Self::NoHomeLine => "no home line in pyvenv.cfg".to_string(),
+            Self::NoConfig => t!("uninstall.cascade_reason_no_config", locale = locale),
+            Self::NoHomeLine => t!("uninstall.cascade_reason_no_home", locale = locale),
+            Self::Unreadable(e) => {
+                t!(
+                    "uninstall.cascade_reason_cfg_unreadable",
+                    locale = locale,
+                    error = e
+                )
+            }
+            Self::DirUnreadable(e) => {
+                t!(
+                    "uninstall.cascade_reason_dir_unreadable",
+                    locale = locale,
+                    error = e
+                )
+            }
         }
+        .to_string()
+    }
+
+    /// The env as JSON lists it (reason in English, stable for scripts),
+    /// with the reason in the user's language for the warning.
+    fn into_unverified(self, name: String) -> (UnverifiedEnv, String) {
+        let reason = self.reason("en");
+        let localized = self.reason(&rust_i18n::locale());
+        (UnverifiedEnv { name, reason }, localized)
     }
 }
 
@@ -570,7 +604,10 @@ mod tests {
                 name: "1bad".to_string(),
                 error: "Invalid".to_string(),
             }],
-            unverified_envs: Vec::new(),
+            unverified_envs: vec![UnverifiedEnv {
+                name: "nocfg".to_string(),
+                reason: "no pyvenv.cfg".to_string(),
+            }],
         };
         let err = ScoopError::CascadeIncomplete { failed_count: 1 };
         let json: serde_json::Value = serde_json::from_str(&incomplete_json(&err, &data)).unwrap();
@@ -579,6 +616,58 @@ mod tests {
         assert_eq!(json["error"]["code"], "UNINSTALL_CASCADE_INCOMPLETE");
         assert_eq!(json["data"]["removed_envs"][0], "web");
         assert_eq!(json["data"]["failed_envs"][0]["name"], "1bad");
+        assert_eq!(json["data"]["unverified_envs"][0]["name"], "nocfg");
+    }
+
+    /// `unverified_envs` is left out when empty, so a success without one
+    /// keeps the earlier shape. Fails if it is always written.
+    #[test]
+    fn uninstall_data_json_omits_empty_unverified_envs() {
+        let data = UninstallData {
+            version: "3.12".to_string(),
+            removed_envs: Some(Vec::new()),
+            failed_envs: Vec::new(),
+            unverified_envs: Vec::new(),
+        };
+        let json = serde_json::to_value(&data).unwrap();
+        assert!(json.get("unverified_envs").is_none(), "{json}");
+    }
+
+    /// The reason JSON carries is English whatever the user's language;
+    /// the warning's is translated. Fails if either side switches.
+    #[test]
+    #[serial_test::serial]
+    fn unverified_reason_is_english_for_json_and_localized_for_the_warning() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        rust_i18n::set_locale("ko");
+        let (env, localized) = HomeUnknown::NoConfig.into_unverified("x".to_string());
+        assert_eq!(env.reason, "no pyvenv.cfg");
+        assert_eq!(localized, "pyvenv.cfg 없음");
+        assert_eq!(HomeUnknown::NoConfig.reason("ko"), "pyvenv.cfg 없음");
+        assert_eq!(
+            HomeUnknown::DirUnreadable("e".to_string()).reason("en"),
+            "cannot read the environment directory: e"
+        );
+    }
+
+    /// The snapshot reads the env directory's identity before its `home`,
+    /// and an env whose directory cannot be read is not planned. Fails if
+    /// an unreadable directory yields a snapshot.
+    #[cfg(unix)]
+    #[test]
+    fn snapshot_reports_an_unreadable_env_directory() {
+        let root = tempfile::tempdir().unwrap();
+        let blocker = root.path().join("blocker");
+        std::fs::write(&blocker, "").unwrap();
+        assert!(matches!(
+            snapshot(&blocker.join("web")),
+            Err(HomeUnknown::DirUnreadable(_))
+        ));
+        let env = planned_env(root.path(), "web", &root.path().join("py"));
+        assert_eq!(
+            snapshot(&env.path).unwrap(),
+            (env.identity, env.home.clone())
+        );
     }
 
     #[test]

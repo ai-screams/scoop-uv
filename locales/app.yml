@@ -540,6 +540,30 @@ uninstall.cascade_unverified:
   pt-BR: "Não é possível saber qual Python '%{name}' usa (%{reason}); ele não será removido"
   ja: "'%{name}' が使う Python を判別できないため削除しません (%{reason})"
   es: "No se puede saber qué Python usa '%{name}' (%{reason}); no se eliminará"
+uninstall.cascade_reason_no_config:
+  en: "no pyvenv.cfg"
+  ko: "pyvenv.cfg 없음"
+  pt-BR: "sem pyvenv.cfg"
+  ja: "pyvenv.cfg がありません"
+  es: "sin pyvenv.cfg"
+uninstall.cascade_reason_no_home:
+  en: "no home line in pyvenv.cfg"
+  ko: "pyvenv.cfg에 home 줄 없음"
+  pt-BR: "pyvenv.cfg sem linha home"
+  ja: "pyvenv.cfg に home 行がありません"
+  es: "pyvenv.cfg sin línea home"
+uninstall.cascade_reason_cfg_unreadable:
+  en: "cannot read pyvenv.cfg: %{error}"
+  ko: "pyvenv.cfg를 읽을 수 없음: %{error}"
+  pt-BR: "não foi possível ler pyvenv.cfg: %{error}"
+  ja: "pyvenv.cfg を読めません: %{error}"
+  es: "no se puede leer pyvenv.cfg: %{error}"
+uninstall.cascade_reason_dir_unreadable:
+  en: "cannot read the environment directory: %{error}"
+  ko: "환경 디렉터리를 읽을 수 없음: %{error}"
+  pt-BR: "não foi possível ler o diretório do ambiente: %{error}"
+  ja: "環境ディレクトリを読めません: %{error}"
+  es: "no se puede leer el directorio del entorno: %{error}"
 uninstall.cascade_replaced:
   en: "'%{name}' changed during the uninstall; it is kept"
   ko: "'%{name}'이(가) 제거 중에 바뀌어 그대로 둬요"

@@ -9158,8 +9158,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:39
-msgid "Add translations to all 226 keys"
-msgstr "모든 226개 키에 번역을 추가합니다"
+msgid "Add translations to all 230 keys"
+msgstr "모든 230개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:40
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -9356,8 +9356,8 @@ msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
 #: src/development/translation.md:120
-msgid "`locales/app.yml` - All 226 keys translated"
-msgstr "`locales/app.yml` - 226개 키 모두 번역"
+msgid "`locales/app.yml` - All 230 keys translated"
+msgstr "`locales/app.yml` - 230개 키 모두 번역"
 
 #: src/development/translation.md:121
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
@@ -10055,8 +10055,8 @@ msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
 #: src/development/translation.md:352
-msgid "All 226 keys translated"
-msgstr "226개 키 전체 번역 완료"
+msgid "All 230 keys translated"
+msgstr "230개 키 전체 번역 완료"
 
 #: src/development/translation.md:353
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
@@ -10111,11 +10111,11 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the 226 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 230 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 226개 키) 번역에 대"
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 230개 키) 번역에 대"
 "해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
 "역만 다룹니다."
 
