@@ -175,14 +175,14 @@ src/
 │   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
 ├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
-├── error/         # ScoopError enum (38 variants, i18n Display; code/display/exit/migrate/suggestion)
+├── error/         # ScoopError enum (39 variants, i18n Display; code/display/exit/migrate/suggestion)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 221 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 224 keys
 ```
 
 ### Design Principles
@@ -673,6 +673,7 @@ pub enum ScoopError {
 
     // Cascade errors
     CascadeAborted,
+    CascadeIncomplete { failed_count: usize },
 
     // Self-update
     SelfUpdateFailed { message: String },
@@ -683,11 +684,11 @@ pub enum ScoopError {
     ManifestNotFound { start_dir: PathBuf },                   // scuv sync: no .scuv.toml in cwd or ancestors
     InvalidExportFile { path: PathBuf, reason: String },       // scuv import: malformed JSON
     UnsupportedExportVersion { version: String, supported: String }, // scuv import: schema version mismatch
-    VerifyFailed { name: String, failures: usize },                  // scuv verify --strict
-    SitePackagesNotFound { path: PathBuf },
-    MigrationSourcesNotFound,
-    MigrationBatchFailed { failed: usize, total: usize },            // scuv migrate all
-    DiffMismatch,                                                    // scuv diff --strict
+    VerifyFailed { issues: usize },                                  // scuv verify --strict
+    SitePackagesNotFound { venv: String },
+    MigrationSourcesNotFound { requested: Option<String> },          // scuv migrate: no pyenv/conda/virtualenvwrapper
+    MigrationBatchFailed { failed_count: usize, conflict_count: usize }, // scuv migrate all
+    DiffMismatch { env_a: String, env_b: String, differences: usize }, // scuv diff --strict
 }
 
 impl ScoopError {

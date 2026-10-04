@@ -163,6 +163,17 @@ pub struct UninstallData {
     /// Environments removed by cascade (only present if --cascade used)
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub removed_envs: Option<Vec<String>>,
+    /// Environments the cascade meant to remove but could not (absent when
+    /// none failed)
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub failed_envs: Vec<CascadeFailure>,
+}
+
+/// An environment a cascade could not remove, and why
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CascadeFailure {
+    pub name: String,
+    pub error: String,
 }
 
 /// Package info for JSON output

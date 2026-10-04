@@ -153,6 +153,21 @@ impl UvClient {
         parse_python_list_json(&String::from_utf8_lossy(&stdout))
     }
 
+    /// The directory uv installs managed Pythons into (`uv python dir`).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ScoopError::UvCommandFailed`] if uv fails.
+    pub fn python_dir(&self) -> Result<PathBuf> {
+        let mut cmd = Command::new(&self.path);
+        cmd.args(["python", "dir"]);
+        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
+            command: "uv python dir".to_string(),
+            message,
+        })?;
+        Ok(PathBuf::from(String::from_utf8_lossy(&stdout).trim()))
+    }
+
     /// Run `uv python list --output-format=json` and parse the result.
     ///
     /// uv added this flag in 0.5.19 (our [`MIN_VERSION`] floor), so we rely on
