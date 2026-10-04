@@ -607,7 +607,7 @@ impl FakeUv {
 case "$1 $2" in
   "--version "*) echo "uv 0.12.22" ;;
   "python list") echo "$*" >> "{d}/list.log"; printf '%s\n' '{json}' ;;
-  "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && exit 1; echo "$3" >> "{d}/uninstalled.log" ;;
+  "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* ;;
   "python dir") echo "{d}/py" ;;
   "pip list") echo "$*" >> "{d}/pip.log"; printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
   "cache prune") ;;

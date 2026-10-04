@@ -414,6 +414,7 @@ fn test_uninstall_data_serialization() {
     let data = UninstallData {
         version: "3.11.0".into(),
         removed_envs: None,
+        failed_envs: Vec::new(),
     };
     let json = serde_json::to_string(&data).unwrap();
     let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();

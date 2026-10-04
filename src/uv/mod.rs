@@ -3,4 +3,4 @@
 mod client;
 pub mod version;
 
-pub use client::{ManagedInstall, PythonInfo, UvClient, UvPipListEntry};
+pub use client::{PythonInfo, UvClient, UvPipListEntry};

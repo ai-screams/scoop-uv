@@ -528,6 +528,12 @@ uninstall.cascade_needs_plain_version:
   pt-BR: "--cascade exige um número de versão simples como 3.12 ou 3.12.14, não '%{version}'"
   ja: "--cascade には 3.12 や 3.12.14 のようなバージョン番号のみ指定できます ('%{version}' は不可)"
   es: "--cascade necesita un número de versión simple como 3.12 o 3.12.14, no '%{version}'"
+uninstall.cascade_remove_failed:
+  en: "Could not remove '%{name}': %{error}"
+  ko: "'%{name}'을(를) 삭제하지 못했어요: %{error}"
+  pt-BR: "Não foi possível remover '%{name}': %{error}"
+  ja: "'%{name}' を削除できませんでした: %{error}"
+  es: "No se pudo eliminar '%{name}': %{error}"
 uninstall.cascade_cancelled:
   en: "Cancelled"
   ko: "취소됨"
