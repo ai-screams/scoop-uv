@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **api:** Remove public functions nothing calls ([#218](https://github.com/ai-screams/scoop-uv/pull/218))
+- **BREAKING**: the `scoop_uv` library no longer exports `Output::json_error`, `UvClient::pip_install_requirements`,
+  `UvClient::latest_installed_python`, `UvClient::with_path`, `paths::pythons_dir`, `paths::ensure_scoop_dirs`,
+  `paths::virtualenv_python`, `Migrator::migrate_all`, `Migrator::check_python_availability`, `Migrator::with_uv`,
+  `validate::normalize_python_version` or `ExtractionResult::to_requirements`. The `scuv` CLI is unchanged.
+- Move four inline test modules into tests.rs files ([#213](https://github.com/ai-screams/scoop-uv/pull/213))
 - **remove:** Pull the .venv link handling out of execute ([#211](https://github.com/ai-screams/scoop-uv/pull/211))
 - **gc:** Split parse_duration into number, unit and range steps ([#211](https://github.com/ai-screams/scoop-uv/pull/211))
 - **migrate:** Split list_environments into summary, groups and lines ([#211](https://github.com/ai-screams/scoop-uv/pull/211))
@@ -38,10 +44,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- **testing:** Say which shells CI installs and requires ([#223](https://github.com/ai-screams/scoop-uv/pull/223))
+- Bring examples, dev docs and CLAUDE.md up to date with the 0.17 fixes ([#223](https://github.com/ai-screams/scoop-uv/pull/223))
+- Soften the minor-version claim and the status packages caveat ([#222](https://github.com/ai-screams/scoop-uv/pull/222))
+- Fix the migrate exit-code template and stream, version and filter details ([#222](https://github.com/ai-screams/scoop-uv/pull/222))
 - Match command output samples to the binary; use uv pip in pip-less envs ([#222](https://github.com/ai-screams/scoop-uv/pull/222))
+- **shell:** Stop the example wrapper's use branch on failure ([#216](https://github.com/ai-screams/scoop-uv/pull/216))
+- **shell:** Pipe scuv init powershell through Out-String ([#216](https://github.com/ai-screams/scoop-uv/pull/216))
+- **gc:** Limit the re-scan's protection to listed envs; cover a missing uv ([#212](https://github.com/ai-screams/scoop-uv/pull/212))
+- **gc:** Describe the Python bail as the code does ([#212](https://github.com/ai-screams/scoop-uv/pull/212))
+- **claude:** Refresh the module tree, test counts and .docs index ([#212](https://github.com/ai-screams/scoop-uv/pull/212))
+- **claude:** Note the cfg! mutant, fake uv, root-proof failures, codecov patch and ko.po traps ([#212](https://github.com/ai-screams/scoop-uv/pull/212))
+- **gc:** Say when --aggressive leaves Pythons alone ([#212](https://github.com/ai-screams/scoop-uv/pull/212))
+- **testing:** List the dispatch module and the fake uv fixture ([#211](https://github.com/ai-screams/scoop-uv/pull/211))
+- Point the file references at the split modules ([#211](https://github.com/ai-screams/scoop-uv/pull/211))
 
 ### Fixed
 
+- **migrate:** Keep the EOL guard for a renamed, name-conflicted env ([#221](https://github.com/ai-screams/scoop-uv/pull/221))
+- **migrate:** Let --rename and --auto-rename migrate a name-conflicted env ([#221](https://github.com/ai-screams/scoop-uv/pull/221))
+- **core:** List an env's packages with uv, not the env's own pip ([#220](https://github.com/ai-screams/scoop-uv/pull/220))
+- **completions:** Offer shells after --shell and keep files off --name ([#219](https://github.com/ai-screams/scoop-uv/pull/219))
+- **completions:** One position rule in every shell, option values included ([#219](https://github.com/ai-screams/scoop-uv/pull/219))
+- **completions:** Offer env names only where one goes ([#219](https://github.com/ai-screams/scoop-uv/pull/219))
+- **completions:** Offer every subcommand in the hand-written scripts ([#219](https://github.com/ai-screams/scoop-uv/pull/219))
+- **gc:** Keep the Pythons that minor-version envs use ([#217](https://github.com/ai-screams/scoop-uv/pull/217))
+- **shell:** Return scuv's status from the fish wrapper too ([#216](https://github.com/ai-screams/scoop-uv/pull/216))
+- **shell:** Keep scuv's exit status in the wrappers and take SYSTEM in any case ([#216](https://github.com/ai-screams/scoop-uv/pull/216))
+- **shell:** Name the shell in bash, zsh and PowerShell, and join PowerShell output ([#216](https://github.com/ai-screams/scoop-uv/pull/216))
+- PowerShell users: change the `$PROFILE` line to `Invoke-Expression (& scuv init powershell | Out-String)`;
+  without `Out-String` the init script is never evaluated.
 - **gc:** Re-scan Pythons with no exclusions; make the fake uv self-contained ([#211](https://github.com/ai-screams/scoop-uv/pull/211))
 - **paths:** Report link read errors instead of calling them "changed" ([#211](https://github.com/ai-screams/scoop-uv/pull/211))
 - **list:** Find the system Python with the which crate ([#211](https://github.com/ai-screams/scoop-uv/pull/211))
