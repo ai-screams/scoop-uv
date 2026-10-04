@@ -29,8 +29,8 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
     let uv = UvClient::new()?;
 
     // Decide (and confirm) which envs go before anything is removed, but
-    // remove them only once uv has uninstalled the Python: if that fails,
-    // every env is still there.
+    // remove them only once uv has run, and only those whose interpreter is
+    // really gone (see `recheck`).
     let plan = if cascade {
         Some(plan_cascade(output, &uv, version, force)?)
     } else {
@@ -39,7 +39,15 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
 
     output.info(&t!("uninstall.uninstalling", version = version));
 
-    uv.uninstall_python(version)?;
+    if let Err(e) = uv.uninstall_python(version) {
+        // uv may have removed some installs before failing on another: the
+        // envs those served are broken now, so they still go. An env whose
+        // interpreter is still there is kept, as always.
+        if let Some(plan) = &plan {
+            remove_envs(output, &plan.planned);
+        }
+        return Err(e);
+    }
 
     let (removed_envs, failed_envs, unverified_envs) = match plan {
         Some(plan) => {
@@ -123,7 +131,7 @@ fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> R
             // Only a request naming the patch depends on the uv version.
             let skips = filter.patch.is_some()
                 && patch_request_skips_prereleases(uv.version().ok().as_deref());
-            let (removed, remaining): (Vec<String>, Vec<String>) = installed_keys(&install_dir)
+            let (removed, remaining): (Vec<String>, Vec<String>) = installed_keys(&install_dir)?
                 .into_iter()
                 .partition(|key| removed_by(key, &filter, skips));
             // Resolved once; a directory that does not resolve holds no
@@ -174,7 +182,9 @@ fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> R
 
     // No matching environments
     if planned.is_empty() {
-        if !output.is_json() {
+        // After an "unverified" warning, "no environments" would claim more
+        // than is known.
+        if !output.is_json() && unverified.is_empty() {
             output.info(&t!("uninstall.cascade_none", version = version));
         }
         return Ok(Plan {
@@ -416,7 +426,7 @@ fn env_home(env_path: &Path) -> std::result::Result<PathBuf, HomeUnknown> {
     cfg.lines()
         .find_map(|line| {
             let (key, value) = line.split_once('=')?;
-            (key.trim() == "home").then(|| PathBuf::from(value.trim()))
+            (key.trim() == "home" && !value.trim().is_empty()).then(|| PathBuf::from(value.trim()))
         })
         .ok_or(HomeUnknown::NoHomeLine)
 }
@@ -450,15 +460,25 @@ fn linked_install(home: &Path, install_root: &Path) -> Option<String> {
 /// (`.lock`, `.temp`) have none and are left out. Read from the directory, not
 /// `uv python list`, which shows only installs for the current platform
 /// while `uv python uninstall` removes matching ones for any platform.
-fn installed_keys(install_dir: &Path) -> Vec<String> {
-    let Ok(entries) = std::fs::read_dir(install_dir) else {
-        return Vec::new();
+///
+/// A directory uv has not created yet holds nothing. Any other read error
+/// stops the cascade before anything is removed: an install missing from
+/// the list would leave the envs it serves out of the plan.
+fn installed_keys(install_dir: &Path) -> Result<Vec<String>> {
+    let entries = match std::fs::read_dir(install_dir) {
+        Ok(entries) => entries,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(e) => return Err(e.into()),
     };
-    entries
-        .filter_map(|entry| entry.ok())
-        .filter_map(|entry| entry.file_name().into_string().ok())
-        .filter(|key| version_part(key).is_some_and(|(numbers, _)| numbers.split('.').count() >= 3))
-        .collect()
+    let mut keys = Vec::new();
+    for entry in entries {
+        if let Ok(key) = entry?.file_name().into_string()
+            && version_part(&key).is_some_and(|(numbers, _)| numbers.split('.').count() >= 3)
+        {
+            keys.push(key);
+        }
+    }
+    Ok(keys)
 }
 
 /// The version part of an install key, split into its numbers and its
@@ -967,9 +987,16 @@ mod tests {
         // A real directory named like a link (a Windows junction is not a
         // symlink) is still not an install.
         std::fs::create_dir_all(dir.path().join("cpython-3.13-macos-aarch64-none")).unwrap();
-        let mut keys = installed_keys(dir.path());
+        let mut keys = installed_keys(dir.path()).unwrap();
         keys.sort();
         assert_eq!(keys, [FT13, P14]);
+        // Not created yet: nothing installed. Unreadable: an error, not an
+        // empty list that would leave envs out of the plan.
+        assert_eq!(
+            installed_keys(&dir.path().join("none")).unwrap(),
+            Vec::<String>::new()
+        );
+        assert!(installed_keys(&dir.path().join(".lock")).is_err());
     }
 
     const LINK: &str = "cpython-3.12-macos-aarch64-none";
@@ -1048,6 +1075,12 @@ mod tests {
         std::fs::remove_dir(&cfg).unwrap();
         std::fs::write(&cfg, "version_info = 3.12\n").unwrap();
         assert_eq!(env_home(dir.path()), Err(HomeUnknown::NoHomeLine));
+        std::fs::write(&cfg, "home =\n").unwrap();
+        assert_eq!(
+            env_home(dir.path()),
+            Err(HomeUnknown::NoHomeLine),
+            "empty home"
+        );
         std::fs::write(&cfg, "version_info = 3.12\nhome = /x/bin\n").unwrap();
         assert_eq!(env_home(dir.path()), Ok(PathBuf::from("/x/bin")));
     }
@@ -1242,7 +1275,7 @@ mod tests {
         request: &str,
         installs: &[&str],
         envs: &[(&str, Home)],
-        uninstall_fails: bool,
+        uninstall_fails: Option<&str>,
     ) -> (Vec<String>, Vec<String>, Result<()>) {
         use crate::test_utils::{FakeUv, env_guard};
         let home = tempfile::tempdir().unwrap();
@@ -1254,7 +1287,7 @@ mod tests {
                 Some(home.path().to_str().unwrap()),
             ),
             ("PATH", Some(path.as_str())),
-            ("FAKE_UV_UNINSTALL_FAILS", uninstall_fails.then_some("1")),
+            ("FAKE_UV_UNINSTALL_FAILS", uninstall_fails),
         ]);
         let py = uv.python_dir();
         for key in installs {
@@ -1308,7 +1341,7 @@ mod tests {
             "3.12",
             &[P14, P13],
             &[("web", Home::LinkTo(P14)), ("pinned", Home::Install(P13))],
-            false,
+            None,
         );
         result.unwrap();
         assert!(left.is_empty(), "no 3.12 is left for either env: {left:?}");
@@ -1324,7 +1357,7 @@ mod tests {
     #[serial_test::serial]
     fn cascade_removes_a_minor_link_env_when_no_install_takes_over() {
         let (left, uninstalled, result) =
-            cascade_run("3.12.14", &[P14], &[("web", Home::LinkTo(P14))], false);
+            cascade_run("3.12.14", &[P14], &[("web", Home::LinkTo(P14))], None);
         result.unwrap();
         assert!(left.is_empty(), "the env lost its only Python and must go");
         assert_eq!(uninstalled, ["3.12.14"]);
@@ -1337,7 +1370,7 @@ mod tests {
     #[serial_test::serial]
     fn cascade_keeps_a_minor_link_env_another_patch_takes_over() {
         let (left, _, result) =
-            cascade_run("3.12.14", &[P13, P14], &[("web", Home::LinkTo(P14))], false);
+            cascade_run("3.12.14", &[P13, P14], &[("web", Home::LinkTo(P14))], None);
         result.unwrap();
         assert_eq!(left, ["web"]);
     }
@@ -1351,7 +1384,7 @@ mod tests {
     #[serial_test::serial]
     fn cascade_keeps_a_planned_env_whose_interpreter_survived() {
         let (left, uninstalled, result) =
-            cascade_run("3.12.14", &[P14], &[("web", Home::LinkThatSurvives)], false);
+            cascade_run("3.12.14", &[P14], &[("web", Home::LinkThatSurvives)], None);
         result.unwrap();
         assert_eq!(uninstalled, ["3.12.14"]);
         assert_eq!(left, ["web"]);
@@ -1364,7 +1397,7 @@ mod tests {
     #[test]
     #[serial_test::serial]
     fn cascade_keeps_an_env_on_a_python_uv_does_not_manage() {
-        let (left, _, result) = cascade_run("3.12", &[P14], &[("brew", Home::Outside)], false);
+        let (left, _, result) = cascade_run("3.12", &[P14], &[("brew", Home::Outside)], None);
         result.unwrap();
         assert_eq!(left, ["brew"]);
     }
@@ -1376,10 +1409,28 @@ mod tests {
     #[serial_test::serial]
     fn cascade_removes_nothing_when_the_uninstall_fails() {
         let (left, uninstalled, result) =
-            cascade_run("3.12.14", &[P14], &[("web", Home::LinkTo(P14))], true);
+            cascade_run("3.12.14", &[P14], &[("web", Home::LinkTo(P14))], Some("1"));
         assert!(result.is_err());
         assert_eq!(left, ["web"]);
         assert!(uninstalled.is_empty());
+    }
+
+    /// uv removed the install and then failed (on another one, say): the env
+    /// it served is broken, so it still goes, and the uv error is returned.
+    /// Fails if a uv failure skips the cleanup of envs already broken.
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_cleans_up_after_a_uv_that_removed_then_failed() {
+        let (left, uninstalled, result) = cascade_run(
+            "3.12.14",
+            &[P14],
+            &[("web", Home::LinkTo(P14)), ("brew", Home::Outside)],
+            Some("after"),
+        );
+        assert!(result.is_err());
+        assert_eq!(left, ["brew"]);
+        assert_eq!(uninstalled, ["3.12.14"]);
     }
 
     /// One env that cannot be removed (a name `delete` refuses) does not stop
@@ -1393,7 +1444,7 @@ mod tests {
             "3.12.14",
             &[P14],
             &[("1bad", Home::LinkTo(P14)), ("web", Home::LinkTo(P14))],
-            false,
+            None,
         );
         assert!(
             matches!(

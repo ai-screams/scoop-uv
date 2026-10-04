@@ -172,3 +172,26 @@ fn cascade_reports_an_env_it_cannot_judge() {
         }
     }
 }
+
+/// With only an env it cannot judge, the cascade does not go on to claim
+/// that no environment uses the Python. Fails if "No environments" follows
+/// the warning.
+#[cfg(unix)]
+#[test]
+fn cascade_does_not_claim_no_envs_after_an_unverified_warning() {
+    let (fixture, uv) = home_with_envs("uv 0.12.22", &[("nocfg", P14)]);
+    let envs = fixture.scoop_home.join("virtualenvs");
+    std::fs::remove_file(envs.join("nocfg").join("pyvenv.cfg")).unwrap();
+    let out = scoop_cmd(&fixture.scoop_home)
+        .env("PATH", uv.path())
+        .args(["uninstall", "3.12.14", "--cascade", "--force"])
+        .output()
+        .unwrap();
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(out.status.success(), "{stderr}");
+    assert!(
+        stderr.contains("Cannot tell which Python 'nocfg'"),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("No environments"), "{stderr}");
+}
