@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791064888108,
+  "lastUpdate": 1791078753608,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -7931,6 +7931,90 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/version_like_reject",
             "value": 78,
             "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 21,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 186,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e84df0bc964e5b7efda209ad61ffb667a595fb88",
+          "message": "Merge pull request #223 from ai-screams/docs/refresh-after-0.17-fixes\n\ndocs: bring examples, dev docs and CLAUDE.md up to date with the recent fixes",
+          "timestamp": "2026-10-04T10:48:43+09:00",
+          "tree_id": "f52e7a8baf5ef89b59202e69875ca4a14bd5b520",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/e84df0bc964e5b7efda209ad61ffb667a595fb88"
+        },
+        "date": 1791078753012,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 97108,
+            "range": "± 1375",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 113137,
+            "range": "± 918",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3149,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 776,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 91,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 93,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 88,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 77,
+            "range": "± 2",
             "unit": "ns/iter"
           },
           {
