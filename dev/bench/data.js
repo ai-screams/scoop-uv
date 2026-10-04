@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791128474946,
+  "lastUpdate": 1791128476500,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -10153,6 +10153,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 884,
             "range": "± 15",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1994f220975cb81c387852b15809df536642bae7",
+          "message": "Merge pull request #226 from ai-screams/fix/uninstall-cascade-safety\n\nfix(uninstall): recheck each env before the cascade removes it and report envs it cannot judge",
+          "timestamp": "2026-10-05T00:37:15+09:00",
+          "tree_id": "b1235023ab485c52f2475fbda9dbb82cc962ed0a",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/1994f220975cb81c387852b15809df536642bae7"
+        },
+        "date": 1791128476390,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1687,
+            "range": "± 146",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1115,
+            "range": "± 16",
             "unit": "ns/iter"
           }
         ]
