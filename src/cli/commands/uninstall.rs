@@ -41,10 +41,25 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
 
     if let Err(e) = uv.uninstall_python(version) {
         // uv may have removed some installs before failing on another: the
-        // envs those served are broken now, so they still go. An env whose
-        // interpreter is still there is kept, as always.
-        if let Some(plan) = &plan {
-            remove_envs(output, &plan.planned);
+        // envs those served are broken now, so they still go. Only envs
+        // that had their interpreter when planned count: one already broken
+        // before uv ran was not broken by it.
+        if let Some(plan) = plan {
+            let served: Vec<Planned> = plan
+                .planned
+                .into_iter()
+                .filter(|env| env.home_existed)
+                .collect();
+            let (removed, failed) = remove_envs(output, &served);
+            if output.is_json() && !(removed.is_empty() && failed.is_empty()) {
+                let data = UninstallData {
+                    version: version.to_string(),
+                    removed_envs: Some(removed),
+                    failed_envs: failed,
+                    unverified_envs: plan.unverified,
+                };
+                println!("{}", incomplete_json(&e, &data));
+            }
         }
         return Err(e);
     }
@@ -89,8 +104,9 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
     Ok(())
 }
 
-/// The JSON for a cascade that left envs behind: the error, plus the same
-/// `data` a success carries, so scripts see which envs went and which did not.
+/// The JSON for a cascade that ended in `err` (envs left behind, or uv
+/// failing after envs were removed): the error, plus the same `data` a
+/// success carries, so scripts see which envs went and which did not.
 fn incomplete_json(err: &ScoopError, data: &UninstallData) -> String {
     serde_json::to_string_pretty(&serde_json::json!({
         "status": "error",
@@ -109,6 +125,8 @@ struct Planned {
     path: PathBuf,
     identity: DirIdentity,
     home: PathBuf,
+    /// Whether `home` was there when planned (an env can be broken already).
+    home_existed: bool,
 }
 
 /// What the cascade decided before uninstalling: the envs to remove, and
@@ -148,6 +166,7 @@ fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> R
                             name: e.name.clone(),
                             path: e.path,
                             identity,
+                            home_existed: home.try_exists().unwrap_or(false),
                             home,
                         };
                         links.push((e.name, linked, planned));
@@ -1103,6 +1122,7 @@ mod tests {
             identity: dir_identity(&path).unwrap(),
             path,
             home,
+            home_existed: true,
         }
     }
 
@@ -1431,6 +1451,20 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(left, ["brew"]);
         assert_eq!(uninstalled, ["3.12.14"]);
+    }
+
+    /// An env already broken before uv ran (its link points at an install
+    /// that is not there) is not removed when uv then fails without removing
+    /// anything: uv did not break it. Fails if the cleanup after a uv failure
+    /// takes every env whose home is missing.
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn cascade_keeps_an_already_broken_env_when_uv_fails() {
+        let (left, _, result) =
+            cascade_run("3.12.14", &[P14], &[("old", Home::LinkTo(P13))], Some("1"));
+        assert!(result.is_err());
+        assert_eq!(left, ["old"]);
     }
 
     /// One env that cannot be removed (a name `delete` refuses) does not stop

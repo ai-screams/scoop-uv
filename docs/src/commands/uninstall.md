@@ -96,7 +96,9 @@ Environments are removed only after uv has run, and only those whose
 interpreter is actually gone by then: if the uninstall fails before
 removing anything, or uv kept a link alive, the environment is left in
 place. If uv removed some installs and then failed, the environments
-those served are still removed, and the command reports uv's error. Each
+those served are still removed (not ones that were already broken before
+uv ran), and the command reports uv's error; under `--json` the error
+envelope then carries the same `data` as below. Each
 one is checked again just before removal: an environment replaced while
 the Python was being uninstalled (another directory under the name, or
 another `home`) is kept with a warning, and one that cannot be checked

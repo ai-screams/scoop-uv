@@ -1730,7 +1730,7 @@ msgstr "#   myproject  3.12  ~/.scuv/virtualenvs/myproject\n"
 msgid "Manual workflow"
 msgstr "수동 작업 흐름"
 
-#: src/python-management.md:268 src/commands/uninstall.md:157
+#: src/python-management.md:268 src/commands/uninstall.md:159
 msgid "If you prefer manual control (without `--cascade`):"
 msgstr "`--cascade` 없이 직접 제어하고 싶은 경우:"
 
@@ -1758,7 +1758,7 @@ msgstr "# 4. 모든 것이 정리되었는지 확인\n"
 msgid "# Confirm Python removed\n"
 msgstr "# Python 제거 확인\n"
 
-#: src/python-management.md:287 src/commands/uninstall.md:197
+#: src/python-management.md:287 src/commands/uninstall.md:199
 msgid "# Check for broken environments\n"
 msgstr "# 깨진 환경 확인\n"
 
@@ -1770,7 +1770,7 @@ msgstr "실수로 제거한 경우 복구"
 msgid "If you uninstalled Python without cleaning up environments:"
 msgstr "환경 정리 없이 Python을 제거한 경우:"
 
-#: src/python-management.md:295 src/commands/uninstall.md:209
+#: src/python-management.md:295 src/commands/uninstall.md:211
 msgid "# Detect broken environments\n"
 msgstr "# 깨진 환경 감지\n"
 
@@ -1778,16 +1778,16 @@ msgstr "# 깨진 환경 감지\n"
 msgid "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 msgstr "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 
-#: src/python-management.md:299 src/commands/uninstall.md:122
-#: src/commands/uninstall.md:212 src/commands/uninstall.md:214
+#: src/python-management.md:299 src/commands/uninstall.md:124
+#: src/commands/uninstall.md:214 src/commands/uninstall.md:216
 #: src/commands/doctor.md:65 src/commands/doctor.md:82
 #: src/commands/doctor.md:86 src/commands/doctor.md:88
 #: src/commands/migrate.md:156
 msgid "'myproject'"
 msgstr "'myproject'"
 
-#: src/python-management.md:299 src/commands/uninstall.md:212
-#: src/commands/uninstall.md:214 src/commands/doctor.md:65
+#: src/python-management.md:299 src/commands/uninstall.md:214
+#: src/commands/uninstall.md:216 src/commands/doctor.md:65
 #: src/commands/doctor.md:82
 msgid "#   → scuv remove myproject && scuv create myproject <python-version>\n"
 msgstr ""
@@ -3326,12 +3326,12 @@ msgid ""
 "The `--python-version` option uses prefix matching to filter environments:"
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
-#: src/commands/list.md:128 src/commands/uninstall.md:163
+#: src/commands/list.md:128 src/commands/uninstall.md:165
 #: src/commands/doctor.md:52
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
-#: src/commands/list.md:130 src/commands/uninstall.md:165
+#: src/commands/list.md:130 src/commands/uninstall.md:167
 msgid "#   webapp     3.12  ~/.scuv/virtualenvs/webapp\n"
 msgstr "#   webapp     3.12  ~/.scuv/virtualenvs/webapp\n"
 
@@ -3875,7 +3875,7 @@ msgstr "환경을 제거하기 전에 상세 정보를 확인하려면:"
 msgid "# Show environment details (Python version, path, packages)\n"
 msgstr "# 환경 상세 정보 표시 (Python 버전, 경로, 패키지)\n"
 
-#: src/commands/remove.md:54 src/commands/uninstall.md:210
+#: src/commands/remove.md:54 src/commands/uninstall.md:212
 #: src/commands/doctor.md:80 src/commands/doctor.md:108
 msgid "# Output (excerpt):\n"
 msgstr "# 출력 (일부):\n"
@@ -4233,28 +4233,31 @@ msgid ""
 "interpreter is actually gone by then: if the uninstall fails before removing "
 "anything, or uv kept a link alive, the environment is left in place. If uv "
 "removed some installs and then failed, the environments those served are "
-"still removed, and the command reports uv's error. Each one is checked again "
-"just before removal: an environment replaced while the Python was being "
-"uninstalled (another directory under the name, or another `home`) is kept "
-"with a warning, and one that cannot be checked (an I/O or permission error) "
-"is kept and counted as not removed. scuv commands do not lock each other out "
-"yet, so avoid creating or removing the same environment from another shell "
-"while a cascade runs. If one environment cannot be removed, the others still "
-"are; it is reported with a warning, and the command exits with status 1 "
-"although the Python is gone."
+"still removed (not ones that were already broken before uv ran), and the "
+"command reports uv's error; under `--json` the error envelope then carries "
+"the same `data` as below. Each one is checked again just before removal: an "
+"environment replaced while the Python was being uninstalled (another "
+"directory under the name, or another `home`) is kept with a warning, and one "
+"that cannot be checked (an I/O or permission error) is kept and counted as "
+"not removed. scuv commands do not lock each other out yet, so avoid creating "
+"or removing the same environment from another shell while a cascade runs. If "
+"one environment cannot be removed, the others still are; it is reported with "
+"a warning, and the command exits with status 1 although the Python is gone."
 msgstr ""
 "환경은 uv가 실행을 마친 뒤에, 그 시점에 인터프리터가 실제로 사라진 것만 삭제"
 "합니다. 제거가 아무것도 지우기 전에 실패했거나 uv가 링크를 살려 두었다면 환경"
 "은 그대로 남습니다. uv가 일부 설치를 지운 뒤 실패했다면, 그 설치를 쓰던 환경"
-"은 그래도 삭제하고 명령은 uv의 오류를 알립니다. 삭제 직전에 환경마다 다시 확"
-"인합니다. Python을 제거하는 동안 바뀐 환경(같은 이름의 다른 디렉터리이거나 "
-"`home`이 다른 경우)은 경고와 함께 남기고, 확인할 수 없는 환경(I/O나 권한 오"
-"류)은 남긴 채 삭제하지 못한 것으로 셉니다. scuv 명령끼리는 아직 서로를 잠그"
-"지 않으므로, cascade가 도는 동안 다른 셸에서 같은 환경을 만들거나 지우지 마세"
-"요. 환경 하나를 삭제하지 못해도 나머지는 계속 삭제하고, 실패한 환경은 경고로 "
-"알립니다. 이때 Python은 이미 제거됐어도 명령은 상태 코드 1로 끝납니다."
+"은 그래도 삭제하고(uv가 실행되기 전부터 망가져 있던 환경은 제외) 명령은 uv의 "
+"오류를 알립니다. 이때 `--json`의 오류 envelope에는 아래와 같은 `data`가 담깁"
+"니다. 삭제 직전에 환경마다 다시 확인합니다. Python을 제거하는 동안 바뀐 환경"
+"(같은 이름의 다른 디렉터리이거나 `home`이 다른 경우)은 경고와 함께 남기고, 확"
+"인할 수 없는 환경(I/O나 권한 오류)은 남긴 채 삭제하지 못한 것으로 셉니다. "
+"scuv 명령끼리는 아직 서로를 잠그지 않으므로, cascade가 도는 동안 다른 셸에서 "
+"같은 환경을 만들거나 지우지 마세요. 환경 하나를 삭제하지 못해도 나머지는 계"
+"속 삭제하고, 실패한 환경은 경고로 알립니다. 이때 Python은 이미 제거됐어도 명"
+"령은 상태 코드 1로 끝납니다."
 
-#: src/commands/uninstall.md:110
+#: src/commands/uninstall.md:112
 msgid ""
 "`--cascade` takes plain version numbers only (`3`, `3.12`, `3.12.14`). A "
 "request such as `3.13t`, `3.12.0rc1` or `cpython@3.12` is refused before "
@@ -4265,31 +4268,31 @@ msgstr ""
 "`3.12.0rc1`, `cpython@3.12` 같은 요청은 숫자만으로는 uv가 어떤 설치를 지울지 "
 "알 수 없으므로, 아무것도 제거하기 전에 거부합니다."
 
-#: src/commands/uninstall.md:116
+#: src/commands/uninstall.md:118
 msgid "# • Found 2 environment(s) using Python 3.12:\n"
 msgstr "# • Found 2 environment(s) using Python 3.12:\n"
 
-#: src/commands/uninstall.md:118
+#: src/commands/uninstall.md:120
 msgid "# •   - webapp\n"
 msgstr "# •   - webapp\n"
 
-#: src/commands/uninstall.md:120
+#: src/commands/uninstall.md:122
 msgid "# • Uninstalling Python 3.12...\n"
 msgstr "# • Uninstalling Python 3.12...\n"
 
-#: src/commands/uninstall.md:122
+#: src/commands/uninstall.md:124
 msgid "# • Removing 'webapp'...\n"
 msgstr "# • Removing 'webapp'...\n"
 
-#: src/commands/uninstall.md:124
+#: src/commands/uninstall.md:126
 msgid "# ✓ Python 3.12 uninstalled\n"
 msgstr "# ✓ Python 3.12 삭제 완료\n"
 
-#: src/commands/uninstall.md:128
+#: src/commands/uninstall.md:130
 msgid "With `--force`, the confirmation prompt is skipped:"
 msgstr "`--force`를 사용하면 확인 프롬프트가 건너뛰어집니다:"
 
-#: src/commands/uninstall.md:134
+#: src/commands/uninstall.md:136
 msgid ""
 "With `--json`, the output includes the list of removed environments. When "
 "any could not be removed, `status` is `\"error\"` (code "
@@ -4303,11 +4306,11 @@ msgstr ""
 "을 수 없어 그대로 둔 환경은 `unverified_envs`(각각 `name`과 `reason`)에 담깁"
 "니다:"
 
-#: src/commands/uninstall.md:142
+#: src/commands/uninstall.md:144
 msgid "# {\n"
 msgstr "# {\n"
 
-#: src/commands/uninstall.md:144 src/commands/info.md:63
+#: src/commands/uninstall.md:146 src/commands/info.md:63
 #: src/commands/status.md:83 src/commands/status.md:84 src/commands/sync.md:97
 #: src/commands/import.md:59 src/commands/clone.md:56
 #: src/commands/migrate.md:222 src/commands/migrate.md:233
@@ -4321,7 +4324,7 @@ msgstr "# {\n"
 msgid "\"status\""
 msgstr "\"status\""
 
-#: src/commands/uninstall.md:144 src/commands/info.md:63
+#: src/commands/uninstall.md:146 src/commands/info.md:63
 #: src/commands/status.md:83 src/commands/sync.md:97 src/commands/import.md:59
 #: src/commands/clone.md:56 src/commands/migrate.md:222
 #: src/commands/migrate.md:267 src/commands/migrate.md:285
@@ -4330,11 +4333,11 @@ msgstr "\"status\""
 msgid "\"success\""
 msgstr "\"success\""
 
-#: src/commands/uninstall.md:144
+#: src/commands/uninstall.md:146
 msgid "#   \"command\": \"uninstall\",\n"
 msgstr "#   \"command\": \"uninstall\",\n"
 
-#: src/commands/uninstall.md:146 src/commands/info.md:65
+#: src/commands/uninstall.md:148 src/commands/info.md:65
 #: src/commands/status.md:85 src/commands/sync.md:99 src/commands/import.md:61
 #: src/commands/clone.md:58 src/commands/migrate.md:224
 #: src/commands/migrate.md:269 src/commands/migrate.md:312
@@ -4343,31 +4346,31 @@ msgstr "#   \"command\": \"uninstall\",\n"
 msgid "\"data\""
 msgstr "\"data\""
 
-#: src/commands/uninstall.md:146
+#: src/commands/uninstall.md:148
 msgid "#     \"version\": \"3.12\",\n"
 msgstr "#     \"version\": \"3.12\",\n"
 
-#: src/commands/uninstall.md:148
+#: src/commands/uninstall.md:150
 msgid "\"removed_envs\""
 msgstr "\"removed_envs\""
 
-#: src/commands/uninstall.md:148 src/commands/info.md:66
+#: src/commands/uninstall.md:150 src/commands/info.md:66
 #: src/commands/sync.md:101 src/commands/export.md:41
 #: src/commands/migrate.md:228 src/commands/migrate.md:272
 #: src/commands/migrate.md:323 src/commands/migrate.md:327 src/api.md:155
 msgid "\"myproject\""
 msgstr "\"myproject\""
 
-#: src/commands/uninstall.md:148 src/commands/diff.md:115
+#: src/commands/uninstall.md:150 src/commands/diff.md:115
 #: src/commands/diff.md:155
 msgid "\"webapp\""
 msgstr "\"webapp\""
 
-#: src/commands/uninstall.md:148
+#: src/commands/uninstall.md:150
 msgid "#   }\n"
 msgstr "#   }\n"
 
-#: src/commands/uninstall.md:153
+#: src/commands/uninstall.md:155
 msgid ""
 "**Note:** Without `--cascade`, uninstalling a Python version does **not** "
 "remove virtual environments that were created with it. Those environments "
@@ -4378,68 +4381,68 @@ msgstr ""
 "환경이 **삭제되지 않습니다**. 해당 환경들은 손상된 상태가 됩니다. 자동으로 처"
 "리하려면 `--cascade`를 사용하거나 아래의 수동 워크플로우를 따르세요."
 
-#: src/commands/uninstall.md:155
+#: src/commands/uninstall.md:157
 msgid "Manual Uninstall Workflow"
 msgstr "수동 제거 워크플로우"
 
-#: src/commands/uninstall.md:159
+#: src/commands/uninstall.md:161
 msgid "Step 1: Identify affected environments"
 msgstr "1단계: 영향받는 환경 파악"
 
-#: src/commands/uninstall.md:162
+#: src/commands/uninstall.md:164
 msgid "# List environments filtered by Python version\n"
 msgstr "# Python 버전으로 필터링된 환경 목록 조회\n"
 
-#: src/commands/uninstall.md:167
+#: src/commands/uninstall.md:169
 msgid "# Or use JSON for scripting\n"
 msgstr "# 또는 스크립팅에 JSON 사용\n"
 
-#: src/commands/uninstall.md:172
+#: src/commands/uninstall.md:174
 msgid "Step 2: Handle affected environments"
 msgstr "2단계: 영향받는 환경 처리"
 
-#: src/commands/uninstall.md:175
+#: src/commands/uninstall.md:177
 msgid "# Option A: Remove the environment entirely\n"
 msgstr "# 옵션 A: 환경 완전 제거\n"
 
-#: src/commands/uninstall.md:177
+#: src/commands/uninstall.md:179
 msgid "# Option B: Recreate with a different Python version\n"
 msgstr "# 옵션 B: 다른 Python 버전으로 재생성\n"
 
-#: src/commands/uninstall.md:181
+#: src/commands/uninstall.md:183
 msgid "# Option C: Keep it (will be broken until you reinstall that Python)\n"
 msgstr "# 옵션 C: 유지 (해당 Python을 재설치하기 전까지 손상된 상태)\n"
 
-#: src/commands/uninstall.md:186
+#: src/commands/uninstall.md:188
 msgid "Step 3: Uninstall the Python version"
 msgstr "3단계: Python 버전 제거"
 
-#: src/commands/uninstall.md:192
+#: src/commands/uninstall.md:194
 msgid "Step 4: Verify"
 msgstr "4단계: 확인"
 
-#: src/commands/uninstall.md:195
+#: src/commands/uninstall.md:197
 msgid "# Confirm Python is removed\n"
 msgstr "# Python이 제거됐는지 확인\n"
 
-#: src/commands/uninstall.md:199
+#: src/commands/uninstall.md:201
 msgid "# If any issues found:\n"
 msgstr "# 문제 발견 시:\n"
 
-#: src/commands/uninstall.md:204
+#: src/commands/uninstall.md:206
 msgid "Recovery"
 msgstr "복구"
 
-#: src/commands/uninstall.md:206
+#: src/commands/uninstall.md:208
 msgid ""
 "If you uninstalled a Python version without cleaning up environments first:"
 msgstr "환경을 먼저 정리하지 않고 Python 버전을 제거한 경우:"
 
-#: src/commands/uninstall.md:216
+#: src/commands/uninstall.md:218
 msgid "# Option 1: Reinstall the Python version\n"
 msgstr "# 옵션 1: Python 버전 재설치\n"
 
-#: src/commands/uninstall.md:220
+#: src/commands/uninstall.md:222
 msgid "# Option 2: Recreate affected environments with a new version\n"
 msgstr "# 옵션 2: 새 버전으로 영향받은 환경 재생성\n"
 
