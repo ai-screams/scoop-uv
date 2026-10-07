@@ -62,16 +62,11 @@ pub(super) fn run_batch(
     // Parallelise only when there's a real win: dry-run does no I/O work
     // (sequential gives cleaner, deterministic preview output) and a single
     // env has nothing to parallelise.
-    // Workers print progress while other workers hold rollback guards; a
-    // closed stderr must fail as a panic that unwinds through them, not as a
-    // signal that stops every thread (crate::sigpipe).
-    let sigpipe = crate::sigpipe::ignore();
     if opts.dry_run || migratable.len() <= 1 {
         migratable.iter().for_each(|env| run.migrate_one(env));
     } else {
         migratable.par_iter().for_each(|env| run.migrate_one(env));
     }
-    drop(sigpipe);
 
     if let Some(pb) = &run.progress {
         pb.finish_with_message("Done");

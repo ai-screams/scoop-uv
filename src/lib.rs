@@ -14,7 +14,6 @@ pub mod i18n;
 pub mod output;
 pub mod paths;
 pub mod shell;
-pub mod sigpipe;
 pub mod uv;
 pub mod validate;
 
