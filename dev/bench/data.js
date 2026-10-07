@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791389131261,
+  "lastUpdate": 1791389134176,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -10513,6 +10513,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1119,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8b7c5c90b3c642c0b8b6ca439a16f5f58a2e0029",
+          "message": "Merge pull request #228 from ai-screams/fix/small-cli-bugs\n\nfix(cli): fix nine small user-facing CLI defects",
+          "timestamp": "2026-10-08T01:01:50+09:00",
+          "tree_id": "ae3ab1b964700f77af60e0e7b9432e2cc7eb8e1f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/8b7c5c90b3c642c0b8b6ca439a16f5f58a2e0029"
+        },
+        "date": 1791389134123,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1387,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 920,
+            "range": "± 8",
             "unit": "ns/iter"
           }
         ]
