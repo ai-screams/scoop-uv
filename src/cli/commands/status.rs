@@ -76,6 +76,10 @@ pub fn execute(output: &Output) -> Result<()> {
     Ok(())
 }
 
+/// Label column width: one wider than the longest label, `Last used:`, so
+/// every value is separated from its label (it was 10: "Last used:never").
+const LABEL_WIDTH: usize = 11;
+
 fn emit_none(output: &Output, json: bool) {
     if json {
         output.json_success(
@@ -155,7 +159,7 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
         return;
     }
 
-    let w = 10;
+    let w = LABEL_WIDTH;
     // Direct stdout: `status` *is* its own output — `--quiet` users still want
     // the resolved state, matching how `resolve`/`info` print their result.
     println!("{:w$}{}", "Name:", name);
@@ -184,6 +188,21 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn every_label_leaves_a_space_before_its_value() {
+        for label in [
+            "Name:",
+            "Source:",
+            "Python:",
+            "Path:",
+            "Created:",
+            "Last used:",
+            "Packages:",
+        ] {
+            assert!(label.len() < super::LABEL_WIDTH, "{label}");
+        }
+    }
+
     use super::*;
     use crate::test_utils::with_temp_scoop_home;
     use serial_test::serial;
