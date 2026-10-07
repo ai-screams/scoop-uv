@@ -135,7 +135,9 @@ tests, or the PR gate reports them as `MISSED`.
 Both scopes run each mutant's tests under nextest (`test_tool = "nextest"`),
 with nextest's default profile so a caught mutant stops at the first
 failing test. nextest does not run doctests, so a mutant that only a doctest
-kills counts as `MISSED` — cover that behaviour with a unit test.
+kills counts as `MISSED` — cover that behaviour with a unit test. The
+switch turned up three such mutants in `src/core/migrate/common.rs`
+(`dir_size`, `check_name_conflict`); unit tests were added for them.
 
 ### One cache per toolchain, one writer per cache
 
@@ -335,11 +337,6 @@ any of these being fixed.
   now keeps only the newest entry under each restore key (the cache key
   minus its lockfile hash), the one a later run with that toolchain and
   environment falls back to.
-- **Mutants miss what only a doctest catches.** nextest does not run
-  doctests, and three mutants in `src/core/migrate/common.rs` were killed by
-  nothing else: both return-value mutants of `dir_size` and
-  `check_name_conflict -> None`. Under nextest they are `MISSED` until unit
-  tests cover them.
 
 ### Recently closed
 

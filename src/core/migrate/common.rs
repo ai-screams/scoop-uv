@@ -175,4 +175,28 @@ mod tests {
         let result = check_name_conflict("definitely_nonexistent_env_name_12345");
         assert!(result.is_none());
     }
+    /// An existing scuv env of that name is a conflict, and the path points
+    /// at it. Fails if `check_name_conflict` stops returning `Some`.
+    #[test]
+    #[serial_test::serial]
+    fn check_name_conflict_returns_the_existing_env_path() {
+        crate::test_utils::with_temp_scoop_home(|home| {
+            let existing = home.path().join("virtualenvs").join("taken");
+            std::fs::create_dir_all(&existing).unwrap();
+            assert_eq!(check_name_conflict("taken"), Some(existing));
+            assert_eq!(check_name_conflict("free"), None);
+        });
+    }
+
+    /// Sums regular file sizes, nested ones included, and skips directories.
+    /// Fails if `dir_size` returns a constant.
+    #[test]
+    fn dir_size_sums_the_files_in_the_tree() {
+        let dir = tempfile::TempDir::new().unwrap();
+        std::fs::create_dir_all(dir.path().join("lib/site")).unwrap();
+        std::fs::write(dir.path().join("a"), vec![0u8; 300]).unwrap();
+        std::fs::write(dir.path().join("lib/site/b"), vec![0u8; 4000]).unwrap();
+        assert_eq!(dir_size(dir.path()), 4300);
+        assert_eq!(dir_size(&dir.path().join("missing")), 0);
+    }
 }

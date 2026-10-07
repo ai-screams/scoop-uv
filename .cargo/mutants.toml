@@ -192,9 +192,9 @@ exclude_re = [
 # rest of the suite for every one of them.
 #
 # nextest does not run doctests, so a mutant only a doctest kills is reported
-# MISSED here. Measured on src/core/migrate/common.rs: `dir_size` (both return
-# values) and `check_name_conflict -> None` are caught under `cargo test` and
-# missed under nextest — no unit test covers them.
+# MISSED here. When the switch was measured, three in
+# src/core/migrate/common.rs were (`dir_size` both return values,
+# `check_name_conflict -> None`); unit tests now cover them.
 test_tool = "nextest"
 
 # The unmutated suite takes 2-3 s under nextest (about 10 s under `cargo test`)
