@@ -8,6 +8,7 @@ use crate::core::migrate::{
     VenvWrapperDiscovery,
 };
 use crate::error::{Result, ScoopError};
+use rust_i18n::t;
 
 /// Scan environments from all available sources or a specific source.
 ///
@@ -164,6 +165,25 @@ pub fn find_environment_by_name(
     }
 }
 
+/// The "Scanning ..." line, in `locale`. Without a filter it names all
+/// sources in that language rather than splicing English into the template.
+pub(super) fn scanning_message(source_filter: Option<MigrateSource>, locale: &str) -> String {
+    match source_filter {
+        Some(source) => t!("migrate.scanning", locale = locale, source = source).to_string(),
+        None => t!("migrate.scanning_all", locale = locale).to_string(),
+    }
+}
+
+/// The "No ... environments found." line, in `locale`. Without a filter the
+/// template's `%{source}` slot used to be filled with "", which left two
+/// spaces in "No  environments found.".
+pub(super) fn no_envs_message(source_filter: Option<MigrateSource>, locale: &str) -> String {
+    match source_filter {
+        Some(source) => t!("migrate.no_envs", locale = locale, source = source).to_string(),
+        None => t!("migrate.no_envs_any", locale = locale).to_string(),
+    }
+}
+
 // ============================================================================
 // Tests
 // ============================================================================
@@ -173,6 +193,26 @@ mod tests {
     use super::*;
     use crate::test_utils::with_isolated_migrate_env;
     use serial_test::serial;
+
+    #[test]
+    fn scanning_and_no_envs_messages_name_the_source_or_all_sources() {
+        let pyenv = Some(MigrateSource::Pyenv);
+        assert_eq!(
+            scanning_message(pyenv, "en"),
+            "Scanning pyenv for environments..."
+        );
+        assert_eq!(
+            scanning_message(None, "en"),
+            "Scanning all sources for environments..."
+        );
+        assert_eq!(no_envs_message(pyenv, "en"), "No pyenv environments found.");
+        assert_eq!(no_envs_message(None, "en"), "No environments found.");
+        // No English leaks into another locale when nothing is filtered.
+        assert!(!scanning_message(None, "ko").contains("all sources"));
+        for locale in ["en", "ko", "ja", "pt-BR", "es"] {
+            assert!(!no_envs_message(None, locale).contains("  "), "{locale}");
+        }
+    }
 
     /// Tests that source_filter=None returns PyenvEnvNotFound for nonexistent env.
     #[test]

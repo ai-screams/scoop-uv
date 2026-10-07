@@ -9,7 +9,7 @@ use crate::core::migrate::{EnvironmentStatus, SourceEnvironment, SourceType};
 use crate::error::Result;
 use crate::output::Output;
 
-use super::scan::scan_all_environments;
+use super::scan::{no_envs_message, scan_all_environments, scanning_message};
 use super::types::{MigrateListData, MigrateListSummary};
 
 /// List environments available for migration.
@@ -24,10 +24,7 @@ pub fn list_environments(
     source_filter: Option<MigrateSource>,
 ) -> Result<()> {
     if !json {
-        let source_name = source_filter
-            .map(|s| s.to_string())
-            .unwrap_or_else(|| "all sources".to_string());
-        output.info(&t!("migrate.scanning", source = source_name));
+        output.info(&scanning_message(source_filter, &rust_i18n::locale()));
     }
 
     let environments = scan_all_environments(source_filter);
@@ -48,8 +45,7 @@ pub fn list_environments(
     }
 
     if environments.is_empty() {
-        let source_name = source_filter.map(|s| format!("{}", s)).unwrap_or_default();
-        output.info(&t!("migrate.no_envs", source = source_name));
+        output.info(&no_envs_message(source_filter, &rust_i18n::locale()));
         return Ok(());
     }
 

@@ -573,12 +573,26 @@ migrate.scanning:
   ja: "%{source} から環境をスキャン中..."
   es: "Buscando entornos en %{source}..."
 
+migrate.scanning_all:
+  en: "Scanning all sources for environments..."
+  ko: "모든 소스에서 환경 검색 중..."
+  pt-BR: "Procurando ambientes em todas as fontes..."
+  ja: "すべてのソースから環境をスキャン中..."
+  es: "Buscando entornos en todas las fuentes..."
+
 migrate.no_envs:
   en: "No %{source} environments found."
   ko: "%{source} 환경을 찾지 못함."
   pt-BR: "Nenhum ambiente %{source} encontrado."
   ja: "%{source} 環境が見つかりませんでした"
   es: "No se encontraron entornos de %{source}."
+
+migrate.no_envs_any:
+  en: "No environments found."
+  ko: "환경을 찾지 못함."
+  pt-BR: "Nenhum ambiente encontrado."
+  ja: "環境が見つかりませんでした"
+  es: "No se encontraron entornos."
 
 migrate.found:
   en: "Found %{count} environment(s):"
