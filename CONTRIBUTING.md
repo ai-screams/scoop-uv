@@ -640,6 +640,15 @@ cargo test -- --ignored
 cargo test --all-features
 ```
 
+CI runs the suite much as `make test` does, with
+[cargo-nextest](https://nexte.st) (`cargo install cargo-nextest --locked`),
+which gives each test its own process, plus `cargo test --doc` for the
+doctests nextest skips. `cargo test` runs tests as threads of one process,
+so a test that reaches uv or changes `PATH`, `HOME` or `SCUV_HOME` needs
+`#[serial]` (or must run inside `env_guard`/`with_temp_scoop_home`, which
+hold the same lock); otherwise a test running at the same time sees the
+change.
+
 ### Test Environment
 
 Tests that modify `SCUV_HOME` use isolation:

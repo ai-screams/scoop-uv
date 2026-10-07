@@ -88,23 +88,24 @@ docker-shell-venvwrapper:
 # Test
 # ============================================================
 test:
-	cargo test
+	cargo nextest run
+	cargo test --doc
 
 test-unit:
-	cargo test --lib
+	cargo nextest run --lib
 
 test-integration:
-	$(COMPOSE) run --rm slim cargo test -- --include-ignored
+	$(COMPOSE) run --rm slim sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
 
 # Per-source integration tests (matrix-friendly for CI parity)
 test-integration-pyenv:
-	$(COMPOSE) run --rm pyenv-test cargo test -- --include-ignored
+	$(COMPOSE) run --rm pyenv-test sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
 
 test-integration-conda:
-	$(COMPOSE) run --rm conda-test cargo test -- --include-ignored
+	$(COMPOSE) run --rm conda-test sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
 
 test-integration-venvwrapper:
-	$(COMPOSE) run --rm venvwrapper-test cargo test -- --include-ignored
+	$(COMPOSE) run --rm venvwrapper-test sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
 
 # Runs all three source-tool integration suites sequentially. Use the
 # CI matrix workflow (.github/workflows/integration-test.yml) for the
@@ -166,7 +167,7 @@ ci-test:
 	docker run --rm \
 		-v $(PWD):/workspace \
 		$(IMAGE):slim \
-		cargo test -- --include-ignored
+		sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
 
 # ============================================================
 # Development shortcuts

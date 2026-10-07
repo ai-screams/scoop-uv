@@ -162,6 +162,19 @@ caches if their workflows set different environment variables.
 These cost real debugging time. They are recorded so the next person
 recognises them faster.
 
+### An unmarked test picks up another test's fake uv
+
+The `v0.17.1` release PR failed Docker Integration in two tests that had
+passed on the same source a minute earlier, on `main`. One `#[serial]` test put a fake
+uv in front of `PATH`; an unmarked test resolved uv at the same moment,
+got the fake one, and both assertions broke. `#[serial]` only keeps marked
+tests apart. The test, MSRV and Docker integration jobs now run
+`cargo nextest run --profile ci`, which gives each test its own process
+(`.config/nextest.toml`; no retries, so a race stays visible), plus
+`cargo test --doc` for the doctests nextest skips. The tests that reach uv
+are also marked `#[serial]` or run under the env lock, because coverage,
+mutants and local `cargo test` still run in one process.
+
 ### Criterion errors corrupt the benchmark parser output
 
 `rust-cache` restores `target/` with the criterion tree present but its
@@ -315,6 +328,12 @@ any of these being fixed.
   now keeps only the newest entry under each restore key (the cache key
   minus its lockfile hash), the one a later run with that toolchain and
   environment falls back to.
+
+- **Coverage and mutants still run tests in one process.** They use
+  `cargo llvm-cov` and `cargo mutants` with libtest, so a missing
+  `#[serial]` can still make them flaky. Moving them to nextest
+  (`cargo llvm-cov nextest`, mutants' `test_tool = "nextest"`) changes
+  their timing and drops doctests, so it is a separate change.
 
 ### Recently closed
 

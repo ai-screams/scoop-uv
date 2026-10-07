@@ -1,0 +1,21 @@
+# cargo-nextest runs each test in its own process, so a test that changes a
+# process-global (PATH, HOME, SCUV_HOME, the current directory) can no longer
+# leak it into a test running at the same moment. libtest runs tests as threads
+# of one process, where `#[serial]` only keeps marked tests apart: an unmarked
+# test that resolved uv during a `FakeUv` test picked up the fake one (v0.17.1
+# release PR, Docker Integration). `#[serial]` stays on those tests for anyone
+# still running `cargo test`.
+#
+# nextest does not run doctests; every caller pairs it with `cargo test --doc`.
+
+# CI and the Docker image pin 0.9.146 (ci.yml, docker/Dockerfile). An older
+# binary refuses to run instead of quietly behaving differently.
+nextest-version = "0.9.146"
+
+[profile.ci]
+# Report every failing test, not just the first: a red run should show the
+# whole picture, as `cargo test` did per binary.
+fail-fast = false
+# No retries on purpose. A retry would turn a race like the one above green
+# again and hide it.
+retries = 0

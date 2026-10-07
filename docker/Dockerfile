@@ -25,6 +25,9 @@ ARG RUST_VERSION=1.89
 ARG PYTHON_311_VERSION=3.11.14
 ARG PYTHON_312_VERSION=3.12.12
 ARG UV_VERSION=0.12.22
+# cargo-nextest runs the test suite (one process per test; see
+# .config/nextest.toml). Pinned for reproducible builds.
+ARG NEXTEST_VERSION=0.9.146
 # Miniforge version — pinned for reproducible builds. Bump when a new
 # release adds a feature we need; verify the tag exists at
 # https://github.com/conda-forge/miniforge/releases.
@@ -165,6 +168,19 @@ FROM shells AS scuv-test-base
 ARG UV_VERSION
 RUN curl -LsSf "https://astral.sh/uv/${UV_VERSION}/install.sh" | sh
 ENV PATH="/root/.local/bin:$PATH"
+
+# Into /usr/local/bin, outside /usr/local/cargo: compose keeps parts of
+# that tree in named volumes (registry, git), and a volume over the whole
+# dir would hide a binary added to the image after the volume was created.
+ARG NEXTEST_VERSION
+RUN case "$(dpkg --print-architecture)" in \
+      amd64) platform=linux ;; \
+      arm64) platform=linux-arm ;; \
+      *) echo "no cargo-nextest build for $(dpkg --print-architecture)" >&2; exit 1 ;; \
+    esac \
+    && curl -LsSf "https://get.nexte.st/${NEXTEST_VERSION}/${platform}" \
+       | tar zxf - -C /usr/local/bin \
+    && cargo-nextest nextest --version
 
 COPY docker/scripts/entrypoint.sh /entrypoint.sh
 COPY docker/scripts/bashrc.sh /root/.bashrc

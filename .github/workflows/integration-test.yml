@@ -70,8 +70,10 @@ jobs:
         # bypass is no longer needed: entrypoint.sh now wraps each
         # third-party init block with `set +e`, so benign initialization
         # failures in fresh containers don't abort the entrypoint.
-        # --include-ignored: the image has uv and Python 3.12, so the tests
+        # --run-ignored all: the image has uv and Python 3.12, so the tests
         # that need them (ignored on a bare runner) run here as well.
+        # nextest runs each test in its own process (.config/nextest.toml);
+        # it skips doctests, so `cargo test --doc` follows.
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
@@ -82,6 +84,7 @@ jobs:
             scuv:${{ matrix.source-env }}-test \
             bash -c "
               cargo build --release &&
-              cargo test --release -- --include-ignored &&
+              cargo nextest run --profile ci --release --run-ignored all &&
+              cargo test --release --doc &&
               ./target/release/scuv migrate list
             "

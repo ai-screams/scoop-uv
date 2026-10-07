@@ -112,6 +112,12 @@ jobs:
           # Only main writes; a PR run restores this key but leaves no copy behind
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
+      - name: Install cargo-nextest
+        # Each test in its own process: see .config/nextest.toml for why.
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.146  # keep in step with docker/Dockerfile NEXTEST_VERSION
+
       - name: Install fish and zsh (real-shell tests in tests/cli/shell.rs)
         # bash and pwsh come with the runner image.
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fish zsh
@@ -123,10 +129,14 @@ jobs:
           SCUV_REQUIRE_FISH: "1"
           SCUV_REQUIRE_ZSH: "1"
           SCUV_REQUIRE_PWSH: "1"
-        run: cargo test --all-features --workspace
+        run: cargo nextest run --profile ci --all-features --workspace
+
+      - name: Run doctests
+        # nextest does not run doctests.
+        run: cargo test --doc --all-features
 
       - name: Run ignored tests (requires uv)
-        run: cargo test --all-features --workspace -- --ignored
+        run: cargo nextest run --profile ci --all-features --workspace --run-ignored only
 
   # ====================
   # MSRV (Minimum Supported Rust Version)
@@ -189,7 +199,11 @@ jobs:
         run: cargo build --all-features
 
       # Step 3: Run unit and integration tests
-      # 520 unit tests + 43 integration tests
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.146  # keep in step with docker/Dockerfile NEXTEST_VERSION
+
       - name: Install fish and zsh (real-shell tests in tests/cli/shell.rs)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fish zsh
 
@@ -198,12 +212,15 @@ jobs:
           SCUV_REQUIRE_FISH: "1"
           SCUV_REQUIRE_ZSH: "1"
           SCUV_REQUIRE_PWSH: "1"
-        run: cargo test --all-features --workspace
+        run: cargo nextest run --profile ci --all-features --workspace
+
+      - name: Run doctests on MSRV
+        run: cargo test --doc --all-features
 
       # Step 4: Run tests that require uv installed
-      # These are marked with #[ignore] and need --ignored flag
+      # These are marked with #[ignore] and need --run-ignored only
       - name: Run ignored tests on MSRV
-        run: cargo test --all-features --workspace -- --ignored
+        run: cargo nextest run --profile ci --all-features --workspace --run-ignored only
 
   # ====================
   # uv floor (MIN_VERSION)

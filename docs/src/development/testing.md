@@ -54,6 +54,26 @@ cargo test --all-features
 cargo test --release
 ```
 
+### How CI Runs Them
+
+CI and the Docker integration images run the suite with
+[cargo-nextest](https://nexte.st), which gives every test its own process:
+
+```bash
+cargo nextest run --all-features --workspace   # everything except doctests
+cargo test --doc --all-features                # nextest does not run doctests
+cargo nextest run --all-features --workspace --run-ignored only   # the tests that need uv
+```
+
+`cargo test` runs tests as threads of one process, so a test that changes
+`PATH`, `HOME` or `SCUV_HOME` changes it for every test running at that
+moment. `#[serial]` keeps marked tests apart from each other, not from
+unmarked ones. Under nextest that leak cannot happen, but `cargo test`,
+coverage and mutation testing still run in one process, so a test that
+reaches uv or reads those variables still needs `#[serial]`, or must run
+inside `env_guard` or `with_temp_scoop_home`, which hold the same lock as
+the tests that change them.
+
 ### Filtered Tests
 
 ```bash
@@ -153,8 +173,8 @@ Categories:
   a missing fish, zsh or `pwsh` fails there instead.
 
 Some tests are marked `#[ignore]` because they require `uv` installed. The
-Docker integration jobs run them with `cargo test -- --include-ignored`, as
-their images carry uv and Python 3.12:
+Docker integration jobs run them with `cargo nextest run --run-ignored all`,
+as their images carry uv and Python 3.12:
 
 ```bash
 # Run ignored tests (requires uv)
