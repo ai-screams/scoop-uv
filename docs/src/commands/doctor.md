@@ -90,6 +90,7 @@ scuv doctor --fix
 # ✓ SCUV_HOME directory
 # ✓ virtual environments
 # ✓ broken symlink
+# ✓ broken symlink
 # ✓ shell configuration
 # ✓ version files
 # ✓ legacy scoop remnants
@@ -105,7 +106,9 @@ check passes (`All checks passed!`).
 `--fix` attempts its fixes first and then prints the report. A fix can
 clear an error another check found — relinking an env's interpreter also
 mends its `broken virtualenv` error — so once anything is fixed, the
-checks that still had errors run again, and the report shows the state
-after the fixes.
+checks that still had errors and no fix of their own run again, and the
+report shows the state after the fixes. A check whose fix ran keeps what
+the fix said: one `✓ broken symlink` line per relinked env, or the reason
+a relink failed (`Python 3.7 not installed` → `scuv install 3.7`).
 
 > **Tip:** Run `scuv doctor` periodically or after uninstalling Python versions to catch broken environments early. See [uninstall command](uninstall.md) for the safe uninstall workflow.
