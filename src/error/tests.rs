@@ -980,17 +980,21 @@ fn test_suggestion_manifest_not_found_points_at_docs() {
 }
 
 #[test]
-fn test_suggestion_unsupported_export_version_includes_supported_version() {
-    // Pinning: deleting the match arm collapses to `None`, and the
-    // suggestion must interpolate `supported` so the user knows what
-    // version this binary can read.
+fn test_suggestion_unsupported_export_version_names_the_file_version() {
+    // Pinning: deleting the match arm collapses to `None`. The suggestion
+    // names the file's version, the one a newer scuv has to read; it used to
+    // name this binary's own version ("supports version '1' or higher"),
+    // which the error line already states and which this binary already is.
     let err = ScoopError::UnsupportedExportVersion {
         version: "99".into(),
         supported: "1".into(),
     };
-    let s = err.suggestion_in("en").unwrap();
-    assert!(s.starts_with("→"));
-    assert!(s.contains("'1'") || s.contains("version '1'"));
+    for locale in ["en", "ko", "ja", "pt-BR", "es"] {
+        let s = err.suggestion_in(locale).unwrap();
+        assert!(s.starts_with("→"), "{locale}: {s}");
+        assert!(s.contains("'99'"), "{locale}: {s}");
+        assert!(!s.contains("'1'"), "{locale}: {s}");
+    }
 }
 
 // =========================================================================

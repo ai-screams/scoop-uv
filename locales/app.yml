@@ -169,11 +169,11 @@ error.unsupported_export_version:
   es: "La versión '%{version}' del archivo de exportación no es compatible (este binario usa '%{supported}')"
 
 suggestion.unsupported_export_version:
-  en: "→ Upgrade scuv to a build that supports version '%{supported}' or higher, or re-export from a compatible source"
-  ko: "→ '%{supported}' 이상을 지원하는 scuv로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
-  pt-BR: "→ Atualize o scuv para uma versão que suporte '%{supported}' ou superior, ou re-exporte de uma fonte compatível"
-  ja: "→ '%{supported}' 以降に対応する scuv にアップグレードするか、互換性のある環境から再エクスポートしてください"
-  es: "→ Actualizar scuv a una versión que soporte '%{supported}' o superior, o reexportar de una fuente compatible"
+  en: "→ Upgrade scuv to a build that reads export version '%{version}', or re-export from a compatible source"
+  ko: "→ 내보내기 버전 '%{version}'을(를) 읽는 scuv로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
+  pt-BR: "→ Atualize o scuv para uma versão que leia o formato de exportação '%{version}', ou re-exporte de uma fonte compatível"
+  ja: "→ エクスポート形式 '%{version}' を読める scuv にアップグレードするか、互換性のある環境から再エクスポートしてください"
+  es: "→ Actualizar scuv a una versión que lea el formato de exportación '%{version}', o reexportar de una fuente compatible"
 
 # ============================================================================
 # Sync command (.scuv.toml)
