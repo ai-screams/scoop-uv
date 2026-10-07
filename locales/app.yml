@@ -26,26 +26,12 @@ lang.reset:
   ja: "システムデフォルトにリセットしました: %{lang}"
   es: "Restablecido al idioma por defecto: %{lang}"
 
-lang.unsupported:
-  en: "Unsupported language: %{lang}"
-  ko: "지원하지 않는 언어: %{lang}"
-  pt-BR: "Idioma não suportado: %{lang}"
-  ja: "サポートされていない言語: %{lang}"
-  es: "Idioma no compatible: %{lang}"
-
 lang.list_header:
   en: "Supported languages:"
   ko: "지원 언어:"
   pt-BR: "Idiomas suportados:"
   ja: "対応言語:"
   es: "Idiomas disponibles:"
-
-lang.hint:
-  en: "Run 'scuv lang --list' to see supported languages"
-  ko: "'scuv lang --list'로 지원 언어 확인"
-  pt-BR: "Execute 'scuv lang --list' para ver os idiomas suportados"
-  ja: "'scuv lang --list' を実行するとサポートされている言語を確認できます"
-  es: "Ejecutar 'scuv lang --list' para ver idiomas disponibles"
 
 # ============================================================================
 # Create command
@@ -960,6 +946,13 @@ error.unsupported_shell:
   ja: "シェル '%{shell}' がサポートされていません"
   es: "El shell '%{shell}' no es compatible"
 
+error.unsupported_language:
+  en: "Unsupported language: %{lang}"
+  ko: "지원하지 않는 언어: %{lang}"
+  pt-BR: "Idioma não suportado: %{lang}"
+  ja: "サポートされていない言語: %{lang}"
+  es: "Idioma no compatible: %{lang}"
+
 error.python_not_installed:
   en: "Python %{version} not installed"
   ko: "Python %{version} 미설치"
@@ -1581,6 +1574,13 @@ suggestion.migration_sources_not_found:
   pt-BR: "→ Instale pelo menos um de: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper ou conda"
   ja: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda のいずれかをインストールしてください"
   es: "→ Instalar al menos uno de: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper o conda"
+
+suggestion.unsupported_language:
+  en: "→ Run 'scuv lang --list' to see supported languages"
+  ko: "→ 'scuv lang --list'로 지원 언어 확인"
+  pt-BR: "→ Execute 'scuv lang --list' para ver os idiomas suportados"
+  ja: "→ 'scuv lang --list' を実行するとサポートされている言語を確認できます"
+  es: "→ Ejecutar 'scuv lang --list' para ver idiomas disponibles"
 
 migrate.batch_no_migratable_conflicts:
   en: "No environments migrated — %{count} name conflict(s) without --force:"

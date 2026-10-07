@@ -413,8 +413,8 @@ impl ScoopError {
 - `SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)
 - `MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)
 - `UNINSTALL_*` - Uninstall errors (e.g., `UNINSTALL_CASCADE_ABORTED`)
-- Plus `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`, `VERIFY_*`
-  and `DIFF_*` — see `src/error/code.rs` for the authoritative list
+- Plus `LANG_*`, `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`,
+  `VERIFY_*` and `DIFF_*` — see `src/error/code.rs` for the authoritative list
 
 **Example Error Handling:**
 ```rust

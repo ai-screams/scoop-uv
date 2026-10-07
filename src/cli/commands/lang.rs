@@ -3,7 +3,7 @@
 use rust_i18n::t;
 
 use crate::config::Config;
-use crate::error::Result;
+use crate::error::{Result, ScoopError};
 use crate::i18n::{self, SUPPORTED_LANGS};
 use crate::output::Output;
 
@@ -46,20 +46,9 @@ fn show_current(output: &Output) -> Result<()> {
 /// Set language preference
 fn set_language(output: &Output, code: &str) -> Result<()> {
     if !i18n::is_supported(code) {
-        if output.is_json() {
-            output.json_success(
-                "lang",
-                serde_json::json!({
-                    "unsupported": true,
-                    "lang": code,
-                    "message": t!("lang.unsupported", lang = code).to_string(),
-                }),
-            );
-        } else {
-            output.error(&t!("lang.unsupported", lang = code));
-            output.info(&t!("lang.hint"));
-        }
-        return Ok(());
+        return Err(ScoopError::UnsupportedLanguage {
+            lang: code.to_string(),
+        });
     }
 
     // Save to config

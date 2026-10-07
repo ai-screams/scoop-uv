@@ -502,6 +502,17 @@ fn test_error_code_config_version_file_not_found() {
 }
 
 #[test]
+fn test_error_code_lang_not_supported() {
+    let err = ScoopError::UnsupportedLanguage { lang: "xx".into() };
+    assert_eq!(err.code(), "LANG_NOT_SUPPORTED");
+    assert_eq!(err.message_in("en"), "Unsupported language: xx");
+    assert_eq!(
+        err.suggestion_in("en").as_deref(),
+        Some("→ Run 'scuv lang --list' to see supported languages")
+    );
+}
+
+#[test]
 fn test_error_code_shell_not_supported() {
     let err = ScoopError::UnsupportedShell { shell: "x".into() };
     assert_eq!(err.code(), "SHELL_NOT_SUPPORTED");
@@ -661,6 +672,7 @@ fn test_all_error_codes_are_unique() {
         }
         .code(),
         ScoopError::UnsupportedShell { shell: "".into() }.code(),
+        ScoopError::UnsupportedLanguage { lang: "".into() }.code(),
         ScoopError::PythonNotInstalled { version: "".into() }.code(),
         ScoopError::PythonInstallFailed {
             version: "".into(),
@@ -1018,6 +1030,9 @@ fn every_variant() -> Vec<ScoopError> {
         ScoopError::UnsupportedShell {
             shell: "sh-aai".into(),
         },
+        ScoopError::UnsupportedLanguage {
+            lang: "xx-aai2".into(),
+        },
         ScoopError::PythonNotInstalled {
             version: "9.9.aaj".into(),
         },
@@ -1121,6 +1136,7 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::Json(_)
         | ScoopError::VersionFileNotFound { .. }
         | ScoopError::UnsupportedShell { .. }
+        | ScoopError::UnsupportedLanguage { .. }
         | ScoopError::PythonNotInstalled { .. }
         | ScoopError::PythonInstallFailed { .. }
         | ScoopError::PythonUninstallFailed { .. }

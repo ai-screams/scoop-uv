@@ -93,6 +93,9 @@ impl ScoopError {
             Self::MigrationSourcesNotFound { .. } => {
                 Some(t!("suggestion.migration_sources_not_found", locale = locale).to_string())
             }
+            Self::UnsupportedLanguage { .. } => {
+                Some(t!("suggestion.unsupported_language", locale = locale).to_string())
+            }
             _ => None,
         }
     }

@@ -173,3 +173,19 @@ fn test_help_for_subcommand() {
             .success();
     }
 }
+
+/// An unknown language code is an error: exit 1 with the hint, and the
+/// config keeps no language. It printed the error and still exited 0, so a
+/// script setting the language could not tell that nothing changed.
+#[test]
+fn lang_rejects_an_unsupported_code_with_exit_1() {
+    let fixture = TestFixture::new();
+
+    scoop_cmd(&fixture.scoop_home)
+        .args(["lang", "xx"])
+        .assert()
+        .code(1)
+        .stderr(predicate::str::contains("Unsupported language: xx"))
+        .stderr(predicate::str::contains("scuv lang --list"));
+    assert!(!fixture.scoop_home.join("config.json").exists());
+}
