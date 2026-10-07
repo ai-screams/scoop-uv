@@ -8,6 +8,8 @@ use scoop_uv::cli::{Cli, Commands, SelfCommand};
 use scoop_uv::output::{Colors, Output};
 
 fn main() -> Result<()> {
+    restore_default_sigpipe();
+
     // Initialize i18n (must be early, before any translated output)
     scoop_uv::i18n::init();
 
@@ -26,6 +28,26 @@ fn main() -> Result<()> {
     }
     Ok(())
 }
+
+/// Lets a closed stdout end the process the way it ends `cat` or `ls`.
+///
+/// The Rust runtime ignores SIGPIPE, so a write to a pipe whose reader has
+/// gone (`scuv info myenv | true`, `scuv lang --list | false`) fails with
+/// EPIPE and `println!` panics: exit 101 and a crash report on stderr.
+/// With the default action the kernel stops the process at that write,
+/// silently. The shell wrappers read scuv's whole output through `$(...)`,
+/// so they never close the pipe early.
+#[cfg(unix)]
+fn restore_default_sigpipe() {
+    // SAFETY: runs first thing in `main`, before any thread exists, and only
+    // sets a signal disposition to its default.
+    unsafe {
+        libc::signal(libc::SIGPIPE, libc::SIG_DFL);
+    }
+}
+
+#[cfg(not(unix))]
+fn restore_default_sigpipe() {}
 
 /// Parses the command line. clap prints help and parse errors before `Cli`
 /// exists, so it gets the color choice from a scan of the raw arguments
