@@ -1542,8 +1542,8 @@ msgid "#   [virtualenvwrapper]\n"
 msgstr "#   [virtualenvwrapper]\n"
 
 #: src/python-management.md:156
-msgid "#     ✓ webapp               Python 3.11              - MB\n"
-msgstr "#     ✓ webapp               Python 3.11              - MB\n"
+msgid "#     ✓ webapp               Python 3.11          118.6 MB\n"
+msgstr "#     ✓ webapp               Python 3.11          118.6 MB\n"
 
 #: src/python-management.md:159 src/faq.md:350
 msgid "# Migrate a specific environment\n"
@@ -1780,15 +1780,12 @@ msgstr "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 
 #: src/python-management.md:299 src/commands/uninstall.md:124
 #: src/commands/uninstall.md:214 src/commands/uninstall.md:216
-#: src/commands/doctor.md:65 src/commands/doctor.md:82
-#: src/commands/doctor.md:86 src/commands/doctor.md:88
-#: src/commands/migrate.md:156
+#: src/commands/doctor.md:65 src/commands/migrate.md:156
 msgid "'myproject'"
 msgstr "'myproject'"
 
 #: src/python-management.md:299 src/commands/uninstall.md:214
 #: src/commands/uninstall.md:216 src/commands/doctor.md:65
-#: src/commands/doctor.md:82
 msgid "#   → scuv remove myproject && scuv create myproject <python-version>\n"
 msgstr ""
 "#   → scuv remove myproject && scuv create myproject <python-version>\n"
@@ -2644,8 +2641,8 @@ msgid "#\n"
 msgstr "#\n"
 
 #: src/faq.md:346
-msgid "#     ✓ myproject            Python 3.12              - MB\n"
-msgstr "#     ✓ myproject            Python 3.12              - MB\n"
+msgid "#     ✓ myproject            Python 3.12           42.3 MB\n"
+msgstr "#     ✓ myproject            Python 3.12           42.3 MB\n"
 
 #: src/faq.md:348
 msgid "# ...\n"
@@ -3327,7 +3324,7 @@ msgid ""
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
 #: src/commands/list.md:128 src/commands/uninstall.md:165
-#: src/commands/doctor.md:52
+#: src/commands/doctor.md:52 src/commands/doctor.md:80
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
@@ -3876,7 +3873,6 @@ msgid "# Show environment details (Python version, path, packages)\n"
 msgstr "# 환경 상세 정보 표시 (Python 버전, 경로, 패키지)\n"
 
 #: src/commands/remove.md:54 src/commands/uninstall.md:212
-#: src/commands/doctor.md:80 src/commands/doctor.md:108
 msgid "# Output (excerpt):\n"
 msgstr "# 출력 (일부):\n"
 
@@ -4611,7 +4607,7 @@ msgstr "# Python 3.12를 실수로 제거한 후:\n"
 msgid "# Checking installation...\n"
 msgstr "# Checking installation...\n"
 
-#: src/commands/doctor.md:56
+#: src/commands/doctor.md:56 src/commands/doctor.md:88
 msgid "# ✓ uv installation\n"
 msgstr "# ✓ uv installation\n"
 
@@ -4620,13 +4616,11 @@ msgid "# ✓ SCUV_HOME directory\n"
 msgstr "# ✓ SCUV_HOME directory\n"
 
 #: src/commands/doctor.md:63 src/commands/doctor.md:67
-#: src/commands/doctor.md:84 src/commands/doctor.md:90
-#: src/commands/doctor.md:92
+#: src/commands/doctor.md:86 src/commands/doctor.md:88
 msgid "'webapp'"
 msgstr "'webapp'"
 
 #: src/commands/doctor.md:63 src/commands/doctor.md:67
-#: src/commands/doctor.md:84
 msgid "#   → scuv remove webapp && scuv create webapp <python-version>\n"
 msgstr "#   → scuv remove webapp && scuv create webapp <python-version>\n"
 
@@ -4646,19 +4640,35 @@ msgstr "# Found 4 error(s).\n"
 msgid "# Auto-fix by recreating symlinks (requires Python to be reinstalled)\n"
 msgstr "# 심볼릭 링크 재생성으로 자동 수정 (Python 재설치 필요)\n"
 
-#: src/commands/doctor.md:86 src/commands/doctor.md:90
+#: src/commands/doctor.md:82
+msgid "# • Attempting to fix symlink for 'myproject'...\n"
+msgstr "# • Attempting to fix symlink for 'myproject'...\n"
+
+#: src/commands/doctor.md:84
+msgid "# ✓ Fixed symlink for 'myproject'\n"
+msgstr "# ✓ Fixed symlink for 'myproject'\n"
+
+#: src/commands/doctor.md:86
 msgid "# • Found Python version: 3.12\n"
 msgstr "# • Found Python version: 3.12\n"
 
-#: src/commands/doctor.md:88 src/commands/doctor.md:92
-msgid "# ✓ broken symlink\n"
-msgstr "# ✓ broken symlink\n"
+#: src/commands/doctor.md:90
+msgid "# ✓ virtual environments\n"
+msgstr "# ✓ virtual environments\n"
+
+#: src/commands/doctor.md:92
+msgid "# ✓ shell configuration\n"
+msgstr "# ✓ shell configuration\n"
 
 #: src/commands/doctor.md:94
-msgid "# Found 2 error(s).\n"
-msgstr "# Found 2 error(s).\n"
+msgid "# ✓ legacy scoop remnants\n"
+msgstr "# ✓ legacy scoop remnants\n"
 
-#: src/commands/doctor.md:98
+#: src/commands/doctor.md:96
+msgid "# All checks passed!\n"
+msgstr "# All checks passed!\n"
+
+#: src/commands/doctor.md:100
 msgid ""
 "`✓` marks a passing check, `⚠` a warning and `✗` an error; `→` lines suggest "
 "a fix. The report goes to stderr. `doctor` exits `2` when any check errors, "
@@ -4670,25 +4680,20 @@ msgstr ""
 "있으면 `2`, 가장 심각한 결과가 경고이면 `1`, 모든 검사를 통과하면 `0`(`All "
 "checks passed!`)으로 종료합니다."
 
-#: src/commands/doctor.md:103
+#: src/commands/doctor.md:105
 msgid ""
-"The `broken virtualenv` check runs before the symlink fix, so `--fix` still "
-"reports those errors in the same run. Run `scuv doctor` again to confirm the "
-"repair:"
+"`--fix` attempts its fixes first and then prints the report. A fix can clear "
+"an error another check found — relinking an env's interpreter also mends its "
+"`broken virtualenv` error — so once anything is fixed, the checks that still "
+"had errors run again, and the report shows the state after the fixes."
 msgstr ""
-"`broken virtualenv` 검사는 심볼릭 링크 수정보다 먼저 실행되므로, `--fix`를 써"
-"도 같은 실행에서 이 오류가 그대로 보고됩니다. 복구되었는지 확인하려면 `scuv "
-"doctor`를 다시 실행하세요:"
+"`--fix`는 먼저 고칠 수 있는 것을 고친 뒤 보고서를 출력합니다. 한 수정이 다른 "
+"검사가 찾은 오류까지 없앨 수 있습니다. 예를 들어 환경의 인터프리터 링크를 다"
+"시 걸면 그 환경의 `broken virtualenv` 오류도 해결됩니다. 그래서 하나라도 고쳐"
+"지면 오류가 남아 있던 검사를 다시 실행하고, 보고서는 수정이 끝난 뒤의 상태를 "
+"보여 줍니다."
 
-#: src/commands/doctor.md:110
-msgid "# ✓ symbolic links\n"
-msgstr "# ✓ symbolic links\n"
-
-#: src/commands/doctor.md:112
-msgid "# All checks passed!\n"
-msgstr "# All checks passed!\n"
-
-#: src/commands/doctor.md:116
+#: src/commands/doctor.md:111
 msgid ""
 "**Tip:** Run `scuv doctor` periodically or after uninstalling Python "
 "versions to catch broken environments early. See [uninstall command]"
@@ -6559,16 +6564,17 @@ msgid ""
 "`{\"status\": \"ready\"}`, `{\"status\": \"name_conflict\", \"existing\": "
 "\"<path>\"}`, `{\"status\": \"python_eol\", \"version\": \"<version>\"}`, or "
 "`{\"status\": \"corrupted\", \"reason\": \"<reason>\"}`. `source_type` is "
-"`\"pyenv\"`, `\"virtualenv_wrapper\"` or `\"conda\"`. `size_bytes` is lazily "
-"computed and may be `null` if not yet requested."
+"`\"pyenv\"`, `\"virtualenv_wrapper\"` or `\"conda\"`. `size_bytes` is the "
+"sum of the environment's regular file sizes, measured when `migrate list` "
+"runs."
 msgstr ""
 "`status` 필드는 객체이며, 그 안의 `status` 키가 상태를 나타냅니다. 값은 "
 "`{\"status\": \"ready\"}`, `{\"status\": \"name_conflict\", \"existing\": "
 "\"<path>\"}`, `{\"status\": \"python_eol\", \"version\": \"<version>\"}`, "
 "`{\"status\": \"corrupted\", \"reason\": \"<reason>\"}` 중 하나입니다. "
 "`source_type`은 `\"pyenv\"`, `\"virtualenv_wrapper\"`, `\"conda\"` 중 하나입"
-"니다. `size_bytes`는 지연 계산되며, 아직 요청되지 않은 경우 `null`일 수 있습"
-"니다."
+"니다. `size_bytes`는 환경 안 일반 파일 크기의 합이며, `migrate list`를 실행"
+"할 때 측정합니다."
 
 #: src/commands/migrate.md:256
 msgid "`migrate all --json` — success path"
@@ -9168,8 +9174,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:39
-msgid "Add translations to all 230 keys"
-msgstr "모든 230개 키에 번역을 추가합니다"
+msgid "Add translations to all 232 keys"
+msgstr "모든 232개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:40
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -9366,8 +9372,8 @@ msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
 #: src/development/translation.md:120
-msgid "`locales/app.yml` - All 230 keys translated"
-msgstr "`locales/app.yml` - 230개 키 모두 번역"
+msgid "`locales/app.yml` - All 232 keys translated"
+msgstr "`locales/app.yml` - 232개 키 모두 번역"
 
 #: src/development/translation.md:121
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
@@ -10065,8 +10071,8 @@ msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
 #: src/development/translation.md:352
-msgid "All 230 keys translated"
-msgstr "230개 키 전체 번역 완료"
+msgid "All 232 keys translated"
+msgstr "232개 키 전체 번역 완료"
 
 #: src/development/translation.md:353
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
@@ -10121,11 +10127,11 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the 230 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 232 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 230개 키) 번역에 대"
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 232개 키) 번역에 대"
 "해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
 "역만 다룹니다."
 
@@ -11593,12 +11599,12 @@ msgstr "`UNINSTALL_*` - 제거 에러 (예: `UNINSTALL_CASCADE_ABORTED`)"
 
 #: src/api.md:416
 msgid ""
-"Plus `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`, "
+"Plus `LANG_*`, `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`, "
 "`VERIFY_*` and `DIFF_*` — see `src/error/code.rs` for the authoritative list"
 msgstr ""
-"그 밖에 `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`, "
-"`VERIFY_*`, `DIFF_*`가 있습니다 — 정확한 목록은 `src/error/code.rs`를 참고하"
-"세요"
+"그 밖에 `LANG_*`, `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, "
+"`EXPORT_*`, `VERIFY_*`, `DIFF_*`가 있습니다 — 정확한 목록은 `src/error/"
+"code.rs`를 참고하세요"
 
 #: src/api.md:419
 msgid "**Example Error Handling:**"
@@ -15566,6 +15572,24 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "# ✓ broken symlink\n"
+#~ msgstr "# ✓ broken symlink\n"
+
+#~ msgid "# Found 2 error(s).\n"
+#~ msgstr "# Found 2 error(s).\n"
+
+#~ msgid ""
+#~ "The `broken virtualenv` check runs before the symlink fix, so `--fix` "
+#~ "still reports those errors in the same run. Run `scuv doctor` again to "
+#~ "confirm the repair:"
+#~ msgstr ""
+#~ "`broken virtualenv` 검사는 심볼릭 링크 수정보다 먼저 실행되므로, `--fix`"
+#~ "를 써도 같은 실행에서 이 오류가 그대로 보고됩니다. 복구되었는지 확인하려"
+#~ "면 `scuv doctor`를 다시 실행하세요:"
+
+#~ msgid "# ✓ symbolic links\n"
+#~ msgstr "# ✓ symbolic links\n"
 
 #~ msgid ""
 #~ "Environments are removed only after uv has uninstalled the Python; if the "
