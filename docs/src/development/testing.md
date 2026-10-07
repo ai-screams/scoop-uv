@@ -68,11 +68,11 @@ cargo nextest run --all-features --workspace --run-ignored only   # the tests th
 `cargo test` runs tests as threads of one process, so a test that changes
 `PATH`, `HOME` or `SCUV_HOME` changes it for every test running at that
 moment. `#[serial]` keeps marked tests apart from each other, not from
-unmarked ones. Under nextest that leak cannot happen, but `cargo test`,
-coverage and mutation testing still run in one process, so a test that
-reaches uv or reads those variables still needs `#[serial]`, or must run
-inside `env_guard` or `with_temp_scoop_home`, which hold the same lock as
-the tests that change them.
+unmarked ones. Under nextest that leak cannot happen, and coverage and
+mutation testing run under nextest too, but a local `cargo test` still runs
+in one process, so a test that reaches uv or reads those variables still
+needs `#[serial]`, or must run inside `env_guard` or `with_temp_scoop_home`,
+which hold the same lock as the tests that change them.
 
 ### Filtered Tests
 

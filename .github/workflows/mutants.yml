@@ -57,6 +57,13 @@ jobs:
         with:
           tool: cargo-mutants
 
+      - name: Install cargo-nextest
+        # .cargo/mutants.toml sets test_tool = "nextest": each test in its own
+        # process, see .config/nextest.toml for why.
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.146  # keep in step with ci.yml and docker/Dockerfile NEXTEST_VERSION
+
       - name: Build diff against base
         run: git diff "origin/${{ github.base_ref }}"... > git.diff
 
@@ -116,6 +123,13 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-mutants
+
+      - name: Install cargo-nextest
+        # .cargo/mutants.toml sets test_tool = "nextest": each test in its own
+        # process, see .config/nextest.toml for why.
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.146  # keep in step with ci.yml and docker/Dockerfile NEXTEST_VERSION
 
       # Exit 2 means "found mutants no test kills" — the backlog above, not an
       # infrastructure problem. Every other non-zero code still fails the job:

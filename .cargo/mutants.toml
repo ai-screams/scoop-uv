@@ -186,7 +186,19 @@ exclude_re = [
     "<impl Check for SymlinkCheck>::run",
 ]
 
-# `cargo test` runs in well under a second; give each mutant generous headroom
-# so a slow machine doesn't report false timeouts.
+# Each test in its own process, as in ci.yml: see .config/nextest.toml for
+# why. No `--profile ci` on purpose: nextest's default profile stops at the
+# first failure, which is all a caught mutant needs, where `ci` would run the
+# rest of the suite for every one of them.
+#
+# nextest does not run doctests, so a mutant only a doctest kills is reported
+# MISSED here. When the switch was measured, three in
+# src/core/migrate/common.rs were (`dir_size` both return values,
+# `check_name_conflict -> None`); unit tests now cover them.
+test_tool = "nextest"
+
+# The unmutated suite takes 2-3 s under nextest (about 10 s under `cargo test`)
+# on a laptop, so 8x lands below the 30 s floor and the floor sets the timeout.
+# The headroom keeps a slow runner from reporting false timeouts.
 timeout_multiplier = 8.0
 minimum_test_timeout = 30

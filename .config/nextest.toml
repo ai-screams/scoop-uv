@@ -6,7 +6,9 @@
 # release PR, Docker Integration). `#[serial]` stays on those tests for anyone
 # still running `cargo test`.
 #
-# nextest does not run doctests; every caller pairs it with `cargo test --doc`.
+# nextest does not run doctests. ci.yml pairs it with `cargo test --doc`;
+# coverage never measured them, and mutants (.cargo/mutants.toml) loses the
+# kills only a doctest made.
 
 # CI and the Docker image pin 0.9.146 (ci.yml, docker/Dockerfile). An older
 # binary refuses to run instead of quietly behaving differently.

@@ -132,6 +132,13 @@ instead of letting it read as an equivalence claim.
 New `Check` trait implementations and thin wrappers need direct dispatch
 tests, or the PR gate reports them as `MISSED`.
 
+Both scopes run each mutant's tests under nextest (`test_tool = "nextest"`),
+with nextest's default profile so a caught mutant stops at the first
+failing test. nextest does not run doctests, so a mutant that only a doctest
+kills counts as `MISSED` — cover that behaviour with a unit test. The
+switch turned up three such mutants in `src/core/migrate/common.rs`
+(`dir_size`, `check_name_conflict`); unit tests were added for them.
+
 ### One cache per toolchain, one writer per cache
 
 `Swatinem/rust-cache` keys on `shared-key`, so jobs sharing a key share a
@@ -168,12 +175,14 @@ The `v0.17.1` release PR failed Docker Integration in two tests that had
 passed on the same source a minute earlier, on `main`. One `#[serial]` test put a fake
 uv in front of `PATH`; an unmarked test resolved uv at the same moment,
 got the fake one, and both assertions broke. `#[serial]` only keeps marked
-tests apart. The test, MSRV and Docker integration jobs now run
-`cargo nextest run --profile ci`, which gives each test its own process
-(`.config/nextest.toml`; no retries, so a race stays visible), plus
-`cargo test --doc` for the doctests nextest skips. The tests that reach uv
-are also marked `#[serial]` or run under the env lock, because coverage,
-mutants and local `cargo test` still run in one process.
+tests apart. Every job that runs the suite now uses cargo-nextest, which
+gives each test its own process: the test, MSRV and Docker integration jobs
+run `cargo nextest run --profile ci` (`.config/nextest.toml`; no retries, so
+a race stays visible) plus `cargo test --doc` for the doctests nextest skips,
+coverage runs `cargo llvm-cov nextest --profile ci`, and mutants sets
+`test_tool = "nextest"`. The tests that reach uv are also marked `#[serial]`
+or run under the env lock, because a local `cargo test` still runs them in
+one process.
 
 ### Criterion errors corrupt the benchmark parser output
 
@@ -329,12 +338,6 @@ any of these being fixed.
   minus its lockfile hash), the one a later run with that toolchain and
   environment falls back to.
 
-- **Coverage and mutants still run tests in one process.** They use
-  `cargo llvm-cov` and `cargo mutants` with libtest, so a missing
-  `#[serial]` can still make them flaky. Moving them to nextest
-  (`cargo llvm-cov nextest`, mutants' `test_tool = "nextest"`) changes
-  their timing and drops doctests, so it is a separate change.
-
 ### Recently closed
 
 Left here because the reasoning is worth keeping, not because anything is
@@ -374,6 +377,11 @@ outstanding.
   pinned to release tags. Dependabot could not follow either: it cannot
   bump a branch ref, and setup-uv stopped publishing moving major tags at
   v8.
+- Coverage and mutants ran tests as threads of one process after the rest
+  of CI had moved to nextest, so a missing `#[serial]` could still make them
+  flaky. Both use nextest now. The coverage total did not move — doctests
+  were never in it — and on three sampled files mutants took about half the
+  time it took under `cargo test`.
 - `stable-ci` had four writers and, because `rust-cache` hashes
   workflow-level `env`, was never actually shared with `coverage.yml` or
   `mutants.yml` at all. Each now names the key it really uses.
