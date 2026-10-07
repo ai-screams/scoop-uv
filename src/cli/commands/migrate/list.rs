@@ -2,6 +2,7 @@
 //!
 //! Displays discovered environments in human-readable or JSON format.
 
+use rayon::prelude::*;
 use rust_i18n::t;
 
 use crate::cli::MigrateSource;
@@ -98,11 +99,12 @@ fn print_grouped(environments: &[SourceEnvironment]) {
 
 /// Fills each environment's on-disk size. Discovery leaves `size_bytes`
 /// unset so that `migrate all` and `migrate @env` do not walk every tree;
-/// `migrate list` shows the size, so it measures here.
+/// `migrate list` shows the size, so it measures here, one env per thread
+/// (a conda env can hold tens of thousands of files).
 fn with_sizes(mut environments: Vec<SourceEnvironment>) -> Vec<SourceEnvironment> {
-    for env in &mut environments {
-        env.size_bytes = Some(dir_size(&env.path));
-    }
+    environments
+        .par_iter_mut()
+        .for_each(|env| env.size_bytes = Some(dir_size(&env.path)));
     environments
 }
 
