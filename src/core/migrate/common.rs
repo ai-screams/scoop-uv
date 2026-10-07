@@ -36,7 +36,6 @@ const EOL_PYTHON_MINOR: u32 = 8;
 /// let size_mb = size as f64 / 1_048_576.0;
 /// println!("Environment size: {:.1} MB", size_mb);
 /// ```
-#[allow(dead_code)]
 pub fn dir_size(path: &Path) -> u64 {
     walkdir::WalkDir::new(path)
         .into_iter()

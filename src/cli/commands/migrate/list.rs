@@ -5,6 +5,7 @@
 use rust_i18n::t;
 
 use crate::cli::MigrateSource;
+use crate::core::migrate::common::dir_size;
 use crate::core::migrate::{EnvironmentStatus, SourceEnvironment, SourceType};
 use crate::error::Result;
 use crate::output::Output;
@@ -27,7 +28,7 @@ pub fn list_environments(
         output.info(&scanning_message(source_filter, &rust_i18n::locale()));
     }
 
-    let environments = scan_all_environments(source_filter);
+    let environments = with_sizes(scan_all_environments(source_filter));
 
     if json {
         let summary = summarize(&environments);
@@ -93,6 +94,16 @@ fn print_grouped(environments: &[SourceEnvironment]) {
         }
         println!("{}", env_line(env));
     }
+}
+
+/// Fills each environment's on-disk size. Discovery leaves `size_bytes`
+/// unset so that `migrate all` and `migrate @env` do not walk every tree;
+/// `migrate list` shows the size, so it measures here.
+fn with_sizes(mut environments: Vec<SourceEnvironment>) -> Vec<SourceEnvironment> {
+    for env in &mut environments {
+        env.size_bytes = Some(dir_size(&env.path));
+    }
+    environments
 }
 
 /// One environment's line: status icon, name, Python, size and a hint.

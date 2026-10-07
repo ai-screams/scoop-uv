@@ -41,3 +41,31 @@ fn migrate_env_name_conflict_without_a_terminal_exits_2() {
         .stderr(predicate::str::contains("'dup' already exists"))
         .stderr(predicate::str::contains("Dialog error").not());
 }
+
+/// `migrate list` reports each env's size; it printed "- MB" and
+/// `"size_bytes": null` for every env because nothing ever measured it.
+#[cfg(unix)]
+#[test]
+fn migrate_list_reports_each_env_size() {
+    let fixture = TestFixture::new();
+    let pyenv = fixture.temp_dir.path().join("pyenv");
+    fake_pyenv_env(&pyenv, "sized");
+    let env = pyenv.join("versions/3.12.14/envs/sized");
+    std::fs::write(env.join("payload"), vec![0u8; 4096]).unwrap();
+
+    let out = scoop_cmd(&fixture.scoop_home)
+        .args(["migrate", "list", "--source", "pyenv", "--json"])
+        .env("PYENV_ROOT", &pyenv)
+        .env("HOME", fixture.temp_dir.path())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let size = json["data"]["environments"][0]["size_bytes"].as_u64();
+    // The three files written above: pyvenv.cfg, bin/python and payload.
+    let expected = ["pyvenv.cfg", "bin/python", "payload"]
+        .iter()
+        .map(|f| std::fs::metadata(env.join(f)).unwrap().len())
+        .sum::<u64>();
+    assert_eq!(size, Some(expected), "{json}");
+}
