@@ -360,6 +360,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[serial_test::serial]
     fn test_uv_client_creation() {
         // This test will only pass if uv is installed
         if which::which("uv").is_ok() {

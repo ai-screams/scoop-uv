@@ -51,6 +51,7 @@ cargo build --release
 # Test
 cargo test
 cargo test <test_name>           # Single test
+cargo nextest run && cargo test --doc   # What CI runs (process per test; nextest skips doctests)
 
 # Lint & Format
 cargo fmt                        # Format code
@@ -74,6 +75,7 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 
 - **After editing `locales/app.yml`, run `touch src/lib.rs` before `cargo test`** — rust_i18n's proc-macro isn't cargo-tracked; a yml-only edit reuses the stale binary and reports false-green.
 - Env-var tests MUST use `env_guard` (src/test_utils.rs) + `#[serial]` (and control `HOME` when dirs are inspected) — the dev machine has a real `~/.scoop`. Never nest `env_guard` inside `with_temp_scoop_home`: both take `ENV_LOCK` and the test deadlocks. A test that needs an isolated home plus other variables uses `env_guard` alone with `SCUV_HOME` pointed at a `TempDir` (see `resolve_env_ignores_legacy_scoop_version`).
+- CI (test, MSRV, Docker integration) runs `cargo nextest run --profile ci` — one process per test, no retries (`.config/nextest.toml`) — plus `cargo test --doc`. Coverage, mutants and local `cargo test` still run tests as threads of one process, so a test that resolves uv (`UvClient::new`, `list_installed_packages`, `VirtualenvService::auto`) still needs `#[serial]` or must run inside `env_guard`/`with_temp_scoop_home` (both hold `ENV_LOCK`, which every `PATH` change takes — the `diff/tests.rs` `execute_*` tests rely on this): `#[serial]` only excludes other `#[serial]` tests, and an unmarked test outside the lock picks up a concurrent `FakeUv`'s `PATH` (v0.17.1 release PR).
 - PR CI runs `cargo-mutants --in-diff`: new `Check`-trait impls and thin wrappers need direct dispatch tests or the Mutants gate fails.
 - `.cargo/mutants.toml` `exclude_re` matches the full mutant description, not the function name — a bare `"foo"` silently drops every mutant in `foo`, including ones the tests kill. Exclude the exact description (`"delete match arm \\[major\\] in foo"`); verify the delta with `cargo mutants --config <alt>.toml --list --file '<glob>'` + `comm`.
 - A green `Mutants (diff)` proves little on a test-only PR — no production lines changed — and `Mutants (full)` is skipped on PRs. Verify mutation claims locally with `cargo mutants --file '<glob>'`.

@@ -383,6 +383,7 @@ mod tests {
     /// No uv, or uv without that Python: either way an error, never a
     /// made-up path. Fails if `installed_python_path` returns `Ok` blindly.
     #[test]
+    #[serial]
     fn installed_python_path_errors_for_a_version_nobody_has() {
         assert!(installed_python_path("0.0.1").is_err());
     }

@@ -117,25 +117,25 @@ services:
   test:
     extends:
       service: slim
-    command: cargo test -- --include-ignored
+    command: sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
     profiles: [test]
 
   test-pyenv:
     extends:
       service: pyenv-test
-    command: cargo test -- --include-ignored
+    command: sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
     profiles: [test]
 
   test-conda:
     extends:
       service: conda-test
-    command: cargo test -- --include-ignored
+    command: sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
     profiles: [test]
 
   test-venvwrapper:
     extends:
       service: venvwrapper-test
-    command: cargo test -- --include-ignored
+    command: sh -c 'cargo nextest run --run-ignored all && cargo test --doc'
     profiles: [test]
 
   # ============================================================
