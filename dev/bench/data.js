@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791389781054,
+  "lastUpdate": 1791389783070,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -10633,6 +10633,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 920,
             "range": "± 8",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fda2ae0e021f54734636596663c81fe1da524a84",
+          "message": "Merge pull request #229 from ai-screams/ci/coverage-mutants-nextest\n\nci(test): run coverage and mutation tests under cargo-nextest",
+          "timestamp": "2026-10-08T01:12:23+09:00",
+          "tree_id": "191fc8e3ec2dc35004419e86b83c32a4800095be",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/fda2ae0e021f54734636596663c81fe1da524a84"
+        },
+        "date": 1791389782948,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1905,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1334,
+            "range": "± 18",
             "unit": "ns/iter"
           }
         ]
