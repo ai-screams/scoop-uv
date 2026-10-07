@@ -1429,6 +1429,7 @@ dependencies = [
  "dialoguer",
  "dirs",
  "indicatif",
+ "libc",
  "once_cell",
  "owo-colors",
  "predicates",

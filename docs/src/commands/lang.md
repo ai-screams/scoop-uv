@@ -88,6 +88,18 @@ $ scuv lang --reset
 ✓ Reset to system default: en
 ```
 
+### Unsupported Code
+
+```bash
+$ scuv lang xx
+✗ Unsupported language: xx
+→ Run 'scuv lang --list' to see supported languages
+```
+
+An unsupported code changes nothing and exits `1`. With `--json` the
+error is printed as text on stderr, as for every other command, and
+stdout stays empty.
+
 ### JSON Output
 
 ```bash

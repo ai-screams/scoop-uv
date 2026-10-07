@@ -4,6 +4,7 @@
 
 use rust_i18n::t;
 
+use std::io::IsTerminal;
 use std::path::Path;
 
 use crate::core::migrate::{
@@ -153,7 +154,7 @@ fn resolve_target(
     match status {
         EnvironmentStatus::Ready => {}
         EnvironmentStatus::NameConflict { existing } => {
-            return resolve_name_conflict(output, name, existing, opts, target);
+            return resolve_name_conflict(output, name, existing, opts, target, can_prompt());
         }
         EnvironmentStatus::PythonEol { version } => {
             if !opts.force {
@@ -182,9 +183,17 @@ fn resolve_target(
     Ok(Some(target))
 }
 
+/// Whether the conflict prompt can run: dialoguer draws it on stderr and
+/// refuses ("not a terminal") when stderr is not one, so `2>log` fails it
+/// too. A redirected stdin is fine — it reads keys from /dev/tty then.
+fn can_prompt() -> bool {
+    std::io::stderr().is_terminal()
+}
+
 /// A scuv env named `name` already exists. In order: `--auto-rename`
 /// picks a free name; `--rename` must itself be free (unless `--force`);
-/// `--force` overwrites; non-interactive runs (`--json`, `--yes`) fail;
+/// `--force` overwrites; non-interactive runs (`--json`, `--yes`, or no
+/// terminal to prompt on) fail with [`ScoopError::MigrationNameConflict`];
 /// otherwise the user is asked.
 fn resolve_name_conflict(
     output: &Output,
@@ -192,6 +201,7 @@ fn resolve_name_conflict(
     existing: &Path,
     opts: &MigrateExecuteOptions,
     mut target: Target,
+    interactive: bool,
 ) -> Result<Option<Target>> {
     if opts.auto_rename {
         target.name = generate_unique_name(name)?;
@@ -210,7 +220,7 @@ fn resolve_name_conflict(
         if !opts.json {
             output.warn(&t!("migrate.overwriting"));
         }
-    } else if opts.json || opts.yes {
+    } else if opts.json || opts.yes || !interactive {
         if !opts.json {
             output.warn(&t!("migrate.name_exists", name = name));
             output.info(&t!("migrate.use_flags"));

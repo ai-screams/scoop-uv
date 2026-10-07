@@ -7,6 +7,7 @@ use serde::Serialize;
 use crate::core::migrate::{EnvironmentStatus, MigrationResult, SourceEnvironment};
 use crate::output::Output;
 
+use super::super::scan::no_envs_message;
 use super::super::types::{
     MigrateAllData, MigrateAllSummary, MigrateExecuteOptions, MigrateFailure, MigrateSkipped,
     MigrationConflictDetail,
@@ -59,11 +60,7 @@ pub(super) fn emit_empty_envs(output: &Output, opts: &MigrateExecuteOptions) {
             },
         );
     } else {
-        let source_name = opts
-            .source_filter
-            .map(|s| format!("{}", s))
-            .unwrap_or_default();
-        output.info(&t!("migrate.no_envs", source = source_name));
+        output.info(&no_envs_message(opts.source_filter, &rust_i18n::locale()));
     }
 }
 

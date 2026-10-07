@@ -44,13 +44,13 @@ script trying to work out what to change.
 For a real env (`active` / `configured`):
 
 ```
-Name:     myenv
-Source:   scuv_active_env
-Python:   3.12
-Path:     ~/.scuv/virtualenvs/myenv
-Created:  2026-05-29 12:34:56
-Last used:3 hours ago
-Packages: 1
+Name:      myenv
+Source:    scuv_active_env
+Python:    3.12
+Path:      ~/.scuv/virtualenvs/myenv
+Created:   2026-05-29 12:34:56
+Last used: 3 hours ago
+Packages:  1
 ```
 
 These rows go to stdout. `Packages:` is the number of packages `uv pip list`

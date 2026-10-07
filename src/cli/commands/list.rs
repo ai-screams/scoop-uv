@@ -334,42 +334,59 @@ fn list_pythons(output: &Output, bare: bool) -> Result<()> {
 
 /// Get system Python version and path
 ///
-/// Returns `(version, path)` tuple if system Python is found.
+/// Returns `(version, path)` tuple if system Python is found. The lookup
+/// skips `PATH` entries inside scuv's virtualenvs and the active
+/// `VIRTUAL_ENV`: activating an env puts its `bin` first, and the `system`
+/// row then showed that env's interpreter.
 fn get_system_python_info() -> Option<(String, String)> {
     use std::process::Command;
 
-    // Try python3 first, then python - reuse the output to avoid double process calls
-    let (python_cmd, version_output) = {
-        let output = Command::new("python3").arg("--version").output().ok();
-        match output {
-            Some(ref out) if out.status.success() => ("python3", output),
-            _ => (
-                "python",
-                Command::new("python").arg("--version").output().ok(),
-            ),
+    let path_var = std::env::var_os("PATH")?;
+    let venvs_dir = crate::paths::virtualenvs_dir().ok();
+    let virtual_env = std::env::var_os("VIRTUAL_ENV").map(std::path::PathBuf::from);
+    let search = path_without_envs(&path_var, venvs_dir.as_deref(), virtual_env.as_deref());
+    // Only a relative PATH entry needs it; a deleted cwd must not hide the row.
+    let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("/"));
+
+    // python3 first, then python. The `which` crate does the PATH lookup in
+    // process (execute bit and PATHEXT included).
+    ["python3", "python"].iter().find_map(|cmd| {
+        let path = which::which_in(cmd, Some(&search), &cwd).ok()?;
+        let output = Command::new(&path).arg("--version").output().ok()?;
+        if !output.status.success() {
+            return None;
         }
-    };
+        let version_str = String::from_utf8_lossy(&output.stdout);
+        // "Python 3.12.1" -> "3.12.1"
+        let version = version_str
+            .trim()
+            .strip_prefix("Python ")
+            .unwrap_or(version_str.trim())
+            .to_string();
+        Some((version, path.display().to_string()))
+    })
+}
 
-    let version_output = version_output?;
-
-    if !version_output.status.success() {
-        return None;
-    }
-
-    let version_str = String::from_utf8_lossy(&version_output.stdout);
-    // "Python 3.12.1" -> "3.12.1"
-    let version = version_str
-        .trim()
-        .strip_prefix("Python ")
-        .unwrap_or(version_str.trim())
-        .to_string();
-
-    // The same PATH lookup that ran `python_cmd` above, in process (the
-    // `which` crate: execute bit and PATHEXT included) rather than spawning
-    // a `which` binary that is not everywhere.
-    let path = which::which(python_cmd).ok()?;
-
-    Some((version, path.display().to_string()))
+/// `path_var` without the entries inside `venvs_dir` or `virtual_env`.
+///
+/// Only an absolute directory filters: every path starts with the empty
+/// path, so `VIRTUAL_ENV=` (set but empty, as some Dockerfiles and wrapper
+/// scripts leave it) would otherwise drop every entry and hide the row.
+/// The comparison is by path components and case-sensitive, so on Windows a
+/// differently-cased `SCUV_HOME` does not filter; scuv's own activation uses
+/// the same spelling for both.
+fn path_without_envs(
+    path_var: &std::ffi::OsStr,
+    venvs_dir: Option<&std::path::Path>,
+    virtual_env: Option<&std::path::Path>,
+) -> std::ffi::OsString {
+    let venvs_dir = venvs_dir.filter(|d| d.is_absolute());
+    let virtual_env = virtual_env.filter(|v| v.is_absolute());
+    let kept = std::env::split_paths(path_var).filter(|entry| {
+        !venvs_dir.is_some_and(|d| entry.starts_with(d))
+            && !virtual_env.is_some_and(|v| entry.starts_with(v))
+    });
+    std::env::join_paths(kept).unwrap_or_else(|_| path_var.to_os_string())
 }
 
 #[cfg(test)]
@@ -394,6 +411,45 @@ mod tests {
             created_at,
             last_used,
         }
+    }
+
+    #[test]
+    fn system_python_search_skips_env_bins() {
+        use std::path::Path;
+        let joined = |dirs: &[&str]| std::env::join_paths(dirs).unwrap();
+        let path = joined(&[
+            "/home/u/.scuv/virtualenvs/web/bin",
+            "/home/u/proj/.venv/bin",
+            "/usr/local/bin",
+            "/usr/bin",
+        ]);
+        let venvs = Some(Path::new("/home/u/.scuv/virtualenvs"));
+        let active = Some(Path::new("/home/u/proj/.venv"));
+
+        assert_eq!(
+            path_without_envs(&path, venvs, active),
+            joined(&["/usr/local/bin", "/usr/bin"])
+        );
+        // Each filter on its own.
+        assert_eq!(
+            path_without_envs(&path, venvs, None),
+            joined(&["/home/u/proj/.venv/bin", "/usr/local/bin", "/usr/bin"])
+        );
+        assert_eq!(
+            path_without_envs(&path, None, active),
+            joined(&[
+                "/home/u/.scuv/virtualenvs/web/bin",
+                "/usr/local/bin",
+                "/usr/bin"
+            ])
+        );
+        assert_eq!(path_without_envs(&path, None, None), path);
+        // An empty or relative VIRTUAL_ENV filters nothing.
+        assert_eq!(path_without_envs(&path, None, Some(Path::new(""))), path);
+        assert_eq!(
+            path_without_envs(&path, None, Some(Path::new("venv"))),
+            path
+        );
     }
 
     #[test]

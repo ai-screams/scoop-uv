@@ -82,16 +82,19 @@ impl ScoopError {
             Self::ManifestNotFound { .. } => {
                 Some(t!("suggestion.manifest_not_found", locale = locale).to_string())
             }
-            Self::UnsupportedExportVersion { supported, .. } => Some(
+            Self::UnsupportedExportVersion { version, .. } => Some(
                 t!(
                     "suggestion.unsupported_export_version",
                     locale = locale,
-                    supported = supported
+                    version = version
                 )
                 .to_string(),
             ),
             Self::MigrationSourcesNotFound { .. } => {
                 Some(t!("suggestion.migration_sources_not_found", locale = locale).to_string())
+            }
+            Self::UnsupportedLanguage { .. } => {
+                Some(t!("suggestion.unsupported_language", locale = locale).to_string())
             }
             _ => None,
         }

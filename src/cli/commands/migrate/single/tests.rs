@@ -435,9 +435,16 @@ fn name_conflict_auto_rename_picks_a_free_name() {
             ..conflict_opts()
         };
         let out = quiet_output();
-        let t = resolve_name_conflict(&out, "web", Path::new("/x"), &opts, start("web", false))
-            .unwrap()
-            .expect("auto-rename proceeds");
+        let t = resolve_name_conflict(
+            &out,
+            "web",
+            Path::new("/x"),
+            &opts,
+            start("web", false),
+            false,
+        )
+        .unwrap()
+        .expect("auto-rename proceeds");
         assert_ne!(t.name, "web");
         assert!(!t.force);
     });
@@ -455,7 +462,14 @@ fn name_conflict_rename_must_itself_be_free() {
             rename: Some("taken".into()),
             ..conflict_opts()
         };
-        let err = resolve_name_conflict(&out, "web", Path::new("/x"), &opts, start("taken", false));
+        let err = resolve_name_conflict(
+            &out,
+            "web",
+            Path::new("/x"),
+            &opts,
+            start("taken", false),
+            false,
+        );
         assert!(
             matches!(err, Err(ScoopError::MigrationNameConflict { ref name, .. }) if name == "taken")
         );
@@ -464,9 +478,16 @@ fn name_conflict_rename_must_itself_be_free() {
             rename: Some("free".into()),
             ..conflict_opts()
         };
-        let t = resolve_name_conflict(&out, "web", Path::new("/x"), &opts, start("free", false))
-            .unwrap()
-            .unwrap();
+        let t = resolve_name_conflict(
+            &out,
+            "web",
+            Path::new("/x"),
+            &opts,
+            start("free", false),
+            false,
+        )
+        .unwrap()
+        .unwrap();
         assert_eq!(t.name, "free");
     });
 }
@@ -480,9 +501,16 @@ fn name_conflict_force_overwrites_else_noninteractive_fails() {
         force: true,
         ..conflict_opts()
     };
-    let t = resolve_name_conflict(&out, "web", Path::new("/x"), &forced, start("web", true))
-        .unwrap()
-        .unwrap();
+    let t = resolve_name_conflict(
+        &out,
+        "web",
+        Path::new("/x"),
+        &forced,
+        start("web", true),
+        false,
+    )
+    .unwrap()
+    .unwrap();
     assert_eq!((t.name.as_str(), t.force), ("web", true));
 
     for opts in [
@@ -492,11 +520,41 @@ fn name_conflict_force_overwrites_else_noninteractive_fails() {
             ..Default::default()
         },
     ] {
-        let err = resolve_name_conflict(&out, "web", Path::new("/x"), &opts, start("web", false));
+        let err = resolve_name_conflict(
+            &out,
+            "web",
+            Path::new("/x"),
+            &opts,
+            start("web", false),
+            false,
+        );
         assert!(
             matches!(err, Err(ScoopError::MigrationNameConflict { ref name, .. }) if name == "web")
         );
     }
+}
+
+/// With no terminal to prompt on, a conflict without any flag fails as a
+/// name conflict (exit 2) instead of trying the prompt, which failed with
+/// "Dialog error: not a terminal" (exit 1). With a terminal it goes to the
+/// prompt, which this test cannot answer, so only the `false` side is run.
+/// Fails if the `!interactive` guard is dropped.
+#[test]
+fn name_conflict_without_a_terminal_fails_as_a_conflict() {
+    let out = quiet_output();
+    let err = resolve_name_conflict(
+        &out,
+        "web",
+        Path::new("/x"),
+        &MigrateExecuteOptions::default(),
+        start("web", false),
+        false,
+    );
+    assert!(
+        matches!(err, Err(ScoopError::MigrationNameConflict { ref name, .. }) if name == "web"),
+        "{:?}",
+        err.err()
+    );
 }
 
 fn quiet_output() -> Output {

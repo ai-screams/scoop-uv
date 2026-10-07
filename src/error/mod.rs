@@ -69,6 +69,9 @@ pub enum ScoopError {
     /// Shell not supported
     UnsupportedShell { shell: String },
 
+    /// Language code not supported by `scuv lang`
+    UnsupportedLanguage { lang: String },
+
     /// Python version not installed
     PythonNotInstalled { version: String },
 

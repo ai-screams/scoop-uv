@@ -76,6 +76,12 @@ pub fn execute(output: &Output) -> Result<()> {
     Ok(())
 }
 
+/// One `Label: value` row. The label pads to the longest one, `Last used:`,
+/// and a space always follows it: padding alone left "Last used:never".
+fn row(label: &str, value: impl std::fmt::Display) -> String {
+    format!("{label:<10} {value}")
+}
+
 fn emit_none(output: &Output, json: bool) {
     if json {
         output.json_success(
@@ -155,36 +161,45 @@ fn emit_env(output: &Output, json: bool, name: &str, source: &'static str) {
         return;
     }
 
-    let w = 10;
     // Direct stdout: `status` *is* its own output — `--quiet` users still want
     // the resolved state, matching how `resolve`/`info` print their result.
-    println!("{:w$}{}", "Name:", name);
-    println!("{:w$}{}", "Source:", source);
-    println!("{:w$}{}", "Python:", python.as_deref().unwrap_or("-"));
-    println!(
-        "{:w$}{}",
-        "Path:",
-        path.as_ref()
-            .map(|p| abbreviate_home(p))
-            .unwrap_or_else(|| "-".to_string())
-    );
+    println!("{}", row("Name:", name));
+    println!("{}", row("Source:", source));
+    println!("{}", row("Python:", python.as_deref().unwrap_or("-")));
+    let path = path
+        .as_ref()
+        .map(|p| abbreviate_home(p))
+        .unwrap_or_else(|| "-".to_string());
+    println!("{}", row("Path:", path));
     if let Some(m) = metadata.as_ref() {
         let date = m.created_at.format("%Y-%m-%d %H:%M:%S").to_string();
-        println!("{:w$}{}", "Created:", date);
+        println!("{}", row("Created:", date));
     }
     // Shared three-state contract — see [`format_last_used_value`] for
     // the "hide vs never vs N units ago" rules.
     if let Some(label) = format_last_used_value(metadata.is_some(), last_used_ts, Utc::now()) {
-        println!("{:w$}{}", "Last used:", label);
+        println!("{}", row("Last used:", label));
     }
     if let Some(n) = packages {
-        println!("{:w$}{}", "Packages:", n);
+        println!("{}", row("Packages:", n));
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Rows line up at the longest label, and even that one is followed by
+    /// a space ("Last used:never" before). Fails if the space goes.
+    #[test]
+    fn rows_align_and_separate_every_label_from_its_value() {
+        assert_eq!(row("Last used:", "never"), "Last used: never");
+        assert_eq!(row("Name:", "web"), "Name:      web");
+        assert_eq!(
+            row("A-label-longer-than-ten:", 1),
+            "A-label-longer-than-ten: 1"
+        );
+    }
     use crate::test_utils::with_temp_scoop_home;
     use serial_test::serial;
     use tempfile::TempDir;
