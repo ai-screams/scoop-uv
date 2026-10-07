@@ -39,6 +39,12 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
+      - name: Install cargo-nextest
+        # Each test in its own process: see .config/nextest.toml for why.
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.146  # keep in step with ci.yml and docker/Dockerfile NEXTEST_VERSION
+
       # Its own key, not ci.yml's `stable-ci`. Two reasons, and the first is
       # that the sharing never actually happened: rust-cache folds
       # workflow-level `env` into its key hash, and this workflow sets
@@ -54,8 +60,14 @@ jobs:
           # Only main writes; a PR run restores this key but leaves no copy behind
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
+      # nextest, like the rest of CI: each test in its own process, so a test
+      # that changes PATH or HOME cannot leak it into one running beside it.
+      # `--profile ci` is nextest's profile (.config/nextest.toml), not a
+      # cargo build profile. Doctests are not measured either way — plain
+      # `cargo llvm-cov` skips them without the unstable `--doctests` — so the
+      # measured set and the line total are unchanged; ci.yml runs them.
       - name: Generate coverage
-        run: cargo llvm-cov --all-features --workspace --codecov --output-path codecov.json
+        run: cargo llvm-cov nextest --profile ci --all-features --workspace --codecov --output-path codecov.json
 
       # The upload had been failing since roughly February with
       # `Token required because branch is protected`, while the job still
