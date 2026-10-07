@@ -345,7 +345,8 @@ fn get_system_python_info() -> Option<(String, String)> {
     let venvs_dir = crate::paths::virtualenvs_dir().ok();
     let virtual_env = std::env::var_os("VIRTUAL_ENV").map(std::path::PathBuf::from);
     let search = path_without_envs(&path_var, venvs_dir.as_deref(), virtual_env.as_deref());
-    let cwd = std::env::current_dir().ok()?;
+    // Only a relative PATH entry needs it; a deleted cwd must not hide the row.
+    let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("/"));
 
     // python3 first, then python. The `which` crate does the PATH lookup in
     // process (execute bit and PATHEXT included).
@@ -367,11 +368,20 @@ fn get_system_python_info() -> Option<(String, String)> {
 }
 
 /// `path_var` without the entries inside `venvs_dir` or `virtual_env`.
+///
+/// Only an absolute directory filters: every path starts with the empty
+/// path, so `VIRTUAL_ENV=` (set but empty, as some Dockerfiles and wrapper
+/// scripts leave it) would otherwise drop every entry and hide the row.
+/// The comparison is by path components and case-sensitive, so on Windows a
+/// differently-cased `SCUV_HOME` does not filter; scuv's own activation uses
+/// the same spelling for both.
 fn path_without_envs(
     path_var: &std::ffi::OsStr,
     venvs_dir: Option<&std::path::Path>,
     virtual_env: Option<&std::path::Path>,
 ) -> std::ffi::OsString {
+    let venvs_dir = venvs_dir.filter(|d| d.is_absolute());
+    let virtual_env = virtual_env.filter(|v| v.is_absolute());
     let kept = std::env::split_paths(path_var).filter(|entry| {
         !venvs_dir.is_some_and(|d| entry.starts_with(d))
             && !virtual_env.is_some_and(|v| entry.starts_with(v))
@@ -434,6 +444,12 @@ mod tests {
             ])
         );
         assert_eq!(path_without_envs(&path, None, None), path);
+        // An empty or relative VIRTUAL_ENV filters nothing.
+        assert_eq!(path_without_envs(&path, None, Some(Path::new(""))), path);
+        assert_eq!(
+            path_without_envs(&path, None, Some(Path::new("venv"))),
+            path
+        );
     }
 
     #[test]
