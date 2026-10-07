@@ -19,6 +19,7 @@ mod dispatch;
 mod errors;
 mod general;
 mod list;
+mod migrate;
 mod output_format;
 mod remove;
 mod requires_uv;
