@@ -26,28 +26,42 @@ impl Doctor {
 
     /// Runs all checks and attempts to fix issues where possible.
     ///
-    /// Returns the results after attempting fixes.
+    /// Returns the results after attempting fixes. A fix can also clear an
+    /// error another check reported: relinking an env's interpreter mends the
+    /// "broken virtualenv" the virtualenvs check found before the symlink
+    /// check fixed it. So once anything is fixed, every check that still had
+    /// an unfixed error runs again and its fresh results replace the old.
     pub fn run_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult> {
-        let mut all_results = Vec::new();
+        let mut per_check: Vec<Vec<CheckResult>> = Vec::with_capacity(self.checks.len());
+        let mut fixed_any = false;
 
         for check in &self.checks {
-            let results = check.run();
-
-            for result in results {
-                // Attempt auto-fix for specific error types
+            let mut results = Vec::new();
+            for result in check.run() {
                 if result.is_error()
                     && let Some(fixed_result) = check.fix(&result, output)
                 {
-                    output.doctor_check(&fixed_result);
-                    all_results.push(fixed_result);
-                    continue;
+                    fixed_any = true;
+                    results.push(fixed_result);
+                } else {
+                    results.push(result);
                 }
+            }
+            per_check.push(results);
+        }
 
-                output.doctor_check(&result);
-                all_results.push(result);
+        if fixed_any {
+            for (check, results) in self.checks.iter().zip(per_check.iter_mut()) {
+                if results.iter().any(CheckResult::is_error) {
+                    *results = check.run();
+                }
             }
         }
 
+        let all_results: Vec<CheckResult> = per_check.into_iter().flatten().collect();
+        for result in &all_results {
+            output.doctor_check(result);
+        }
         all_results
     }
 }
@@ -104,6 +118,71 @@ mod tests {
                 "still broken",
             )]
         }
+    }
+
+    /// Reports an error while `broken` is set; never fixes it itself.
+    struct DependentCheck(std::sync::Arc<std::sync::atomic::AtomicBool>);
+    impl Check for DependentCheck {
+        fn id(&self) -> &'static str {
+            "dependent"
+        }
+        fn name(&self) -> &'static str {
+            "dependent check"
+        }
+        fn run(&self) -> Vec<CheckResult> {
+            if self.0.load(std::sync::atomic::Ordering::SeqCst) {
+                vec![CheckResult::error("dependent", "dependent check", "broken")]
+            } else {
+                vec![CheckResult::ok("dependent", "dependent check")]
+            }
+        }
+    }
+
+    /// Fixes the shared `broken` state, as relinking mends a virtualenv.
+    struct RepairingCheck(std::sync::Arc<std::sync::atomic::AtomicBool>);
+    impl Check for RepairingCheck {
+        fn id(&self) -> &'static str {
+            "repairing"
+        }
+        fn name(&self) -> &'static str {
+            "repairing check"
+        }
+        fn run(&self) -> Vec<CheckResult> {
+            DependentCheck(self.0.clone()).run()
+        }
+        fn fix(
+            &self,
+            _result: &CheckResult,
+            _output: &crate::output::Output,
+        ) -> Option<CheckResult> {
+            self.0.store(false, std::sync::atomic::Ordering::SeqCst);
+            Some(CheckResult::ok("repairing", "repairing check"))
+        }
+    }
+
+    /// An error reported by an earlier check and mended by a later check's
+    /// fix is not left in the result: `doctor --fix` said "Fixed symlink"
+    /// and still counted the env's "broken virtualenv" error, exit 2.
+    /// Fails if the re-run after a fix is dropped.
+    #[test]
+    fn run_and_fix_reruns_checks_a_later_fix_mended() {
+        let broken = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
+        let doctor = Doctor {
+            checks: vec![
+                Box::new(DependentCheck(broken.clone())),
+                Box::new(RepairingCheck(broken.clone())),
+                Box::new(UnfixableCheck),
+            ],
+        };
+        let results = doctor.run_and_fix(&quiet_output());
+        let errors: Vec<_> = results
+            .iter()
+            .filter(|r| r.is_error())
+            .map(|r| r.id)
+            .collect();
+        // The unrelated unfixable error stays.
+        assert_eq!(errors, ["unfixable"]);
+        assert_eq!(results.len(), 3);
     }
 
     fn quiet_output() -> crate::output::Output {

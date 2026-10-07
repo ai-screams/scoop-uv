@@ -78,21 +78,23 @@ scuv doctor -v
 # Auto-fix by recreating symlinks (requires Python to be reinstalled)
 scuv install 3.12
 scuv doctor --fix
-# Output (excerpt):
-# ✗ broken virtualenv: 'myproject' is corrupted
-#   → scuv remove myproject && scuv create myproject <python-version>
-# ✗ broken virtualenv: 'webapp' is corrupted
-#   → scuv remove webapp && scuv create webapp <python-version>
+# Output:
+# Checking installation...
 # • Attempting to fix symlink for 'myproject'...
 # • Found Python version: 3.12
 # ✓ Fixed symlink for 'myproject'
-# ✓ broken symlink
 # • Attempting to fix symlink for 'webapp'...
 # • Found Python version: 3.12
 # ✓ Fixed symlink for 'webapp'
+# ✓ uv installation
+# ✓ SCUV_HOME directory
+# ✓ virtual environments
 # ✓ broken symlink
-# ...
-# Found 2 error(s).
+# ✓ shell configuration
+# ✓ version files
+# ✓ legacy scoop remnants
+# ──────────────────────────────────
+# All checks passed!
 ```
 
 `✓` marks a passing check, `⚠` a warning and `✗` an error; `→` lines
@@ -100,17 +102,10 @@ suggest a fix. The report goes to stderr. `doctor` exits `2` when any
 check errors, `1` when the worst finding is a warning, and `0` when every
 check passes (`All checks passed!`).
 
-The `broken virtualenv` check runs before the symlink fix, so `--fix`
-still reports those errors in the same run. Run `scuv doctor` again to
-confirm the repair:
-
-```bash
-scuv doctor
-# Output (excerpt):
-# ✓ virtual environments
-# ✓ symbolic links
-# ...
-# All checks passed!
-```
+`--fix` attempts its fixes first and then prints the report. A fix can
+clear an error another check found — relinking an env's interpreter also
+mends its `broken virtualenv` error — so once anything is fixed, the
+checks that still had errors run again, and the report shows the state
+after the fixes.
 
 > **Tip:** Run `scuv doctor` periodically or after uninstalling Python versions to catch broken environments early. See [uninstall command](uninstall.md) for the safe uninstall workflow.
