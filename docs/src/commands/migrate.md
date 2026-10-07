@@ -133,8 +133,8 @@ $ scuv migrate list
 ✓ Found 2 environment(s):
 
   [virtualenvwrapper]
-    ✓ myproject            Python 3.12              - MB
-    ✓ webapp               Python 3.11              - MB
+    ✓ myproject            Python 3.12           42.3 MB
+    ✓ webapp               Python 3.11          118.6 MB
 
 • To migrate: scuv migrate @env <name>
 • To preview: scuv migrate @env <name> --dry-run
@@ -229,7 +229,7 @@ array, and a `summary` bucketed by status.
         "python_version": "3.12",
         "path": "/home/u/.virtualenvs/myproject",
         "source_type": "virtualenv_wrapper",
-        "size_bytes": null,
+        "size_bytes": 44357632,
         "status": { "status": "ready" }
       },
       {
@@ -237,7 +237,7 @@ array, and a `summary` bucketed by status.
         "python_version": "3.7.17",
         "path": "/home/u/.virtualenvs/oldenv",
         "source_type": "virtualenv_wrapper",
-        "size_bytes": null,
+        "size_bytes": 31457280,
         "status": { "status": "python_eol", "version": "3.7.17" }
       }
     ],
@@ -250,8 +250,8 @@ The `status` field is an object whose own `status` key names the state:
 `{"status": "ready"}`, `{"status": "name_conflict", "existing": "<path>"}`,
 `{"status": "python_eol", "version": "<version>"}`, or
 `{"status": "corrupted", "reason": "<reason>"}`. `source_type` is
-`"pyenv"`, `"virtualenv_wrapper"` or `"conda"`. `size_bytes` is lazily
-computed and may be `null` if not yet requested.
+`"pyenv"`, `"virtualenv_wrapper"` or `"conda"`. `size_bytes` is the sum
+of the environment's regular file sizes, measured when `migrate list` runs.
 
 ### `migrate all --json` — success path
 

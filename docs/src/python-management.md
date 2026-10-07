@@ -153,8 +153,8 @@ scuv migrate list
 # ✓ Found 2 environment(s):
 #
 #   [virtualenvwrapper]
-#     ✓ myproject            Python 3.12              - MB
-#     ✓ webapp               Python 3.11              - MB
+#     ✓ myproject            Python 3.12           42.3 MB
+#     ✓ webapp               Python 3.11          118.6 MB
 # ...
 
 # Migrate a specific environment
