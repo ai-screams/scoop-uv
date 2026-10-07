@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791364660185,
+  "lastUpdate": 1791364661643,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -10273,6 +10273,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1115,
             "range": "± 16",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9be58244eb61706caaa8cf465e36ff91711cae14",
+          "message": "Merge pull request #227 from ai-screams/ci/adopt-nextest\n\nci(test): run the test suite with cargo-nextest",
+          "timestamp": "2026-10-07T18:14:25+09:00",
+          "tree_id": "2dab66b3b3281fbc7b929c14ed484089730a18ab",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/9be58244eb61706caaa8cf465e36ff91711cae14"
+        },
+        "date": 1791364661577,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1286,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 832,
+            "range": "± 0",
             "unit": "ns/iter"
           }
         ]
