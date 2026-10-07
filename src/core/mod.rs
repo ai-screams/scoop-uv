@@ -172,6 +172,7 @@ mod tests {
     // ==========================================================================
 
     #[test]
+    #[serial_test::serial]
     fn list_installed_packages_nonexistent_path_returns_empty() {
         let pkgs = list_installed_packages(std::path::Path::new("/nonexistent/path/to/venv"));
         assert!(pkgs.is_empty());

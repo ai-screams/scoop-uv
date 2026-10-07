@@ -909,6 +909,7 @@ mod tests {
     // =========================================================================
 
     #[test]
+    #[serial_test::serial]
     fn execute_returns_uv_not_found_when_uv_missing() {
         if UvClient::new().is_ok() {
             return;
