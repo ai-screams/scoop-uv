@@ -26,26 +26,12 @@ lang.reset:
   ja: "システムデフォルトにリセットしました: %{lang}"
   es: "Restablecido al idioma por defecto: %{lang}"
 
-lang.unsupported:
-  en: "Unsupported language: %{lang}"
-  ko: "지원하지 않는 언어: %{lang}"
-  pt-BR: "Idioma não suportado: %{lang}"
-  ja: "サポートされていない言語: %{lang}"
-  es: "Idioma no compatible: %{lang}"
-
 lang.list_header:
   en: "Supported languages:"
   ko: "지원 언어:"
   pt-BR: "Idiomas suportados:"
   ja: "対応言語:"
   es: "Idiomas disponibles:"
-
-lang.hint:
-  en: "Run 'scuv lang --list' to see supported languages"
-  ko: "'scuv lang --list'로 지원 언어 확인"
-  pt-BR: "Execute 'scuv lang --list' para ver os idiomas suportados"
-  ja: "'scuv lang --list' を実行するとサポートされている言語を確認できます"
-  es: "Ejecutar 'scuv lang --list' para ver idiomas disponibles"
 
 # ============================================================================
 # Create command
@@ -183,11 +169,11 @@ error.unsupported_export_version:
   es: "La versión '%{version}' del archivo de exportación no es compatible (este binario usa '%{supported}')"
 
 suggestion.unsupported_export_version:
-  en: "→ Upgrade scuv to a build that supports version '%{supported}' or higher, or re-export from a compatible source"
-  ko: "→ '%{supported}' 이상을 지원하는 scuv로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
-  pt-BR: "→ Atualize o scuv para uma versão que suporte '%{supported}' ou superior, ou re-exporte de uma fonte compatível"
-  ja: "→ '%{supported}' 以降に対応する scuv にアップグレードするか、互換性のある環境から再エクスポートしてください"
-  es: "→ Actualizar scuv a una versión que soporte '%{supported}' o superior, o reexportar de una fuente compatible"
+  en: "→ Upgrade scuv to a build that reads export version '%{version}', or re-export from a compatible source"
+  ko: "→ 내보내기 버전 '%{version}'을(를) 읽는 scuv로 업그레이드하거나 호환 가능한 환경에서 다시 내보내세요"
+  pt-BR: "→ Atualize o scuv para uma versão que leia o formato de exportação '%{version}', ou re-exporte de uma fonte compatível"
+  ja: "→ エクスポート形式 '%{version}' を読める scuv にアップグレードするか、互換性のある環境から再エクスポートしてください"
+  es: "→ Actualizar scuv a una versión que lea el formato de exportación '%{version}', o reexportar de una fuente compatible"
 
 # ============================================================================
 # Sync command (.scuv.toml)
@@ -587,12 +573,26 @@ migrate.scanning:
   ja: "%{source} から環境をスキャン中..."
   es: "Buscando entornos en %{source}..."
 
+migrate.scanning_all:
+  en: "Scanning all sources for environments..."
+  ko: "모든 소스에서 환경 검색 중..."
+  pt-BR: "Procurando ambientes em todas as fontes..."
+  ja: "すべてのソースから環境をスキャン中..."
+  es: "Buscando entornos en todas las fuentes..."
+
 migrate.no_envs:
   en: "No %{source} environments found."
   ko: "%{source} 환경을 찾지 못함."
   pt-BR: "Nenhum ambiente %{source} encontrado."
   ja: "%{source} 環境が見つかりませんでした"
   es: "No se encontraron entornos de %{source}."
+
+migrate.no_envs_any:
+  en: "No environments found."
+  ko: "환경을 찾지 못함."
+  pt-BR: "Nenhum ambiente encontrado."
+  ja: "環境が見つかりませんでした"
+  es: "No se encontraron entornos."
 
 migrate.found:
   en: "Found %{count} environment(s):"
@@ -959,6 +959,13 @@ error.unsupported_shell:
   pt-BR: "Shell '%{shell}' não suportado"
   ja: "シェル '%{shell}' がサポートされていません"
   es: "El shell '%{shell}' no es compatible"
+
+error.unsupported_language:
+  en: "Unsupported language: %{lang}"
+  ko: "지원하지 않는 언어: %{lang}"
+  pt-BR: "Idioma não suportado: %{lang}"
+  ja: "サポートされていない言語: %{lang}"
+  es: "Idioma no compatible: %{lang}"
 
 error.python_not_installed:
   en: "Python %{version} not installed"
@@ -1581,6 +1588,13 @@ suggestion.migration_sources_not_found:
   pt-BR: "→ Instale pelo menos um de: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper ou conda"
   ja: "→ pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper, conda のいずれかをインストールしてください"
   es: "→ Instalar al menos uno de: pyenv (https://github.com/pyenv/pyenv), virtualenvwrapper o conda"
+
+suggestion.unsupported_language:
+  en: "→ Run 'scuv lang --list' to see supported languages"
+  ko: "→ 'scuv lang --list'로 지원 언어 확인"
+  pt-BR: "→ Execute 'scuv lang --list' para ver os idiomas suportados"
+  ja: "→ 'scuv lang --list' を実行するとサポートされている言語を確認できます"
+  es: "→ Ejecutar 'scuv lang --list' para ver idiomas disponibles"
 
 migrate.batch_no_migratable_conflicts:
   en: "No environments migrated — %{count} name conflict(s) without --force:"

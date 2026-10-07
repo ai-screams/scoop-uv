@@ -23,6 +23,7 @@ impl ScoopError {
             Self::Json(_) => "INTERNAL_JSON_ERROR",
             Self::VersionFileNotFound { .. } => "CONFIG_VERSION_FILE_NOT_FOUND",
             Self::UnsupportedShell { .. } => "SHELL_NOT_SUPPORTED",
+            Self::UnsupportedLanguage { .. } => "LANG_NOT_SUPPORTED",
             Self::PythonNotInstalled { .. } => "PYTHON_NOT_INSTALLED",
             Self::PythonInstallFailed { .. } => "PYTHON_INSTALL_FAILED",
             Self::PythonUninstallFailed { .. } => "PYTHON_UNINSTALL_FAILED",

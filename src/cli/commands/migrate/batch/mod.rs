@@ -19,7 +19,7 @@ use crate::error::{Result, ScoopError};
 use crate::output::Output;
 use crate::paths;
 
-use super::scan::{any_source_tool_available, scan_all_environments};
+use super::scan::{any_source_tool_available, scan_all_environments, scanning_message};
 use super::types::MigrateExecuteOptions;
 use plan::{PartitionedEnvs, partition_envs};
 
@@ -39,11 +39,7 @@ use plan::{PartitionedEnvs, partition_envs};
 ///   NOT print the global `error:` prefix again.
 pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -> Result<()> {
     if !opts.json {
-        let source_name = opts
-            .source_filter
-            .map(|s| s.to_string())
-            .unwrap_or_else(|| "all sources".to_string());
-        output.info(&t!("migrate.scanning", source = source_name));
+        output.info(&scanning_message(opts.source_filter, &rust_i18n::locale()));
     }
 
     let environments = scan_all_environments(opts.source_filter);

@@ -67,6 +67,9 @@ impl ScoopError {
             Self::UnsupportedShell { shell } => {
                 t!("error.unsupported_shell", locale = locale, shell = shell).to_string()
             }
+            Self::UnsupportedLanguage { lang } => {
+                t!("error.unsupported_language", locale = locale, lang = lang).to_string()
+            }
             Self::PythonNotInstalled { version } => t!(
                 "error.python_not_installed",
                 locale = locale,

@@ -94,9 +94,11 @@ fn test_set_language_unsupported_does_not_change_locale() {
         let output = create_test_output(false);
         let before = i18n::current();
 
-        // Unsupported language returns Ok but should not change locale
+        // Unsupported language is an error and does not change the locale
         let result = set_language(&output, "xyz");
-        assert!(result.is_ok());
+        assert!(
+            matches!(result, Err(ScoopError::UnsupportedLanguage { ref lang }) if lang == "xyz")
+        );
 
         let after = i18n::current();
         assert_eq!(
@@ -112,7 +114,10 @@ fn test_set_language_unsupported_no_config_change() {
     with_temp_scoop_home(|temp_dir| {
         let output = create_test_output(false);
         let result = set_language(&output, "fr"); // fr is not yet supported
-        assert!(result.is_ok());
+        assert!(matches!(
+            result,
+            Err(ScoopError::UnsupportedLanguage { .. })
+        ));
 
         // Config should not be created for unsupported language
         let config_path = temp_dir.path().join("config.json");
@@ -148,9 +153,12 @@ fn test_set_language_json_mode_unsupported_no_change() {
         set_language(&output, "en").unwrap();
         let before = i18n::current();
 
-        // Try unsupported
+        // Try unsupported: an error in JSON mode too (no success envelope)
         let result = set_language(&output, "xyz");
-        assert!(result.is_ok());
+        assert!(matches!(
+            result,
+            Err(ScoopError::UnsupportedLanguage { .. })
+        ));
         assert_eq!(
             i18n::current(),
             before,
@@ -362,8 +370,11 @@ fn test_set_language_empty_string() {
     with_temp_scoop_home(|_| {
         let output = create_test_output(false);
         let result = set_language(&output, "");
-        // Empty string is not supported, should return Ok but not save
-        assert!(result.is_ok());
+        // Empty string is not supported: an error, nothing saved
+        assert!(matches!(
+            result,
+            Err(ScoopError::UnsupportedLanguage { .. })
+        ));
     });
 }
 

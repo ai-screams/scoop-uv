@@ -502,6 +502,17 @@ fn test_error_code_config_version_file_not_found() {
 }
 
 #[test]
+fn test_error_code_lang_not_supported() {
+    let err = ScoopError::UnsupportedLanguage { lang: "xx".into() };
+    assert_eq!(err.code(), "LANG_NOT_SUPPORTED");
+    assert_eq!(err.message_in("en"), "Unsupported language: xx");
+    assert_eq!(
+        err.suggestion_in("en").as_deref(),
+        Some("→ Run 'scuv lang --list' to see supported languages")
+    );
+}
+
+#[test]
 fn test_error_code_shell_not_supported() {
     let err = ScoopError::UnsupportedShell { shell: "x".into() };
     assert_eq!(err.code(), "SHELL_NOT_SUPPORTED");
@@ -661,6 +672,7 @@ fn test_all_error_codes_are_unique() {
         }
         .code(),
         ScoopError::UnsupportedShell { shell: "".into() }.code(),
+        ScoopError::UnsupportedLanguage { lang: "".into() }.code(),
         ScoopError::PythonNotInstalled { version: "".into() }.code(),
         ScoopError::PythonInstallFailed {
             version: "".into(),
@@ -968,17 +980,21 @@ fn test_suggestion_manifest_not_found_points_at_docs() {
 }
 
 #[test]
-fn test_suggestion_unsupported_export_version_includes_supported_version() {
-    // Pinning: deleting the match arm collapses to `None`, and the
-    // suggestion must interpolate `supported` so the user knows what
-    // version this binary can read.
+fn test_suggestion_unsupported_export_version_names_the_file_version() {
+    // Pinning: deleting the match arm collapses to `None`. The suggestion
+    // names the file's version, the one a newer scuv has to read; it used to
+    // name this binary's own version ("supports version '1' or higher"),
+    // which the error line already states and which this binary already is.
     let err = ScoopError::UnsupportedExportVersion {
         version: "99".into(),
         supported: "1".into(),
     };
-    let s = err.suggestion_in("en").unwrap();
-    assert!(s.starts_with("→"));
-    assert!(s.contains("'1'") || s.contains("version '1'"));
+    for locale in ["en", "ko", "ja", "pt-BR", "es"] {
+        let s = err.suggestion_in(locale).unwrap();
+        assert!(s.starts_with("→"), "{locale}: {s}");
+        assert!(s.contains("'99'"), "{locale}: {s}");
+        assert!(!s.contains("'1'"), "{locale}: {s}");
+    }
 }
 
 // =========================================================================
@@ -1017,6 +1033,9 @@ fn every_variant() -> Vec<ScoopError> {
         },
         ScoopError::UnsupportedShell {
             shell: "sh-aai".into(),
+        },
+        ScoopError::UnsupportedLanguage {
+            lang: "xx-aai2".into(),
         },
         ScoopError::PythonNotInstalled {
             version: "9.9.aaj".into(),
@@ -1121,6 +1140,7 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::Json(_)
         | ScoopError::VersionFileNotFound { .. }
         | ScoopError::UnsupportedShell { .. }
+        | ScoopError::UnsupportedLanguage { .. }
         | ScoopError::PythonNotInstalled { .. }
         | ScoopError::PythonInstallFailed { .. }
         | ScoopError::PythonUninstallFailed { .. }

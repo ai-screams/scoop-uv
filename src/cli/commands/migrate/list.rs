@@ -2,14 +2,16 @@
 //!
 //! Displays discovered environments in human-readable or JSON format.
 
+use rayon::prelude::*;
 use rust_i18n::t;
 
 use crate::cli::MigrateSource;
+use crate::core::migrate::common::dir_size;
 use crate::core::migrate::{EnvironmentStatus, SourceEnvironment, SourceType};
 use crate::error::Result;
 use crate::output::Output;
 
-use super::scan::scan_all_environments;
+use super::scan::{no_envs_message, scan_all_environments, scanning_message};
 use super::types::{MigrateListData, MigrateListSummary};
 
 /// List environments available for migration.
@@ -24,13 +26,10 @@ pub fn list_environments(
     source_filter: Option<MigrateSource>,
 ) -> Result<()> {
     if !json {
-        let source_name = source_filter
-            .map(|s| s.to_string())
-            .unwrap_or_else(|| "all sources".to_string());
-        output.info(&t!("migrate.scanning", source = source_name));
+        output.info(&scanning_message(source_filter, &rust_i18n::locale()));
     }
 
-    let environments = scan_all_environments(source_filter);
+    let environments = with_sizes(scan_all_environments(source_filter));
 
     if json {
         let summary = summarize(&environments);
@@ -48,8 +47,7 @@ pub fn list_environments(
     }
 
     if environments.is_empty() {
-        let source_name = source_filter.map(|s| format!("{}", s)).unwrap_or_default();
-        output.info(&t!("migrate.no_envs", source = source_name));
+        output.info(&no_envs_message(source_filter, &rust_i18n::locale()));
         return Ok(());
     }
 
@@ -97,6 +95,17 @@ fn print_grouped(environments: &[SourceEnvironment]) {
         }
         println!("{}", env_line(env));
     }
+}
+
+/// Fills each environment's on-disk size. Discovery leaves `size_bytes`
+/// unset so that `migrate all` and `migrate @env` do not walk every tree;
+/// `migrate list` shows the size, so it measures here, one env per thread
+/// (a conda env can hold tens of thousands of files).
+fn with_sizes(mut environments: Vec<SourceEnvironment>) -> Vec<SourceEnvironment> {
+    environments
+        .par_iter_mut()
+        .for_each(|env| env.size_bytes = Some(dir_size(&env.path)));
+    environments
 }
 
 /// One environment's line: status icon, name, Python, size and a hint.
