@@ -86,13 +86,11 @@ jobs:
   # (9.3s each), so a full pass needs roughly 69 — hence 90, with headroom for
   # a slow runner.
   #
-  # Finishing the suite surfaces the MISSED mutants it has been finding all
-  # along — 55 in that same artifact, 46 of them in src/core/migrate/**.
-  # Failing the job on those before anyone has triaged the backlog would just
-  # produce a red check every Monday that everyone learns to ignore, so the
-  # run step tolerates exit 2 (mutants missed) and nothing else. Results land
-  # in the uploaded artifact. Turn exit 2 back into a failure once the backlog
-  # is either fixed or documented in .cargo/mutants.toml.
+  # Finishing the suite surfaced a backlog of MISSED mutants — 55 in that
+  # same artifact, 46 of them in src/core/migrate/**. While it was triaged
+  # the run step tolerated exit 2. The backlog is now covered by tests or
+  # documented in .cargo/mutants.toml (the 2026-10-08 full run: 481 mutants,
+  # 3 missed, all three closed since), so a missed mutant fails the job.
   full:
     name: Mutants (full)
     if: github.event_name != 'pull_request'
@@ -131,11 +129,10 @@ jobs:
         with:
           tool: cargo-nextest@0.9.146  # keep in step with ci.yml and docker/Dockerfile NEXTEST_VERSION
 
-      # Exit 2 means "found mutants no test kills" — the backlog above, not an
-      # infrastructure problem. Every other non-zero code still fails the job:
-      # 3 = tests timed out, 4 = the baseline tree is already broken, and
-      # anything else is a usage or build error. `continue-on-error` would have
-      # hidden all of those too.
+      # Every non-zero code fails the job, with what it means: 2 = mutants no
+      # test kills (listed in the uploaded artifact), 3 = tests timed out,
+      # 4 = the baseline tree is already broken, anything else a usage or
+      # build error.
       - name: Run full mutation suite
         run: |
           set +e
@@ -144,7 +141,7 @@ jobs:
           set -e
           case $ec in
             0) echo "All mutants caught." ;;
-            2) echo "::warning::cargo-mutants found missed mutants (exit 2); see the uploaded artifact." ;;
+            2) echo "::error::cargo-mutants found missed mutants (exit 2); see the uploaded artifact."; exit 2 ;;
             *) echo "::error::cargo-mutants failed with exit $ec"; exit $ec ;;
           esac
 

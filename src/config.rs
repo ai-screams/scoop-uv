@@ -64,6 +64,18 @@ impl Config {
 mod tests {
     use super::*;
 
+    /// `load` reads the saved file; without one it is the default. Fails if
+    /// `load` ignores the file or inverts the existence check.
+    #[test]
+    #[serial_test::serial]
+    fn load_reads_the_saved_config_and_defaults_without_one() {
+        crate::test_utils::with_temp_scoop_home(|home| {
+            assert_eq!(Config::load().unwrap().lang, None);
+            std::fs::write(home.path().join("config.json"), r#"{"lang":"ko"}"#).unwrap();
+            assert_eq!(Config::load().unwrap().lang.as_deref(), Some("ko"));
+        });
+    }
+
     #[test]
     fn test_default_config() {
         let config = Config::default();
