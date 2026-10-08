@@ -151,6 +151,11 @@ exclude_re = [
     "virtualenv_python_exe",
     "virtualenv_pip_exe",
     "virtualenv_activate_script",
+    # The name-based `virtualenv_activate` has the same cfg(windows) twin
+    # (Scripts/activate.bat): the full run reports that one MISSED on Linux.
+    # The Unix variant is pinned by test_virtualenv_activate_unix. The
+    # trailing ` ->` keeps this from matching virtualenv_activate_script.
+    "virtualenv_activate ->",
     # Strategy 3 of virtualenv_site_packages spawns the venv's own python
     # to ask sysconfig for the purelib path. The `delete !` mutation on
     # the empty-stdout guard (paths.rs:222) flips the success/failure

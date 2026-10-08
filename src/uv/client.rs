@@ -359,6 +359,27 @@ impl Default for UvClient {
 mod tests {
     use super::*;
 
+    /// `list_pythons` returns what `uv python list` reports, and asks for
+    /// every Python (no `--only-installed`). A fake uv reports one; fails if
+    /// the list comes back empty or made up.
+    #[cfg(unix)]
+    #[test]
+    #[serial_test::serial]
+    fn list_pythons_returns_what_uv_reports() {
+        let uv = crate::test_utils::FakeUv::new(&["3.12.14"]);
+        let path = uv.path_var();
+        let _env = crate::test_utils::env_guard(&[("PATH", Some(path.as_str()))]);
+        let pythons = UvClient::new().unwrap().list_pythons().unwrap();
+        let versions: Vec<_> = pythons.iter().map(|p| p.version.as_str()).collect();
+        assert_eq!(versions, ["3.12.14"]);
+        assert_eq!(uv.list_calls().len(), 1);
+        assert!(
+            !uv.list_calls()[0].contains("--only-installed"),
+            "{:?}",
+            uv.list_calls()
+        );
+    }
+
     #[test]
     #[serial_test::serial]
     fn test_uv_client_creation() {
