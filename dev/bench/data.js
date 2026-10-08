@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791440624770,
+  "lastUpdate": 1791440626436,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -10753,6 +10753,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1334,
             "range": "± 18",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cee249f0280c80c3749dcba58278a0e49f2ba060",
+          "message": "Merge pull request #231 from ai-screams/test/close-mutant-gaps\n\ntest(mutants): close the three mutants the full run missed and gate on misses",
+          "timestamp": "2026-10-08T15:18:58+09:00",
+          "tree_id": "91bc21dee9aead597c5f15abab967b4ace3e9651",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/cee249f0280c80c3749dcba58278a0e49f2ba060"
+        },
+        "date": 1791440626319,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1682,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1113,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
