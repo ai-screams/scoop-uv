@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791389783070,
+  "lastUpdate": 1791440624770,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -8614,6 +8614,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/max_length",
             "value": 203,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cee249f0280c80c3749dcba58278a0e49f2ba060",
+          "message": "Merge pull request #231 from ai-screams/test/close-mutant-gaps\n\ntest(mutants): close the three mutants the full run missed and gate on misses",
+          "timestamp": "2026-10-08T15:18:58+09:00",
+          "tree_id": "91bc21dee9aead597c5f15abab967b4ace3e9651",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/cee249f0280c80c3749dcba58278a0e49f2ba060"
+        },
+        "date": 1791440623720,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 97096,
+            "range": "± 635",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 116076,
+            "range": "± 530",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 3101,
+            "range": "± 30",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 775,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 91,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 92,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 91,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 79,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 21,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 186,
             "range": "± 0",
             "unit": "ns/iter"
           }
