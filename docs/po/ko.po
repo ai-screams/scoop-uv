@@ -14309,15 +14309,15 @@ msgstr ""
 
 #: src/development/ci-cd.md:104
 msgid ""
-"**Weekly** (full): every candidate in scope. Tracked rather than gated for "
-"now — the step tolerates exit 2 (mutants missed) and nothing else, so a "
-"broken baseline or a timeout still fails loudly while the backlog in [Known "
-"gaps](#known-gaps) is worked through."
+"**Weekly** (full): every candidate in scope. A missed mutant fails the job, "
+"as a broken baseline or a timeout does. It tolerated exit 2 while the "
+"backlog of earlier escapes was triaged; see [Recently closed](#recently-"
+"closed)."
 msgstr ""
-"**매주** (full): 범위 내의 모든 후보. 당분간은 게이트가 아니라 추적입니다 — "
-"스텝이 허용하는 것은 exit 2(변이 미검출)뿐이므로, baseline 파손이나 타임아웃"
-"은 여전히 크게 실패합니다. 그동안 [알려진 공백](#알려진-공백)의 backlog를 정"
-"리해 나갑니다."
+"**주간** (전체): 범위 안의 모든 후보. 놓친 변이가 있으면 깨진 베이스라인이나 "
+"타임아웃과 마찬가지로 잡이 실패합니다. 예전에 빠져나간 변이들을 정리하는 동안"
+"에는 종료 코드 2를 허용했습니다. [최근에 해결된 것](#최근에-해결된-것)을 참고"
+"하세요."
 
 #: src/development/ci-cd.md:109
 msgid ""
@@ -14808,26 +14808,6 @@ msgstr ""
 
 #: src/development/ci-cd.md:308
 msgid ""
-"**Unreviewed mutation escapes outside `migrate/`.** The last full-run "
-"artifact listed 55 mutants no test kills, 46 of them under `src/core/migrate/"
-"**`. That module is now closed — 111 mutants, 0 missed — so what remains is "
-"the return-value backlog elsewhere (`UvClient::list_pythons -> Ok(vec![])` "
-"and similar). Those may need a real `uv` or `conda` to observe, in which "
-"case they belong in `.cargo/mutants.toml` with a rationale, but each needs "
-"checking rather than assuming. The next completed weekly run supersedes that "
-"artifact; until the triage happens the job tolerates exit 2."
-msgstr ""
-"**`migrate/` 밖의 검토되지 않은 변이 누출.** 마지막 full 실행 아티팩트는 어"
-"떤 테스트도 잡지 못하는 변이 55건을 나열했고, 그중 46건이 `src/core/migrate/"
-"**`에 있었습니다. 그 모듈은 이제 정리됐습니다 — 변이 111건, 누출 0건 — 따라"
-"서 남은 것은 다른 곳의 반환값 누출 잔여분(`UvClient::list_pythons -> Ok(vec!"
-"[])` 등)입니다. 이들은 관측하려면 실제 `uv`나 `conda`가 필요할 수 있고, 그렇"
-"다면 근거와 함께 `.cargo/mutants.toml`에 들어가야 하지만, 각각을 가정이 아니"
-"라 확인해야 합니다. 다음으로 완주하는 주간 실행이 그 아티팩트를 대체합니다. "
-"그 분류가 끝날 때까지 이 잡은 exit 2를 허용합니다."
-
-#: src/development/ci-cd.md:317
-msgid ""
 "**The coverage floor is absolute, not relative.** `--fail-under-lines 80` is "
 "measured against llvm-cov, which reads 80.97% where Codecov reads 78.5%; the "
 "two count different things, so a number taken from the Codecov dashboard "
@@ -14836,7 +14816,7 @@ msgid ""
 "above."
 msgstr ""
 
-#: src/development/ci-cd.md:323
+#: src/development/ci-cd.md:314
 msgid ""
 "**The cache hit its limit.** 10.49 GB against the 10 GB allowance on "
 "2026-09-26: 139 caches for `main` (about 2 GB of them `v0-rust-*` keyed to "
@@ -14870,17 +14850,35 @@ msgstr ""
 "에서 lockfile 해시를 뗀 것)마다 가장 최근 항목, 즉 같은 toolchain과 환경으로 "
 "도는 이후 실행이 fallback으로 복원할 항목만 남긴다."
 
-#: src/development/ci-cd.md:341
+#: src/development/ci-cd.md:332
 msgid "Recently closed"
 msgstr "최근에 해결된 것"
 
-#: src/development/ci-cd.md:343
+#: src/development/ci-cd.md:334
 msgid ""
 "Left here because the reasoning is worth keeping, not because anything is "
 "outstanding."
 msgstr ""
 "남겨 둔 이유는 그 판단 과정이 기록할 만해서이지, 아직 남은 문제가 있어서가 아"
 "닙니다."
+
+#: src/development/ci-cd.md:337
+msgid ""
+"The weekly full mutation run tolerated missed mutants (exit 2) while a "
+"backlog was triaged: 55 escapes at first, 46 of them under `src/core/migrate/"
+"**`. The 2026-10-08 run left three, and each was closed: `Config::load` and "
+"`UvClient::list_pythons` got tests (the latter against a fake `uv`), and "
+"`virtualenv_activate`'s miss was its `cfg(windows)` twin, which never "
+"compiles on the Linux runner, so it joined the other Windows path helpers in "
+"`.cargo/mutants.toml`. A missed mutant now fails the weekly job."
+msgstr ""
+"주간 전체 변이 실행은 밀린 항목을 정리하는 동안 놓친 변이(종료 코드 2)를 허용"
+"했습니다. 처음에는 55개가 빠져나갔고, 그중 46개가 `src/core/migrate/**`에 있"
+"었습니다. 2026-10-08 실행에서 세 개가 남았고 모두 해결했습니다. "
+"`Config::load`와 `UvClient::list_pythons`에는 테스트를 추가했고(후자는 가짜 "
+"`uv`로), `virtualenv_activate`가 놓친 것은 Linux 러너에서 컴파일되지 않는 "
+"`cfg(windows)` 쌍둥이 함수였으므로 다른 Windows 경로 도우미와 함께 `.cargo/"
+"mutants.toml`에서 제외했습니다. 이제 놓친 변이가 있으면 주간 잡이 실패합니다."
 
 #: src/development/ci-cd.md:346
 msgid ""

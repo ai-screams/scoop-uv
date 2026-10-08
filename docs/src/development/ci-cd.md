@@ -101,10 +101,10 @@ any that the suite fails to catch.
 
 - **On PRs** (`--in-diff`): only the lines this PR changed. Fast enough
   to gate on.
-- **Weekly** (full): every candidate in scope. Tracked rather than gated
-  for now — the step tolerates exit 2 (mutants missed) and nothing else,
-  so a broken baseline or a timeout still fails loudly while the backlog
-  in [Known gaps](#known-gaps) is worked through.
+- **Weekly** (full): every candidate in scope. A missed mutant fails the
+  job, as a broken baseline or a timeout does. It tolerated exit 2 while
+  the backlog of earlier escapes was triaged; see
+  [Recently closed](#recently-closed).
 
 `.cargo/mutants.toml` carries the exclusions, each with a written
 rationale. Most exclude code whose mutations can only be killed by
@@ -305,15 +305,6 @@ any of these being fixed.
   `coverage.yml` (`cargo llvm-cov report --fail-under-lines 80`), which
   catches a collapse but not a slow slide. Requiring the status before it is
   known to post would leave every PR waiting on a check that never arrives.
-- **Unreviewed mutation escapes outside `migrate/`.** The last full-run
-  artifact listed 55 mutants no test kills, 46 of them under
-  `src/core/migrate/**`. That module is now closed — 111 mutants, 0
-  missed — so what remains is the return-value backlog elsewhere
-  (`UvClient::list_pythons -> Ok(vec![])` and similar). Those may need a
-  real `uv` or `conda` to observe, in which case they belong in
-  `.cargo/mutants.toml` with a rationale, but each needs checking rather
-  than assuming. The next completed weekly run supersedes that artifact;
-  until the triage happens the job tolerates exit 2.
 - **The coverage floor is absolute, not relative.** `--fail-under-lines 80`
   is measured against llvm-cov, which reads 80.97% where Codecov reads 78.5%;
   the two count different things, so a number taken from the Codecov
@@ -342,6 +333,15 @@ any of these being fixed.
 
 Left here because the reasoning is worth keeping, not because anything is
 outstanding.
+
+- The weekly full mutation run tolerated missed mutants (exit 2) while a
+  backlog was triaged: 55 escapes at first, 46 of them under
+  `src/core/migrate/**`. The 2026-10-08 run left three, and each was
+  closed: `Config::load` and `UvClient::list_pythons` got tests (the latter
+  against a fake `uv`), and `virtualenv_activate`'s miss was its
+  `cfg(windows)` twin, which never compiles on the Linux runner, so it joined
+  the other Windows path helpers in `.cargo/mutants.toml`. A missed mutant
+  now fails the weekly job.
 
 - Docs were only verified on release tags: the MSRV 1.89 bump edited pages
   under `docs/src/`, its PR went green, and the `v0.15.4` tag then failed at
