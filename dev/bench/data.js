@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791787502161,
+  "lastUpdate": 1791787503548,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -11113,6 +11113,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1109,
             "range": "± 10",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1db35566c58bc5b0ee287802529140fd55d4b64d",
+          "message": "Merge pull request #230 from ai-screams/release-plz-2026-10-07T16-02-29Z\n\nchore: release v0.17.2",
+          "timestamp": "2026-10-12T15:41:00+09:00",
+          "tree_id": "26a14d05a9e8faf7daf6e577dc3463ff533395d1",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/1db35566c58bc5b0ee287802529140fd55d4b64d"
+        },
+        "date": 1791787503457,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1499,
+            "range": "± 29",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1035,
+            "range": "± 9",
             "unit": "ns/iter"
           }
         ]
