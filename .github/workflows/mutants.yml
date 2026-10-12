@@ -91,11 +91,20 @@ jobs:
   # the run step tolerated exit 2. The backlog is now covered by tests or
   # documented in .cargo/mutants.toml (the 2026-10-08 full run: 481 mutants,
   # 3 missed, all three closed since), so a missed mutant fails the job.
+  #
+  # Split over two shards. One job took 57-88 minutes against the 90-minute
+  # limit, about 90% of it rebuilding the tree once per mutant. Round-robin
+  # rather than the default slice: on the 2026-10-08 timings it splits the
+  # mutant time 43.5/42.9 minutes, against 45.2/41.3 for consecutive slices.
   full:
-    name: Mutants (full)
+    name: Mutants (full ${{ matrix.shard }}/2)
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -136,7 +145,7 @@ jobs:
       - name: Run full mutation suite
         run: |
           set +e
-          cargo mutants --no-shuffle -vV
+          cargo mutants --no-shuffle -vV --shard ${{ matrix.shard }}/2 --sharding round-robin
           ec=$?
           set -e
           case $ec in
@@ -149,5 +158,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: mutants-full.out
+          name: mutants-full-${{ matrix.shard }}.out
           path: mutants.out
