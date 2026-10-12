@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791786393005,
+  "lastUpdate": 1791786394553,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -10993,6 +10993,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1034,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "43da26763d8d4e48fdfc292ab6fc420c945e889c",
+          "message": "chore(deps): bump toml from 1.1.6+spec-1.1.0 to 1.1.7+spec-1.1.0 in the rust-dependencies group\n\nBumps the rust-dependencies group with 1 update: [toml](https://github.com/toml-rs/toml).\n\n\nUpdates `toml` from 1.1.6+spec-1.1.0 to 1.1.7+spec-1.1.0\n- [Commits](https://github.com/toml-rs/toml/compare/toml-v1.1.6...toml-v1.1.7)\n\n---\nupdated-dependencies:\n- dependency-name: toml\n  dependency-version: 1.1.7+spec-1.1.0\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n  dependency-group: rust-dependencies\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-10-12T15:19:20+09:00",
+          "tree_id": "96f2d630038fca373dea653c2bb116ee954fafa1",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/43da26763d8d4e48fdfc292ab6fc420c945e889c"
+        },
+        "date": 1791786394443,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1685,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1109,
+            "range": "± 10",
             "unit": "ns/iter"
           }
         ]
