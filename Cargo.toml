@@ -88,7 +88,7 @@ rstest = "0.28"
 # YAML for the locale-parity test. serde-saphyr is already in the lock file --
 # rust-i18n parses this same app.yml with it at build time -- so this adds no
 # new package. `deserialize` only: the test reads, never writes.
-serde-saphyr = { version = "2.0", default-features = false, features = ["deserialize"] }
+serde-saphyr = { version = "1.2", default-features = false, features = ["deserialize"] }
 # Benchmark runner. html_reports gives a `target/criterion/report/index.html`
 # overview that's useful when comparing baselines locally.
 criterion = { version = "0.8", features = ["html_reports"] }
