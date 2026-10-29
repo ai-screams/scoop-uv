@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793293022690,
+  "lastUpdate": 1793293024779,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -11353,6 +11353,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 796,
             "range": "± 14",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "129042555298284cab87794a0f9bbabec0bec707",
+          "message": "chore(deps): bump libc and rstest in the rust-dependencies group\n\n* chore(deps): bump the rust-dependencies group across 1 directory with 3 updates\n\nBumps the rust-dependencies group with 3 updates in the / directory: [libc](https://github.com/rust-lang/libc), [rstest](https://github.com/la10736/rstest) and [serde-saphyr](https://github.com/bourumir-wyngs/serde-saphyr).\n\n\nUpdates `libc` from 0.2.190 to 0.2.191\n- [Release notes](https://github.com/rust-lang/libc/releases)\n- [Changelog](https://github.com/rust-lang/libc/blob/0.2.191/CHANGELOG.md)\n- [Commits](https://github.com/rust-lang/libc/compare/0.2.190...0.2.191)\n\nUpdates `rstest` from 0.27.0 to 0.28.0\n- [Release notes](https://github.com/la10736/rstest/releases)\n- [Changelog](https://github.com/la10736/rstest/blob/master/CHANGELOG.md)\n- [Commits](https://github.com/la10736/rstest/compare/v0.27.0...v0.28.0)\n\nUpdates `serde-saphyr` from 1.3.0 to 2.0.0\n- [Release notes](https://github.com/bourumir-wyngs/serde-saphyr/releases)\n- [Changelog](https://github.com/bourumir-wyngs/serde-saphyr/blob/master/CHANGELOG.md)\n- [Commits](https://github.com/bourumir-wyngs/serde-saphyr/compare/1.3.0...2.0.0)\n\n---\nupdated-dependencies:\n- dependency-name: libc\n  dependency-version: 0.2.191\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n  dependency-group: rust-dependencies\n- dependency-name: rstest\n  dependency-version: 0.28.0\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: rust-dependencies\n- dependency-name: serde-saphyr\n  dependency-version: 2.0.0\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: rust-dependencies\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\n\n* chore(deps): keep serde-saphyr on 1.x to match rust-i18n\n\nThe dev-dependency exists so the locale-parity test parses app.yml with\nthe parser rust-i18n uses at build time. rust-i18n-support 4.2.4 still\nrequires ^1.2, so 2.0 would add a second serde-saphyr and granit-parser\nto the lock. Ignore its major bumps until rust-i18n moves.\n\n---------\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>\nCo-authored-by: pignuante <hanyul.ryu@hanyul.xyz>",
+          "timestamp": "2026-10-30T01:52:38+09:00",
+          "tree_id": "20ffbbe1b42ef5bdd2405beaf8ddda36c4154ad1",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/129042555298284cab87794a0f9bbabec0bec707"
+        },
+        "date": 1793293024673,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 633,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 470,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
