@@ -84,7 +84,7 @@ assert_cmd = "2.2"
 predicates = "3.1"
 serial_test = "3.2"
 proptest = "1.11"
-rstest = "0.27"
+rstest = "0.28"
 # YAML for the locale-parity test. serde-saphyr is already in the lock file --
 # rust-i18n parses this same app.yml with it at build time -- so this adds no
 # new package. `deserialize` only: the test reads, never writes.
