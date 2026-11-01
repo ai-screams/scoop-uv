@@ -200,6 +200,9 @@ scuv shell --unset
 > Minimum supported `uv` is **0.5.19** — the release that added
 > `uv python list --output-format=json`, which scuv relies on. Run
 > `scuv doctor` to verify your installation.
+>
+> No uv yet? On macOS and Linux, `scuv doctor --fix` shows the official installer commands
+> and runs them only after you confirm. No other command installs anything.
 
 <details>
 <summary>❓ <b>FAQ:</b> How is scuv different from uv, and is it related to Scoop (Windows)?</summary>

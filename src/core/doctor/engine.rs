@@ -35,6 +35,16 @@ impl Doctor {
     /// "Fixed …", or why it could not fix — which a re-run would replace
     /// with the generic finding.
     pub fn run_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult> {
+        let results = self.collect_and_fix(output);
+        for result in &results {
+            output.doctor_check(result);
+        }
+        results
+    }
+
+    /// Does the work of [`Self::run_and_fix`] short of printing the results,
+    /// so the caller can adjust them first. Fixes still report their progress.
+    pub(crate) fn collect_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult> {
         // Per check: its results, and whether any fix ran for it.
         let mut per_check: Vec<(Vec<CheckResult>, bool)> = Vec::with_capacity(self.checks.len());
         let mut any_fix_ran = false;
@@ -64,13 +74,7 @@ impl Doctor {
             }
         }
 
-        let per_check: Vec<Vec<CheckResult>> = per_check.into_iter().map(|(r, _)| r).collect();
-
-        let all_results: Vec<CheckResult> = per_check.into_iter().flatten().collect();
-        for result in &all_results {
-            output.doctor_check(result);
-        }
-        all_results
+        per_check.into_iter().flat_map(|(r, _)| r).collect()
     }
 }
 

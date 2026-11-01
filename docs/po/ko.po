@@ -213,7 +213,7 @@ msgstr "LLM 레퍼런스"
 #: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:45
 #: src/commands/create.md:27 src/commands/use.md:58 src/commands/remove.md:26
 #: src/commands/install.md:56 src/commands/uninstall.md:25
-#: src/commands/doctor.md:32 src/commands/info.md:92 src/commands/status.md:112
+#: src/commands/doctor.md:55 src/commands/info.md:92 src/commands/status.md:112
 #: src/commands/which.md:36 src/commands/run.md:42 src/commands/sync.md:65
 #: src/commands/import.md:39 src/commands/clone.md:39
 #: src/commands/migrate.md:126 src/commands/gc.md:97 src/commands/prune.md:25
@@ -561,14 +561,32 @@ msgid "scuv requires uv to be installed and available in PATH. Verify:"
 msgstr "scuv는 uv가 설치되어 있고 PATH에서 사용 가능해야 합니다. 확인 방법:"
 
 #: src/installation.md:87
-msgid "If not installed, run:"
-msgstr "설치되어 있지 않다면 다음을 실행하세요:"
+msgid ""
+"If not installed, run `scuv doctor --fix` in a terminal (macOS and Linux). "
+"It shows the official installer commands and runs them only after you "
+"confirm. See [`scuv doctor`](commands/doctor.md#installing-uv) for details."
+msgstr ""
+"설치되어 있지 않다면 터미널에서 `scuv doctor --fix`를 실행하세요(macOS, "
+"Linux). 공식 설치 명령을 보여 주고, 확인한 뒤에만 실행합니다. 자세한 내용은 "
+"[`scuv doctor`](commands/doctor.md#uv-설치)를 참고하세요."
 
-#: src/installation.md:93 src/quick-start.md:115
+#: src/installation.md:91
+msgid "To install uv yourself, run:"
+msgstr "uv를 직접 설치하려면 다음을 실행하세요:"
+
+#: src/installation.md:97
+msgid ""
+"On Windows, follow the [uv installation guide](https://docs.astral.sh/uv/"
+"getting-started/installation/)."
+msgstr ""
+"Windows에서는 [uv 설치 안내](https://docs.astral.sh/uv/getting-started/"
+"installation/)를 따르세요."
+
+#: src/installation.md:99 src/quick-start.md:115
 msgid "Next Steps"
 msgstr "다음 단계"
 
-#: src/installation.md:95
+#: src/installation.md:101
 msgid ""
 "After installation, set up [Shell Integration](shell-integration.md) to "
 "enable auto-activation and tab completion."
@@ -1774,18 +1792,18 @@ msgstr "환경 정리 없이 Python을 제거한 경우:"
 msgid "# Detect broken environments\n"
 msgstr "# 깨진 환경 감지\n"
 
-#: src/python-management.md:296 src/commands/doctor.md:60
+#: src/python-management.md:296 src/commands/doctor.md:83
 msgid "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 msgstr "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 
 #: src/python-management.md:299 src/commands/uninstall.md:124
 #: src/commands/uninstall.md:214 src/commands/uninstall.md:216
-#: src/commands/doctor.md:65 src/commands/migrate.md:156
+#: src/commands/doctor.md:88 src/commands/migrate.md:156
 msgid "'myproject'"
 msgstr "'myproject'"
 
 #: src/python-management.md:299 src/commands/uninstall.md:214
-#: src/commands/uninstall.md:216 src/commands/doctor.md:65
+#: src/commands/uninstall.md:216 src/commands/doctor.md:88
 msgid "#   → scuv remove myproject && scuv create myproject <python-version>\n"
 msgstr ""
 "#   → scuv remove myproject && scuv create myproject <python-version>\n"
@@ -2634,7 +2652,7 @@ msgstr ""
 msgid "# • Scanning all sources for environments...\n"
 msgstr "# • Scanning all sources for environments...\n"
 
-#: src/faq.md:344 src/commands/doctor.md:73
+#: src/faq.md:344 src/commands/doctor.md:96
 #: src/development/docs-translation.md:98
 #: src/development/docs-translation.md:104
 msgid "#\n"
@@ -3324,7 +3342,7 @@ msgid ""
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
 #: src/commands/list.md:128 src/commands/uninstall.md:165
-#: src/commands/doctor.md:52 src/commands/doctor.md:80
+#: src/commands/doctor.md:75 src/commands/doctor.md:103
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
@@ -4463,8 +4481,12 @@ msgid "`--fix`"
 msgstr "`--fix`"
 
 #: src/commands/doctor.md:17
-msgid "Auto-fix issues where possible"
-msgstr "가능한 경우 문제를 자동으로 수정합니다"
+msgid ""
+"Fix issues where possible; [installing a missing uv](#installing-uv) asks "
+"first"
+msgstr ""
+"가능한 경우 문제를 수정합니다. [없는 uv를 설치할 때](#uv-설치)는 먼저 확인합"
+"니다"
 
 #: src/commands/doctor.md:19
 msgid "Checks Performed"
@@ -4553,31 +4575,96 @@ msgstr ""
 "남은 `SCOOP_*` 변수, 짝 없는 `~/.scoop`, 또는 현재 디렉터리의 `.scoop-"
 "version` / `.scoop.toml` — v0.16.0부터 어느 것도 읽지 않으므로 경고만 합니다"
 
-#: src/commands/doctor.md:35
+#: src/commands/doctor.md:32
+msgid "Installing uv"
+msgstr "uv 설치"
+
+#: src/commands/doctor.md:34
+msgid ""
+"When uv is not on `PATH`, `scuv doctor --fix` offers to install it on macOS "
+"and Linux. It prints the exact commands, then asks. The default answer is no."
+msgstr ""
+"uv가 `PATH`에 없으면 macOS와 Linux에서 `scuv doctor --fix`가 설치를 제안합니"
+"다. 실행할 명령을 그대로 보여 준 뒤 묻고, 기본 답은 아니요입니다."
+
+#: src/commands/doctor.md:37
+msgid ""
+"The commands download Astral's official installer and run it with "
+"`UV_INSTALL_DIR=~/.local/bin`. The installer puts `uv` and `uvx` there, "
+"writes an install receipt, and may add that directory to your shell "
+"profiles. If the directory is not on the current `PATH`, doctor reports a "
+"warning: open a new shell, then run `scuv doctor --fix` again."
+msgstr ""
+"이 명령은 Astral 공식 설치 스크립트를 내려받아 `UV_INSTALL_DIR=~/.local/bin`"
+"으로 실행합니다. 설치 스크립트는 그곳에 `uv`와 `uvx`를 넣고 설치 기록을 남기"
+"며, 셸 프로필에 그 디렉터리를 더할 수 있습니다. 디렉터리가 현재 `PATH`에 없으"
+"면 doctor가 경고를 냅니다. 새 셸을 열고 `scuv doctor --fix`를 다시 실행하세"
+"요."
+
+#: src/commands/doctor.md:42
+msgid "doctor does not offer to install when:"
+msgstr "다음 경우에는 설치를 제안하지 않습니다:"
+
+#: src/commands/doctor.md:44
+msgid ""
+"`--json` or `--quiet` is set, or stdin or stderr is not a terminal. "
+"Provision uv yourself in scripts and CI; there is no flag to skip the "
+"question."
+msgstr ""
+"`--json`이나 `--quiet`를 썼거나 stdin 또는 stderr가 터미널이 아닐 때. 스크립"
+"트와 CI에서는 uv를 직접 준비하세요. 질문을 건너뛰는 플래그는 없습니다."
+
+#: src/commands/doctor.md:46
+msgid "`UV_OFFLINE` is set to anything but empty, `0`, `false`, `no` or `off`."
+msgstr "`UV_OFFLINE`이 빈 값, `0`, `false`, `no`, `off` 외의 값일 때."
+
+#: src/commands/doctor.md:47
+msgid ""
+"The platform is Windows. Follow the [uv installation guide](https://"
+"docs.astral.sh/uv/getting-started/installation/) instead."
+msgstr ""
+"Windows일 때. 대신 [uv 설치 안내](https://docs.astral.sh/uv/getting-started/"
+"installation/)를 따르세요."
+
+#: src/commands/doctor.md:50
+msgid ""
+"It stops without installing if `uv` or `uvx` already exists in `~/.local/"
+"bin`, and it lists any `UV_*`, `INSTALLER_*` or `CARGO_DIST_*` variables set "
+"in your environment, because the installer may follow them instead of the "
+"commands shown. It never replaces or upgrades a uv that is already on "
+"`PATH`, and no command other than `scuv doctor --fix` installs anything."
+msgstr ""
+"`~/.local/bin`에 `uv`나 `uvx`가 이미 있으면 설치하지 않고 멈춥니다. 환경에 설"
+"정된 `UV_*`, `INSTALLER_*`, `CARGO_DIST_*` 변수는 이름을 보여 줍니다. 설치 스"
+"크립트가 보여 준 명령 대신 이 변수를 따를 수 있기 때문입니다. `PATH`에 이미 "
+"있는 uv는 바꾸거나 업그레이드하지 않으며, `scuv doctor --fix` 말고는 어떤 명"
+"령도 설치하지 않습니다."
+
+#: src/commands/doctor.md:58
 msgid "# Quick health check\n"
 msgstr "# 빠른 상태 점검\n"
 
-#: src/commands/doctor.md:36
+#: src/commands/doctor.md:59
 msgid "# Verbose diagnostics\n"
 msgstr "# 상세 진단\n"
 
-#: src/commands/doctor.md:37
+#: src/commands/doctor.md:60
 msgid "# Fix what can be fixed\n"
 msgstr "# 수정 가능한 항목 수정\n"
 
-#: src/commands/doctor.md:38
+#: src/commands/doctor.md:61
 msgid "# JSON output for scripting\n"
 msgstr "# 스크립팅을 위한 JSON 출력\n"
 
-#: src/commands/doctor.md:41
+#: src/commands/doctor.md:64
 msgid "Environment Integrity"
 msgstr "환경 무결성"
 
-#: src/commands/doctor.md:43
+#: src/commands/doctor.md:66
 msgid "The doctor checks each virtual environment for:"
 msgstr "doctor 명령은 각 가상 환경에 대해 다음 항목을 검사합니다:"
 
-#: src/commands/doctor.md:45
+#: src/commands/doctor.md:68
 msgid ""
 "**Python symlink** — Does the `python` binary in the environment point to a "
 "valid Python installation?"
@@ -4585,13 +4672,13 @@ msgstr ""
 "**Python 심볼릭 링크** — 환경 내 `python` 바이너리가 유효한 Python 설치를 가"
 "리키고 있습니까?"
 
-#: src/commands/doctor.md:46
+#: src/commands/doctor.md:69
 msgid ""
 "**pyvenv.cfg** — Does the environment's configuration file exist (and its "
 "Python binary)?"
 msgstr "**pyvenv.cfg** — 환경의 설정 파일(과 Python 바이너리)이 존재합니까?"
 
-#: src/commands/doctor.md:48
+#: src/commands/doctor.md:71
 msgid ""
 "Environments can become broken when their underlying Python version is "
 "uninstalled. Use `scuv doctor` to detect these issues:"
@@ -4599,76 +4686,76 @@ msgstr ""
 "기반 Python 버전이 제거되면 환경이 손상될 수 있습니다. `scuv doctor`를 사용하"
 "여 이러한 문제를 감지하세요:"
 
-#: src/commands/doctor.md:51
+#: src/commands/doctor.md:74
 msgid "# After accidentally uninstalling Python 3.12:\n"
 msgstr "# Python 3.12를 실수로 제거한 후:\n"
 
-#: src/commands/doctor.md:54
+#: src/commands/doctor.md:77
 msgid "# Checking installation...\n"
 msgstr "# Checking installation...\n"
 
-#: src/commands/doctor.md:56 src/commands/doctor.md:88
+#: src/commands/doctor.md:79 src/commands/doctor.md:111
 msgid "# ✓ uv installation\n"
 msgstr "# ✓ uv installation\n"
 
-#: src/commands/doctor.md:58
+#: src/commands/doctor.md:81
 msgid "# ✓ SCUV_HOME directory\n"
 msgstr "# ✓ SCUV_HOME directory\n"
 
-#: src/commands/doctor.md:63 src/commands/doctor.md:67
-#: src/commands/doctor.md:86 src/commands/doctor.md:88
+#: src/commands/doctor.md:86 src/commands/doctor.md:90
+#: src/commands/doctor.md:109 src/commands/doctor.md:111
 msgid "'webapp'"
 msgstr "'webapp'"
 
-#: src/commands/doctor.md:63 src/commands/doctor.md:67
+#: src/commands/doctor.md:86 src/commands/doctor.md:90
 msgid "#   → scuv remove webapp && scuv create webapp <python-version>\n"
 msgstr "#   → scuv remove webapp && scuv create webapp <python-version>\n"
 
-#: src/commands/doctor.md:69
+#: src/commands/doctor.md:92
 msgid "#   found in ~/.zshrc\n"
 msgstr "#   found in ~/.zshrc\n"
 
-#: src/commands/doctor.md:71
+#: src/commands/doctor.md:94
 msgid "#   no version files configured\n"
 msgstr "#   no version files configured\n"
 
-#: src/commands/doctor.md:75
+#: src/commands/doctor.md:98
 msgid "# Found 4 error(s).\n"
 msgstr "# Found 4 error(s).\n"
 
-#: src/commands/doctor.md:77
+#: src/commands/doctor.md:100
 msgid "# Auto-fix by recreating symlinks (requires Python to be reinstalled)\n"
 msgstr "# 심볼릭 링크 재생성으로 자동 수정 (Python 재설치 필요)\n"
 
-#: src/commands/doctor.md:82
+#: src/commands/doctor.md:105
 msgid "# • Attempting to fix symlink for 'myproject'...\n"
 msgstr "# • Attempting to fix symlink for 'myproject'...\n"
 
-#: src/commands/doctor.md:84
+#: src/commands/doctor.md:107
 msgid "# ✓ Fixed symlink for 'myproject'\n"
 msgstr "# ✓ Fixed symlink for 'myproject'\n"
 
-#: src/commands/doctor.md:86
+#: src/commands/doctor.md:109
 msgid "# • Found Python version: 3.12\n"
 msgstr "# • Found Python version: 3.12\n"
 
-#: src/commands/doctor.md:90
+#: src/commands/doctor.md:113
 msgid "# ✓ virtual environments\n"
 msgstr "# ✓ virtual environments\n"
 
-#: src/commands/doctor.md:92
+#: src/commands/doctor.md:115
 msgid "# ✓ broken symlink\n"
 msgstr "# ✓ broken symlink\n"
 
-#: src/commands/doctor.md:94
+#: src/commands/doctor.md:117
 msgid "# ✓ version files\n"
 msgstr "# ✓ version files\n"
 
-#: src/commands/doctor.md:96
+#: src/commands/doctor.md:119
 msgid "# ──────────────────────────────────\n"
 msgstr "# ──────────────────────────────────\n"
 
-#: src/commands/doctor.md:101
+#: src/commands/doctor.md:124
 msgid ""
 "`✓` marks a passing check, `⚠` a warning and `✗` an error; `→` lines suggest "
 "a fix. The report goes to stderr. `doctor` exits `2` when any check errors, "
@@ -4680,7 +4767,7 @@ msgstr ""
 "있으면 `2`, 가장 심각한 결과가 경고이면 `1`, 모든 검사를 통과하면 `0`(`All "
 "checks passed!`)으로 종료합니다."
 
-#: src/commands/doctor.md:106
+#: src/commands/doctor.md:129
 msgid ""
 "`--fix` attempts its fixes first and then prints the report. A fix can clear "
 "an error another check found — relinking an env's interpreter also mends its "
@@ -4699,7 +4786,7 @@ msgstr ""
 "걸지 못했으면 그 이유(`Python 3.7 not installed` → `scuv install 3.7`)가 나옵"
 "니다."
 
-#: src/commands/doctor.md:114
+#: src/commands/doctor.md:137
 msgid ""
 "**Tip:** Run `scuv doctor` periodically or after uninstalling Python "
 "versions to catch broken environments early. See [uninstall command]"
@@ -9198,8 +9285,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:39
-msgid "Add translations to all 232 keys"
-msgstr "모든 232개 키에 번역을 추가합니다"
+msgid "Add translations to all 255 keys"
+msgstr "모든 255개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:40
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -9396,8 +9483,8 @@ msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
 #: src/development/translation.md:120
-msgid "`locales/app.yml` - All 232 keys translated"
-msgstr "`locales/app.yml` - 232개 키 모두 번역"
+msgid "`locales/app.yml` - All 255 keys translated"
+msgstr "`locales/app.yml` - 255개 키 모두 번역"
 
 #: src/development/translation.md:121
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
@@ -10095,8 +10182,8 @@ msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
 #: src/development/translation.md:352
-msgid "All 232 keys translated"
-msgstr "232개 키 전체 번역 완료"
+msgid "All 255 keys translated"
+msgstr "255개 키 전체 번역 완료"
 
 #: src/development/translation.md:353
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
@@ -10151,11 +10238,11 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the 232 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 255 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 232개 키) 번역에 대"
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 255개 키) 번역에 대"
 "해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
 "역만 다룹니다."
 
@@ -15615,6 +15702,9 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "Auto-fix issues where possible"
+#~ msgstr "가능한 경우 문제를 자동으로 수정합니다"
 
 #~ msgid "# ✓ shell configuration\n"
 #~ msgstr "# ✓ shell configuration\n"
