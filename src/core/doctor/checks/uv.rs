@@ -34,14 +34,25 @@ impl Check for UvCheck {
     }
 
     fn run(&self) -> Vec<CheckResult> {
-        self.report(Command::new("uv").arg("--version").output(), cfg!(unix))
+        self.report(
+            Command::new("uv").arg("--version").output(),
+            which::which("uv").is_ok(),
+            cfg!(unix),
+        )
     }
 }
 
 impl UvCheck {
-    /// Turns the `uv --version` attempt into a finding. `can_install` is
-    /// whether `doctor --fix` can install uv on this platform.
-    fn report(&self, probe: io::Result<Output>, can_install: bool) -> Vec<CheckResult> {
+    /// Turns the `uv --version` attempt into a finding. `located` is whether
+    /// an executable uv is on `PATH`: running one whose interpreter is gone
+    /// also fails with `NotFound`, and that uv is broken, not missing.
+    /// `can_install` is whether `doctor --fix` can install uv on this platform.
+    fn report(
+        &self,
+        probe: io::Result<Output>,
+        located: bool,
+        can_install: bool,
+    ) -> Vec<CheckResult> {
         match probe {
             Ok(output) if output.status.success() => {
                 let raw = String::from_utf8_lossy(&output.stdout);
@@ -70,7 +81,7 @@ impl UvCheck {
 
                 vec![CheckResult::ok(self.id(), self.name()).with_details(raw.to_string())]
             }
-            Err(e) if e.kind() == io::ErrorKind::NotFound => {
+            Err(e) if !located && e.kind() == io::ErrorKind::NotFound => {
                 let suggestion = if can_install {
                     rust_i18n::t!("doctor.uv_install.suggestion", url = MANUAL_URL).to_string()
                 } else {
@@ -221,7 +232,7 @@ mod tests {
 
     #[test]
     fn report_points_missing_uv_at_doctor_fix_where_it_can_install() {
-        let result = only(UvCheck.report(not_found(), true));
+        let result = only(UvCheck.report(not_found(), false, true));
         assert!(result.is_error());
         let suggestion = result.suggestion.unwrap();
         assert!(suggestion.contains("scuv doctor --fix"), "{suggestion}");
@@ -230,7 +241,7 @@ mod tests {
 
     #[test]
     fn report_gives_the_manual_command_where_it_cannot_install() {
-        let result = only(UvCheck.report(not_found(), false));
+        let result = only(UvCheck.report(not_found(), false, false));
         assert!(result.is_error());
         let suggestion = result.suggestion.unwrap();
         assert!(!suggestion.contains("doctor --fix"), "{suggestion}");
@@ -238,9 +249,16 @@ mod tests {
     }
 
     #[test]
+    fn report_treats_a_located_uv_that_will_not_start_as_broken() {
+        let result = only(UvCheck.report(not_found(), true, true));
+        assert!(result.is_error());
+        assert!(!result.suggestion.unwrap().contains("doctor --fix"));
+    }
+
+    #[test]
     fn report_does_not_send_a_spawn_failure_to_doctor_fix() {
         let denied = Err(io::ErrorKind::PermissionDenied.into());
-        let result = only(UvCheck.report(denied, true));
+        let result = only(UvCheck.report(denied, true, true));
         assert!(result.is_error());
         assert!(!result.suggestion.unwrap().contains("doctor --fix"));
     }
@@ -248,7 +266,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn report_does_not_send_a_failing_uv_to_doctor_fix() {
-        let result = only(UvCheck.report(exited(1, "", "boom\n"), true));
+        let result = only(UvCheck.report(exited(1, "", "boom\n"), true, true));
         assert!(result.is_error());
         assert_eq!(result.details.as_deref(), Some("boom"));
         assert!(!result.suggestion.unwrap().contains("doctor --fix"));
@@ -257,7 +275,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn report_keeps_upgrade_advice_for_an_old_uv() {
-        let result = only(UvCheck.report(exited(0, "uv 0.1.0\n", ""), true));
+        let result = only(UvCheck.report(exited(0, "uv 0.1.0\n", ""), true, true));
         assert!(result.is_error());
         let suggestion = result.suggestion.unwrap();
         assert!(suggestion.starts_with("Upgrade uv"), "{suggestion}");
@@ -270,7 +288,7 @@ mod tests {
     #[case::at_floor("uv 0.5.19\n")]
     #[case::unreadable_banner("mystery\n")]
     fn report_passes_a_working_uv(#[case] stdout: &str) {
-        assert!(only(UvCheck.report(exited(0, stdout, ""), true)).is_ok());
+        assert!(only(UvCheck.report(exited(0, stdout, ""), true, true)).is_ok());
     }
 
     fn installed() -> Outcome {

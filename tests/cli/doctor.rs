@@ -120,6 +120,20 @@ fn fix_leaves_a_present_uv_alone() {
 }
 
 #[test]
+fn fix_does_not_offer_or_suggest_itself_for_a_uv_that_cannot_start() {
+    let env = NoUv::new();
+    let uv = env.bin.path().join("uv");
+    std::fs::write(&uv, "#!/nonexistent/python\n").unwrap();
+    std::fs::set_permissions(&uv, std::fs::Permissions::from_mode(0o755)).unwrap();
+    env.doctor(&["--fix"]).assert().code(2).stderr(
+        predicate::str::contains("could not run")
+            .and(predicate::str::contains("scuv doctor --fix").not())
+            .and(predicate::str::contains("confirmation").not()),
+    );
+    env.assert_untouched();
+}
+
+#[test]
 fn ordinary_commands_point_at_doctor_fix_and_install_nothing() {
     let env = NoUv::new();
     scoop_cmd(&env.fixture.scoop_home)

@@ -310,7 +310,8 @@ fn verify(runner: &mut impl Runner, uv: &Path) -> Outcome {
 /// Asks, then downloads, runs and verifies, stopping at the first failure.
 ///
 /// Collisions are checked before asking, so nobody confirms an install that
-/// cannot happen, and again after, because the prompt can wait for a long time.
+/// cannot happen, and again right before the installer runs, because the
+/// prompt and the download can take a long time and it overwrites unasked.
 pub(crate) fn install(
     plan: &Plan,
     confirm: impl FnOnce(&Plan) -> bool,
@@ -326,14 +327,14 @@ pub(crate) fn install(
     if !confirm(plan) {
         return Outcome::Declined;
     }
+    if let Err(outcome) = run_step(runner, &plan.download, Stage::Download) {
+        return outcome;
+    }
     if let Some(path) = collision(&plan.dir) {
         return collided(path);
     }
-    let steps = [(&plan.download, Stage::Download), (&plan.run, Stage::Run)];
-    for (step, stage) in steps {
-        if let Err(outcome) = run_step(runner, step, stage) {
-            return outcome;
-        }
+    if let Err(outcome) = run_step(runner, &plan.run, Stage::Run) {
+        return outcome;
     }
     verify(runner, &plan.uv)
 }
@@ -612,7 +613,42 @@ mod tests {
         );
 
         assert!(matches!(outcome, Outcome::Collision { .. }), "{outcome:?}");
-        assert!(runner.calls.is_empty());
+        assert_eq!(runner.calls, ["download"], "the installer must not run");
+    }
+
+    /// Something else creates uv while the download is in progress.
+    struct RacedDownload {
+        uv: PathBuf,
+        ran_installer: bool,
+    }
+
+    impl Runner for RacedDownload {
+        fn run(&mut self, step: &Step) -> io::Result<bool> {
+            if step.env.is_some() {
+                self.ran_installer = true;
+            } else {
+                std::fs::write(&self.uv, "appeared during the download")?;
+            }
+            Ok(true)
+        }
+
+        fn version(&mut self, _uv: &Path) -> io::Result<Option<String>> {
+            Ok(Some("uv 0.13.6".to_string()))
+        }
+    }
+
+    #[test]
+    fn install_rechecks_collisions_after_the_download() {
+        let home = TempDir::new().unwrap();
+        let mut runner = RacedDownload {
+            uv: home.path().join("uv"),
+            ran_installer: false,
+        };
+
+        let outcome = install(&plan_in(home.path()), |_| true, &mut runner);
+
+        assert!(matches!(outcome, Outcome::Collision { .. }), "{outcome:?}");
+        assert!(!runner.ran_installer);
     }
 
     #[rstest]
@@ -702,14 +738,15 @@ mod tests {
         let dir = root.path().join("bin dir");
         let curl = root.path().join("curl");
         // The fake download writes the fake installer to the `-o` argument, and
-        // that installer writes uv where UV_INSTALL_DIR says.
+        // that installer writes uv where UV_INSTALL_DIR says. Absolute paths:
+        // tests elsewhere in this process empty PATH for a moment.
         script(
             &curl,
             r#"for last; do :; done
-cat > "$last" <<'EOF'
-mkdir -p "$UV_INSTALL_DIR"
+/bin/cat > "$last" <<'EOF'
+/bin/mkdir -p "$UV_INSTALL_DIR"
 printf '#!/bin/sh\necho uv 0.13.6\n' > "$UV_INSTALL_DIR/uv"
-chmod +x "$UV_INSTALL_DIR/uv"
+/bin/chmod +x "$UV_INSTALL_DIR/uv"
 EOF
 "#,
         );

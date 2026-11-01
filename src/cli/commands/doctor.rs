@@ -39,6 +39,15 @@ fn exit_with_result_status(results: &[CheckResult]) {
     }
 }
 
+fn install_context(output: &Output, terminal: bool) -> install::Context {
+    install::Context {
+        machine_output: output.is_json() || output.is_quiet(),
+        unix: cfg!(unix),
+        offline: install::offline_enabled(env::var_os("UV_OFFLINE").as_deref()),
+        terminal,
+    }
+}
+
 /// Offers to install uv if it is missing. `None` when nothing was offered.
 ///
 /// The temporary directory holding the script ends with this function: the
@@ -48,13 +57,8 @@ fn offer_uv_install(output: &Output) -> Option<Outcome> {
         return None;
     }
 
-    let context = install::Context {
-        machine_output: output.is_json() || output.is_quiet(),
-        unix: cfg!(unix),
-        offline: install::offline_enabled(env::var_os("UV_OFFLINE").as_deref()),
-        terminal: io::stdin().is_terminal() && io::stderr().is_terminal(),
-    };
-    if let Err(skip) = install::check(context) {
+    let terminal = io::stdin().is_terminal() && io::stderr().is_terminal();
+    if let Err(skip) = install::check(install_context(output, terminal)) {
         match skip {
             // The uv finding in the report covers it, and these modes print
             // nothing else.
@@ -206,6 +210,24 @@ pub fn execute(output: &Output, fix: bool) -> Result<()> {
 mod tests {
     use super::*;
     use crate::core::doctor::CheckStatus;
+    use crate::output::Colors;
+
+    // A broken wiring here would still look safe from the CLI tests, which run
+    // without a terminal and so never get past that check.
+    #[rstest::rstest]
+    #[case::json(false, true)]
+    #[case::quiet(true, false)]
+    fn machine_output_is_refused_even_at_a_terminal(#[case] quiet: bool, #[case] json: bool) {
+        let output = Output::new(0, quiet, Colors::NONE, json);
+        let context = install_context(&output, true);
+        assert_eq!(install::check(context), Err(Skip::MachineOutput));
+    }
+
+    #[test]
+    fn normal_output_is_not_machine_output() {
+        let output = Output::new(0, false, Colors::NONE, false);
+        assert!(!install_context(&output, true).machine_output);
+    }
 
     /// Creates a test CheckResult with given status.
     fn make_result(status: CheckStatus) -> CheckResult {
