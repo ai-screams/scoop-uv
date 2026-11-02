@@ -80,10 +80,10 @@ because it has never been activated.)
 
 Between the `--older-than` scan and the actual delete, an env may be activated. Each candidate is re-checked just before removal:
 
-- `SkippedRecentlyUsed` — the env was touched after the scan; `last_used` is now at-or-newer than the original cutoff, so it is no longer stale.
-- `SkippedNoData` — metadata became unreadable or missing between scan and remove. We refuse to delete envs we can no longer reason about.
+- `skipped_recently_used` — the env was touched after the scan; `last_used` is now at-or-newer than the original cutoff, so it is no longer stale.
+- `skipped_no_data` — metadata became unreadable or missing between scan and remove. We refuse to delete envs we can no longer reason about.
 
-Both surface in the JSON envelope as `outcome` values so scripts can distinguish them from `Removed` / `Failed`.
+Both surface in the JSON envelope as `outcome` values so scripts can distinguish them from `removed` / `failed`.
 
 ## Options
 

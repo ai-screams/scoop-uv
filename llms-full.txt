@@ -76,7 +76,7 @@ Verify: `scuv --version`
 
 | Command | Description |
 |---------|-------------|
-| `scuv sync` | Reconcile the active env with `.scuv.toml` |
+| `scuv sync` | Create the env named in `.scuv.toml` if missing and install its packages |
 | `scuv export <name>` | Snapshot env as JSON (schema v1) |
 | `scuv import <file>` | Restore env from JSON snapshot; `--name <new>` to rename |
 
@@ -175,7 +175,7 @@ src/
 │   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
 ├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
-├── error/         # ScoopError enum (39 variants, i18n Display; code/display/exit/migrate/suggestion)
+├── error/         # ScoopError enum (40 variants, i18n Display; code/display/exit/migrate/suggestion)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
@@ -242,9 +242,9 @@ Without `--cascade`, dependent environments remain and can become broken.
 Use non-global controls:
 
 ```bash
-# Disable auto-activation in current shell only
-export SCUV_NO_AUTO=1
-unset SCUV_NO_AUTO
+# Stop auto-activation in current shell only
+scuv shell system
+scuv shell --unset
 
 # Project-local behavior via .scuv-version
 scuv use system
@@ -319,7 +319,7 @@ The custom interpreter path is persisted in
 4. Default → Bash
 
 `init` and `completions` take the shell as a positional argument (`scuv init zsh`).
-A `--shell` long flag exists only on the hidden `activate` / `deactivate` commands.
+A `--shell` long flag exists on `shell` and on the hidden `activate` / `deactivate` commands.
 
 **Project Manifest (`.scuv.toml`, v0.11.0)**:
 
@@ -337,7 +337,7 @@ dev     = ["ipython", "debugpy"] # optional named group
 
 - `deny_unknown_fields` is enforced — typos in keys are surfaced.
 - `[packages]` accepts a `default` list and arbitrary named groups (deserialised into a `BTreeMap` for stable iteration).
-- `scuv sync` reconciles the active env: warns and proceeds if the active env's Python version doesn't match `[environment].python` (will not auto-recreate).
+- `scuv sync` works on the env named by `[environment].name`, whichever env is active: it creates that env if missing, and warns and proceeds if an existing env's Python version doesn't match `[environment].python` (will not auto-recreate).
 - `[hooks]` is **not** implemented in v0.11.0 (requires a threat model first).
 
 **One-Shot Execution (`scuv run`, v0.11.0)**:
@@ -417,6 +417,7 @@ pub struct Metadata {
     pub created_by: String,          // "scuv X.Y.Z"
     pub uv_version: Option<String>,
     pub python_path: Option<String>, // Custom Python executable path (if --python-path was used)
+    pub last_used: Option<DateTime<Utc>>,
 }
 
 impl Metadata {
@@ -463,7 +464,7 @@ impl Doctor {
 }
 ```
 
-Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck, LegacyCheck
+Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck, VenvLinkCheck, LegacyCheck
 
 #### UvClient
 
@@ -748,7 +749,7 @@ Error response:
 | `SCUV_HOME` | Override home directory (default: `~/.scuv`) |
 | `SCUV_VERSION` | Override version resolution (set by `scuv shell`) |
 | `SCUV_LANG` | Override language |
-| `SCUV_NO_AUTO` | Disable auto-activation when set to `1` |
+| `SCUV_NO_AUTO` | Read at `scuv init` when non-empty: stops activation on directory change (fish: stops startup activation) |
 | `SCUV_ACTIVE` | Set when a virtualenv is active (internal) |
 | `SCUV_RESOLVE_MAX_DEPTH` | Limit parent directory traversal (for NFS/SSHFS) |
 | `NO_COLOR` | Disable colored output when set to any non-empty value (standard) |
@@ -778,7 +779,7 @@ Error response:
 
 ### Adding Translations
 
-1. Add keys to `locales/app.yml` under all 4 language sections
+1. Add keys to `locales/app.yml` under all 5 language sections
 2. Use via `t!("key", arg = value)` macro
 
 ---

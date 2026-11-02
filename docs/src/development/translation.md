@@ -82,10 +82,10 @@ completely unverified — nothing tells you it was skipped.
 **2. Shell completions** — the `scuv lang` candidate lists are hand-written
 in all four shells:
 
-- `src/shell/fish.rs` — the `complete -c scuv ... from lang` lines
-- `src/shell/zsh.rs` — the `langs=(...)` array
-- `src/shell/bash.rs` — the `compgen -W "en ko ja pt-BR es"` list under `lang)`
-- `src/shell/powershell.rs` — the `@('en', 'ko', 'ja', 'pt-BR', 'es')` array
+- `src/shell/scripts/fish_completion.fish` — the `complete -c scuv ... from lang` lines
+- `src/shell/scripts/zsh_completion.zsh` — the `langs=(...)` array
+- `src/shell/scripts/bash_completion.bash` — the `compgen -W "en ko ja pt-BR es"` list under `lang)`
+- `src/shell/scripts/powershell_completion.ps1` — the `@('en', 'ko', 'ja', 'pt-BR', 'es')` array
 
 Each shell module has a test (`lang_completion_list_matches_supported_langs`)
 that compares its list with `SUPPORTED_LANGS`, so a shell you miss fails
@@ -120,7 +120,7 @@ SCUV_LANG={lang} ./target/debug/scuv lang
 - [ ] `locales/app.yml` - All 255 keys translated
 - [ ] `src/i18n.rs` - Language registered in SUPPORTED_LANGS
 - [ ] `tests/i18n_completeness.rs` - Language added to LOCALES
-- [ ] `src/shell/bash.rs`, `src/shell/zsh.rs`, `src/shell/fish.rs`, `src/shell/powershell.rs` - Completion lists updated
+- [ ] `src/shell/scripts/*_completion.*` (all four shells) - Completion lists updated
 
 **PR Title Format:**
 
@@ -268,17 +268,10 @@ scuv uses ice cream metaphors in documentation:
 ### locales/app.yml
 
 ```yaml
-# Categories in order:
-# 1. lang.*        - Language command messages
-# 2. create.*      - Create command messages
-# 3. remove.*      - Remove command messages
-# 4. list.*        - List command messages
-# 5. use.*         - Use command messages
-# 6. install.*     - Install command messages
-# 7. uninstall.*   - Uninstall command messages
-# 8. migrate.*     - Migrate command messages
-# 9. error.*       - Error messages
-# 10. suggestion.* - Suggestion/hint messages
+# Keys are grouped by prefix, mostly one per command:
+# lang.*, create.*, remove.*, list.*, use.*, install.*, migrate.*, doctor.*, ...
+# error.*      - Error messages
+# suggestion.* - Suggestion/hint messages
 ```
 
 ### src/i18n.rs

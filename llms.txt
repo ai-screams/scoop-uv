@@ -72,7 +72,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since 0.13.0 |
 | `scuv which <exe>` | Resolve an executable path inside the active env (v0.11.0) |
 | `scuv run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
-| `scuv sync` | Reconcile the active env with `.scuv.toml` manifest (v0.11.0) |
+| `scuv sync` | Create the env named in `.scuv.toml` if missing and install its packages (v0.11.0) |
 | `scuv export <name>` | Snapshot env as JSON (schema v1) (v0.11.0) |
 | `scuv import <file>` | Restore env from JSON snapshot; `--name <new>` to rename (v0.11.0) |
 | `scuv doctor` | Health check |
@@ -142,8 +142,8 @@ Without `--cascade`, dependent environments are not removed and may break.
 ### Project-Scoped Auto-Activation Control
 
 ```bash
-export SCUV_NO_AUTO=1
-unset SCUV_NO_AUTO
+scuv shell system
+scuv shell --unset
 
 scuv use system
 scuv use myproject
@@ -197,7 +197,7 @@ Priority (first match wins):
 scuv outputs shell code to stdout; the shell wrapper `eval`s it (pyenv pattern).
 Auto-activation triggers on directory change when `.scuv-version` is present.
 
-Disable auto-activation: `export SCUV_NO_AUTO=1`
+Stop activation on directory change: set `SCUV_NO_AUTO=1` before `scuv init` runs (read once at init; in fish it stops startup activation instead)
 
 ### Environment Name Rules
 

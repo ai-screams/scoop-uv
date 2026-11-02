@@ -146,7 +146,9 @@ cache:
 
 | `shared-key` | Jobs |
 |--------------|------|
-| `stable-ci` | `ci.yml` lint / test / shellcheck, `coverage.yml`, `mutants.yml` |
+| `stable-ci` | `ci.yml` lint / test / uv-floor / shellcheck |
+| `coverage` | `coverage.yml` |
+| `mutants` | `mutants.yml` |
 | `msrv` | `ci.yml` msrv |
 | `msrv-verify` | `msrv-check.yml` |
 | `bench` | `bench.yml` |

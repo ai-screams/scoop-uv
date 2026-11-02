@@ -134,24 +134,36 @@ scuv shell system        # Set SCUV_VERSION=system (this terminal only)
 |----------|-------------|---------|
 | `SCUV_HOME` | Base directory | `~/.scuv` |
 | `SCUV_VERSION` | Override version (highest priority) | (unset) |
-| `SCUV_NO_AUTO` | Disable auto-activation | (unset) |
+| `SCUV_NO_AUTO` | Read at `scuv init`; see [Disable Auto-Activation](#disable-auto-activation) | (unset) |
 | `SCUV_ACTIVE` | Currently active environment | (set by scuv) |
 | `SCUV_RESOLVE_MAX_DEPTH` | Limit parent directory traversal | (unlimited) |
 
 ### Disable Auto-Activation
 
+`SCUV_NO_AUTO` is read once, when your shell sources `scuv init`, so set it to a non-empty
+value before the `scuv init` line in your rc file:
+
 ```bash
 export SCUV_NO_AUTO=1
+eval "$(scuv init bash)"
 ```
+
+Changing the variable later in a running shell does nothing. What it turns off depends on
+the shell:
+
+| Shell | Activation at startup | Activation on directory change |
+|-------|-----------------------|--------------------------------|
+| bash, zsh, PowerShell | Still runs | Off |
+| fish | Off | Still runs |
 
 ### Temporary and Project-Scoped Control
 
-Disable only in the current shell session (does not affect global settings):
+Stop activation in the current shell session only (does not affect global settings):
 
 ```bash
-export SCUV_NO_AUTO=1
+scuv shell system
 # ...work without auto-activation...
-unset SCUV_NO_AUTO
+scuv shell --unset
 ```
 
 For one project directory, use local version files instead of global settings:

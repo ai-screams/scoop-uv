@@ -44,13 +44,16 @@ doctor does not offer to install when:
 - `--json` or `--quiet` is set, or stdin or stderr is not a terminal. Provision uv yourself in
   scripts and CI; there is no flag to skip the question.
 - `UV_OFFLINE` is set to anything but empty, `0`, `false`, `no` or `off`.
+- `curl` or `sh` is not on `PATH`.
+- There is no usable install location: the home directory is not an absolute path, or
+  `~/.local/bin` is your `CARGO_HOME`.
 - The platform is Windows. Follow the
   [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/) instead.
 
 It stops without installing if `uv` or `uvx` already exists in `~/.local/bin`, and it lists any
 `UV_*`, `INSTALLER_*` or `CARGO_DIST_*` variables set in your environment, because the installer
 may follow them instead of the commands shown. It never replaces or upgrades a uv that is
-already on `PATH`, and no command other than `scuv doctor --fix` installs anything.
+already on `PATH`, and `scuv doctor --fix` is the only command that installs uv.
 
 ## Examples
 

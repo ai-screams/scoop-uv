@@ -165,7 +165,7 @@ scuv migrate all
 ```
 
 The migration process:
-1. Discovers environments from pyenv (`~/.pyenv/versions/`), conda (`conda info --envs`), or virtualenvwrapper (`$WORKON_HOME`)
+1. Discovers environments from pyenv (`$PYENV_ROOT/versions`, default `~/.pyenv/versions`), conda (`envs/` under `$CONDA_PREFIX`, `~/.conda`, `~/anaconda3`, `~/miniconda3` and `~/miniforge3`), or virtualenvwrapper (`$WORKON_HOME`)
 2. Creates a new scuv environment with the same Python version
 3. Reinstalls packages using uv for improved performance
 4. Preserves originals by default (use `--delete-source` to remove source envs after success)
@@ -180,7 +180,7 @@ See [migrate command](commands/migrate.md) for details.
 
 ```bash
 $ scuv create myenv 3.14
-# Error: Python 3.14 not found
+# uv fails: No interpreter found for Python 3.14
 
 # Solution 1: Install it via scuv
 scuv install 3.14
@@ -209,7 +209,7 @@ If the path is invalid or not executable, provide a valid Python binary path and
 uv python list
 
 # 2) Confirm scuv recorded the interpreter path
-scuv info myenv
+jq .python_path ~/.scuv/virtualenvs/myenv/.scoop-metadata.json
 
 # 3) Diagnose broken links or metadata issues
 scuv doctor -v

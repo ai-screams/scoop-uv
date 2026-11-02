@@ -71,7 +71,8 @@ scuv clone myenv myenv-experiment --force
 | Code | Meaning |
 |------|---------|
 | 0 | Cloned successfully |
-| 1 | Invalid dst name, self-clone, src missing, dst exists without `--force`, or src corrupted |
+| 1 | Invalid dst name, self-clone, src missing, or dst exists without `--force` |
+| 3 | src is corrupted (no readable metadata) |
 
 ## See Also
 

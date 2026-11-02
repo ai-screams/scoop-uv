@@ -134,10 +134,10 @@ For detailed guides, see:
 
 ### Shell Integration
 
-Shell scripts are embedded in Rust code:
+Wrapper and completion bodies live in `src/shell/scripts/` and are embedded with
+`include_str!`:
 
-- `src/shell/bash.rs` - Bash init script
-- `src/shell/zsh.rs` - Zsh init script
+- `src/shell/bash.rs`, `zsh.rs`, `fish.rs`, `powershell.rs` - Init script for each shell
 
 Key components:
 
@@ -173,7 +173,7 @@ pub fn execute(output: &Output, option: bool) -> Result<()> {
 
 4. Wire up in `src/main.rs`
 
-5. Add shell completion in `src/shell/{bash,zsh}.rs`
+5. Add the subcommand to all four `src/shell/scripts/*_completion.*` files
 
 ## Testing
 

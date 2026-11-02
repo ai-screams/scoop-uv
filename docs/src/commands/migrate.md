@@ -56,7 +56,7 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | (a) all envs migrated, (b) no envs found but source tools are installed, or (c) only non-conflict skips occurred (EOL / corrupted envs in the skipped bucket, no preflight name conflicts, no per-env failures) |
-| `2` | At least one per-env failure **or** at least one preflight name conflict without `--force`. Returned via `MigrationBatchFailed` |
+| `2` | At least one per-env failure **or** at least one preflight name conflict without `--force`, **or** two sources offering the same env name in one batch. `--force` does not resolve that case: migrate one with `scuv migrate @env <name> --rename <other>`. Returned via `MigrationBatchFailed` |
 | `3` | No source tool (pyenv / virtualenvwrapper / conda) is detected on the system. Returned via `MigrationSourcesNotFound` |
 
 ### `migrate @env <name>`
@@ -64,7 +64,7 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | The env migrated successfully (or the user chose `Skip` at the interactive conflict prompt) |
-| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--yes` or `--json` skips the prompt) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
+| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--yes`, `--json` or a non-terminal stderr skips the prompt) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
 | `3` | The named source env was not found in the requested source (`PyenvEnvNotFound`, `VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **or** the source env is `CorruptedEnvironment` |
 
 ### `migrate list`
@@ -116,7 +116,7 @@ $ scuv migrate @env myproject --auto-rename --yes
 
 The generated name is `<name>-pyenv` for every source, including
 `virtualenvwrapper` and `conda`. When that name is taken as well, scuv
-picks a numbered name such as `myproject-2`.
+picks the first free numbered name (`myproject-1`, then `myproject-2`, and so on).
 
 The EOL guard still applies to a renamed env. When the source env both
 conflicts by name and runs an end-of-life Python, `--auto-rename` stops
