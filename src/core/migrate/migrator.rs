@@ -580,8 +580,9 @@ mod tests {
         assert!(migrator.validate_source(&source, &renamed("test")).is_err());
 
         // The conflict hid an EOL Python: renaming must not skip that guard.
+        // 3.10 is the newest EOL minor, 3.11 the oldest supported one.
         let mut eol = source.clone();
-        eol.python_version = "3.7.17".to_string();
+        eol.python_version = "3.10.14".to_string();
         assert!(
             migrator
                 .validate_source(&eol, &renamed("test-pyenv"))
@@ -592,6 +593,13 @@ mod tests {
             ..renamed("test-pyenv")
         };
         assert!(migrator.validate_source(&eol, &forced).is_ok());
+        let mut supported = source.clone();
+        supported.python_version = "3.11.0".to_string();
+        assert!(
+            migrator
+                .validate_source(&supported, &renamed("test-pyenv"))
+                .is_ok()
+        );
     }
 
     #[test]

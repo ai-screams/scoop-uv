@@ -31,6 +31,29 @@ scuv migrate all
 | **virtualenvwrapper** | `$WORKON_HOME` or `~/.virtualenvs/` |
 | **conda** | `$CONDA_PREFIX/envs`, `~/.conda/envs`, `~/anaconda3/envs`, `~/miniconda3/envs`, `~/miniforge3/envs` |
 
+## End-of-life Python
+
+scuv treats an env as end of life (EOL) when its Python is 2.x or 3.10 and
+earlier. 3.9 reached end of life on 2025-10-31 and 3.10 on 2026-10-01, following
+CPython's schedule. Only the version number is checked, so a PyPy env gets the
+same cutoff. For a source env that is otherwise healthy and has no name
+conflict, without `--force`:
+
+- `migrate list` marks the env `⚠` with `(Python 3.10.14 is EOL)`.
+- `migrate @env <name>` refuses it and exits `2`.
+- `migrate all` skips it and still exits `0` when nothing else failed, so check
+  `migrate list` (or the `skipped` array in `--json`) to see what was left behind.
+
+Other states come first. A name conflict is reported as a conflict (and fails
+`migrate all` with exit `2`), and a corrupted source is reported as corrupted
+(`migrate @env` exits `3`, `migrate all` skips it). Choosing Overwrite at the
+interactive conflict prompt acts like `--force`, so it migrates an EOL env too.
+`--rename` does not skip the EOL check of a conflicting env, though
+`--rename --dry-run` only prints the plan and does not run that check.
+
+Released versions up to 0.18.0 used a cutoff of 3.8, so 3.9 and 3.10 envs
+migrated without `--force`.
+
 ## Options
 
 | Option | Subcommand | Description |
@@ -89,7 +112,7 @@ contract.
 |----------------------|----------------|
 | Ready | Migrated normally |
 | Name conflict with an existing scuv env | The existing scuv env is overwritten in place |
-| EOL Python version (e.g. 2.7) | Migrated anyway (the EOL guard is intentionally bypassed) |
+| EOL Python version (e.g. 2.7, 3.10) | Migrated anyway (the EOL guard is intentionally bypassed) |
 | Corrupted source env | **Not bypassed** — still returns `CorruptedEnvironment` (exit 3) |
 
 ### `--auto-rename` (name-conflict only)
@@ -201,6 +224,7 @@ $ scuv migrate all --yes
 ```bash
 # Exits 2 if any env failed or a name conflict was skipped.
 # Exits 3 if no source tool is installed on the runner.
+# EOL envs are skipped without changing the exit code.
 scuv migrate all --yes
 ```
 
