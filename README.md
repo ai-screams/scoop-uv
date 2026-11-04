@@ -427,7 +427,7 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 
 | Command                         | Description                            |
 |---------------------------------|----------------------------------------|
-| `scuv create <name> [version]` | Mix a new flavor (default: latest Python) |
+| `scuv create <name> [version]` | Mix a new flavor (default: any Python 3, an installed one first) |
 | `scuv create <name> <ver> --install-python` | Mix a flavor, installing Python first if missing |
 | `scuv use <name>`              | Pick your flavor (auto-activates)      |
 | `scuv use <name> --link`       | Also create `.venv` symlink for IDE    |
@@ -453,8 +453,8 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 
 | Command                     | Description                              |
 |-----------------------------|------------------------------------------|
-| `scuv install [version]`   | Stock up on Python (default: latest)     |
-| `scuv install --stable`    | Get the oldest supported Python (3.10)   |
+| `scuv install [version]`   | Stock up on Python (default: `3`; a uv-managed 3.x counts) |
+| `scuv install --stable`    | Get the oldest Python with security fixes (3.11) |
 | `scuv uninstall <version>` | Remove a Python version                  |
 
 ### Health Check 🩺

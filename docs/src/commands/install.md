@@ -12,14 +12,14 @@ scuv install [version] [options]
 
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `version` | No | latest | Python version (e.g., `3.12`, `3.11.8`) |
+| `version` | No | `3` | Python version (e.g., `3.12`, `3.11.8`) |
 
 ## Options
 
 | Option | Description |
 |--------|-------------|
-| `--latest` | Install latest stable Python (default) |
-| `--stable` | Install oldest fully-supported Python (3.10) |
+| `--latest` | Ask uv for Python 3 (default) |
+| `--stable` | Install the oldest Python still receiving security fixes (3.11) |
 | `--json` | Output result as JSON |
 
 ## What gets installed where
@@ -48,18 +48,22 @@ currently forward flags to uv, so there is no way to opt out through scuv. Run
 
 ## Version Resolution
 
-- No argument or `--latest`: installs latest Python 3.x
-- `--stable`: installs Python 3.10 (oldest with active security support)
-- `3.12`: installs latest 3.12.x patch
+- No argument or `--latest`: asks uv for `3`. A Python 3 that uv already manages satisfies it; with none, uv downloads its default (3.15 since uv 0.13)
+- `--stable`: installs Python 3.11, the oldest still receiving security fixes (until 2027-10)
+- `3.12`: installs the latest 3.12.x patch when uv manages no 3.12 yet
 - `3.12.3`: installs exact version
+
+uv skips the download when a version it manages already matches the request, so
+`scuv install 3.12` does not move an existing 3.12 to a newer patch. Use
+`uv python install --upgrade 3.12` for that.
 
 ## Examples
 
 ```bash
-scuv install                    # Install latest
+scuv install                    # Python 3 (a uv-managed one counts)
 scuv install --latest           # Same as above
-scuv install --stable           # Install Python 3.10
-scuv install 3.12               # Install latest 3.12.x
+scuv install --stable           # Install Python 3.11
+scuv install 3.12               # Latest 3.12.x, unless uv already manages a 3.12
 scuv install 3.12.3             # Install exact 3.12.3
 ```
 

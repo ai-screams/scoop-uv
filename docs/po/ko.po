@@ -214,7 +214,7 @@ msgstr "LLM 레퍼런스"
 
 #: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:45
 #: src/commands/create.md:27 src/commands/use.md:58 src/commands/remove.md:26
-#: src/commands/install.md:56 src/commands/uninstall.md:25
+#: src/commands/install.md:60 src/commands/uninstall.md:25
 #: src/commands/doctor.md:58 src/commands/info.md:92 src/commands/status.md:112
 #: src/commands/which.md:36 src/commands/run.md:43 src/commands/sync.md:65
 #: src/commands/import.md:39 src/commands/clone.md:39
@@ -1352,12 +1352,13 @@ msgid "Via scuv (recommended)"
 msgstr "scuv로 설치 (권장)"
 
 #: src/python-management.md:20
-msgid "# Install latest Python\n"
-msgstr "# 최신 Python 설치\n"
+msgid "# Install Python 3 (skipped if uv already manages one)\n"
+msgstr "# Python 3 설치 (uv가 이미 관리하는 것이 있으면 건너뜀)\n"
 
 #: src/python-management.md:22
-msgid "# Install specific minor version (latest patch)\n"
-msgstr "# 특정 마이너 버전 설치 (최신 패치)\n"
+msgid ""
+"# Install a minor version (latest patch unless uv already manages a 3.12)\n"
+msgstr "# 마이너 버전 설치 (uv가 이미 관리하는 3.12가 없으면 최신 패치)\n"
 
 #: src/python-management.md:25
 msgid "# Install exact version\n"
@@ -1400,11 +1401,11 @@ msgid "# Check what Python versions uv can find on your system\n"
 msgstr "# uv가 시스템에서 찾을 수 있는 Python 버전 확인\n"
 
 #: src/python-management.md:44 src/python-management.md:150 src/faq.md:317
-#: src/commands/install.md:79
+#: src/commands/install.md:83
 msgid "# Example output:\n"
 msgstr "# 출력 예시:\n"
 
-#: src/python-management.md:46 src/faq.md:319 src/commands/install.md:81
+#: src/python-management.md:46 src/faq.md:319 src/commands/install.md:85
 msgid "# cpython-3.12.8    ~/.local/share/uv/python/...     (managed)\n"
 msgstr "# cpython-3.12.8    ~/.local/share/uv/python/...     (관리됨)\n"
 
@@ -3563,8 +3564,8 @@ msgid "No"
 msgstr "아니오"
 
 #: src/commands/create.md:16
-msgid "`3` (latest)"
-msgstr "`3` (latest)"
+msgid "`3` (any Python 3; an installed one first)"
+msgstr "`3` (Python 3 아무 버전, 설치된 것을 먼저 사용)"
 
 #: src/commands/create.md:16 src/commands/install.md:15
 msgid "Python version (e.g., `3.12`, `3.11.8`)"
@@ -3607,8 +3608,8 @@ msgid "# Create with Python 3.12\n"
 msgstr "# Python 3.12로 생성\n"
 
 #: src/commands/create.md:31
-msgid "# Create with latest Python\n"
-msgstr "# 최신 Python으로 생성\n"
+msgid "# Create with Python 3 (an installed one first)\n"
+msgstr "# Python 3으로 생성 (설치된 것을 먼저 사용)\n"
 
 #: src/commands/create.md:32
 msgid "# Overwrite if exists\n"
@@ -4056,25 +4057,26 @@ msgstr "Python 버전을 설치합니다."
 msgid "`version`"
 msgstr "`version`"
 
-#: src/commands/install.md:15
-msgid "latest"
-msgstr "최신"
+#: src/commands/install.md:15 src/commands/migrate.md:60
+#: src/commands/migrate.md:68 src/api.md:722
+msgid "`3`"
+msgstr "`3`"
 
 #: src/commands/install.md:21
 msgid "`--latest`"
 msgstr "`--latest`"
 
 #: src/commands/install.md:21
-msgid "Install latest stable Python (default)"
-msgstr "최신 안정 Python 설치 (기본값)"
+msgid "Ask uv for Python 3 (default)"
+msgstr "uv에 Python 3 요청 (기본값)"
 
 #: src/commands/install.md:22
 msgid "`--stable`"
 msgstr "`--stable`"
 
 #: src/commands/install.md:22
-msgid "Install oldest fully-supported Python (3.10)"
-msgstr "완전 지원되는 가장 오래된 Python 설치 (3.10)"
+msgid "Install the oldest Python still receiving security fixes (3.11)"
+msgstr "보안 수정을 아직 받는 가장 오래된 Python 설치 (3.11)"
 
 #: src/commands/install.md:25
 msgid "What gets installed where"
@@ -4127,53 +4129,73 @@ msgid "Version Resolution"
 msgstr "버전 탐색"
 
 #: src/commands/install.md:51
-msgid "No argument or `--latest`: installs latest Python 3.x"
-msgstr "인수 없음 또는 `--latest`: 최신 Python 3.x 설치"
+msgid ""
+"No argument or `--latest`: asks uv for `3`. A Python 3 that uv already "
+"manages satisfies it; with none, uv downloads its default (3.15 since uv "
+"0.13)"
+msgstr ""
+"인자 없음 또는 `--latest`: uv에 `3`을 요청합니다. uv가 이미 관리하는 Python 3"
+"가 있으면 그것으로 충족되고, 없으면 uv가 기본 버전을 내려받습니다(uv 0.13부"
+"터 3.15)"
 
 #: src/commands/install.md:52
-msgid "`--stable`: installs Python 3.10 (oldest with active security support)"
-msgstr "`--stable`: Python 3.10 설치 (활성 보안 지원이 있는 가장 오래된 버전)"
+msgid ""
+"`--stable`: installs Python 3.11, the oldest still receiving security fixes "
+"(until 2027-10)"
+msgstr ""
+"`--stable`: 보안 수정을 아직 받는 가장 오래된 버전인 Python 3.11 설치 "
+"(2027-10까지)"
 
 #: src/commands/install.md:53
-msgid "`3.12`: installs latest 3.12.x patch"
-msgstr "`3.12`: 최신 3.12.x 패치 설치"
+msgid "`3.12`: installs the latest 3.12.x patch when uv manages no 3.12 yet"
+msgstr "`3.12`: uv가 관리하는 3.12가 아직 없으면 최신 3.12.x 패치 설치"
 
 #: src/commands/install.md:54
 msgid "`3.12.3`: installs exact version"
 msgstr "`3.12.3`: 정확한 버전 설치"
 
-#: src/commands/install.md:59
-msgid "# Install latest\n"
-msgstr "# 최신 버전 설치\n"
+#: src/commands/install.md:56
+msgid ""
+"uv skips the download when a version it manages already matches the request, "
+"so `scuv install 3.12` does not move an existing 3.12 to a newer patch. Use "
+"`uv python install --upgrade 3.12` for that."
+msgstr ""
+"uv가 관리하는 버전 중 요청과 맞는 것이 있으면 uv는 내려받지 않습니다. 그래서 "
+"`scuv install 3.12`는 기존 3.12를 새 패치로 올리지 않습니다. 올리려면 `uv "
+"python install --upgrade 3.12`를 사용하세요."
 
-#: src/commands/install.md:60
+#: src/commands/install.md:63
+msgid "# Python 3 (a uv-managed one counts)\n"
+msgstr "# Python 3 (uv가 관리하는 것이 있으면 그것으로 충족)\n"
+
+#: src/commands/install.md:64
 msgid "# Same as above\n"
 msgstr "# 위와 동일\n"
 
-#: src/commands/install.md:61
-msgid "# Install Python 3.10\n"
-msgstr "# Python 3.10 설치\n"
+#: src/commands/install.md:65
+msgid "# Install Python 3.11\n"
+msgstr "# Python 3.11 설치\n"
 
-#: src/commands/install.md:62
-msgid "# Install latest 3.12.x\n"
-msgstr "# 최신 3.12.x 설치\n"
+#: src/commands/install.md:66
+msgid "# Latest 3.12.x, unless uv already manages a 3.12\n"
+msgstr "# 최신 3.12.x (uv가 이미 관리하는 3.12가 있으면 제외)\n"
 
-#: src/commands/install.md:63
+#: src/commands/install.md:67
 msgid "# Install exact 3.12.3\n"
 msgstr "# 정확히 3.12.3 설치\n"
 
-#: src/commands/install.md:66
+#: src/commands/install.md:70
 msgid ""
 "**Note:** Python versions are managed by [uv](https://github.com/astral-sh/"
 "uv)."
 msgstr ""
 "**참고:** Python 버전은 [uv](https://github.com/astral-sh/uv)가 관리합니다."
 
-#: src/commands/install.md:68
+#: src/commands/install.md:72
 msgid "Python Discovery"
 msgstr "Python 탐색"
 
-#: src/commands/install.md:70
+#: src/commands/install.md:74
 msgid ""
 "You don't always need `scuv install`. When you run `scuv create`, uv "
 "searches for a matching Python in this order:"
@@ -4181,28 +4203,28 @@ msgstr ""
 "`scuv install`이 항상 필요한 것은 아닙니다. `scuv create`를 실행하면 uv가 다"
 "음 순서로 일치하는 Python을 검색합니다:"
 
-#: src/commands/install.md:72
+#: src/commands/install.md:76
 msgid "**uv-managed** — installed via `scuv install` or `uv python install`"
 msgstr ""
 "**uv가 관리하는 버전** — `scuv install` 또는 `uv python install`로 설치"
 
-#: src/commands/install.md:73
+#: src/commands/install.md:77
 msgid "**System PATH** — Homebrew, apt, pyenv, or any Python on your `PATH`"
 msgstr "**시스템 PATH** — Homebrew, apt, pyenv 또는 `PATH`에 있는 모든 Python"
 
-#: src/commands/install.md:74
+#: src/commands/install.md:78
 msgid "**Platform-specific** — Windows registry, Microsoft Store"
 msgstr "**플랫폼 전용** — Windows 레지스트리, Microsoft Store"
 
-#: src/commands/install.md:77
+#: src/commands/install.md:81
 msgid "# See all Python versions uv can find\n"
 msgstr "# uv가 찾을 수 있는 모든 Python 버전 확인\n"
 
-#: src/commands/install.md:84
+#: src/commands/install.md:88
 msgid "# Use system Python directly — no scuv install needed\n"
 msgstr "# 시스템 Python 직접 사용 — scuv install 불필요\n"
 
-#: src/commands/install.md:89
+#: src/commands/install.md:93
 msgid ""
 "If the requested version isn't found anywhere, `scuv create` will fail with "
 "an error. Use `scuv install <version>` to download it first."
@@ -4210,7 +4232,7 @@ msgstr ""
 "요청한 버전을 어디서도 찾을 수 없으면 `scuv create`가 오류와 함께 실패합니"
 "다. 먼저 `scuv install <version>`으로 다운로드하세요."
 
-#: src/commands/install.md:91
+#: src/commands/install.md:95
 msgid ""
 "**See also:** [Python Management](../python-management.md) for custom Python "
 "paths, environment variables, and migration."
@@ -6477,10 +6499,6 @@ msgstr ""
 "`scuv migrate @env <name> --source <tool> --rename <other>`로 옮깁니다(`--"
 "source`가 없으면 `@env`가 이미 마이그레이션된 환경을 찾습니다). "
 "`MigrationBatchFailed`를 통해 반환됩니다"
-
-#: src/commands/migrate.md:60 src/commands/migrate.md:68 src/api.md:722
-msgid "`3`"
-msgstr "`3`"
 
 #: src/commands/migrate.md:60
 msgid ""
@@ -15397,8 +15415,8 @@ msgid "`scuv create <name> [version]`"
 msgstr "`scuv create <name> [version]`"
 
 #: src/llms.md:24
-msgid "Create virtualenv (default: latest Python)"
-msgstr "virtualenv 생성 (기본값: 최신 Python)"
+msgid "Create virtualenv (default: any Python 3, an installed one first)"
+msgstr "virtualenv 생성 (기본값: Python 3, 설치된 것을 먼저 사용)"
 
 #: src/llms.md:25
 msgid "`scuv create <name> <ver> --install-python`"
@@ -15962,6 +15980,39 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "# Install specific minor version (latest patch)\n"
+#~ msgstr "# 특정 마이너 버전 설치 (최신 패치)\n"
+
+#~ msgid "# Install latest Python\n"
+#~ msgstr "# 최신 Python 설치\n"
+
+#~ msgid "latest"
+#~ msgstr "최신"
+
+#~ msgid "# Install latest 3.12.x\n"
+#~ msgstr "# 최신 3.12.x 설치\n"
+
+#~ msgid "`3` (latest)"
+#~ msgstr "`3` (latest)"
+
+#~ msgid "# Create with latest Python\n"
+#~ msgstr "# 최신 Python으로 생성\n"
+
+#~ msgid "Install latest stable Python (default)"
+#~ msgstr "최신 안정 Python 설치 (기본값)"
+
+#~ msgid "Install oldest fully-supported Python (3.10)"
+#~ msgstr "완전 지원되는 가장 오래된 Python 설치 (3.10)"
+
+#~ msgid "No argument or `--latest`: installs latest Python 3.x"
+#~ msgstr "인수 없음 또는 `--latest`: 최신 Python 3.x 설치"
+
+#~ msgid "# Install latest\n"
+#~ msgstr "# 최신 버전 설치\n"
+
+#~ msgid "# Install Python 3.10\n"
+#~ msgstr "# Python 3.10 설치\n"
 
 #~ msgid ""
 #~ "`scuv info` shows the version detected from that binary; the path itself "

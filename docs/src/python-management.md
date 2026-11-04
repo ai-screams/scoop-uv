@@ -17,10 +17,10 @@ When you run `scuv create myenv 3.12`, scuv asks uv to create a virtual environm
 ### Via scuv (recommended)
 
 ```bash
-# Install latest Python
+# Install Python 3 (skipped if uv already manages one)
 scuv install
 
-# Install specific minor version (latest patch)
+# Install a minor version (latest patch unless uv already manages a 3.12)
 scuv install 3.12
 
 # Install exact version

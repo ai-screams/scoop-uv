@@ -55,7 +55,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv list --pythons` | List installed Python versions |
 | `scuv list --python-version <VER>` | Filter environments by Python version |
 | `scuv list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (0.13.0) |
-| `scuv create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scuv create <name> [version]` | Create virtualenv (default: any Python 3, an installed one first) |
 | `scuv create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
 | `scuv create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
 | `scuv use <name>` | Set + activate environment |

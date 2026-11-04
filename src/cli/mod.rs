@@ -374,11 +374,11 @@ pub enum Commands {
         #[arg(name = "VERSION")]
         python_version: Option<String>,
 
-        /// Install latest stable Python (default if no version specified)
+        /// Ask uv for Python 3 (default); a uv-managed 3.x already satisfies it
         #[arg(long)]
         latest: bool,
 
-        /// Install oldest fully-supported Python (more stable)
+        /// Install the oldest Python still receiving security fixes
         #[arg(long)]
         stable: bool,
 
