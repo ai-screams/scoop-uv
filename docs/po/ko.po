@@ -212,7 +212,7 @@ msgstr "AI/LLM 통합"
 msgid "LLM Reference"
 msgstr "LLM 레퍼런스"
 
-#: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:45
+#: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:49
 #: src/commands/create.md:27 src/commands/use.md:58 src/commands/remove.md:26
 #: src/commands/install.md:60 src/commands/uninstall.md:25
 #: src/commands/doctor.md:58 src/commands/info.md:92 src/commands/status.md:112
@@ -2130,7 +2130,7 @@ msgstr "오래 유지; `gc`(먼저 dry-run), `verify`, 메타데이터(`last_use
 msgid "Extras"
 msgstr "그 밖의 기능"
 
-#: src/faq.md:38 src/commands/list.md:29 src/api.md:728 src/api.md:729
+#: src/faq.md:38 src/commands/list.md:33 src/api.md:728 src/api.md:729
 #: src/api.md:731 src/api.md:732
 msgid "—"
 msgstr "—"
@@ -2461,11 +2461,11 @@ msgstr ""
 "은 마이너 버전만 기록할 수 있으므로 설치된 버전을 먼저 `major.minor`로 잘라냅"
 "니다. `3.12` 필터는 `3.12.x`와도 일치합니다):"
 
-#: src/faq.md:206 src/commands/list.md:108
+#: src/faq.md:206 src/commands/list.md:112
 msgid "\"== Python $v ==\""
 msgstr "\"== Python $v ==\""
 
-#: src/faq.md:207 src/commands/list.md:109
+#: src/faq.md:207 src/commands/list.md:113
 msgid "\"$v\""
 msgstr "\"$v\""
 
@@ -3255,56 +3255,67 @@ msgid "Output as JSON"
 msgstr "JSON 형식으로 출력"
 
 #: src/commands/list.md:23
+msgid ""
+"`--pythons` shows what `uv python list` reports. uv 0.12.11 and later leave "
+"out an interpreter they cannot query and print a `warning:` line instead; "
+"scuv passes those lines on to stderr, except under `--quiet` or `--json`."
+msgstr ""
+"`--pythons`는 `uv python list`가 알려 준 것을 보여 줍니다. uv 0.12.11부터는 "
+"조회할 수 없는 인터프리터를 목록에서 빼고 대신 `warning:` 줄을 출력합니다. "
+"scuv는 그 줄을 stderr로 그대로 넘기며, `--quiet`나 `--json`일 때는 넘기지 않"
+"습니다."
+
+#: src/commands/list.md:27
 msgid "Sort"
 msgstr "정렬"
 
-#: src/commands/list.md:25
+#: src/commands/list.md:29
 msgid "`--sort` reorders the output without changing what's shown:"
 msgstr "`--sort`는 표시 항목을 변경하지 않고 출력 순서만 바꿉니다:"
 
-#: src/commands/list.md:27
+#: src/commands/list.md:31
 msgid "Mode"
 msgstr "모드"
 
-#: src/commands/list.md:27
+#: src/commands/list.md:31
 msgid "Order"
 msgstr "정렬 기준"
 
-#: src/commands/list.md:27
+#: src/commands/list.md:31
 msgid "Tie-break"
 msgstr "동점 처리"
 
-#: src/commands/list.md:29 src/commands/create.md:15 src/commands/use.md:17
+#: src/commands/list.md:33 src/commands/create.md:15 src/commands/use.md:17
 #: src/commands/remove.md:17 src/commands/info.md:18 src/commands/export.md:16
 #: src/commands/shell.md:23
 msgid "`name`"
 msgstr "`name`"
 
-#: src/commands/list.md:29
+#: src/commands/list.md:33
 msgid "Alphabetical (default, back-compat)"
 msgstr "알파벳 순 (기본값, 하위 호환)"
 
-#: src/commands/list.md:30
+#: src/commands/list.md:34
 msgid "`created`"
 msgstr "`created`"
 
-#: src/commands/list.md:30
+#: src/commands/list.md:34
 msgid "Newest `created_at` first"
 msgstr "가장 최근 `created_at` 먼저"
 
-#: src/commands/list.md:30 src/commands/list.md:31
+#: src/commands/list.md:34 src/commands/list.md:35
 msgid "Name (asc)"
 msgstr "이름 (오름차순)"
 
-#: src/commands/list.md:31
+#: src/commands/list.md:35
 msgid "`last-used`"
 msgstr "`last-used`"
 
-#: src/commands/list.md:31
+#: src/commands/list.md:35
 msgid "Most recently activated first"
 msgstr "가장 최근 활성화된 항목 먼저"
 
-#: src/commands/list.md:33
+#: src/commands/list.md:37
 msgid ""
 "Envs missing the relevant timestamp (`created_at` / `last_used`) sort to the "
 "**end** of the list, with name-order tie-break — so legacy or never-"
@@ -3322,7 +3333,7 @@ msgstr ""
 "use` 단독 실행은 버전 파일만 기록할 뿐 메타데이터는 건드리지 않습니다; 타임스"
 "탬프는 셸 래퍼가 이후 활성화 스크립트를 소싱할 때 기록됩니다."
 
-#: src/commands/list.md:42
+#: src/commands/list.md:46
 msgid ""
 "`--sort` is mutually exclusive with `--pythons` (which lists Python "
 "installations, not environments)."
@@ -3330,51 +3341,51 @@ msgstr ""
 "`--sort`와 `--pythons`는 함께 사용할 수 없습니다 (후자는 환경이 아닌 Python "
 "설치 목록을 나열합니다)."
 
-#: src/commands/list.md:48
+#: src/commands/list.md:52
 msgid "# List all virtualenvs\n"
 msgstr "# 모든 가상 환경 나열\n"
 
-#: src/commands/list.md:49
+#: src/commands/list.md:53
 msgid "# List installed Python versions\n"
 msgstr "# 설치된 Python 버전 나열\n"
 
-#: src/commands/list.md:50
+#: src/commands/list.md:54
 msgid "# Names only, one per line\n"
 msgstr "# 이름만, 한 줄에 하나씩\n"
 
-#: src/commands/list.md:51
+#: src/commands/list.md:55
 msgid "# JSON output\n"
 msgstr "# JSON 출력\n"
 
-#: src/commands/list.md:52
+#: src/commands/list.md:56
 msgid "# Filter by Python version\n"
 msgstr "# Python 버전으로 필터링\n"
 
-#: src/commands/list.md:54
+#: src/commands/list.md:58
 msgid "# Show only 3.12.x environments\n"
 msgstr "# 3.12.x 환경만 표시\n"
 
-#: src/commands/list.md:55
+#: src/commands/list.md:59
 msgid "# Show all Python 3.x environments\n"
 msgstr "# 모든 Python 3.x 환경 표시\n"
 
-#: src/commands/list.md:56
+#: src/commands/list.md:60
 msgid "# Matches only envs that recorded 3.12.1\n"
 msgstr "# 3.12.1을 기록한 환경만 일치\n"
 
-#: src/commands/list.md:57
+#: src/commands/list.md:61
 msgid "# Sort\n"
 msgstr "# 정렬\n"
 
-#: src/commands/list.md:59
+#: src/commands/list.md:63
 msgid "# Newest envs first\n"
 msgstr "# 최신 환경 먼저\n"
 
-#: src/commands/list.md:60
+#: src/commands/list.md:64
 msgid "# Recently active envs first\n"
 msgstr "# 최근 활성화된 환경 먼저\n"
 
-#: src/commands/list.md:63
+#: src/commands/list.md:67
 msgid ""
 "Each row shows the name, the Python version the env recorded, and its path. "
 "The last row is the `system` Python found on `PATH`; it appears in `--bare` "
@@ -3384,7 +3395,7 @@ msgstr ""
 "`PATH`에서 찾은 `system` Python입니다. 이 행은 `--bare`와 `--json` 출력에도 "
 "나타나며, 활성 환경에는 `*` 표시가 붙습니다:"
 
-#: src/commands/list.md:83
+#: src/commands/list.md:87
 msgid ""
 "Envs created by current uv record the minor version (`3.12`), because that "
 "is what uv writes to `pyvenv.cfg`."
@@ -3392,27 +3403,27 @@ msgstr ""
 "현재 uv로 만든 환경은 마이너 버전(`3.12`)을 기록합니다. uv가 `pyvenv.cfg`에 "
 "그렇게 쓰기 때문입니다."
 
-#: src/commands/list.md:86
+#: src/commands/list.md:90
 msgid "List Python Versions with Associated Environments"
 msgstr "Python 버전과 연결된 환경 나열"
 
-#: src/commands/list.md:88
+#: src/commands/list.md:92
 msgid "Use this workflow to see both sides of the mapping:"
 msgstr "이 워크플로를 사용하면 매핑의 양쪽을 모두 확인할 수 있습니다:"
 
-#: src/commands/list.md:91
+#: src/commands/list.md:95
 msgid "# 1) List installed Python versions managed by scuv/uv\n"
 msgstr "# 1) scuv/uv가 관리하는 설치된 Python 버전 나열\n"
 
-#: src/commands/list.md:93
+#: src/commands/list.md:97
 msgid "# 2) List all virtual environments with their Python versions\n"
 msgstr "# 2) 모든 가상 환경과 해당 Python 버전 나열\n"
 
-#: src/commands/list.md:96
+#: src/commands/list.md:100
 msgid "# 3) Show environments associated with a specific Python version\n"
 msgstr "# 3) 특정 Python 버전에 연결된 환경 표시\n"
 
-#: src/commands/list.md:101
+#: src/commands/list.md:105
 msgid ""
 "For scripting, combine `--bare` with per-version filtering. `--pythons --"
 "bare` prints full versions (`3.12.14`), while an env may record only the "
@@ -3424,50 +3435,50 @@ msgstr ""
 "므로(최신 uv는 `3.12`로 적습니다), 먼저 각 버전을 `major.minor`로 잘라내세"
 "요. `3.12` 필터는 patch까지 기록한 환경과도 일치합니다:"
 
-#: src/commands/list.md:113
+#: src/commands/list.md:117
 msgid ""
 "The `system` row matches the filter for its own version, so it shows up "
 "under that version's heading."
 msgstr ""
 "`system` 행은 자기 버전의 필터와 일치하므로 그 버전의 제목 아래에 나타납니다."
 
-#: src/commands/list.md:116
+#: src/commands/list.md:120
 msgid "You can also use `--json` for machine-readable output:"
 msgstr "머신 판독 가능한 출력이 필요할 때는 `--json`을 사용할 수도 있습니다:"
 
-#: src/commands/list.md:123
+#: src/commands/list.md:127
 msgid "Version Filtering"
 msgstr "버전 필터링"
 
-#: src/commands/list.md:125
+#: src/commands/list.md:129
 msgid ""
 "The `--python-version` option uses prefix matching to filter environments:"
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
-#: src/commands/list.md:128 src/commands/uninstall.md:165
+#: src/commands/list.md:132 src/commands/uninstall.md:165
 #: src/commands/doctor.md:78 src/commands/doctor.md:106
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
-#: src/commands/list.md:130 src/commands/uninstall.md:167
+#: src/commands/list.md:134 src/commands/uninstall.md:167
 msgid "#   webapp     3.12  ~/.scuv/virtualenvs/webapp\n"
 msgstr "#   webapp     3.12  ~/.scuv/virtualenvs/webapp\n"
 
-#: src/commands/list.md:135
+#: src/commands/list.md:139
 msgid ""
 "This is useful for identifying environments before uninstalling a Python "
 "version:"
 msgstr "Python 버전을 제거하기 전에 환경을 확인할 때 유용합니다:"
 
-#: src/commands/list.md:138
+#: src/commands/list.md:142
 msgid "# See which environments will be affected\n"
 msgstr "# 영향받을 환경 확인\n"
 
-#: src/commands/list.md:140
+#: src/commands/list.md:144
 msgid "# Then uninstall with cascade\n"
 msgstr "# 이후 cascade로 제거\n"
 
-#: src/commands/list.md:145
+#: src/commands/list.md:149
 msgid ""
 "**Note:** `--python-version` cannot be combined with `--pythons` (which "
 "lists Python installations, not environments)."
@@ -3475,11 +3486,11 @@ msgstr ""
 "**참고:** `--python-version`은 `--pythons`와 함께 사용할 수 없습니다 (후자는 "
 "환경이 아닌 Python 설치 목록을 나열합니다)."
 
-#: src/commands/list.md:147
+#: src/commands/list.md:151
 msgid "Empty Results"
 msgstr "결과 없음"
 
-#: src/commands/list.md:149
+#: src/commands/list.md:153
 msgid ""
 "If no Python versions are installed, `scuv list --pythons` prints `No Python "
 "versions installed` and a hint to stderr (nothing with `--bare`)."
@@ -3488,7 +3499,7 @@ msgstr ""
 "Python versions installed`와 힌트를 출력합니다(`--bare`이면 아무것도 출력하"
 "지 않습니다)."
 
-#: src/commands/list.md:150
+#: src/commands/list.md:154
 msgid ""
 "If no environments exist, `scuv list` still shows the `system` row when a "
 "Python is on `PATH`. Only when there is none either does it print `No "
@@ -3498,7 +3509,7 @@ msgstr ""
 "시합니다. Python도 없을 때에만 `No environments yet`과 `scuv create` 힌트를 "
 "stderr에 출력합니다."
 
-#: src/commands/list.md:153
+#: src/commands/list.md:157
 msgid ""
 "If no environments match a filter, `scuv list --python-version <VERSION>` "
 "prints only the `system` row when the system Python matches, and otherwise "

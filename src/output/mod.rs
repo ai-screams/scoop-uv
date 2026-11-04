@@ -43,6 +43,35 @@ pub fn format_size(bytes: u64) -> String {
     }
 }
 
+/// Set once by [`allow_diagnostics`]; read by [`diagnostics_allowed`].
+static DIAGNOSTICS: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+
+/// Records whether layers below the commands (such as uv's own warnings
+/// passed on by the uv client) may print diagnostics to stderr.
+///
+/// The rule is the one [`Output::warn`] follows: nothing under `--quiet` or
+/// `--json`. Only the first call counts; the binary makes it once, before
+/// any command runs. Without a call nothing is printed, so a library caller
+/// gets no stray stderr.
+///
+/// # Examples
+///
+/// ```
+/// scoop_uv::output::allow_diagnostics(false, false);
+/// ```
+pub fn allow_diagnostics(quiet: bool, json: bool) {
+    let _ = DIAGNOSTICS.set(diagnostics_policy(quiet, json));
+}
+
+fn diagnostics_policy(quiet: bool, json: bool) -> bool {
+    !quiet && !json
+}
+
+/// Returns whether [`allow_diagnostics`] said diagnostics may print.
+pub(crate) fn diagnostics_allowed() -> bool {
+    DIAGNOSTICS.get().copied().unwrap_or(false)
+}
+
 /// Output handler for CLI
 pub struct Output {
     /// Verbosity level (0 = normal, 1+ = verbose)
@@ -359,6 +388,26 @@ impl Output {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Lib tests never call allow_diagnostics, so this is the unset default.
+    #[test]
+    fn diagnostics_stay_off_until_allowed() {
+        assert!(!diagnostics_allowed());
+    }
+
+    // Same rule as Output::warn: no diagnostics under --quiet or --json.
+    #[rstest::rstest]
+    #[case::normal(false, false, true)]
+    #[case::quiet(true, false, false)]
+    #[case::json(false, true, false)]
+    #[case::both(true, true, false)]
+    fn diagnostics_follow_the_warn_rule(
+        #[case] quiet: bool,
+        #[case] json: bool,
+        #[case] allowed: bool,
+    ) {
+        assert_eq!(diagnostics_policy(quiet, json), allowed);
+    }
 
     mod format_size_tests {
         use super::*;
