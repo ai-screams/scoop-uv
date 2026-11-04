@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793791919470,
+  "lastUpdate": 1793791921541,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -11713,6 +11713,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1029,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1f60ac84eb86df00e70e5da4eb351dff7b22c9d7",
+          "message": "Merge pull request #240 from ai-screams/fix/install-stable-python-311\n\nfix(install): make --stable install Python 3.11",
+          "timestamp": "2026-11-04T20:27:47+09:00",
+          "tree_id": "d576b3c5ceab57e54bcb240180c5220231680fd4",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/1f60ac84eb86df00e70e5da4eb351dff7b22c9d7"
+        },
+        "date": 1793791921425,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1711,
+            "range": "± 106",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1186,
+            "range": "± 5",
             "unit": "ns/iter"
           }
         ]
