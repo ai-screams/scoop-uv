@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793767497466,
+  "lastUpdate": 1793767499230,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -11473,6 +11473,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 470,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2703cb75351e482c944a0941c70444bb478c012d",
+          "message": "ci(deps): bump astral-sh/setup-uv from 10.3.2 to 10.3.3 in the github-actions group\n\nBumps the github-actions group with 1 update: [astral-sh/setup-uv](https://github.com/astral-sh/setup-uv).\n\n\nUpdates `astral-sh/setup-uv` from 10.3.2 to 10.3.3\n- [Release notes](https://github.com/astral-sh/setup-uv/releases)\n- [Commits](https://github.com/astral-sh/setup-uv/compare/v10.3.2...v10.3.3)\n\n---\nupdated-dependencies:\n- dependency-name: astral-sh/setup-uv\n  dependency-version: 10.3.3\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n  dependency-group: github-actions\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-11-04T13:40:53+09:00",
+          "tree_id": "253a06b1f5123ba818948c1369d30cf37f7dbaaf",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/2703cb75351e482c944a0941c70444bb478c012d"
+        },
+        "date": 1793767499173,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1500,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 994,
+            "range": "± 14",
             "unit": "ns/iter"
           }
         ]
