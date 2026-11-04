@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793772539543,
+  "lastUpdate": 1793772541062,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -11593,6 +11593,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 994,
             "range": "± 14",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "19645f942c96991912da8542aee2dd0adcd67c8b",
+          "message": "Merge pull request #237 from ai-screams/feat/doctor-fix-install-uv\n\nfeat(doctor): offer to install a missing uv from doctor --fix",
+          "timestamp": "2026-11-04T15:04:02+09:00",
+          "tree_id": "05d84d688684635b67e4ea8465128b8ea33ca06e",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/19645f942c96991912da8542aee2dd0adcd67c8b"
+        },
+        "date": 1793772540949,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1573,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1029,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
