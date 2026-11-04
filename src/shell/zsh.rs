@@ -19,14 +19,16 @@ _scuv_hook() {
         r#"
 }
 
-# Set up chpwd hook for auto-activate
+# Auto-activate on every directory change and once now. A non-empty
+# SCUV_NO_AUTO when this script is sourced turns off both, and removes the
+# hook an earlier sourcing added.
+autoload -Uz add-zsh-hook
 if [[ -z "$SCUV_NO_AUTO" ]]; then
-    autoload -Uz add-zsh-hook
     add-zsh-hook chpwd _scuv_hook
+    _scuv_hook
+else
+    add-zsh-hook -d chpwd _scuv_hook
 fi
-
-# Run hook on startup
-_scuv_hook
 
 "#,
         // Tab completion (src/shell/scripts/zsh_completion.zsh).

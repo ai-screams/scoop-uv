@@ -18,17 +18,29 @@ _scuv_hook() {"#,
         r#"
 }
 
-# Set up PROMPT_COMMAND for auto-activate
+# Auto-activate on every prompt and once now. A non-empty SCUV_NO_AUTO when
+# this script is sourced turns off both. Any earlier registration is taken
+# out first, so sourcing again neither adds a second hook nor keeps one that
+# SCUV_NO_AUTO now turns off.
+# Every whole `_scuv_hook` entry between semicolons goes, wherever later
+# prepends left it (first, middle or last); other commands such as
+# `my_scuv_hook` stay. The one thing it cannot tell apart is a literal
+# ";_scuv_hook;" inside a quoted string, which it would also remove.
+_scuv_pc=";$PROMPT_COMMAND;"
+while [[ "$_scuv_pc" == *";_scuv_hook;"* ]]; do
+    _scuv_pc="${_scuv_pc/;_scuv_hook;/;}"
+done
+_scuv_pc="${_scuv_pc#;}"
+PROMPT_COMMAND="${_scuv_pc%;}"
+unset _scuv_pc
 if [[ -z "$SCUV_NO_AUTO" ]]; then
     if [[ -z "$PROMPT_COMMAND" ]]; then
         PROMPT_COMMAND="_scuv_hook"
     else
         PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"
     fi
+    _scuv_hook
 fi
-
-# Run hook on startup
-_scuv_hook
 
 "#,
         // Tab completion (src/shell/scripts/bash_completion.bash).
