@@ -420,12 +420,12 @@ fn test_determine_status_ready() {
 
 #[test]
 fn test_determine_status_eol_boundary() {
-    // 3.8 is the EOL boundary
-    let status = common::determine_status("boundary_test_env", "3.8.19");
+    // 3.10 is the EOL boundary (end of life 2026-10-01)
+    let status = common::determine_status("boundary_test_env", "3.10.19");
     assert!(matches!(status, EnvironmentStatus::PythonEol { .. }));
 
-    // 3.9 is supported
-    let status = common::determine_status("boundary_test_env", "3.9.0");
+    // 3.11 is supported
+    let status = common::determine_status("boundary_test_env", "3.11.0");
     assert!(matches!(status, EnvironmentStatus::Ready));
 }
 
