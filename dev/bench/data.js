@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793799823129,
+  "lastUpdate": 1793799824771,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -11953,6 +11953,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 450,
             "range": "± 1",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a24c1999a5abcec96a5985d99077e57926fd2ba2",
+          "message": "fix(migrate): treat Python 3.9 and 3.10 as end of life\n\nThe EOL cutoff was 3.8, set in 2024. Python 3.9 reached end of life on\n2025-10-31 and 3.10 on 2026-10-01, so the cutoff is now 3.10.\n\nThis changes behaviour for 3.9 and 3.10 source envs that are otherwise\nhealthy and conflict-free: `migrate list` marks them EOL, `migrate @env`\nrefuses them with exit 2, and `migrate all` skips them, still exiting 0\nwhen nothing else failed. `--force` migrates them as before.\n\nTests pin the boundary at the classifier, the single-env refusal and\nthe renamed-conflict path (3.10 refused, 3.11 allowed). migrate.md\ngains an end-of-life section that states the cutoff, the exit codes,\nwhich states take precedence and the change from 0.18.0. Regenerate\ndocs/po/ko.po.",
+          "timestamp": "2026-11-04T22:39:41+09:00",
+          "tree_id": "b281bad1e1e6688215c3f5efec5f9113140da07f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/a24c1999a5abcec96a5985d99077e57926fd2ba2"
+        },
+        "date": 1793799824659,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1496,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 987,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
