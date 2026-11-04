@@ -118,7 +118,7 @@ Wraps the uv CLI for Python/virtualenv operations (`client.rs`, `UvClient`):
 
 `version.rs` holds the minimum supported uv version (`MIN_VERSION`) and the `uv --version`
 parser. `install.rs` installs uv for `scuv doctor --fix` only, after the user confirms a plan.
-It is crate-private, and `UvClient` never installs anything.
+It is crate-private, and `UvClient` never installs uv itself.
 
 ## Design Patterns
 

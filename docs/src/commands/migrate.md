@@ -56,7 +56,7 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | (a) all envs migrated, (b) no envs found but source tools are installed, or (c) only non-conflict skips occurred (EOL / corrupted envs in the skipped bucket, no preflight name conflicts, no per-env failures) |
-| `2` | At least one per-env failure **or** at least one preflight name conflict without `--force`, **or** two sources offering the same env name in one batch. `--force` does not resolve that case: migrate one with `scuv migrate @env <name> --rename <other>`. Returned via `MigrationBatchFailed` |
+| `2` | At least one per-env failure **or** at least one preflight name conflict without `--force`, **or** two sources offering the same env name in one batch. `--force` does not resolve that case: the first source migrates, and the skipped one needs `scuv migrate @env <name> --source <tool> --rename <other>` (without `--source`, `@env` finds the env that already migrated). Returned via `MigrationBatchFailed` |
 | `3` | No source tool (pyenv / virtualenvwrapper / conda) is detected on the system. Returned via `MigrationSourcesNotFound` |
 
 ### `migrate @env <name>`

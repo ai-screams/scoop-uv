@@ -226,8 +226,9 @@ pub(crate) trait Runner {
     /// Runs a step to the end; `Ok(false)` when it exits unsuccessfully.
     fn run(&mut self, step: &Step) -> io::Result<bool>;
 
-    /// Returns what `uv --version` prints, `None` when it exits unsuccessfully.
-    fn version(&mut self, uv: &Path) -> io::Result<Option<String>>;
+    /// Returns what `uv --version` prints. An unsuccessful exit is an error
+    /// that carries the exit status and stderr, so the report can show why.
+    fn version(&mut self, uv: &Path) -> io::Result<String>;
 }
 
 /// The real [`Runner`].
@@ -245,15 +246,21 @@ impl Runner for ProcessRunner {
         Ok(status.success())
     }
 
-    fn version(&mut self, uv: &Path) -> io::Result<Option<String>> {
+    fn version(&mut self, uv: &Path) -> io::Result<String> {
         let output = Command::new(uv)
             .arg("--version")
             .stdin(Stdio::null())
             .output()?;
-        Ok(output
-            .status
-            .success()
-            .then(|| String::from_utf8_lossy(&output.stdout).trim().to_string()))
+        if output.status.success() {
+            return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
+        }
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stderr = stderr.trim();
+        Err(io::Error::other(if stderr.is_empty() {
+            output.status.to_string()
+        } else {
+            format!("{}: {stderr}", output.status)
+        }))
     }
 }
 
@@ -291,9 +298,8 @@ fn run_step(runner: &mut impl Runner, step: &Step, stage: Stage) -> Result<(), O
 
 fn verify(runner: &mut impl Runner, uv: &Path) -> Outcome {
     let (raw, detail) = match runner.version(uv) {
-        Ok(Some(raw)) => (Some(raw.clone()), Some(raw)),
-        Ok(None) => (None, None),
-        Err(e) => (None, Some(e.to_string())),
+        Ok(raw) => (Some(raw.clone()), raw),
+        Err(e) => (None, e.to_string()),
     };
     match raw.as_deref().and_then(verified_version) {
         Some(version) => Outcome::Installed {
@@ -302,7 +308,7 @@ fn verify(runner: &mut impl Runner, uv: &Path) -> Outcome {
         },
         None => Outcome::Failed {
             stage: Stage::Verify,
-            detail,
+            detail: Some(detail),
         },
     }
 }
@@ -477,7 +483,7 @@ mod tests {
         calls: Vec<&'static str>,
         download: fn() -> io::Result<bool>,
         run: fn() -> io::Result<bool>,
-        version: fn() -> io::Result<Option<String>>,
+        version: fn() -> io::Result<String>,
     }
 
     impl Fake {
@@ -486,7 +492,7 @@ mod tests {
                 calls: Vec::new(),
                 download: || Ok(true),
                 run: || Ok(true),
-                version: || Ok(Some("uv 0.13.6".to_string())),
+                version: || Ok("uv 0.13.6".to_string()),
             }
         }
     }
@@ -502,7 +508,7 @@ mod tests {
             }
         }
 
-        fn version(&mut self, _uv: &Path) -> io::Result<Option<String>> {
+        fn version(&mut self, _uv: &Path) -> io::Result<String> {
             self.calls.push("version");
             (self.version)()
         }
@@ -632,8 +638,8 @@ mod tests {
             Ok(true)
         }
 
-        fn version(&mut self, _uv: &Path) -> io::Result<Option<String>> {
-            Ok(Some("uv 0.13.6".to_string()))
+        fn version(&mut self, _uv: &Path) -> io::Result<String> {
+            Ok("uv 0.13.6".to_string())
         }
     }
 
@@ -697,13 +703,12 @@ mod tests {
     }
 
     #[rstest]
-    #[case::exit_status(|| Ok(None), None)]
-    #[case::spawn(|| Err(denied()), Some("denied"))]
-    #[case::too_old(|| Ok(Some("uv 0.1.0".to_string())), Some("uv 0.1.0"))]
-    #[case::unreadable(|| Ok(Some("mystery".to_string())), Some("mystery"))]
+    #[case::fails(|| Err(denied()), "denied")]
+    #[case::too_old(|| Ok("uv 0.1.0".to_string()), "uv 0.1.0")]
+    #[case::unreadable(|| Ok("mystery".to_string()), "mystery")]
     fn install_fails_when_the_result_does_not_verify(
-        #[case] version: fn() -> io::Result<Option<String>>,
-        #[case] detail: Option<&str>,
+        #[case] version: fn() -> io::Result<String>,
+        #[case] detail: &str,
     ) {
         let home = TempDir::new().unwrap();
         let mut runner = Fake {
@@ -717,7 +722,7 @@ mod tests {
             outcome,
             Outcome::Failed {
                 stage: Stage::Verify,
-                detail: detail.map(str::to_string)
+                detail: Some(detail.to_string())
             }
         );
     }
@@ -781,7 +786,23 @@ EOF
         };
 
         assert!(!ProcessRunner.run(&step).unwrap());
-        assert_eq!(ProcessRunner.version(&failing).unwrap(), None);
+        assert!(ProcessRunner.version(&failing).is_err());
+    }
+
+    // A uv that installs but cannot run explains why on stderr; the report
+    // must carry that, not only "checking the installed uv failed".
+    #[cfg(unix)]
+    #[rstest]
+    #[case::with_stderr("echo 'missing libfoo.so' >&2\nexit 127\n", "127: missing libfoo.so")]
+    #[case::silent("exit 3\n", "3")]
+    fn process_runner_keeps_why_uv_version_failed(#[case] body: &str, #[case] ends: &str) {
+        let root = TempDir::new().unwrap();
+        let uv = root.path().join("uv");
+        script(&uv, body);
+
+        let detail = ProcessRunner.version(&uv).unwrap_err().to_string();
+
+        assert!(detail.ends_with(ends), "{detail}");
     }
 
     #[test]

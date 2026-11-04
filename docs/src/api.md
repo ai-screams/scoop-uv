@@ -625,8 +625,9 @@ pub enum Commands {
 ```rust
 // cli/commands/my_command.rs
 use crate::error::Result;
+use crate::output::Output;
 
-pub fn execute(arg: &str) -> Result<()> {
+pub fn execute(output: &Output, arg: &str) -> Result<()> {
     // Implementation
     Ok(())
 }

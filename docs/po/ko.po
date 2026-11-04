@@ -723,7 +723,7 @@ msgid "Task"
 msgstr "작업"
 
 #: src/quick-start.md:97 src/commands/index.md:7 src/commands/migrate.md:352
-#: src/commands/verify.md:42 src/api.md:725 src/llms.md:19
+#: src/commands/verify.md:42 src/api.md:726 src/llms.md:19
 msgid "Command"
 msgstr "명령어"
 
@@ -948,7 +948,7 @@ msgstr "설정 방법"
 
 #: src/shell-integration.md:118 src/shell-integration.md:147
 #: src/commands/which.md:49 src/commands/sync.md:116 src/commands/export.md:74
-#: src/commands/import.md:75 src/commands/clone.md:74 src/api.md:725
+#: src/commands/import.md:75 src/commands/clone.md:74 src/api.md:726
 msgid "1"
 msgstr "1"
 
@@ -960,7 +960,7 @@ msgstr "`SCUV_VERSION` 환경 변수"
 msgid "`scuv shell`"
 msgstr "`scuv shell`"
 
-#: src/shell-integration.md:119 src/api.md:725
+#: src/shell-integration.md:119 src/api.md:726
 msgid "2"
 msgstr "2"
 
@@ -973,7 +973,7 @@ msgid "`scuv use` (walks parent directories)"
 msgstr "`scuv use` (부모 디렉터리를 순서대로 탐색)"
 
 #: src/shell-integration.md:120 src/shell-integration.md:201
-#: src/commands/clone.md:75 src/api.md:725
+#: src/commands/clone.md:75 src/api.md:726
 msgid "3"
 msgstr "3"
 
@@ -1221,7 +1221,7 @@ msgstr "# 현재 디렉터리만 확인 (가장 빠름)\n"
 
 #: src/shell-integration.md:204 src/commands/which.md:48
 #: src/commands/sync.md:115 src/commands/export.md:73 src/commands/import.md:74
-#: src/commands/clone.md:73 src/api.md:725
+#: src/commands/clone.md:73 src/api.md:726
 msgid "0"
 msgstr "0"
 
@@ -2125,8 +2125,8 @@ msgstr "오래 유지; `gc`(먼저 dry-run), `verify`, 메타데이터(`last_use
 msgid "Extras"
 msgstr "그 밖의 기능"
 
-#: src/faq.md:38 src/commands/list.md:29 src/api.md:727 src/api.md:728
-#: src/api.md:729 src/api.md:730 src/api.md:731
+#: src/faq.md:38 src/commands/list.md:29 src/api.md:728 src/api.md:729
+#: src/api.md:730 src/api.md:731 src/api.md:732
 msgid "—"
 msgstr "—"
 
@@ -5219,7 +5219,7 @@ msgstr "값"
 
 #: src/commands/status.md:31 src/commands/which.md:46 src/commands/sync.md:113
 #: src/commands/export.md:71 src/commands/import.md:72 src/commands/clone.md:71
-#: src/development/translation.md:256 src/api.md:716
+#: src/development/translation.md:256 src/api.md:717
 msgid "Meaning"
 msgstr "의미"
 
@@ -5431,7 +5431,7 @@ msgstr "종료 코드"
 #: src/commands/which.md:46 src/commands/sync.md:113 src/commands/export.md:71
 #: src/commands/import.md:72 src/commands/clone.md:71
 #: src/commands/migrate.md:56 src/commands/migrate.md:64
-#: src/commands/diff.md:51 src/commands/lang.md:37 src/api.md:716
+#: src/commands/diff.md:51 src/commands/lang.md:37 src/api.md:717
 msgid "Code"
 msgstr "코드"
 
@@ -6428,7 +6428,7 @@ msgid "Returned when"
 msgstr "반환 조건"
 
 #: src/commands/migrate.md:58 src/commands/migrate.md:66
-#: src/commands/diff.md:53 src/api.md:718
+#: src/commands/diff.md:53 src/api.md:719
 msgid "`0`"
 msgstr "`0`"
 
@@ -6442,7 +6442,7 @@ msgstr ""
 "어 있음, 또는 (c) 충돌 없는 건너뜀만 발생(건너뛴 버킷의 EOL / 손상된 환경, 사"
 "전 점검 이름 충돌 없음, 환경별 실패 없음)"
 
-#: src/commands/migrate.md:59 src/commands/migrate.md:67 src/api.md:720
+#: src/commands/migrate.md:59 src/commands/migrate.md:67 src/api.md:721
 msgid "`2`"
 msgstr "`2`"
 
@@ -6450,15 +6450,19 @@ msgstr "`2`"
 msgid ""
 "At least one per-env failure **or** at least one preflight name conflict "
 "without `--force`, **or** two sources offering the same env name in one "
-"batch. `--force` does not resolve that case: migrate one with `scuv migrate "
-"@env <name> --rename <other>`. Returned via `MigrationBatchFailed`"
+"batch. `--force` does not resolve that case: the first source migrates, and "
+"the skipped one needs `scuv migrate @env <name> --source <tool> --rename "
+"<other>` (without `--source`, `@env` finds the env that already migrated). "
+"Returned via `MigrationBatchFailed`"
 msgstr ""
 "하나 이상의 환경별 실패, `--force` 없이 하나 이상의 사전 점검 이름 충돌, **또"
 "는** 한 배치에서 두 소스가 같은 환경 이름을 제공한 경우. 마지막 경우는 `--"
-"force`로 해결되지 않으므로 `scuv migrate @env <name> --rename <other>`로 하나"
-"를 먼저 마이그레이션합니다. `MigrationBatchFailed`를 통해 반환됩니다"
+"force`로 해결되지 않습니다. 먼저 나온 소스가 마이그레이션되고, 건너뛴 쪽은 "
+"`scuv migrate @env <name> --source <tool> --rename <other>`로 옮깁니다(`--"
+"source`가 없으면 `@env`가 이미 마이그레이션된 환경을 찾습니다). "
+"`MigrationBatchFailed`를 통해 반환됩니다"
 
-#: src/commands/migrate.md:60 src/commands/migrate.md:68 src/api.md:721
+#: src/commands/migrate.md:60 src/commands/migrate.md:68 src/api.md:722
 msgid "`3`"
 msgstr "`3`"
 
@@ -7809,7 +7813,7 @@ msgstr "범위"
 msgid "Action"
 msgstr "동작"
 
-#: src/commands/verify.md:44 src/development/architecture.md:87 src/api.md:730
+#: src/commands/verify.md:44 src/development/architecture.md:87 src/api.md:731
 msgid "`doctor`"
 msgstr "`doctor`"
 
@@ -7821,7 +7825,7 @@ msgstr "시스템 (uv 설치, shell wrapper, 경로)"
 msgid "Diagnose + optional `--fix`"
 msgstr "진단 + 선택적 `--fix`"
 
-#: src/commands/verify.md:45 src/api.md:727
+#: src/commands/verify.md:45 src/api.md:728
 msgid "`verify`"
 msgstr "`verify`"
 
@@ -8078,7 +8082,7 @@ msgstr ""
 msgid "Default — diff reported (even if envs differ)"
 msgstr "기본값 — diff 결과 출력 (환경이 달라도)"
 
-#: src/commands/diff.md:54 src/api.md:719
+#: src/commands/diff.md:54 src/api.md:720
 msgid "`1`"
 msgstr "`1`"
 
@@ -9192,7 +9196,7 @@ msgstr "// ...\n"
 msgid "Create handler in `src/cli/commands/my_command.rs`:"
 msgstr "`src/cli/commands/my_command.rs`에 핸들러를 생성합니다:"
 
-#: src/development/contributing.md:167 src/api.md:630
+#: src/development/contributing.md:167 src/api.md:631
 msgid "// Implementation\n"
 msgstr "// Implementation\n"
 
@@ -9762,7 +9766,7 @@ msgstr "\"Installing...\""
 msgid "Use progressive/ongoing form"
 msgstr "진행형을 사용합니다"
 
-#: src/development/translation.md:172 src/api.md:718
+#: src/development/translation.md:172 src/api.md:719
 msgid "Success"
 msgstr "완료"
 
@@ -10067,7 +10071,7 @@ msgid "Your language's term for file path"
 msgstr "해당 언어에서 파일 경로에 해당하는 표현"
 
 #: src/development/translation.md:247 src/development/translation.md:309
-#: src/api.md:730
+#: src/api.md:731
 msgid "error"
 msgstr "error"
 
@@ -10075,7 +10079,7 @@ msgstr "error"
 msgid "Your language's term for \"error\""
 msgstr "해당 언어에서 \"error\"에 해당하는 표현"
 
-#: src/development/translation.md:248 src/api.md:729 src/api.md:731
+#: src/development/translation.md:248 src/api.md:730 src/api.md:732
 msgid "success"
 msgstr "success"
 
@@ -10730,11 +10734,11 @@ msgid ""
 "`version.rs` holds the minimum supported uv version (`MIN_VERSION`) and the "
 "`uv --version` parser. `install.rs` installs uv for `scuv doctor --fix` "
 "only, after the user confirms a plan. It is crate-private, and `UvClient` "
-"never installs anything."
+"never installs uv itself."
 msgstr ""
 "`version.rs`는 지원하는 최소 uv 버전(`MIN_VERSION`)과 `uv --version` 파서를 "
 "담습니다. `install.rs`는 사용자가 계획을 확인한 뒤 `scuv doctor --fix`에서만 "
-"uv를 설치합니다. 크레이트 내부 모듈이며, `UvClient`는 아무것도 설치하지 않습"
+"uv를 설치합니다. 크레이트 내부 모듈이며, `UvClient`는 uv 자체를 설치하지 않습"
 "니다."
 
 #: src/development/architecture.md:123
@@ -11078,7 +11082,7 @@ msgstr "`src/shell/mod.rs`의 `shell::detect_shell()`에 감지 로직 추가:"
 msgid "\"MYSHELL_VERSION\""
 msgstr "\"MYSHELL_VERSION\""
 
-#: src/development/architecture.md:398 src/api.md:671
+#: src/development/architecture.md:398 src/api.md:672
 msgid "// ... existing checks\n"
 msgstr "// ... 기존 검사 항목\n"
 
@@ -11253,7 +11257,7 @@ msgid ""
 msgstr ""
 "**메타데이터 무결성:** JSON 파싱 오류는 패닉 없이 정상적으로 처리됩니다."
 
-#: src/development/architecture.md:455 src/api.md:679
+#: src/development/architecture.md:455 src/api.md:680
 msgid "Related Documentation"
 msgstr "관련 문서"
 
@@ -11651,11 +11655,11 @@ msgstr "// 상태 확인\n"
 msgid "**Example - Implementing a Custom Check:**"
 msgstr "**예시 - 커스텀 점검 구현:**"
 
-#: src/api.md:255 src/api.md:655
+#: src/api.md:255 src/api.md:656
 msgid "\"my_check\""
 msgstr "\"my_check\""
 
-#: src/api.md:259 src/api.md:659
+#: src/api.md:259 src/api.md:660
 msgid "\"My Custom Check\""
 msgstr "\"My Custom Check\""
 
@@ -12131,7 +12135,7 @@ msgstr "**`cli/commands/`에 핸들러 생성:**"
 msgid "// cli/commands/my_command.rs\n"
 msgstr "// cli/commands/my_command.rs\n"
 
-#: src/api.md:635
+#: src/api.md:636
 msgid ""
 "**Re-export in `cli/commands/mod.rs`, then add an arm to `dispatch()` in "
 "`main.rs`:**"
@@ -12139,27 +12143,27 @@ msgstr ""
 "**`cli/commands/mod.rs`에서 다시 내보내고 `main.rs`의 `dispatch()`에 arm을 추"
 "가합니다:**"
 
-#: src/api.md:637
+#: src/api.md:638
 msgid "// cli/commands/mod.rs\n"
 msgstr "// cli/commands/mod.rs\n"
 
-#: src/api.md:640
+#: src/api.md:641
 msgid "// main.rs\n"
 msgstr "// main.rs\n"
 
-#: src/api.md:647
+#: src/api.md:648
 msgid "Adding a New Health Check"
 msgstr "새 상태 점검 추가"
 
-#: src/api.md:650
+#: src/api.md:651
 msgid "// In core/doctor/checks/\n"
 msgstr "// core/doctor/checks/ 에서\n"
 
-#: src/api.md:663
+#: src/api.md:664
 msgid "// Check logic\n"
 msgstr "// 점검 로직\n"
 
-#: src/api.md:667
+#: src/api.md:668
 msgid ""
 "// Declare the file in core/doctor/checks/mod.rs and register it in "
 "default_checks()\n"
@@ -12167,79 +12171,79 @@ msgstr ""
 "// core/doctor/checks/mod.rs에 파일을 선언하고 default_checks()에 등록합니"
 "다\n"
 
-#: src/api.md:681
+#: src/api.md:682
 msgid ""
 "[Architecture](development/architecture.md) - System design and patterns"
 msgstr "[아키텍처](development/architecture.md) - 시스템 설계와 패턴"
 
-#: src/api.md:682
+#: src/api.md:683
 msgid "[Commands](commands/README.md) - CLI reference"
 msgstr "[명령어](commands/README.md) - CLI 참조"
 
-#: src/api.md:683
+#: src/api.md:684
 msgid "[Contributing](development/contributing.md) - Development guide"
 msgstr "[기여하기](development/contributing.md) - 개발 가이드"
 
-#: src/api.md:684
+#: src/api.md:685
 msgid "[Testing](development/testing.md) - Testing strategies"
 msgstr "[테스트](development/testing.md) - 테스트 전략"
 
-#: src/api.md:688
+#: src/api.md:689
 msgid "For AI/LLM Tools"
 msgstr "AI/LLM 도구를 위한 안내"
 
-#: src/api.md:690
+#: src/api.md:691
 msgid "When analyzing or modifying this codebase:"
 msgstr "이 코드베이스를 분석하거나 수정할 때:"
 
-#: src/api.md:692
+#: src/api.md:693
 msgid "**Use symbolic tools** for precise navigation:"
 msgstr "**심볼 도구를 활용하세요** — 정확한 탐색을 위해:"
 
-#: src/api.md:693
+#: src/api.md:694
 msgid "`find_symbol` to locate specific functions/types"
 msgstr "`find_symbol` — 특정 함수/타입 위치 파악"
 
-#: src/api.md:694
+#: src/api.md:695
 msgid "`find_referencing_symbols` to understand usage"
 msgstr "`find_referencing_symbols` — 사용처 파악"
 
-#: src/api.md:695
+#: src/api.md:696
 msgid "`get_symbols_overview` for module structure"
 msgstr "`get_symbols_overview` — 모듈 구조 파악"
 
-#: src/api.md:697
+#: src/api.md:698
 msgid "**Follow existing patterns**:"
 msgstr "**기존 패턴을 따르세요**:"
 
-#: src/api.md:698
+#: src/api.md:699
 msgid "Error handling: Always return `Result<T>` with `ScoopError`"
 msgstr "에러 처리: 항상 `ScoopError`와 함께 `Result<T>`를 반환합니다"
 
-#: src/api.md:699
+#: src/api.md:700
 msgid "Shell output: CLI outputs shell code, wrapper evals it"
 msgstr "Shell 출력: CLI가 shell 코드를 출력하면 래퍼가 eval로 실행합니다"
 
-#: src/api.md:700
+#: src/api.md:701
 msgid "Testing: Unit tests + integration tests + property tests"
 msgstr "테스트: 단위 테스트 + 통합 테스트 + 속성 테스트"
 
-#: src/api.md:701
+#: src/api.md:702
 msgid "i18n: Use `t!()` macro for all user-facing strings"
 msgstr "i18n: 사용자 대상 문자열에는 모두 `t!()` 매크로를 사용합니다"
 
-#: src/api.md:703
+#: src/api.md:704
 msgid "**Preserve conventions**:"
 msgstr "**관례를 유지하세요**:"
 
-#: src/api.md:704
+#: src/api.md:705
 msgid ""
 "Error codes are string constants (e.g., \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")"
 msgstr ""
 "에러 코드는 문자열 상수입니다 (예: \"ENV_NOT_FOUND\", \"UV_COMMAND_FAILED\")"
 
-#: src/api.md:705
+#: src/api.md:706
 msgid ""
 "Process exit codes follow a layered contract (see **Process exit codes** "
 "below)"
@@ -12247,7 +12251,7 @@ msgstr ""
 "프로세스 종료 코드는 계층적 계약을 따릅니다 (아래 **프로세스 종료 코드** 참"
 "조)"
 
-#: src/api.md:706
+#: src/api.md:707
 msgid ""
 "Path handling via `paths.rs` utilities (cross-platform — Unix `bin/` vs "
 "Windows `Scripts/`)"
@@ -12255,15 +12259,15 @@ msgstr ""
 "경로 처리는 `paths.rs` 유틸리티를 통해 수행합니다 (크로스 플랫폼 — Unix `bin/"
 "` vs Windows `Scripts/`)"
 
-#: src/api.md:707
+#: src/api.md:708
 msgid "Shell detection via `shell::detect_shell()` function"
 msgstr "Shell 감지는 `shell::detect_shell()` 함수를 통해 수행합니다"
 
-#: src/api.md:709
+#: src/api.md:710
 msgid "Process exit codes"
 msgstr "프로세스 종료 코드"
 
-#: src/api.md:711
+#: src/api.md:712
 msgid ""
 "scuv centralises exit-code policy in `src/error/exit.rs` via "
 "`ScoopError::exit_code()`. Commands that already render their own report "
@@ -12275,13 +12279,13 @@ msgstr ""
 "`ErrorRenderPolicy::Quiet`를 선택하여 `main.rs`가 중복 `error:` 줄을 추가하"
 "지 않도록 합니다."
 
-#: src/api.md:719
+#: src/api.md:720
 msgid ""
 "Generic failure or semantic finding (verify failed, generic operational "
 "error)"
 msgstr "일반적인 실패 또는 의미론적 결과 (verify 실패, 일반 작업 오류)"
 
-#: src/api.md:720
+#: src/api.md:721
 msgid ""
 "Migration failure / `MigrationNameConflict` (and reserved for future probe/"
 "tool failures)"
@@ -12289,77 +12293,77 @@ msgstr ""
 "마이그레이션 실패 / `MigrationNameConflict` (및 향후 프로브/도구 실패를 위한 "
 "예약)"
 
-#: src/api.md:721
+#: src/api.md:722
 msgid ""
 "Migration source-discovery error (pyenv/conda/venvwrapper missing or "
 "corrupted)"
 msgstr "마이그레이션 소스 검색 오류 (pyenv/conda/venvwrapper 없음 또는 손상됨)"
 
-#: src/api.md:723
+#: src/api.md:724
 msgid "Per-command exit code table:"
 msgstr "명령어별 종료 코드 표:"
 
-#: src/api.md:727
+#: src/api.md:728
 msgid "always (informational)"
 msgstr "항상 (정보성)"
 
-#: src/api.md:728
+#: src/api.md:729
 msgid "`verify --strict`"
 msgstr "`verify --strict`"
 
-#: src/api.md:728 src/api.md:730
+#: src/api.md:729 src/api.md:731
 msgid "clean"
 msgstr "정상"
 
-#: src/api.md:728
+#: src/api.md:729
 msgid "any Fail check"
 msgstr "Fail 점검 발생 시"
 
-#: src/api.md:729
+#: src/api.md:730
 msgid "`migrate @env` / `migrate all`"
 msgstr "`migrate @env` / `migrate all`"
 
-#: src/api.md:729
+#: src/api.md:730
 msgid "failure / conflict"
 msgstr "실패 / 충돌"
 
-#: src/api.md:729
+#: src/api.md:730
 msgid "source tool not found"
 msgstr "소스 도구 없음"
 
-#: src/api.md:730
+#: src/api.md:731
 msgid "warning"
 msgstr "경고"
 
-#: src/api.md:731
+#: src/api.md:732
 msgid "Other commands"
 msgstr "기타 명령어"
 
-#: src/api.md:731
+#: src/api.md:732
 msgid "failure"
 msgstr "실패"
 
-#: src/api.md:733
+#: src/api.md:734
 msgid "**Documentation requirements**:"
 msgstr "**문서화 요구사항**:"
 
-#: src/api.md:734
+#: src/api.md:735
 msgid "All `pub fn` must have doc comments"
 msgstr "모든 `pub fn`에는 doc 주석이 있어야 합니다"
 
-#: src/api.md:735
+#: src/api.md:736
 msgid "Examples in doctests where applicable"
 msgstr "해당하는 경우 doctest에 예시 포함"
 
-#: src/api.md:736
+#: src/api.md:737
 msgid "Error conditions documented"
 msgstr "에러 조건 문서화"
 
-#: src/api.md:737
+#: src/api.md:738
 msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
-#: src/api.md:741
+#: src/api.md:742
 msgid "**scuv Version:** 0.17.2"
 msgstr "**scuv 버전:** 0.17.2"
 
