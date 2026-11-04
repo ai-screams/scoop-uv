@@ -162,7 +162,11 @@ shellcheck `save-if: false` so only the test job — which produces the
 richest artifacts, including test binaries — populates the cache; in
 `mutants.yml` neither job writes today: the incremental job saves only on
 `main`, but it runs only on pull requests, and the weekly full job has
-`save-if: false`.
+`save-if: false`. A writer would gain little: cargo-mutants first copies the
+tree without the checkout's `target/` and builds the baseline there (later
+mutants reuse that copy's build), so a restored `target/` goes unused and
+only the registry download would be saved. The baseline build takes about 65s (full
+run, 2026-11-02), while PR #237's 55 mutants took 14 minutes.
 
 Note that `rust-cache` folds workflow-level `env` into its key hash. Two
 jobs can declare the same `shared-key` and still land on different
