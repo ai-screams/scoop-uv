@@ -102,8 +102,11 @@ scuv diff baseline production --strict
 
 ## JSON output
 
-`--json` emits one envelope to stdout. Success and failure envelopes
-share the same `data` shape; only the top-level wrapper differs.
+`--json` emits one envelope to stdout. A completed comparison and the
+`--strict` failure (`DIFF_MISMATCH`) share the same `data` shape; only
+the top-level wrapper differs. An error that stops the comparison (an
+env that does not exist, unreadable metadata) prints the generic error
+envelope instead: `status`, `command` and `error`, with no `data`.
 
 ### Success envelope (default exit 0)
 

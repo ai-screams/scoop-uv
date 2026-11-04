@@ -215,15 +215,19 @@ fn cascade_reports_its_cleanup_as_json_when_uv_fails() {
     let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
     assert_eq!(json["status"], "error");
     assert_eq!(json["data"]["removed_envs"], serde_json::json!(["web"]));
+    // The envelope says it all: no text error repeats it on stderr.
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("✗"), "{stderr}");
     assert!(!fixture.scoop_home.join("virtualenvs").join("web").exists());
 }
 
 /// uv failed before removing anything: nothing was cleaned up, so `--json`
-/// keeps the usual error behaviour (the text error, no envelope on stdout).
-/// Fails if an empty cleanup is reported as JSON.
+/// gets the plain error envelope, with no cleanup `data`.
+/// Fails if an empty cleanup is reported, or if stdout holds anything but
+/// that one envelope.
 #[cfg(unix)]
 #[test]
-fn cascade_emits_no_json_when_uv_fails_before_removing() {
+fn cascade_reports_only_the_error_when_uv_fails_before_removing() {
     let (fixture, uv) = home_with_envs("uv 0.12.22", &[("web", P14)]);
     let out = scoop_cmd(&fixture.scoop_home)
         .env("PATH", uv.path())
@@ -232,11 +236,11 @@ fn cascade_emits_no_json_when_uv_fails_before_removing() {
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(1));
-    assert!(
-        out.stdout.is_empty(),
-        "{}",
-        String::from_utf8_lossy(&out.stdout)
-    );
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(json["status"], "error");
+    assert_eq!(json["command"], "uninstall");
+    assert_eq!(json["error"]["code"], "PYTHON_UNINSTALL_FAILED");
+    assert!(json.get("data").is_none(), "{json}");
     assert!(fixture.scoop_home.join("virtualenvs").join("web").exists());
 }
 

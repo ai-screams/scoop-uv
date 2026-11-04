@@ -53,6 +53,9 @@ pub struct Output {
     colors: Colors,
     /// Output as JSON
     json: bool,
+    /// Set once a JSON document has gone to stdout, so a failure afterwards
+    /// does not add a second one.
+    json_printed: std::sync::atomic::AtomicBool,
 }
 
 impl Output {
@@ -66,6 +69,7 @@ impl Output {
             quiet,
             colors,
             json,
+            json_printed: std::sync::atomic::AtomicBool::new(false),
         }
     }
 
@@ -181,10 +185,34 @@ impl Output {
             return;
         }
         let response = JsonResponse::success(command, data);
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&response).unwrap_or_default()
-        );
+        self.print_json(&serde_json::to_string_pretty(&response).unwrap_or_default());
+    }
+
+    /// Print a JSON document a command built itself to stdout, and remember
+    /// that stdout now holds one.
+    pub fn print_json(&self, document: &str) {
+        println!("{document}");
+        self.json_printed
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// Whether a JSON document has already gone to stdout this run.
+    pub fn json_printed(&self) -> bool {
+        self.json_printed.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    /// Print a failed command as a JSON error envelope on stdout (only in
+    /// JSON mode): its stable code, the translated message and the
+    /// suggestion, if any.
+    pub fn json_error(&self, command: &'static str, err: &crate::error::ScoopError) {
+        if !self.json {
+            return;
+        }
+        let mut response = JsonErrorResponse::error(command, err.code(), err.to_string());
+        if let Some(suggestion) = err.suggestion() {
+            response = response.with_suggestion(suggestion);
+        }
+        self.print_json(&serde_json::to_string_pretty(&response).unwrap_or_default());
     }
 }
 
