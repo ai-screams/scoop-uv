@@ -91,7 +91,7 @@ jobs:
       # 11. Clean up (optional, runner is ephemeral anyway)
       - name: Clean up
         if: always()
-        run: scuv remove test-env
+        run: scuv remove test-env --force
 
   lint:
     name: Lint and format check

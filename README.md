@@ -482,7 +482,7 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 | Command                  | Description                                                    |
 |--------------------------|----------------------------------------------------------------|
 | `scuv verify`           | Per-env health diagnosis — 6 checks per env                    |
-| `scuv verify --strict`  | Same, but exit 1 on any issue (CI gate)                        |
+| `scuv verify --strict`  | Same, but exit 1 if any check fails; warnings pass (CI gate)    |
 | `scuv gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
 | `scuv gc --yes`         | Actually remove the orphans                                    |
 | `scuv gc --aggressive`  | Also flag unused uv-managed Python versions                    |

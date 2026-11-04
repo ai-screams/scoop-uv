@@ -23,7 +23,7 @@ scuv self update [OPTIONS]
 2. Runs `cargo install --force --locked scoop-uv --version <target>`.
 3. Unless `--no-verify` is set, runs `scuv doctor` with the freshly installed binary and reports the outcome.
 
-Use `--force` to reinstall the current version (useful for repairing a broken install). Use `--version` to pin to a specific release.
+Use `--force` to reinstall even when the target is already installed (useful for repairing a broken install). Without `--version` the target is the latest release, so to repair an older install, pass `--force --version <installed-version>`. Use `--version` to pin to a specific release.
 
 ## Examples
 
@@ -34,7 +34,7 @@ scuv self update
 # Pin to a specific version
 scuv self update --version 0.14.0
 
-# Force reinstall of the current version
+# Reinstall the latest release even if it is already installed
 scuv self update --force
 
 # Machine-readable output

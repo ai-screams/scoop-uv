@@ -29,7 +29,7 @@ scuv migrate all
 |--------|-----------|
 | **pyenv-virtualenv** | `~/.pyenv/versions/` (non-system virtualenvs) |
 | **virtualenvwrapper** | `$WORKON_HOME` or `~/.virtualenvs/` |
-| **conda** | `conda info --envs` |
+| **conda** | `$CONDA_PREFIX/envs`, `~/.conda/envs`, `~/anaconda3/envs`, `~/miniconda3/envs`, `~/miniforge3/envs` |
 
 ## Options
 
@@ -69,7 +69,7 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 
 ### `migrate list`
 
-Exit `0` is informational. `list` only fails when a discovery I/O error occurs (exit `1`, via the catchall).
+Exit `0` is informational. A source whose scan fails is left out of the list instead of failing the command, so exit `0` does not prove that every source was read.
 
 Notes:
 

@@ -157,10 +157,12 @@ MSRV artifacts are kept separate on purpose: a different compiler
 produces incompatible output, and sharing would mean both jobs
 permanently invalidating each other.
 
-Within a shared key there is one writer. `ci.yml` marks lint and
+Within a shared key there is at most one writer. `ci.yml` marks lint and
 shellcheck `save-if: false` so only the test job — which produces the
 richest artifacts, including test binaries — populates the cache; in
-`mutants.yml` the incremental job writes and the weekly full job reads.
+`mutants.yml` neither job writes today: the incremental job saves only on
+`main`, but it runs only on pull requests, and the weekly full job has
+`save-if: false`.
 
 Note that `rust-cache` folds workflow-level `env` into its key hash. Two
 jobs can declare the same `shared-key` and still land on different

@@ -211,8 +211,10 @@ sequenceDiagram
 
     User->>Shell: scuv use myenv
     Shell->>CLI: command scuv use myenv
-    CLI->>Core: resolve version & path
-    Core-->>CLI: env vars to export
+    CLI->>Core: write .scuv-version
+    CLI-->>Shell: status text
+    Shell->>CLI: command scuv activate --shell bash myenv
+    CLI->>Core: resolve env path
     CLI-->>Shell: echo shell script
     Shell->>Shell: eval output
     Shell-->>User: (myenv) $
@@ -223,7 +225,7 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    Start([User runs command]) --> Env{SCUV_VERSION<br/>env set?<br/><small>shell hook</small>}
+    Start([User runs command]) --> Env{SCUV_VERSION<br/>env set?}
     Env -->|Yes| Use[Use env value]
     Env -->|No| Local{.scuv-version<br/>in current/parent<br/>dirs?}
     Local -->|Yes| Use
@@ -255,7 +257,7 @@ flowchart TD
     Venv -->|Fail| Err1[Error: corrupted env]
 
     Link -->|Pass| Shell{Shell Check}
-    Link -->|Fail| Fix3[Auto-fix: remove broken links]
+    Link -->|Fail| Fix3[Auto-fix: relink to the installed Python]
 
     Shell -->|Pass| Ver{Version Check}
     Shell -->|Fail| Err2[Error: init missing]
@@ -310,7 +312,7 @@ graph TD
 
     Pyenv -->|Found| P1[List ~/.pyenv/versions]
     Venv -->|Found| V1[List $WORKON_HOME]
-    Conda -->|Found| C1[conda env list]
+    Conda -->|Found| C1[List conda envs dirs]
 
     P1 --> Parse[Parse metadata]
     V1 --> Parse
@@ -441,7 +443,7 @@ See [API Reference - Adding a New Health Check](../api.md#adding-a-new-health-ch
 
 ## Thread Safety
 
-scuv is a single-threaded CLI application. No concurrent operations are performed.
+`migrate all` migrates environments in parallel (`rayon::par_iter`), and `migrate list` measures their sizes in parallel. Everything else runs on one thread.
 
 **File locking:** Not implemented. Assumes single user on single machine. Concurrent operations (e.g., two terminals creating the same env) may result in race conditions.
 

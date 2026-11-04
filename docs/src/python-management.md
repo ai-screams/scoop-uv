@@ -85,7 +85,7 @@ scuv create graal-env --python-path /opt/graalpy/bin/graalpy
 scuv validates the path, auto-detects the version, and stores the custom path in metadata.
 
 ```bash
-# Verify what was integrated (shows the detected version)
+# Verify what was integrated (shows the version recorded in pyvenv.cfg)
 scuv info debug-env
 # Name:       debug-env
 # Python:     3.13.0

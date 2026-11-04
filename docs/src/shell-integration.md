@@ -1,14 +1,14 @@
 # Shell Integration
 
-scuv uses a shell wrapper pattern (like pyenv) where the CLI outputs shell code that gets evaluated by the shell.
+scuv uses a shell wrapper pattern (like pyenv) where the CLI outputs shell code that gets evaluated by the shell. `scuv use` itself only writes the version file; the wrapper then evaluates `scuv activate` (or `deactivate` for `system`).
 
 ## How It Works
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ User runs   │ --> │ CLI outputs │ --> │ Shell evals │
-│ scuv use   │     │ export ...  │     │ the output  │
-└─────────────┘     └─────────────┘     └─────────────┘
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ User runs    │ --> │ CLI outputs  │ --> │ Shell evals  │
+│ scuv activate│     │ export ...   │     │ the output   │
+└──────────────┘     └──────────────┘     └──────────────┘
 ```
 
 The `scuv` shell function wraps the CLI binary (simplified; the real one also

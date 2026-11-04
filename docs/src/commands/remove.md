@@ -21,7 +21,7 @@ scuv remove <name> [options]
 | Option | Description |
 |--------|-------------|
 | `--force`, `-f` | Skip confirmation prompt |
-| `--json` | Output result as JSON |
+| `--json` | Output result as JSON; never prompts (implies `--force`) |
 
 ## Examples
 

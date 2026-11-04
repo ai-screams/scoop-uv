@@ -88,7 +88,7 @@ Verify: `scuv --version`
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) — delete unused download/wheel cache entries. |
 | `scuv diff <a> <b>` | Compare two envs (Python version, packages, metadata); `--strict` exits 1 on any difference |
 | `scuv self update` | Update scuv itself from crates.io |
-| `scuv verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scuv.toml` Python matches (skipped if no manifest). Default always exits 0; `--strict` exits 1 on any issue. Pass `NAME` to check a single env. Complements `doctor` (system-level) and `gc` (orphan removal). |
+| `scuv verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scuv.toml` Python matches (skipped if no manifest). Default exits 0 once the report completes; `--strict` exits 1 if any check fails (warnings pass). Pass `NAME` to check a single env. Complements `doctor` (system-level) and `gc` (orphan removal). |
 | `scuv man [DIR]` | Generate man pages from the live `clap::Command` tree. Without `DIR`: print top-level `scuv.1` to stdout (pipe to `man -l -`). With `DIR`: write `scuv.1` + one `scuv-<sub>.1` per visible subcommand for distro packagers. |
 
 ### Python Management
@@ -328,7 +328,7 @@ scuv discovers a `.scuv.toml` by walking up from cwd. Schema:
 ```toml
 [environment]
 name = "myproject"      # required; matches env-name regex
-python = "3.12"          # required; matches Python version regex
+python = "3.12"          # required; any non-empty Python request uv accepts
 
 [packages]
 default = ["pytest", "black"]   # always installed
@@ -437,7 +437,7 @@ impl VersionService {
     pub fn set_global(env_name: &str) -> Result<()>;
     pub fn get_local(dir: &Path) -> Option<String>;
     pub fn get_global() -> Option<String>;
-    pub fn resolve(dir: &Path) -> Option<String>;  // local → parent walk → global
+    pub fn resolve(dir: &Path) -> Option<String>;  // SCUV_VERSION → local → parent walk → global
     pub fn resolve_current() -> Option<String>;
     pub fn unset_local(dir: &Path) -> Result<()>;
     pub fn unset_global() -> Result<()>;
@@ -727,18 +727,15 @@ Success response:
 }
 ```
 
-Error response:
-```json
-{
-  "status": "error",
-  "command": "create",
-  "error": {
-    "code": "ENV_ALREADY_EXISTS",
-    "message": "Virtual environment 'myenv' already exists",
-    "suggestion": "Use a different name or remove the existing environment"
-  }
-}
+Errors print as text on stderr even with `--json`, and stdout stays empty. For example
+`scuv create myenv --json` on an existing env exits 1 with:
 ```
+✗ 'myenv' already exists
+→ Use --force to overwrite
+```
+A few commands put a JSON error envelope on stdout instead, with the success `data` alongside:
+`diff --strict --json` (`DIFF_MISMATCH`), `verify --strict --json`, `migrate all --json`
+(`MIGRATE_BATCH_FAILED`) and an incomplete `uninstall --cascade --json`.
 
 ---
 
@@ -769,7 +766,7 @@ Error response:
 ### Adding a New Health Check
 
 1. Implement the `Check` trait in `core/doctor/checks/`
-2. Register in `Doctor::new()` checks vector
+2. Register it in `default_checks()` in `core/doctor/checks/mod.rs`
 
 ### Adding a New Migration Source
 

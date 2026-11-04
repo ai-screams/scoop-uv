@@ -524,7 +524,7 @@ impl VersionService {
     /// Get the global version
     pub fn get_global() -> Option<String>
 
-    /// Resolve the version for a directory (local -> parent walk -> global)
+    /// Resolve the version for a directory (SCUV_VERSION -> local -> parent walk -> global)
     pub fn resolve(dir: &Path) -> Option<String>
 
     /// Resolve from current directory
@@ -553,7 +553,7 @@ This writes `py311` to `~/.scuv/version`. The global value is used when no local
 `.scuv-version` or `SCUV_VERSION` override is present.
 
 **Resolution Priority Order:**
-1. `SCUV_VERSION` environment variable (checked at shell hook level, not in VersionService)
+1. `SCUV_VERSION` environment variable (checked first by `VersionService::resolve` itself)
 2. `.scuv-version` in current directory
 3. `.scuv-version` in parent directories (walks up)
 4. `~/.scuv/version` (global default)
@@ -725,11 +725,15 @@ Per-command exit code table:
 
 | Command | 0 | 1 | 2 | 3 |
 |---------|---|---|---|---|
-| `verify` | always (informational) | — | — | — |
-| `verify --strict` | clean | any Fail check | — | — |
-| `migrate @env` / `migrate all` | success | — | failure / conflict | source tool not found |
+| `verify` | report completed (informational) | an error stopped the run | — | — |
+| `verify --strict` | no Fail check (warnings pass) | any Fail check, or an error stopped the run | — | — |
+| `migrate @env` / `migrate all` | success | other errors (e.g. uv not found) | failure / conflict | source tool or env not found, or source env corrupted |
 | `doctor` | clean | warning | error | — |
-| Other commands | success | failure | — | — |
+| Other commands | success | failure | — | corrupted environment (e.g. `clone` of an env without metadata) |
+
+`run` exits with the command's own exit code (128 + the signal number when a signal
+killed it), and with 1 when scuv cannot start it. A command-line parse error (unknown
+flag, missing argument) exits 2 from clap before any command runs.
 
 4. **Documentation requirements**:
    - All `pub fn` must have doc comments
