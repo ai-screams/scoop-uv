@@ -146,7 +146,7 @@ scuv uninstall 3.12 --cascade
 
 ## Empty Results
 
-- If no Python versions are installed, `scuv list --pythons` shows no entries.
+- If no Python versions are installed, `scuv list --pythons` prints `No Python versions installed` and a hint to stderr (nothing with `--bare`).
 - If no environments exist, `scuv list` still shows the `system` row when
   a Python is on `PATH`. Only when there is none either does it print
   `No environments yet` and a `scuv create` hint (to stderr).

@@ -100,6 +100,9 @@ cargo clippy -- -A clippy::too_many_arguments
 
 ### Common Lints
 
+Useful lints to opt into. The project does not enable them: `[lints.clippy]` in `Cargo.toml`
+only sets `uninlined_format_args = "allow"`.
+
 | Lint                   | Severity | Description                   |
 |------------------------|----------|-------------------------------|
 | `clippy::unwrap_used`  | Warn     | Use `?` or `expect()` instead |
@@ -171,7 +174,7 @@ repos:
 
       - id: cargo-check
         name: cargo check
-        entry: cargo check --all-targets
+        entry: cargo check --all-targets --all-features
         language: system
         types: [ rust ]
         pass_filenames: false
@@ -208,7 +211,7 @@ git commit --no-verify
 | `end-of-file-fixer`   | Ensure newline at EOF  | Pre-commit |
 | `check-toml`          | Validate TOML files    | Pre-commit |
 | `check-yaml`          | Validate YAML files    | Pre-commit |
-| `cargo-test`             | Test suite             | Pre-commit |
+| `cargo-test`             | Test suite             | Pre-push   |
 | `mixed-line-ending`      | Normalise line endings | Pre-commit |
 | `check-added-large-files`| Block large blobs      | Pre-commit |
 | `check-merge-conflict`   | Catch conflict markers | Pre-commit |
@@ -218,41 +221,47 @@ git commit --no-verify
 
 ### GitHub Actions
 
-Located in `.github/workflows/ci.yml`:
+Located in `.github/workflows/ci.yml`, abridged here to its quality gates. The `lint`, `test`,
+`msrv`, `uv-floor` and `shellcheck` jobs are described in [CI/CD](ci-cd.md).
 
 ```yaml
 name: CI
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
+  lint:
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-
       - name: Format check
-        run: cargo fmt --all -- --check
+        run: cargo fmt --all --check
 
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
+      - name: Build the crate from its packaged files
+        run: cargo package --locked
+
+  test:
+    steps:
       - name: Test
-        run: cargo test --all-features
+        run: cargo nextest run --profile ci --all-features --workspace
+
+      - name: Doctests
+        run: cargo test --doc --all-features
 ```
 
 ### Local CI Simulation
 
 ```bash
-# Run exactly what CI runs
-cargo fmt --check && \
+# Run the lint and test gates CI runs
+cargo fmt --all --check && \
 cargo clippy --all-targets --all-features -- -D warnings && \
-cargo test --all-features
+cargo nextest run --all-features --workspace && \
+cargo test --doc --all-features
 ```
 
 ## Code Style Guidelines
@@ -394,7 +403,7 @@ cargo flamegraph --bin scuv -- list
 cargo bench
 
 # Using criterion
-cargo bench --bench my_benchmark
+cargo bench --bench parsing
 ```
 
 ## Continuous Improvement

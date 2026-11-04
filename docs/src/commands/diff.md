@@ -172,9 +172,11 @@ sides as `Option<T>`:
 | `"x"`      | `null`     | `true`    |
 | `null`     | `null`     | `false`   |
 
-The `null` side means **the value is not observable on that side** —
-regardless of whether the metadata file was missing, the field was
-absent, or the field was present-as-null in the JSON. Diff intentionally
+The `null` side means **the value is not observable on that side**:
+the metadata file was missing, or an optional field (`last_used`,
+`uv_version`) was absent or `null`. A metadata file missing a required
+field (`name`, `python_version`, `created_at`, `created_by`) is invalid,
+and the command fails instead. Diff intentionally
 does not surface the cause; if you need to know why, run `scuv info`
 on the env directly. (The `data.packages` shape uses non-nullable
 inner objects because pip never emits a "package present but no

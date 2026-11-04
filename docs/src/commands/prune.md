@@ -8,7 +8,7 @@ Prune the uv cache — deletes unused download archives, wheels, and source arti
 scuv prune
 ```
 
-This is a thin wrapper around [`uv cache prune`](https://docs.astral.sh/uv/reference/cli/#uv-cache-prune). uv decides what's safe to delete; scuv just forwards the result so you don't have to remember the exact invocation.
+This is a thin wrapper around [`uv cache prune`](https://docs.astral.sh/uv/reference/cli/#uv-cache-prune). uv decides what's safe to delete; scuv prints `✓ uv cache pruned` and any stdout uv wrote, so you don't have to remember the exact invocation. uv reports its freed-space summary on stderr, which scuv does not forward.
 
 ## When to use
 
@@ -28,8 +28,8 @@ This is a thin wrapper around [`uv cache prune`](https://docs.astral.sh/uv/refer
 # Standard cleanup
 scuv prune
 
-# Capture freed-bytes for a script
-scuv prune --json | jq -r '.data.output'
+# JSON for a script; data.output holds uv's stdout, which is empty with current uv
+scuv prune --json
 ```
 
 ## See also

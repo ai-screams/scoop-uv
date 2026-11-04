@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Language**: Rust (Edition 2024, MSRV 1.89)
 - **License**: MIT OR Apache-2.0
 - **Version**: scuv 0.17.2 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
-- **Tests**: ~1090 (unit, `tests/cli/` integration, i18n parity, doctests), 0 clippy warnings — counts drift; `cargo test` is the source of truth
+- **Tests**: ~1260 (1134 lib unit, 98 `tests/cli/` integration, i18n parity; doctests extra), 0 clippy warnings — counts drift; `cargo test` is the source of truth
 - **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
 - **CI/CD design**: `docs/src/development/ci-cd.md` documents what each of the 13 workflows guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
 - **Test tooling**: rstest (table tests), proptest, cargo-mutants (mutation), cargo-fuzz (nightly `fuzz/` workspace); see `.docs/dev/testing-strategy.md`
@@ -172,7 +172,7 @@ src/
 │   ├── bash.rs, zsh.rs, fish.rs, powershell.rs  # Shell-specific scripts
 │   ├── scripts/   # Wrapper/completion bodies, pulled in with include_str! (listed in Cargo.toml `include`)
 │   └── common.rs  # Shared utilities (version check, 4-shell macros)
-├── uv/            # uv CLI wrapper (client.rs) + version policy (version.rs)
+├── uv/            # uv CLI wrapper (client.rs), version policy (version.rs), `doctor --fix` installer (install.rs)
 ├── output/        # Terminal UI & JSON output
 │   ├── color.rs   # Colors decision, made once in main
 │   └── time.rs    # English fuzzy-age formatter for last_used display
@@ -211,7 +211,7 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 
 ## CLI Commands
 
-> **Tip:** 19 subcommands take `--json`; `grep -B12 'json: bool' src/cli/mod.rs` lists them. Not on: activate, completions, deactivate, export (already emits JSON), init, migrate (its subcommands have it, the parent doesn't), resolve, run, shell.
+> **Tip:** 19 top-level subcommands take `--json`, plus `migrate list|all|@env` and `self update`; `grep -B12 'json: bool' src/cli/mod.rs` lists them. Not on: activate, completions, deactivate, export (already emits JSON), init, migrate (its subcommands have it, the parent doesn't), resolve, run, shell.
 
 | Command | Aliases | Description |
 |---------|---------|-------------|
@@ -403,7 +403,7 @@ t!("error.virtualenv_not_found", name = name)
 ```
 
 **Translation file**: `locales/app.yml`
-- 232 keys total (error.* 43, suggestion.* 17); parity across all 5 locales enforced by tests/i18n_completeness.rs
+- 255 keys total (error.* 43, suggestion.* 17); parity across all 5 locales enforced by tests/i18n_completeness.rs
 - Adding a locale touches 7 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the hand-written `scuv lang` completion lists in all four shells (`src/shell/{bash,zsh,fish,powershell}.rs`). Missing `LOCALES` fails silently — CI passes with that locale unverified. A missed completion list fails `lang_completion_list_matches_supported_langs` in that shell's module, and a doc that still enumerates the old list fails `check-doc-references.py`. Contributor guide: `docs/src/development/translation.md`.
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
 - `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical. Install the versions `docs.yml` pins (mdbook 0.5.3, mdbook-i18n-helpers 0.4.0) — latest produces a different `.pot`. `messages.pot` is untracked; only `ko.po` is committed.

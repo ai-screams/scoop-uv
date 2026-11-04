@@ -7,5 +7,6 @@ mod checks;
 mod engine;
 mod types;
 
+pub(crate) use checks::apply_uv_install;
 pub use engine::Doctor;
 pub use types::{Check, CheckResult, CheckStatus};

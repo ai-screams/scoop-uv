@@ -35,7 +35,7 @@ Add-Content -Path $PROFILE -Value 'Invoke-Expression (& scuv init powershell | O
 ## 2. Install Python
 
 ```bash
-# Install latest Python
+# Install Python 3.12
 scuv install 3.12
 
 # Verify installation

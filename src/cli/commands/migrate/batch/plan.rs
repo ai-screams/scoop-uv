@@ -51,8 +51,10 @@ pub(super) fn partition_envs<'a>(
     // `force` deliberately does not override this. `--force` means "overwrite
     // the environment that is already there", and for a collision inside one
     // batch there is no such environment — both are new. Letting them through
-    // is the bug, not the fix. The user picks a winner by migrating one
-    // explicitly with `scuv migrate @env <name> --rename <other>`.
+    // is the bug, not the fix. The first claim migrates; the user moves the
+    // skipped one with `scuv migrate @env <name> --source <tool> --rename
+    // <other>`. Without `--source`, `@env` searches pyenv first and finds the
+    // env that already migrated.
     //
     // Names compare case-insensitively: on a case-insensitive filesystem
     // (the macOS and Windows defaults) `Web` and `web` are the same target
@@ -80,8 +82,8 @@ pub(super) fn partition_envs<'a>(
                 skipped.push(MigrateSkipped {
                     name: env.name.clone(),
                     reason: format!(
-                        "name already claimed by {} in this batch (migrate it separately with --rename)",
-                        winner
+                        "name already claimed by {winner} in this batch (migrate it with `scuv migrate @env {} --source {} --rename <new-name>`)",
+                        env.name, env.source_type
                     ),
                 });
                 continue;
@@ -178,6 +180,14 @@ mod tests {
         assert!(
             p.skipped[0].reason.contains("already claimed"),
             "reason should say the name was taken in this batch, got: {}",
+            p.skipped[0].reason
+        );
+        // `@env web` alone would pick the pyenv env that already migrated.
+        assert!(
+            p.skipped[0]
+                .reason
+                .contains("@env web --source conda --rename"),
+            "reason should name the skipped env's source, got: {}",
             p.skipped[0].reason
         );
     }

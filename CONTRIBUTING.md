@@ -57,9 +57,9 @@ Docs can always be clearer. PRs welcome for:
 Help make scuv accessible to developers worldwide!
 
 **Quick start:**
-1. Add translations to `locales/app.yml` (232 keys)
+1. Add translations to `locales/app.yml` (255 keys)
 2. Register your language in `src/i18n.rs`
-3. Submit PR with title: `docs(i18n): add {Language} translation`
+3. Submit PR with title: `feat(i18n): add {Language} translation`
 
 **Philosophy:** We trust translators. Casual tone, creative expressions welcome — clarity is the only rule.
 
@@ -360,8 +360,8 @@ Document all public APIs:
 ///
 /// # Errors
 ///
-/// Returns [`ScoopError::InvalidName`] if name is invalid.
-/// Returns [`ScoopError::UvError`] if uv command fails.
+/// Returns [`ScoopError::InvalidEnvName`] if name is invalid.
+/// Returns [`ScoopError::UvCommandFailed`] if uv command fails.
 ///
 /// # Examples
 ///
@@ -380,7 +380,7 @@ pub fn create_virtualenv(name: &str, python_version: &str) -> Result<PathBuf> {
 let value = some_option.unwrap();
 
 // ✅ Use proper error handling
-let value = some_option.ok_or(ScoopError::NotFound)?;
+let value = some_option.ok_or(ScoopError::NoActiveEnvironment)?;
 
 // ❌ Don't ignore errors silently
 let _ = fs::remove_file(path);
@@ -551,9 +551,11 @@ src/
 │   └── #[cfg(test)] mod tests { ... }  # Unit tests
 │
 tests/
-├── cli.rs                               # Integration tests (CLI black box)
-├── i18n_completeness.rs                 # Locale parity
-└── common/mod.rs                        # Shared test utilities
+├── cli/                                 # Integration tests (CLI black box)
+│   ├── main.rs                          # Declares one module per topic
+│   ├── support.rs                       # Shared test utilities
+│   └── <topic>.rs
+└── i18n_completeness.rs                 # Locale parity
 ```
 
 ### Unit Tests

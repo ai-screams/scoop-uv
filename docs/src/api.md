@@ -175,6 +175,12 @@ pub trait Check: Send + Sync {
     fn id(&self) -> &'static str;
     fn name(&self) -> &'static str;
     fn run(&self) -> Vec<CheckResult>;  // Returns Vec - a check can produce multiple results
+
+    // Optional auto-fix for a failing result; the default offers none.
+    // Used by `Doctor::run_and_fix`.
+    fn fix(&self, _result: &CheckResult, _output: &crate::output::Output) -> Option<CheckResult> {
+        None
+    }
 }
 ```
 
@@ -371,8 +377,8 @@ pub enum ScoopError {
     CascadeAborted,
     CascadeIncomplete { failed_count: usize },
 
-    // Abridged: 39 variants in total. See src/error/mod.rs for the full set,
-    // including SelfUpdateFailed, NoActiveEnvironment, ExecutableNotFound,
+    // Abridged: 40 variants in total. See src/error/mod.rs for the full set,
+    // including UnsupportedLanguage, SelfUpdateFailed, NoActiveEnvironment, ExecutableNotFound,
     // ManifestNotFound, InvalidExportFile, UnsupportedExportVersion,
     // VerifyFailed, SitePackagesNotFound, MigrationSourcesNotFound,
     // MigrationBatchFailed and DiffMismatch.
@@ -406,14 +412,14 @@ impl ScoopError {
 - `ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)
 - `PYTHON_*` - Python version errors (e.g., `PYTHON_NOT_INSTALLED`)
 - `UV_*` - uv errors (e.g., `UV_NOT_INSTALLED`, `UV_COMMAND_FAILED`)
-- `IO_*` - Path/IO errors (e.g., `IO_ERROR`, `PATH_ERROR`)
+- `IO_*` - Path/IO errors (e.g., `IO_ERROR`, `IO_PATH_ERROR`)
 - `CONFIG_*` - Config errors (e.g., `CONFIG_VERSION_FILE_NOT_FOUND`)
 - `SHELL_*` - Shell errors (e.g., `SHELL_NOT_SUPPORTED`)
 - `ARG_*` - CLI argument errors (e.g., `ARG_INVALID`)
 - `SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)
 - `MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)
 - `UNINSTALL_*` - Uninstall errors (e.g., `UNINSTALL_CASCADE_ABORTED`)
-- Plus `LANG_*`, `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`,
+- Plus `INTERNAL_*`, `LANG_*`, `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, `MANIFEST_*`, `EXPORT_*`,
   `VERIFY_*` and `DIFF_*` — see `src/error/code.rs` for the authoritative list
 
 **Example Error Handling:**
@@ -518,7 +524,7 @@ impl VersionService {
     /// Get the global version
     pub fn get_global() -> Option<String>
 
-    /// Resolve the version for a directory (local -> parent walk -> global)
+    /// Resolve the version for a directory (SCUV_VERSION -> local -> parent walk -> global)
     pub fn resolve(dir: &Path) -> Option<String>
 
     /// Resolve from current directory
@@ -547,7 +553,7 @@ This writes `py311` to `~/.scuv/version`. The global value is used when no local
 `.scuv-version` or `SCUV_VERSION` override is present.
 
 **Resolution Priority Order:**
-1. `SCUV_VERSION` environment variable (checked at shell hook level, not in VersionService)
+1. `SCUV_VERSION` environment variable (checked first by `VersionService::resolve` itself)
 2. `.scuv-version` in current directory
 3. `.scuv-version` in parent directories (walks up)
 4. `~/.scuv/version` (global default)
@@ -619,18 +625,22 @@ pub enum Commands {
 ```rust
 // cli/commands/my_command.rs
 use crate::error::Result;
+use crate::output::Output;
 
-pub fn execute(arg: &str) -> Result<()> {
+pub fn execute(output: &Output, arg: &str) -> Result<()> {
     // Implementation
     Ok(())
 }
 ```
 
-3. **Wire up in `main.rs`:**
+3. **Re-export in `cli/commands/mod.rs`, then add an arm to `dispatch()` in `main.rs`:**
 ```rust
-Commands::MyCommand { arg } => {
-    commands::my_command::execute(&arg)?
-}
+// cli/commands/mod.rs
+mod my_command;
+pub use my_command::execute as my_command;
+
+// main.rs
+Commands::MyCommand { arg } => scoop_uv::cli::commands::my_command(output, &arg),
 ```
 
 ---
@@ -656,16 +666,12 @@ impl Check for MyCheck {
     }
 }
 
-// Register in Doctor::new()
-impl Doctor {
-    pub fn new() -> Self {
-        Self {
-            checks: vec![
-                // ... existing checks
-                Box::new(MyCheck),
-            ],
-        }
-    }
+// Declare the file in core/doctor/checks/mod.rs and register it in default_checks()
+pub(super) fn default_checks() -> Vec<Box<dyn Check>> {
+    vec![
+        // ... existing checks
+        Box::new(my_check::MyCheck),
+    ]
 }
 ```
 
@@ -719,11 +725,15 @@ Per-command exit code table:
 
 | Command | 0 | 1 | 2 | 3 |
 |---------|---|---|---|---|
-| `verify` | always (informational) | — | — | — |
-| `verify --strict` | clean | any Fail check | — | — |
-| `migrate @env` / `migrate all` | success | — | failure / conflict | source tool not found |
+| `verify` | report completed (informational) | an error stopped the run | — | — |
+| `verify --strict` | no Fail check (warnings pass) | any Fail check, or an error stopped the run | — | — |
+| `migrate @env` / `migrate all` | success | other errors (e.g. uv not found) | failure / conflict | source tool or env not found, or source env corrupted |
 | `doctor` | clean | warning | error | — |
-| Other commands | success | failure | — | — |
+| Other commands | success | failure | — | corrupted environment (e.g. `clone` of an env without metadata) |
+
+`run` exits with the command's own exit code (128 + the signal number when a signal
+killed it), and with 1 when scuv cannot start it. A command-line parse error (unknown
+flag, missing argument) exits 2 from clap before any command runs.
 
 4. **Documentation requirements**:
    - All `pub fn` must have doc comments

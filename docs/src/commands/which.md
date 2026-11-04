@@ -26,7 +26,7 @@ scuv which <exe> [--env <name>] [--json]
 
 1. `--env <name>` if provided
 2. `$SCUV_ACTIVE` (set by `scuv activate` / `scuv shell`)
-3. `.scuv-version` (local → parents → global)
+3. `SCUV_VERSION`, then `.scuv-version` (local → parents → global)
 
 If none of those resolve to a real virtualenv (e.g. system Python or no
 configuration), the command fails with `No active environment`.

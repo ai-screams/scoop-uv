@@ -61,11 +61,11 @@ echo "5. Handling naming conflicts:"
 echo "   If an environment already exists in scuv:"
 echo "   - Migration will fail for that environment"
 echo "   - Other environments will still be migrated"
-echo "   - You can manually rename and retry"
+echo "   - You can retry under another name"
 echo
 echo "   Example:"
-echo "     scuv create myproject-new 3.12"
-echo "     # Then migrate with a different source name if supported"
+echo "     scuv migrate @env myproject --rename myproject-new"
+echo "     # Or use --auto-rename, or --force to overwrite"
 echo
 
 # 6. Verify migrated environments

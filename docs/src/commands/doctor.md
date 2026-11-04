@@ -14,7 +14,7 @@ scuv doctor [options]
 |--------|-------------|
 | `-v`, `--verbose` | Show more details (can repeat: `-vv`) |
 | `--json` | Output diagnostics as JSON |
-| `--fix` | Auto-fix issues where possible |
+| `--fix` | Fix issues where possible; [installing a missing uv](#installing-uv) asks first |
 
 ## Checks Performed
 
@@ -28,6 +28,32 @@ scuv doctor [options]
 | **version files** | `.scuv-version` entries reference environments that exist |
 | **project .venv link** | A `.venv` symlink in the current directory still resolves. A dangling link into `~/.scuv/virtualenvs/` (made by `scuv use --link`) is an error that `--fix` removes; a dangling link elsewhere is only a warning |
 | **legacy scoop remnants** | Leftover `SCOOP_*` vars, an orphaned `~/.scoop`, or `.scoop-version` / `.scoop.toml` in the current directory — none of them read since v0.16.0, so the check only warns |
+
+## Installing uv
+
+When uv is not on `PATH`, `scuv doctor --fix` offers to install it on macOS and Linux. It
+prints the exact commands, then asks. The default answer is no.
+
+The commands download Astral's official installer and run it with
+`UV_INSTALL_DIR=~/.local/bin`. The installer puts `uv` and `uvx` there, writes an install
+receipt, and may add that directory to your shell profiles. If the directory is not on the
+current `PATH`, doctor reports a warning: open a new shell, then run `scuv doctor --fix` again.
+
+doctor does not offer to install when:
+
+- `--json` or `--quiet` is set, or stdin or stderr is not a terminal. Provision uv yourself in
+  scripts and CI; there is no flag to skip the question.
+- `UV_OFFLINE` is set to anything but empty, `0`, `false`, `no` or `off`.
+- `curl` or `sh` is not on `PATH`.
+- There is no usable install location: the home directory is not an absolute path, or
+  `~/.local/bin` is your `CARGO_HOME`.
+- The platform is Windows. Follow the
+  [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/) instead.
+
+It stops without installing if `uv` or `uvx` already exists in `~/.local/bin`, and it lists any
+`UV_*`, `INSTALLER_*` or `CARGO_DIST_*` variables set in your environment, because the installer
+may follow them instead of the commands shown. It never replaces or upgrades a uv that is
+already on `PATH`, and `scuv doctor --fix` is the only command that installs uv.
 
 ## Examples
 

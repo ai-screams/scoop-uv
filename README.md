@@ -174,8 +174,8 @@ Need temporary or directory-specific behavior without touching global settings?
 
 ```bash
 # Temporary: current shell only
-export SCUV_NO_AUTO=1
-unset SCUV_NO_AUTO
+scuv shell system
+scuv shell --unset
 
 # Directory-local behavior (writes .scuv-version in current directory)
 scuv use system      # force system Python for this project
@@ -200,6 +200,9 @@ scuv shell --unset
 > Minimum supported `uv` is **0.5.19** — the release that added
 > `uv python list --output-format=json`, which scuv relies on. Run
 > `scuv doctor` to verify your installation.
+>
+> No uv yet? On macOS and Linux, `scuv doctor --fix` shows the official installer commands
+> and runs them only after you confirm. No other command installs uv.
 
 <details>
 <summary>❓ <b>FAQ:</b> How is scuv different from uv, and is it related to Scoop (Windows)?</summary>
@@ -338,7 +341,7 @@ scuv --version
 - ✅ **Tab completion** — commands, environments, Python versions
 - ✅ **Shell wrapper** — `scuv activate/deactivate` works correctly
 - ✅ **Migration ready** — import from pyenv, conda, virtualenvwrapper
-- ✅ **Multi-language** — English, 한국어, 日本語, Português (BR)
+- ✅ **Multi-language** — English, 한국어, 日本語, Português (BR), Español
 
 #### Using with pyenv
 
@@ -354,7 +357,7 @@ eval "$(scuv init zsh)"     # 2. scuv second
 
 | Variable | Effect |
 |----------|--------|
-| `SCUV_NO_AUTO=1` | Disable auto-activation |
+| `SCUV_NO_AUTO=1` | Set before `scuv init`: no activation on directory change (fish: no activation at startup) |
 | `SCUV_HOME=/path` | Custom freezer location (default: `~/.scuv`) |
 
 ```bash
@@ -479,7 +482,7 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 | Command                  | Description                                                    |
 |--------------------------|----------------------------------------------------------------|
 | `scuv verify`           | Per-env health diagnosis — 6 checks per env                    |
-| `scuv verify --strict`  | Same, but exit 1 on any issue (CI gate)                        |
+| `scuv verify --strict`  | Same, but exit 1 if any check fails; warnings pass (CI gate)    |
 | `scuv gc`               | Preview orphan virtualenvs (missing metadata or broken Python) |
 | `scuv gc --yes`         | Actually remove the orphans                                    |
 | `scuv gc --aggressive`  | Also flag unused uv-managed Python versions                    |
@@ -530,7 +533,7 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 | **[Quick Start](https://ai-scream.ai/scoop-uv/quick-start.html)** | Get productive in 5 minutes |
 | **[Command Reference](https://ai-scream.ai/scoop-uv/commands/)** | Detailed documentation for every command |
 | **[Shell Integration](https://ai-scream.ai/scoop-uv/shell-integration.html)** | Auto-activation, version files, and configuration |
-| **[Migration Guide](https://ai-scream.ai/scoop-uv/migration.html)** | Move from pyenv, conda, or virtualenvwrapper |
+| **[Migration Guide](https://ai-scream.ai/scoop-uv/commands/migrate.html)** | Move from pyenv, conda, or virtualenvwrapper |
 | **[Contributing](https://ai-scream.ai/scoop-uv/development/contributing.html)** | Development setup and contribution guidelines |
 
 ---

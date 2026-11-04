@@ -1,6 +1,6 @@
 # Documentation Translation (mdBook)
 
-> For translating CLI strings (the 232 keys in `locales/app.yml`
+> For translating CLI strings (the 255 keys in `locales/app.yml`
 > consumed by the Rust binary), see [translation](translation.md)
 > instead. This page covers user-documentation translation only.
 
@@ -109,11 +109,12 @@ msginit -i po/messages.pot -l ja -o po/ja.po --no-translator
 
 ## CI guard: stale translations
 
-The `Verify ko translations are in sync` step in
-`.github/workflows/docs.yml` regenerates the pot template from
-the current English source, runs `msgmerge --update` against
-the committed `ko.po`, and fails the build if the result
-differs. This means English edits land with their corresponding
+The `Verify ko translations are in sync` step regenerates the pot
+template from the current English source, runs `msgmerge --update`
+against the committed `ko.po`, and fails the build if the result
+differs. It runs in `.github/workflows/docs-check.yml` on PRs that
+touch the docs paths, and again in `.github/workflows/docs.yml` on
+`v*` tags. This means English edits land with their corresponding
 `.po` updates in the same PR, or they don't land at all.
 
 To fix a CI failure on this step:

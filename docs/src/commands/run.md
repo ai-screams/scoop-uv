@@ -31,8 +31,9 @@ The spawned child sees the same vars that `scuv activate` would set:
 | `PYTHONHOME` | Removed |
 
 A bare program name (no `/` or `\`) is looked up inside the env's `bin/`
-first — so `scuv run env -- python` always picks the env's interpreter, not
-a system one. An explicit path (`/usr/bin/python3`) is used verbatim.
+first, so `scuv run env -- python` picks the env's interpreter, not a system
+one. A name the env does not have falls back to the inherited `PATH`. An
+explicit path (`/usr/bin/python3`) is used verbatim.
 
 ## Exit Codes
 

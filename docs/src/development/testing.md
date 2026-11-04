@@ -84,7 +84,7 @@ cargo test virtualenv               # Tests containing "virtualenv"
 
 # By module path
 cargo test output::json             # Tests in output/json/tests.rs
-cargo test error::tests             # Tests in error.rs
+cargo test error::tests             # Tests in error/tests.rs
 cargo test core::version            # Tests in core/version.rs
 cargo test cli::commands            # Tests in cli/commands/
 
@@ -122,7 +122,7 @@ cargo test test_name -- --nocapture --test-threads=1
 
 ### Unit Tests
 
-The bulk of the suite (957 tests, ~93% of the total 1029) lives within source files using `#[cfg(test)]`:
+The bulk of the suite lives within source files using `#[cfg(test)]`:
 
 ```rust
 #[cfg(test)]
@@ -138,15 +138,15 @@ mod tests {
 
 Key test modules:
 
-| Module                    | Tests | Coverage                        |
-|---------------------------|-------|---------------------------------|
-| `error::tests`            | 92    | Error types, codes, suggestions |
-| `output::json::tests`     | 44    | JSON serialization, edge cases  |
-| `validate::tests`         | 56    | Name/version validation         |
-| `core::version::tests`    | 35    | Version file resolution         |
-| `core::virtualenv::tests` | 26    | Virtualenv service              |
-| `paths::tests`            | 48    | Path utilities                  |
-| `shell::*::tests`         | 50    | Shell scripts (shellcheck)      |
+| Module                    | Coverage                        |
+|---------------------------|---------------------------------|
+| `error::tests`            | Error types, codes, suggestions |
+| `output::json::tests`     | JSON serialization, edge cases  |
+| `validate::tests`         | Name/version validation         |
+| `core::version::tests`    | Version file resolution         |
+| `core::virtualenv::tests` | Virtualenv service              |
+| `paths::tests`            | Path utilities                  |
+| `shell::*::tests`         | Shell scripts (shellcheck)      |
 
 ### Integration Tests (`tests/cli/` + `tests/i18n_completeness.rs`)
 
@@ -181,7 +181,7 @@ as their images carry uv and Python 3.12:
 cargo test -- --ignored
 ```
 
-### Doc Tests (25 tests)
+### Doc Tests
 
 Examples in documentation comments:
 
@@ -218,7 +218,7 @@ proptest! {
 }
 ```
 
-Located in `src/validate.rs`.
+Located in `src/validate.rs` and `src/core/manifest.rs`.
 
 ### Parameterized Tests
 
@@ -363,7 +363,7 @@ fn test_with_temp_environment() {
 #[test]
 fn test_with_mock_venv() {
     with_temp_scoop_home(|temp_dir| {
-        create_mock_venv("myenv", Some("3.12"));
+        create_mock_venv(temp_dir, "myenv", Some("3.12"));
         // Virtual environment created at temp_dir/virtualenvs/myenv
     });
 }
@@ -404,17 +404,20 @@ open target/llvm-cov/html/index.html
 
 Tests run automatically on:
 
-- Every push to any branch
-- Every pull request
+- Every push to `main`
+- Every pull request targeting `main`
 
 GitHub Actions workflow (`.github/workflows/ci.yml`):
 
 ```yaml
 - name: Run tests
-  run: cargo test --all-features
+  run: cargo nextest run --profile ci --all-features --workspace
+
+- name: Run doctests
+  run: cargo test --doc --all-features
 
 - name: Run clippy
-  run: cargo clippy --all-targets -- -D warnings
+  run: cargo clippy --all-targets --all-features -- -D warnings
 ```
 
 ## Troubleshooting
@@ -556,8 +559,8 @@ for visual diffing.
 - On `main`: results are pushed to the `gh-pages` branch as the new
   baseline.
 - On PRs: results are compared against that baseline.
-  - **alert at 130%** — leaves a PR comment, doesn't block merge
-  - **fail at 150%** — fails the workflow, blocks merge
+  - **CPU benches (`parsing`, `validation`)**: alert and fail past 250%
+  - **Filesystem bench (`path_lookup`)**: alert past 500%, never fails
 
 Thresholds account for GitHub-hosted runner variance (10-30% per-bench
 noise is normal on shared CPU). Tighten by running on a self-hosted

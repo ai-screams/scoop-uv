@@ -17,8 +17,8 @@ scuv status [--json]
 | State | Trigger |
 |-------|---------|
 | `active` | `$SCUV_ACTIVE` is set (shell-activated) |
-| `configured` | A `.scuv-version` file or `~/.scuv/version` selects an env |
-| `system` | The configured env is the literal name `system` |
+| `configured` | `SCUV_VERSION`, a `.scuv-version` file or `~/.scuv/version` selects an env |
+| `system` | `$SCUV_ACTIVE` or the configured env is the literal name `system` |
 | `none` | Nothing resolved |
 
 `$SCUV_ACTIVE` wins over version files because it reflects what the shell

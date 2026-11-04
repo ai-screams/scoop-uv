@@ -416,7 +416,7 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
 
-        /// Automatically fix issues where possible
+        /// Fix issues where possible; installing a missing uv asks first
         #[arg(long)]
         fix: bool,
     },
