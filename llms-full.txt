@@ -52,7 +52,7 @@ Verify: `scuv --version`
 
 | Command | Description |
 |---------|-------------|
-| `scuv create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scuv create <name> [version]` | Create virtualenv (default: any Python 3, an installed one first) |
 | `scuv create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
 | `scuv create <name> <ver> --install-python` | Install Python on demand if missing (v0.11.0) |
 | `scuv use <name>` | Set + activate environment |
@@ -96,7 +96,7 @@ Verify: `scuv --version`
 | Command | Description |
 |---------|-------------|
 | `scuv install [version]` | Install Python version via uv |
-| `scuv install --stable` | Install oldest supported Python (3.10) |
+| `scuv install --stable` | Install the oldest Python still receiving security fixes (3.11) |
 | `scuv uninstall <version>` | Remove Python version |
 | `scuv uninstall <version> --cascade` | Remove Python version + all environments using it |
 

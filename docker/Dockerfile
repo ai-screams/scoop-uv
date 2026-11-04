@@ -24,7 +24,7 @@
 ARG RUST_VERSION=1.89
 ARG PYTHON_311_VERSION=3.11.14
 ARG PYTHON_312_VERSION=3.12.12
-ARG UV_VERSION=0.12.22
+ARG UV_VERSION=0.13.7
 # cargo-nextest runs the test suite (one process per test; see
 # .config/nextest.toml). Pinned for reproducible builds.
 ARG NEXTEST_VERSION=0.9.146

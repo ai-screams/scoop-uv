@@ -13,7 +13,7 @@ scuv create <name> [python-version]
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `name` | Yes | - | Name for the new virtualenv |
-| `python-version` | No | `3` (latest) | Python version (e.g., `3.12`, `3.11.8`) |
+| `python-version` | No | `3` (any Python 3; an installed one first) | Python version (e.g., `3.12`, `3.11.8`) |
 
 ## Options
 
@@ -28,7 +28,7 @@ scuv create <name> [python-version]
 
 ```bash
 scuv create myproject 3.12      # Create with Python 3.12
-scuv create webapp              # Create with latest Python
+scuv create webapp              # Create with Python 3 (an installed one first)
 scuv create myenv 3.11 --force  # Overwrite if exists
 
 # Auto-install Python first if the version is missing

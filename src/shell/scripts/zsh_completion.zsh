@@ -204,7 +204,7 @@ _scuv() {
                                 --latest|--stable) has_version_opt=true ;;
                             esac
                         done
-                        [[ $has_version_opt == false ]] && opts+=('--latest:Install latest stable Python' '--stable:Install oldest fully-supported Python')
+                        [[ $has_version_opt == false ]] && opts+=('--latest:Ask uv for Python 3 (default)' '--stable:Install the oldest Python still receiving security fixes')
                         _scuv_global_opts
                         _describe 'option' opts
                     fi

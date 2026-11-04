@@ -21,7 +21,7 @@ All virtualenvs are stored in `~/.scuv/virtualenvs/`. Override with `SCUV_HOME` 
 | `scuv list` | List virtualenvs (aliases: `ls`) |
 | `scuv list --pythons` | List installed Python versions |
 | `scuv list --sort <name\|created\|last-used>` | Sort order; envs missing the timestamp sort last with name tie-break (0.13.0) |
-| `scuv create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scuv create <name> [version]` | Create virtualenv (default: any Python 3, an installed one first) |
 | `scuv create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
 | `scuv use <name>` | Set + activate environment |
 | `scuv use <name> --global` | Set as global default |

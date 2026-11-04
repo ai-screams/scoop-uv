@@ -59,12 +59,12 @@ fn determine_target(version: Option<&str>, latest: bool, stable: bool) -> Result
 
     // No version specified
     if stable {
-        // Use oldest fully-supported Python (currently 3.10)
-        // This is the oldest version with active security support
-        Ok("3.10".to_string())
+        // The oldest Python still receiving security fixes: 3.11 until
+        // 2027-10 (3.10 reached end of life on 2026-10-01).
+        Ok("3.11".to_string())
     } else {
-        // Default to latest (--latest flag or no flag)
-        // uv uses "3" to mean "latest Python 3.x"
+        // --latest or no flag: ask uv for "3". A uv-managed 3.x already
+        // satisfies it; with none, uv downloads its default version.
         Ok("3".to_string())
     }
 }
@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn test_determine_target_stable() {
-        assert_eq!(determine_target(None, false, true).unwrap(), "3.10");
+        assert_eq!(determine_target(None, false, true).unwrap(), "3.11");
     }
 
     #[test]

@@ -63,8 +63,8 @@ complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_o
 complete -c scuv -n "__fish_seen_subcommand_from info; and not __fish_contains_opt no-size" -l no-size -d "Skip directory size calculation"
 
 # Options for 'install' (with duplicate prevention, --latest/--stable mutually exclusive)
-complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l latest -d "Install latest stable Python"
-complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l stable -d "Install oldest fully-supported Python"
+complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l latest -d "Ask uv for Python 3 (default)"
+complete -c scuv -n "__fish_seen_subcommand_from install; and not __fish_contains_opt latest stable" -l stable -d "Install the oldest Python still receiving security fixes"
 
 # Options for 'uninstall' (with duplicate prevention)
 
