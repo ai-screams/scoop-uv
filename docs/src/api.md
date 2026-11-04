@@ -743,4 +743,4 @@ flag, missing argument) exits 2 from clap before any command runs.
 
 ---
 
-> **scuv Version:** 0.18.0
+> **scuv Version:** 0.18.1
