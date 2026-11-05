@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793887711163,
+  "lastUpdate": 1793889196405,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -9875,6 +9875,90 @@ window.BENCHMARK_DATA = {
             "name": "is_valid_env_name/max_length",
             "value": 117,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cab66b9bf6433e00433104113e323558046b0c96",
+          "message": "Merge pull request #246 from ai-screams/feat/json-error-envelope\n\nfeat(output): print a failed command as a JSON envelope under --json",
+          "timestamp": "2026-11-05T23:28:52+09:00",
+          "tree_id": "67534ec2dae55f53bc51e940467afe364f20fc0a",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/cab66b9bf6433e00433104113e323558046b0c96"
+        },
+        "date": 1793889195151,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 90689,
+            "range": "± 844",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 106789,
+            "range": "± 910",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 2940,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 708,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 88,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 91,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 85,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 77,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 17,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 182,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
