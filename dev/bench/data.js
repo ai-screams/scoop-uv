@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793889443456,
+  "lastUpdate": 1793889445269,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12673,6 +12673,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1024,
             "range": "± 6",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7804a6ec693d43737dcaeebbe70488a6866395e6",
+          "message": "Merge pull request #247 from ai-screams/docs/claude-md-ci-notes\n\ndocs(claude): note CI traps and drop counts no check keeps current",
+          "timestamp": "2026-11-05T23:29:04+09:00",
+          "tree_id": "958f26dacec5302ee790a47a86c87eabc27e7af2",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/7804a6ec693d43737dcaeebbe70488a6866395e6"
+        },
+        "date": 1793889445145,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1561,
+            "range": "± 84",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1024,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
