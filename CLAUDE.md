@@ -26,6 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **PowerShell must NEVER define a `scoop` function/alias** (would shadow scoop.sh, the Windows package manager — the reason for the rename). Enforced by `init_script_never_defines_scoop` test.
 - fish init/shell idiom is `scuv init fish | source` — `eval (...)` does NOT work in fish (splits multi-line output). The same holds inside the fish wrapper and hook: `activate`/`deactivate`/`shell` output is piped to `source` with an explicit `--shell fish`, because fish does not export `FISH_VERSION` and `detect_shell` would otherwise print bash syntax. `tests/cli/shell.rs::fish_wrapper_and_hook_source_multiline_scripts` runs the real thing when a `fish` binary is installed; the CI Test and MSRV jobs install one and set `SCUV_REQUIRE_FISH` so a missing fish fails there instead of skipping (coverage and mutants run without fish and skip).
 - bash/zsh/PowerShell wrappers and hooks also name their shell (`--shell bash|zsh|powershell`): detection reads `PSModulePath` before `ZSH_VERSION`, and Windows sets it for every process, Git Bash included. PowerShell evaluates scuv output as `Invoke-Expression (& ... | Out-String)` — without `Out-String` it gets an array of lines and refuses it (the documented profile line too). `tests/cli/shell.rs` runs real bash, zsh and pwsh (`posix_wrappers_and_hook_name_their_shell`, `powershell_wrapper_and_hook_evaluate_multiline_scripts`); CI requires them via `SCUV_REQUIRE_ZSH`/`SCUV_REQUIRE_PWSH`.
+- `SCUV_NO_AUTO` (non-empty, read when the init script is sourced) turns off startup and directory-change activation in all four shells, and sourcing again reconciles the hook. bash never rewrites `PROMPT_COMMAND`: it appends `_scuv_hook` once if absent, and the hook checks `_scuv_auto`, which every source resets. Init scripts must survive `set -u` (`${var:-}`), and shell tests clear inherited `_scuv_*` state.
 - Deliberately KEPT legacy identifiers (on-disk/serialized format compat): `.scoop-metadata.json`, export-schema field `scoop_export_version`. Do not "fix" these.
 
 ## Collaboration Rules (MUST FOLLOW)
@@ -206,6 +207,10 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 **Envs have no pip**: `scuv create` runs a plain `uv venv`, so nothing may shell out to `<env>/bin/pip`. Packages are listed with `uv pip list --python <env>` (`core::list_installed_packages`), and docs say `uv pip install`, not `pip install`.
 
 **Recorded Python versions**: current uv links an env to a minor version and writes `version_info = 3.12` into pyvenv.cfg, which the metadata copies. Never compare a recorded version with `uv python list`'s `3.12.14` by string equality; `gc` uses a component-wise prefix (`gc::scan::version_covers`).
+
+**JSON errors**: under `--json`, `main` prints a failure as an error envelope on stdout. A command that prints its own JSON before failing must go through `output.print_json`, which sets `json_printed()`, so `main` adds nothing.
+
+**uv diagnostics**: warnings a *successful* `uv python list` prints are forwarded to stderr behind `output::diagnostics_allowed()` (set once in `main`, off under `--quiet`/`--json`); a failing uv's stderr becomes the error message instead. Route any new uv stderr passthrough through the same gate.
 
 **Version File Priority**: `SCUV_VERSION` env > `.scuv-version` (local + parent walk) > `~/.scuv/version`
 
