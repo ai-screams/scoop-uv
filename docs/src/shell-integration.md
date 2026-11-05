@@ -93,10 +93,10 @@ autoload -Uz add-zsh-hook
 add-zsh-hook chpwd _scuv_hook
 ```
 
-**Bash**: Uses `PROMPT_COMMAND`
+**Bash**: Uses `PROMPT_COMMAND`, through one entry added the first time and never edited
 
 ```bash
-PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"
+PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"   # _scuv_hook does nothing while auto-activation is off
 ```
 
 **Fish**: Uses `--on-variable PWD` event handler
@@ -158,7 +158,7 @@ on each `cd`). An empty value counts as unset. `scuv activate`, `scuv use` and `
 still work.
 
 Changing the variable in a running shell takes effect when the init script is sourced again
-(`source ~/.zshrc`, for example), which also removes the hook the earlier sourcing added.
+(`source ~/.zshrc`, for example), which also turns off the hook the earlier sourcing added.
 Up to scuv 0.18.1 the variable turned off only one of the two, and which one depended on
 the shell.
 

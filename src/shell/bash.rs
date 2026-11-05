@@ -11,35 +11,37 @@ pub fn init_script() -> &'static str {
         // The blank line after the wrapper lives here: a script file
         // cannot end in one (end-of-file-fixer trims it).
         r#"
-# Auto-activate hook
-_scuv_hook() {"#,
+# Auto-activate: the work done on startup and on each prompt
+_scuv_auto_activate() {"#,
         scoop_version_check!(bash),
         file_resolution_check!(bash),
         r#"
 }
 
 # Auto-activate on every prompt and once now. A non-empty SCUV_NO_AUTO when
-# this script is sourced turns off both. Any earlier registration is taken
-# out first, so sourcing again neither adds a second hook nor keeps one that
-# SCUV_NO_AUTO now turns off.
-# Every whole `_scuv_hook` entry between semicolons goes, wherever later
-# prepends left it (first, middle or last); other commands such as
-# `my_scuv_hook` stay. The one thing it cannot tell apart is a literal
-# ";_scuv_hook;" inside a quoted string, which it would also remove.
-_scuv_pc=";$PROMPT_COMMAND;"
-while [[ "$_scuv_pc" == *";_scuv_hook;"* ]]; do
-    _scuv_pc="${_scuv_pc/;_scuv_hook;/;}"
-done
-_scuv_pc="${_scuv_pc#;}"
-PROMPT_COMMAND="${_scuv_pc%;}"
-unset _scuv_pc
-if [[ -z "$SCUV_NO_AUTO" ]]; then
-    if [[ -z "$PROMPT_COMMAND" ]]; then
-        PROMPT_COMMAND="_scuv_hook"
-    else
-        PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"
+# this script is sourced turns off both.
+#
+# PROMPT_COMMAND runs `_scuv_hook`, which works only while `_scuv_auto` is
+# set; each sourcing sets or clears it, and PROMPT_COMMAND is never edited
+# except to add the entry once. An entry left by scuv 0.18.1 or older has
+# the same name, so it follows the same switch and is not added twice. The
+# check only reads PROMPT_COMMAND; the one case it gets wrong is a literal
+# ";_scuv_hook;" quoted inside another command, which it takes for an entry.
+# SCUV_NO_AUTO and PROMPT_COMMAND are read with `:-` so `set -u` shells can
+# source this (`_scuv_auto` is always set before `_scuv_hook` can run).
+_scuv_hook() {
+    if [[ -n "$_scuv_auto" ]]; then
+        _scuv_auto_activate
+    fi
+}
+if [[ -z "${SCUV_NO_AUTO:-}" ]]; then
+    _scuv_auto=1
+    if [[ ";${PROMPT_COMMAND:-};" != *";_scuv_hook;"* ]]; then
+        PROMPT_COMMAND="_scuv_hook${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
     fi
     _scuv_hook
+else
+    _scuv_auto=
 fi
 
 "#,
@@ -140,7 +142,7 @@ mod tests {
     #[test]
     fn init_script_checks_only_scuv_no_auto() {
         let script = init_script();
-        assert!(script.contains(r#"[[ -z "$SCUV_NO_AUTO" ]]"#));
+        assert!(script.contains(r#"[[ -z "${SCUV_NO_AUTO:-}" ]]"#));
         assert!(!script.contains("SCOOP_NO_AUTO"));
     }
 

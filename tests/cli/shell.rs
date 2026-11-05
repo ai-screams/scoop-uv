@@ -942,7 +942,8 @@ fn scuv_no_auto_turns_off_startup_and_hook(#[case] shell: &str) {
 /// hook the first sourcing added (the usual `source ~/.zshrc` after editing
 /// it), and sourcing twice without it leaves one. The hook is replaced by a
 /// counter after each sourcing, so the test counts real calls. bash also
-/// gets a command another tool put in front of the hook, which must stay.
+/// starts from a PROMPT_COMMAND of its own and gets a command another tool
+/// prepends later; both must stay exactly as they were.
 /// Each shell is skipped when missing.
 ///
 /// Fails if two sourcings call the hook twice per prompt or `cd`, if the
@@ -966,14 +967,16 @@ fn sourcing_again_with_scuv_no_auto_removes_the_hook(#[case] shell: &str) {
         "bash" => (
             &["-c"],
             concat!(
-                // A prompt command was there before scuv, and another tool
-                // prepends one after it: scuv's hook ends up in the middle.
-                "my_scuv_hook() { :; }; other() { :; }; PROMPT_COMMAND=my_scuv_hook; ",
+                // A prompt command was there before scuv (one that names
+                // the hook in a quoted argument), and another tool
+                // prepends one after it: scuv's entry ends up in the middle.
+                "my_scuv_hook() { :; }; other() { :; }; PROMPT_COMMAND=\"my_scuv_hook 'a _scuv_hook;b'\"; ",
                 "eval \"$(command scuv init bash)\"; PROMPT_COMMAND=\"other;$PROMPT_COMMAND\"; ",
                 "eval \"$(command scuv init bash)\"; ",
-                "n=0; _scuv_hook() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"first=[$n]\"; ",
+                // bash's `_scuv_hook` is the on/off switch; count the work.
+                "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"first=[$n]\"; ",
                 "export SCUV_NO_AUTO=1; eval \"$(command scuv init bash)\"; ",
-                "n=0; _scuv_hook() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"second=[$n]\"; ",
+                "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"second=[$n]\"; ",
                 "echo \"pc=[$PROMPT_COMMAND]\"",
             ),
         ),
@@ -1036,12 +1039,84 @@ fn sourcing_again_with_scuv_no_auto_removes_the_hook(#[case] shell: &str) {
     let stderr = String::from_utf8_lossy(&output.stderr);
     let mut expected = vec!["first=[1]", "second=[0]"];
     if shell == "bash" {
-        expected.push("pc=[other;my_scuv_hook]");
+        // Nothing but scuv's own entry was ever added, and nothing else
+        // changed: the quoted argument survives.
+        expected.push("pc=[other;_scuv_hook;my_scuv_hook 'a _scuv_hook;b']");
     }
     for line in expected {
         assert!(
             stdout.contains(line),
             "{shell}: missing {line:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        );
+    }
+}
+
+/// bash cases around an existing PROMPT_COMMAND. Each script prints
+/// `calls=[N]`, how often one prompt runs the activation work.
+///
+/// - `legacy`: a shell set up by scuv 0.18.1 or older already has
+///   `_scuv_hook` in PROMPT_COMMAND; sourcing the new script must not add a
+///   second one, and with SCUV_NO_AUTO=1 that old entry must stop working.
+/// - `nounset`: `set -u` shells source the script and toggle it without an
+///   unbound-variable error.
+/// - `inherited`: a child bash that inherits the exported PROMPT_COMMAND
+///   (scuv's entry included) and sets its own before sourcing gets one call.
+///
+/// Fails if the legacy entry is duplicated or ignores SCUV_NO_AUTO, if the
+/// script reads an unset variable, or if inherited state blocks or doubles
+/// the registration.
+#[cfg(unix)]
+#[rstest::rstest]
+#[case::legacy(concat!(
+    "PROMPT_COMMAND='other;_scuv_hook'; ",
+    "eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; other() { :; }; eval \"$PROMPT_COMMAND\"; echo \"on calls=[$n]\"; ",
+    "export SCUV_NO_AUTO=1; eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"off calls=[$n]\"",
+), &["on calls=[1]", "off calls=[0]"])]
+#[case::nounset(concat!(
+    "set -u; unset SCUV_NO_AUTO; eval \"$(command scuv init bash)\"; ",
+    "export SCUV_NO_AUTO=1; eval \"$(command scuv init bash)\"; ",
+    "export SCUV_NO_AUTO=; eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"on calls=[$n]\"; ",
+    "export SCUV_NO_AUTO=1; eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"off calls=[$n]\"",
+), &["on calls=[1]", "off calls=[0]"])]
+#[case::inherited(concat!(
+    "eval \"$(command scuv init bash)\"; export PROMPT_COMMAND; set -a; ",
+    "bash -c '",
+    "PROMPT_COMMAND=\":;$PROMPT_COMMAND\"; eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"child calls=[$n]\"'",
+), &["child calls=[1]"])]
+fn bash_prompt_command_registration(#[case] script: &str, #[case] expected: &[&str]) {
+    let Some(bash) = find_shell("bash") else {
+        eprintln!("skipping: no bash binary found");
+        return;
+    };
+    let (fixture, fake_uv) = fixture_with_data_hub();
+    let output = std::process::Command::new(bash)
+        .args(["-c", script])
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("SCUV_LANG", "en")
+        .env("PATH", shell_test_path(&fake_uv))
+        // The hook body reads these; set them so `set -u` only tests the
+        // init script's own reads (`system` with nothing active is a no-op).
+        .env("SCUV_VERSION", "system")
+        .env("SCUV_ACTIVE", "")
+        .env_remove("SCUV_NO_AUTO")
+        .env_remove("PROMPT_COMMAND")
+        .env_remove("BASH_ENV")
+        .env_remove("_scuv_auto")
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("bash must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    for line in expected {
+        assert!(
+            stdout.contains(line),
+            "missing {line:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
         );
     }
 }

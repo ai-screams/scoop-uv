@@ -905,12 +905,20 @@ msgid "**Zsh**: Uses `chpwd` hook (runs on directory change)"
 msgstr "**Zsh**: `chpwd` 훅 사용 (디렉터리 변경 시 실행)"
 
 #: src/shell-integration.md:96
-msgid "**Bash**: Uses `PROMPT_COMMAND`"
-msgstr "**Bash**: `PROMPT_COMMAND` 사용"
+msgid ""
+"**Bash**: Uses `PROMPT_COMMAND`, through one entry added the first time and "
+"never edited"
+msgstr ""
+"**Bash**: `PROMPT_COMMAND` 사용. 처음 한 번 넣은 항목 하나를 쓰고 이후로는 고"
+"치지 않음"
 
 #: src/shell-integration.md:99
-msgid "\"_scuv_hook;$PROMPT_COMMAND\""
-msgstr "\"_scuv_hook;$PROMPT_COMMAND\""
+msgid ""
+"\"_scuv_hook;$PROMPT_COMMAND\"   # _scuv_hook does nothing while auto-"
+"activation is off\n"
+msgstr ""
+"\"_scuv_hook;$PROMPT_COMMAND\"   # 자동 활성화가 꺼져 있으면 _scuv_hook은 아"
+"무것도 하지 않음\n"
 
 #: src/shell-integration.md:102
 msgid "**Fish**: Uses `--on-variable PWD` event handler"
@@ -1133,13 +1141,13 @@ msgstr ""
 #: src/shell-integration.md:160
 msgid ""
 "Changing the variable in a running shell takes effect when the init script "
-"is sourced again (`source ~/.zshrc`, for example), which also removes the "
+"is sourced again (`source ~/.zshrc`, for example), which also turns off the "
 "hook the earlier sourcing added. Up to scuv 0.18.1 the variable turned off "
 "only one of the two, and which one depended on the shell."
 msgstr ""
 "실행 중인 셸에서 이 변수를 바꾸면 init 스크립트를 다시 읽어 들일 때(예: "
-"`source ~/.zshrc`) 적용되고, 그때 앞서 등록된 훅도 제거됩니다. scuv 0.18.1까"
-"지는 둘 중 하나만 꺼졌고, 어느 쪽인지는 셸마다 달랐습니다."
+"`source ~/.zshrc`) 적용되고, 그때 앞서 등록된 훅도 꺼집니다. scuv 0.18.1까지"
+"는 둘 중 하나만 꺼졌고, 어느 쪽인지는 셸마다 달랐습니다."
 
 #: src/shell-integration.md:165
 msgid "Temporary and Project-Scoped Control"
@@ -16034,6 +16042,12 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "**Bash**: Uses `PROMPT_COMMAND`"
+#~ msgstr "**Bash**: `PROMPT_COMMAND` 사용"
+
+#~ msgid "\"_scuv_hook;$PROMPT_COMMAND\""
+#~ msgstr "\"_scuv_hook;$PROMPT_COMMAND\""
 
 #~ msgid "Activation at startup"
 #~ msgstr "시작 시 활성화"
