@@ -135,22 +135,7 @@ impl UvClient {
     /// Returns [`ScoopError::UvCommandFailed`] if uv fails or prints
     /// something other than the expected JSON.
     pub fn list_managed_pythons(&self) -> Result<Vec<PythonInfo>> {
-        let mut cmd = Command::new(&self.path);
-        cmd.args([
-            "python",
-            "list",
-            "--only-installed",
-            "--python-preference",
-            "only-managed",
-            "--output-format=json",
-        ]);
-        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
-            command: "uv python list --only-installed --python-preference only-managed \
-                      --output-format=json"
-                .to_string(),
-            message,
-        })?;
-        parse_python_list_json(&String::from_utf8_lossy(&stdout))
+        self.query_python_list(&["--only-installed", "--python-preference", "only-managed"])
     }
 
     /// The directory uv installs managed Pythons into (`uv python dir`).
@@ -176,22 +161,33 @@ impl UvClient {
     ///
     /// [`MIN_VERSION`]: crate::uv::version::MIN_VERSION
     fn run_python_list(&self, only_installed: bool) -> Result<Vec<PythonInfo>> {
-        let mut cmd = Command::new(&self.path);
-        cmd.arg("python").arg("list").arg("--output-format=json");
         if only_installed {
-            cmd.arg("--only-installed");
-        }
-
-        let display = if only_installed {
-            "uv python list --only-installed --output-format=json"
+            self.query_python_list(&["--only-installed"])
         } else {
-            "uv python list --output-format=json"
-        };
+            self.query_python_list(&[])
+        }
+    }
 
-        let stdout = run_uv(cmd, |message| ScoopError::UvCommandFailed {
-            command: display.to_string(),
+    /// Runs `uv python list <filters> --output-format=json`, passes on its
+    /// warnings and parses the list. `--color never` keeps uv's warnings
+    /// plain, so scuv's own `--color` choice is not overridden by uv's.
+    fn query_python_list(&self, filters: &[&str]) -> Result<Vec<PythonInfo>> {
+        let mut cmd = Command::new(&self.path);
+        cmd.args(["python", "list"]).args(filters).args([
+            "--output-format=json",
+            "--color",
+            "never",
+        ]);
+        let display = std::iter::once("uv python list")
+            .chain(filters.iter().copied())
+            .chain(std::iter::once("--output-format=json"))
+            .collect::<Vec<_>>()
+            .join(" ");
+        let (stdout, stderr) = run_uv_keeping_stderr(cmd, |message| ScoopError::UvCommandFailed {
+            command: display.clone(),
             message,
         })?;
+        forward_warnings(&stderr);
         parse_python_list_json(&String::from_utf8_lossy(&stdout))
     }
 
@@ -314,14 +310,42 @@ impl UvClient {
 /// `make_err` builds the error from the failure message, letting each caller
 /// pick its own variant (most use [`ScoopError::UvCommandFailed`]; uninstall
 /// uses [`ScoopError::PythonUninstallFailed`]). It is invoked at most once.
-fn run_uv(mut cmd: Command, make_err: impl Fn(String) -> ScoopError) -> Result<Vec<u8>> {
+fn run_uv(cmd: Command, make_err: impl Fn(String) -> ScoopError) -> Result<Vec<u8>> {
+    run_uv_keeping_stderr(cmd, make_err).map(|(stdout, _)| stdout)
+}
+
+/// [`run_uv`], also returning what a successful uv printed on stderr.
+fn run_uv_keeping_stderr(
+    mut cmd: Command,
+    make_err: impl Fn(String) -> ScoopError,
+) -> Result<(Vec<u8>, Vec<u8>)> {
     let output = cmd.output().map_err(|e| make_err(e.to_string()))?;
     if !output.status.success() {
         return Err(make_err(
             String::from_utf8_lossy(&output.stderr).to_string(),
         ));
     }
-    Ok(output.stdout)
+    Ok((output.stdout, output.stderr))
+}
+
+/// Passes on what `uv python list` printed on stderr while succeeding. Since
+/// uv 0.12.11 it warns and leaves out an interpreter it cannot query instead
+/// of failing, so without this the list would shrink silently.
+fn forward_warnings(stderr: &[u8]) {
+    if crate::output::diagnostics_allowed() {
+        for line in warning_lines(stderr) {
+            eprintln!("{line}");
+        }
+    }
+}
+
+fn warning_lines(stderr: &[u8]) -> Vec<String> {
+    String::from_utf8_lossy(stderr)
+        .lines()
+        .map(str::trim_end)
+        .filter(|line| !line.is_empty())
+        .map(str::to_string)
+        .collect()
 }
 
 /// Parse `uv python list --output-format=json` stdout into structured info.
@@ -358,6 +382,19 @@ impl Default for UvClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn warning_lines_keeps_each_non_empty_line() {
+        let stderr = b"warning: Failed to query /opt/py/bin/python3\n\n  \nwarning: second\r\n";
+        assert_eq!(
+            warning_lines(stderr),
+            [
+                "warning: Failed to query /opt/py/bin/python3",
+                "warning: second"
+            ]
+        );
+        assert!(warning_lines(b"").is_empty());
+    }
 
     /// `list_pythons` returns what `uv python list` reports, and asks for
     /// every Python (no `--only-installed`). A fake uv reports one; fails if
