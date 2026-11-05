@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793887709452,
+  "lastUpdate": 1793887711163,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12433,6 +12433,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 459,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "be7c902825d8eeacb96354d638fd1114be028c74",
+          "message": "Merge pull request #245 from ai-screams/fix/scuv-no-auto-all-shells\n\nfix(shell): make SCUV_NO_AUTO turn off all automatic activation",
+          "timestamp": "2026-11-05T23:04:03+09:00",
+          "tree_id": "d16a0ee26d89b4180554161170e4287496d42cdf",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/be7c902825d8eeacb96354d638fd1114be028c74"
+        },
+        "date": 1793887711089,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1152,
+            "range": "± 24",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 749,
+            "range": "± 14",
             "unit": "ns/iter"
           }
         ]
