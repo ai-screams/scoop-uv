@@ -357,7 +357,7 @@ eval "$(scuv init zsh)"     # 2. scuv second
 
 | Variable | Effect |
 |----------|--------|
-| `SCUV_NO_AUTO=1` | Set before `scuv init`: no activation on directory change (fish: no activation at startup) |
+| `SCUV_NO_AUTO=1` | Set before `scuv init`: no automatic activation at startup or on directory change |
 | `SCUV_HOME=/path` | Custom freezer location (default: `~/.scuv`) |
 
 ```bash

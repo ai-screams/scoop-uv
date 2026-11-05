@@ -93,17 +93,21 @@ autoload -Uz add-zsh-hook
 add-zsh-hook chpwd _scuv_hook
 ```
 
-**Bash**: Uses `PROMPT_COMMAND`
+**Bash**: Uses `PROMPT_COMMAND`, through one entry added the first time and never edited
 
 ```bash
-PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"
+PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"   # _scuv_hook does nothing while auto-activation is off
 ```
 
 **Fish**: Uses `--on-variable PWD` event handler
 
 ```fish
-function _scuv_hook --on-variable PWD
+function _scuv_hook
     # Check for version file and activate/deactivate
+end
+
+function _scuv_on_pwd --on-variable PWD
+    _scuv_hook
 end
 ```
 
@@ -148,13 +152,15 @@ export SCUV_NO_AUTO=1
 eval "$(scuv init bash)"
 ```
 
-Changing the variable later in a running shell does nothing. What it turns off depends on
-the shell:
+It turns off both automatic activations in every shell: the one when the shell starts and
+the one when you change directory (bash and PowerShell check on each prompt, zsh and fish
+on each `cd`). An empty value counts as unset. `scuv activate`, `scuv use` and `scuv shell`
+still work.
 
-| Shell | Activation at startup | Activation on directory change |
-|-------|-----------------------|--------------------------------|
-| bash, zsh, PowerShell | Still runs | Off |
-| fish | Off | Still runs |
+Changing the variable in a running shell takes effect when the init script is sourced again
+(`source ~/.zshrc`, for example), which also turns off the hook the earlier sourcing added.
+Up to scuv 0.18.1 the variable turned off only one of the two, and which one depended on
+the shell.
 
 ### Temporary and Project-Scoped Control
 

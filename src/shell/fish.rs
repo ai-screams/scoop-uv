@@ -32,8 +32,9 @@ use crate::{file_resolution_check, scoop_version_check};
 /// // Script contains the wrapper function
 /// assert!(script.contains("function scuv"));
 ///
-/// // Script contains the auto-activate hook
-/// assert!(script.contains("function _scuv_hook --on-variable PWD"));
+/// // Script contains the auto-activate hook and its PWD handler
+/// assert!(script.contains("function _scuv_hook\n"));
+/// assert!(script.contains("function _scuv_on_pwd --on-variable PWD"));
 ///
 /// // Script contains completion definitions
 /// assert!(script.contains("complete -c scuv"));
@@ -47,16 +48,23 @@ pub fn init_script() -> &'static str {
         // cannot end in one (end-of-file-fixer trims it).
         r#"
 # Auto-activate hook
-function _scuv_hook --on-variable PWD
+function _scuv_hook
 "#,
         scoop_version_check!(fish),
         file_resolution_check!(fish),
         r#"
 end
 
-# Set up auto-activate on startup
-if not set -q SCUV_NO_AUTO
+# Auto-activate on every directory change and once now. A non-empty
+# SCUV_NO_AUTO when this script is sourced turns off both, and erases the
+# handler an earlier sourcing defined.
+if test -z "$SCUV_NO_AUTO"
+    function _scuv_on_pwd --on-variable PWD
+        _scuv_hook
+    end
     _scuv_hook
+else
+    functions -e _scuv_on_pwd
 end
 
 "#,
@@ -123,9 +131,10 @@ mod tests {
             "Script missing wrapper function"
         );
         assert!(
-            script.contains("function _scuv_hook --on-variable PWD"),
+            script.contains("function _scuv_hook\n"),
             "Script missing auto-activate hook"
         );
+        assert!(script.contains("function _scuv_on_pwd --on-variable PWD"));
     }
 
     #[test]
@@ -164,11 +173,8 @@ mod tests {
             "Script must check SCUV_NO_AUTO environment variable"
         );
 
-        // Must use `set -q` to check if variable is set
-        assert!(
-            script.contains("not set -q SCUV_NO_AUTO"),
-            "Script must use 'set -q' to check SCUV_NO_AUTO"
-        );
+        // An empty value counts as unset, as in the other three shells.
+        assert!(script.contains(r#"if test -z "$SCUV_NO_AUTO""#));
 
         // Fails if the scoop-era SCOOP_NO_AUTO read comes back.
         assert!(!script.contains("SCOOP_NO_AUTO"));

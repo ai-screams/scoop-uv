@@ -746,7 +746,7 @@ A few commands put a JSON error envelope on stdout instead, with the success `da
 | `SCUV_HOME` | Override home directory (default: `~/.scuv`) |
 | `SCUV_VERSION` | Override version resolution (set by `scuv shell`) |
 | `SCUV_LANG` | Override language |
-| `SCUV_NO_AUTO` | Read at `scuv init` when non-empty: stops activation on directory change (fish: stops startup activation) |
+| `SCUV_NO_AUTO` | Read at `scuv init` when non-empty: stops automatic activation at startup and on directory change |
 | `SCUV_ACTIVE` | Set when a virtualenv is active (internal) |
 | `SCUV_RESOLVE_MAX_DEPTH` | Limit parent directory traversal (for NFS/SSHFS) |
 | `NO_COLOR` | Disable colored output when set to any non-empty value (standard) |

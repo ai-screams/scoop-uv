@@ -174,7 +174,7 @@ Auto-activation triggers on directory change when `.scuv-version` is present.
 
 Supported shells: bash, zsh, fish, PowerShell (Core 7.x+ and Windows PowerShell 5.1+)
 
-Stop activation on directory change: set `SCUV_NO_AUTO=1` before `scuv init` runs (read once at init; in fish it stops startup activation instead)
+Stop automatic activation: set `SCUV_NO_AUTO=1` before `scuv init` runs (read once at init; stops both the startup and the directory-change activation)
 
 ### Environment Name Rules
 

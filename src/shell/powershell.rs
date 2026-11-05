@@ -48,17 +48,23 @@ function _scuv_hook {
         r#"
 }
 
-# Override prompt to call hook
+# Auto-activate on every prompt and once now. A non-empty SCUV_NO_AUTO when
+# this script is evaluated turns off both, and puts back the prompt an
+# earlier evaluation wrapped. The original prompt is saved only once, so
+# evaluating again does not wrap the wrapper.
 if (-not $env:SCUV_NO_AUTO) {
-    $global:_scuv_original_prompt = $function:prompt
+    if (-not $global:_scuv_original_prompt) {
+        $global:_scuv_original_prompt = $function:prompt
+    }
     function global:prompt {
         _scuv_hook
         & $global:_scuv_original_prompt
     }
+    _scuv_hook
+} elseif ($global:_scuv_original_prompt) {
+    Set-Item -Path function:global:prompt -Value $global:_scuv_original_prompt
+    Remove-Variable -Name _scuv_original_prompt -Scope Global
 }
-
-# Run hook on startup
-_scuv_hook
 
 "#,
         // Tab completion (src/shell/scripts/powershell_completion.ps1).
