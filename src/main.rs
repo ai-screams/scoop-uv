@@ -22,6 +22,7 @@ fn main() -> Result<()> {
     // verbosity come from the subcommand (`Commands::json` is exhaustive).
     let quiet = cli.quiet;
     let output = Output::new(cli.command.verbosity(), quiet, colors, cli.command.json());
+    scoop_uv::output::allow_diagnostics(quiet, cli.command.json());
 
     if let Err(e) = dispatch(cli.command, &output) {
         exit_with(&e, quiet, colors);

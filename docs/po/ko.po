@@ -212,7 +212,7 @@ msgstr "AI/LLM 통합"
 msgid "LLM Reference"
 msgstr "LLM 레퍼런스"
 
-#: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:45
+#: src/SUMMARY.md:68 src/SUMMARY.md:70 src/commands/list.md:49
 #: src/commands/create.md:27 src/commands/use.md:58 src/commands/remove.md:26
 #: src/commands/install.md:60 src/commands/uninstall.md:25
 #: src/commands/doctor.md:58 src/commands/info.md:92 src/commands/status.md:112
@@ -2129,7 +2129,7 @@ msgstr "오래 유지; `gc`(먼저 dry-run), `verify`, 메타데이터(`last_use
 msgid "Extras"
 msgstr "그 밖의 기능"
 
-#: src/faq.md:38 src/commands/list.md:29 src/api.md:728 src/api.md:729
+#: src/faq.md:38 src/commands/list.md:33 src/api.md:728 src/api.md:729
 #: src/api.md:731 src/api.md:732
 msgid "—"
 msgstr "—"
@@ -2460,11 +2460,11 @@ msgstr ""
 "은 마이너 버전만 기록할 수 있으므로 설치된 버전을 먼저 `major.minor`로 잘라냅"
 "니다. `3.12` 필터는 `3.12.x`와도 일치합니다):"
 
-#: src/faq.md:206 src/commands/list.md:108
+#: src/faq.md:206 src/commands/list.md:112
 msgid "\"== Python $v ==\""
 msgstr "\"== Python $v ==\""
 
-#: src/faq.md:207 src/commands/list.md:109
+#: src/faq.md:207 src/commands/list.md:113
 msgid "\"$v\""
 msgstr "\"$v\""
 
@@ -3134,7 +3134,7 @@ msgid "Location"
 msgstr "위치"
 
 #: src/commands/index.md:62 src/development/architecture.md:85
-#: src/development/architecture.md:343 src/development/ci-cd.md:253
+#: src/development/architecture.md:343 src/development/ci-cd.md:257
 msgid "Purpose"
 msgstr "용도"
 
@@ -3252,56 +3252,67 @@ msgid "Output as JSON"
 msgstr "JSON 형식으로 출력"
 
 #: src/commands/list.md:23
+msgid ""
+"`--pythons` shows what `uv python list` reports. uv 0.12.11 and later leave "
+"out an interpreter they cannot query and print a `warning:` line instead; "
+"scuv passes those lines on to stderr, except under `--quiet` or `--json`."
+msgstr ""
+"`--pythons`는 `uv python list`가 알려 준 것을 보여 줍니다. uv 0.12.11부터는 "
+"조회할 수 없는 인터프리터를 목록에서 빼고 대신 `warning:` 줄을 출력합니다. "
+"scuv는 그 줄을 stderr로 그대로 넘기며, `--quiet`나 `--json`일 때는 넘기지 않"
+"습니다."
+
+#: src/commands/list.md:27
 msgid "Sort"
 msgstr "정렬"
 
-#: src/commands/list.md:25
+#: src/commands/list.md:29
 msgid "`--sort` reorders the output without changing what's shown:"
 msgstr "`--sort`는 표시 항목을 변경하지 않고 출력 순서만 바꿉니다:"
 
-#: src/commands/list.md:27
+#: src/commands/list.md:31
 msgid "Mode"
 msgstr "모드"
 
-#: src/commands/list.md:27
+#: src/commands/list.md:31
 msgid "Order"
 msgstr "정렬 기준"
 
-#: src/commands/list.md:27
+#: src/commands/list.md:31
 msgid "Tie-break"
 msgstr "동점 처리"
 
-#: src/commands/list.md:29 src/commands/create.md:15 src/commands/use.md:17
+#: src/commands/list.md:33 src/commands/create.md:15 src/commands/use.md:17
 #: src/commands/remove.md:17 src/commands/info.md:18 src/commands/export.md:16
 #: src/commands/shell.md:23
 msgid "`name`"
 msgstr "`name`"
 
-#: src/commands/list.md:29
+#: src/commands/list.md:33
 msgid "Alphabetical (default, back-compat)"
 msgstr "알파벳 순 (기본값, 하위 호환)"
 
-#: src/commands/list.md:30
+#: src/commands/list.md:34
 msgid "`created`"
 msgstr "`created`"
 
-#: src/commands/list.md:30
+#: src/commands/list.md:34
 msgid "Newest `created_at` first"
 msgstr "가장 최근 `created_at` 먼저"
 
-#: src/commands/list.md:30 src/commands/list.md:31
+#: src/commands/list.md:34 src/commands/list.md:35
 msgid "Name (asc)"
 msgstr "이름 (오름차순)"
 
-#: src/commands/list.md:31
+#: src/commands/list.md:35
 msgid "`last-used`"
 msgstr "`last-used`"
 
-#: src/commands/list.md:31
+#: src/commands/list.md:35
 msgid "Most recently activated first"
 msgstr "가장 최근 활성화된 항목 먼저"
 
-#: src/commands/list.md:33
+#: src/commands/list.md:37
 msgid ""
 "Envs missing the relevant timestamp (`created_at` / `last_used`) sort to the "
 "**end** of the list, with name-order tie-break — so legacy or never-"
@@ -3319,7 +3330,7 @@ msgstr ""
 "use` 단독 실행은 버전 파일만 기록할 뿐 메타데이터는 건드리지 않습니다; 타임스"
 "탬프는 셸 래퍼가 이후 활성화 스크립트를 소싱할 때 기록됩니다."
 
-#: src/commands/list.md:42
+#: src/commands/list.md:46
 msgid ""
 "`--sort` is mutually exclusive with `--pythons` (which lists Python "
 "installations, not environments)."
@@ -3327,51 +3338,51 @@ msgstr ""
 "`--sort`와 `--pythons`는 함께 사용할 수 없습니다 (후자는 환경이 아닌 Python "
 "설치 목록을 나열합니다)."
 
-#: src/commands/list.md:48
+#: src/commands/list.md:52
 msgid "# List all virtualenvs\n"
 msgstr "# 모든 가상 환경 나열\n"
 
-#: src/commands/list.md:49
+#: src/commands/list.md:53
 msgid "# List installed Python versions\n"
 msgstr "# 설치된 Python 버전 나열\n"
 
-#: src/commands/list.md:50
+#: src/commands/list.md:54
 msgid "# Names only, one per line\n"
 msgstr "# 이름만, 한 줄에 하나씩\n"
 
-#: src/commands/list.md:51
+#: src/commands/list.md:55
 msgid "# JSON output\n"
 msgstr "# JSON 출력\n"
 
-#: src/commands/list.md:52
+#: src/commands/list.md:56
 msgid "# Filter by Python version\n"
 msgstr "# Python 버전으로 필터링\n"
 
-#: src/commands/list.md:54
+#: src/commands/list.md:58
 msgid "# Show only 3.12.x environments\n"
 msgstr "# 3.12.x 환경만 표시\n"
 
-#: src/commands/list.md:55
+#: src/commands/list.md:59
 msgid "# Show all Python 3.x environments\n"
 msgstr "# 모든 Python 3.x 환경 표시\n"
 
-#: src/commands/list.md:56
+#: src/commands/list.md:60
 msgid "# Matches only envs that recorded 3.12.1\n"
 msgstr "# 3.12.1을 기록한 환경만 일치\n"
 
-#: src/commands/list.md:57
+#: src/commands/list.md:61
 msgid "# Sort\n"
 msgstr "# 정렬\n"
 
-#: src/commands/list.md:59
+#: src/commands/list.md:63
 msgid "# Newest envs first\n"
 msgstr "# 최신 환경 먼저\n"
 
-#: src/commands/list.md:60
+#: src/commands/list.md:64
 msgid "# Recently active envs first\n"
 msgstr "# 최근 활성화된 환경 먼저\n"
 
-#: src/commands/list.md:63
+#: src/commands/list.md:67
 msgid ""
 "Each row shows the name, the Python version the env recorded, and its path. "
 "The last row is the `system` Python found on `PATH`; it appears in `--bare` "
@@ -3381,7 +3392,7 @@ msgstr ""
 "`PATH`에서 찾은 `system` Python입니다. 이 행은 `--bare`와 `--json` 출력에도 "
 "나타나며, 활성 환경에는 `*` 표시가 붙습니다:"
 
-#: src/commands/list.md:83
+#: src/commands/list.md:87
 msgid ""
 "Envs created by current uv record the minor version (`3.12`), because that "
 "is what uv writes to `pyvenv.cfg`."
@@ -3389,27 +3400,27 @@ msgstr ""
 "현재 uv로 만든 환경은 마이너 버전(`3.12`)을 기록합니다. uv가 `pyvenv.cfg`에 "
 "그렇게 쓰기 때문입니다."
 
-#: src/commands/list.md:86
+#: src/commands/list.md:90
 msgid "List Python Versions with Associated Environments"
 msgstr "Python 버전과 연결된 환경 나열"
 
-#: src/commands/list.md:88
+#: src/commands/list.md:92
 msgid "Use this workflow to see both sides of the mapping:"
 msgstr "이 워크플로를 사용하면 매핑의 양쪽을 모두 확인할 수 있습니다:"
 
-#: src/commands/list.md:91
+#: src/commands/list.md:95
 msgid "# 1) List installed Python versions managed by scuv/uv\n"
 msgstr "# 1) scuv/uv가 관리하는 설치된 Python 버전 나열\n"
 
-#: src/commands/list.md:93
+#: src/commands/list.md:97
 msgid "# 2) List all virtual environments with their Python versions\n"
 msgstr "# 2) 모든 가상 환경과 해당 Python 버전 나열\n"
 
-#: src/commands/list.md:96
+#: src/commands/list.md:100
 msgid "# 3) Show environments associated with a specific Python version\n"
 msgstr "# 3) 특정 Python 버전에 연결된 환경 표시\n"
 
-#: src/commands/list.md:101
+#: src/commands/list.md:105
 msgid ""
 "For scripting, combine `--bare` with per-version filtering. `--pythons --"
 "bare` prints full versions (`3.12.14`), while an env may record only the "
@@ -3421,50 +3432,50 @@ msgstr ""
 "므로(최신 uv는 `3.12`로 적습니다), 먼저 각 버전을 `major.minor`로 잘라내세"
 "요. `3.12` 필터는 patch까지 기록한 환경과도 일치합니다:"
 
-#: src/commands/list.md:113
+#: src/commands/list.md:117
 msgid ""
 "The `system` row matches the filter for its own version, so it shows up "
 "under that version's heading."
 msgstr ""
 "`system` 행은 자기 버전의 필터와 일치하므로 그 버전의 제목 아래에 나타납니다."
 
-#: src/commands/list.md:116
+#: src/commands/list.md:120
 msgid "You can also use `--json` for machine-readable output:"
 msgstr "머신 판독 가능한 출력이 필요할 때는 `--json`을 사용할 수도 있습니다:"
 
-#: src/commands/list.md:123
+#: src/commands/list.md:127
 msgid "Version Filtering"
 msgstr "버전 필터링"
 
-#: src/commands/list.md:125
+#: src/commands/list.md:129
 msgid ""
 "The `--python-version` option uses prefix matching to filter environments:"
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
-#: src/commands/list.md:128 src/commands/uninstall.md:165
+#: src/commands/list.md:132 src/commands/uninstall.md:165
 #: src/commands/doctor.md:78 src/commands/doctor.md:106
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
-#: src/commands/list.md:130 src/commands/uninstall.md:167
+#: src/commands/list.md:134 src/commands/uninstall.md:167
 msgid "#   webapp     3.12  ~/.scuv/virtualenvs/webapp\n"
 msgstr "#   webapp     3.12  ~/.scuv/virtualenvs/webapp\n"
 
-#: src/commands/list.md:135
+#: src/commands/list.md:139
 msgid ""
 "This is useful for identifying environments before uninstalling a Python "
 "version:"
 msgstr "Python 버전을 제거하기 전에 환경을 확인할 때 유용합니다:"
 
-#: src/commands/list.md:138
+#: src/commands/list.md:142
 msgid "# See which environments will be affected\n"
 msgstr "# 영향받을 환경 확인\n"
 
-#: src/commands/list.md:140
+#: src/commands/list.md:144
 msgid "# Then uninstall with cascade\n"
 msgstr "# 이후 cascade로 제거\n"
 
-#: src/commands/list.md:145
+#: src/commands/list.md:149
 msgid ""
 "**Note:** `--python-version` cannot be combined with `--pythons` (which "
 "lists Python installations, not environments)."
@@ -3472,11 +3483,11 @@ msgstr ""
 "**참고:** `--python-version`은 `--pythons`와 함께 사용할 수 없습니다 (후자는 "
 "환경이 아닌 Python 설치 목록을 나열합니다)."
 
-#: src/commands/list.md:147
+#: src/commands/list.md:151
 msgid "Empty Results"
 msgstr "결과 없음"
 
-#: src/commands/list.md:149
+#: src/commands/list.md:153
 msgid ""
 "If no Python versions are installed, `scuv list --pythons` prints `No Python "
 "versions installed` and a hint to stderr (nothing with `--bare`)."
@@ -3485,7 +3496,7 @@ msgstr ""
 "Python versions installed`와 힌트를 출력합니다(`--bare`이면 아무것도 출력하"
 "지 않습니다)."
 
-#: src/commands/list.md:150
+#: src/commands/list.md:154
 msgid ""
 "If no environments exist, `scuv list` still shows the `system` row when a "
 "Python is on `PATH`. Only when there is none either does it print `No "
@@ -3495,7 +3506,7 @@ msgstr ""
 "시합니다. Python도 없을 때에만 `No environments yet`과 `scuv create` 힌트를 "
 "stderr에 출력합니다."
 
-#: src/commands/list.md:153
+#: src/commands/list.md:157
 msgid ""
 "If no environments match a filter, `scuv list --python-version <VERSION>` "
 "prints only the `system` row when the system Python matches, and otherwise "
@@ -14349,7 +14360,7 @@ msgid "Migration breaking for pyenv / conda / virtualenvwrapper users"
 msgstr "pyenv / conda / virtualenvwrapper 사용자의 마이그레이션 실패"
 
 #: src/development/ci-cd.md:13 src/development/ci-cd.md:150
-#: src/development/ci-cd.md:257
+#: src/development/ci-cd.md:261
 msgid "`coverage.yml`"
 msgstr "`coverage.yml`"
 
@@ -14455,8 +14466,8 @@ msgstr "`v*` 태그"
 msgid "Broken documentation site"
 msgstr "깨진 문서 사이트"
 
-#: src/development/ci-cd.md:22 src/development/ci-cd.md:255
-#: src/development/ci-cd.md:256
+#: src/development/ci-cd.md:22 src/development/ci-cd.md:259
+#: src/development/ci-cd.md:260
 msgid "`release-plz.yml`"
 msgstr "`release-plz.yml`"
 
@@ -14849,15 +14860,24 @@ msgid ""
 "richest artifacts, including test binaries — populates the cache; in "
 "`mutants.yml` neither job writes today: the incremental job saves only on "
 "`main`, but it runs only on pull requests, and the weekly full job has `save-"
-"if: false`."
+"if: false`. A writer would gain little: cargo-mutants first copies the tree "
+"without the checkout's `target/` and builds the baseline there (later "
+"mutants reuse that copy's build), so a restored `target/` goes unused and "
+"only the registry download would be saved. The baseline build takes about "
+"65s (full run, 2026-11-02), while PR #237's 55 mutants took 14 minutes."
 msgstr ""
 "공유 키 안에서 writer는 많아야 하나입니다. `ci.yml`은 lint와 shellcheck에 "
 "`save-if: false`를 걸어, 테스트 바이너리까지 포함해 가장 풍부한 산출물을 만드"
 "는 test 잡만 캐시를 채우게 합니다. `mutants.yml`에서는 지금 어느 잡도 캐시를 "
 "쓰지 않습니다. incremental 잡은 `main`에서만 저장하는데 pull request에서만 실"
-"행되고, 주간 full 잡은 `save-if: false`입니다."
+"행되고, 주간 full 잡은 `save-if: false`입니다. 캐시를 쓰는 잡을 두어도 얻는 "
+"것이 적습니다. cargo-mutants는 체크아웃의 `target/`을 뺀 사본을 먼저 만들어 "
+"거기서 기준 빌드를 하고(이후 mutant는 그 사본의 빌드를 재사용), 복원된 "
+"`target/`은 쓰이지 않으므로 아낄 수 있는 것은 registry 다운로드뿐입니다. 기"
+"준 빌드는 약 65초(full 실행, 2026-11-02)이고, PR #237의 mutant 55개는 14분이 "
+"걸렸습니다."
 
-#: src/development/ci-cd.md:167
+#: src/development/ci-cd.md:171
 msgid ""
 "Note that `rust-cache` folds workflow-level `env` into its key hash. Two "
 "jobs can declare the same `shared-key` and still land on different caches if "
@@ -14867,11 +14887,11 @@ msgstr ""
 "두 잡이 같은 `shared-key`를 선언해도 워크플로가 설정한 환경 변수가 다르면 서"
 "로 다른 캐시에 떨어질 수 있습니다."
 
-#: src/development/ci-cd.md:171
+#: src/development/ci-cd.md:175
 msgid "Failure modes worth remembering"
 msgstr "기억해 둘 만한 실패 양상"
 
-#: src/development/ci-cd.md:173
+#: src/development/ci-cd.md:177
 msgid ""
 "These cost real debugging time. They are recorded so the next person "
 "recognises them faster."
@@ -14879,11 +14899,11 @@ msgstr ""
 "아래는 실제로 디버깅 시간을 잡아먹은 것들입니다. 다음 사람이 더 빨리 알아보도"
 "록 기록해 둡니다."
 
-#: src/development/ci-cd.md:176
+#: src/development/ci-cd.md:180
 msgid "An unmarked test picks up another test's fake uv"
 msgstr "표시 없는 테스트가 다른 테스트의 가짜 uv를 집어 간다"
 
-#: src/development/ci-cd.md:178
+#: src/development/ci-cd.md:182
 msgid ""
 "The `v0.17.1` release PR failed Docker Integration in two tests that had "
 "passed on the same source a minute earlier, on `main`. One `#[serial]` test "
@@ -14910,11 +14930,11 @@ msgstr ""
 "\"nextest\"`를 설정합니다. 로컬 `cargo test`는 여전히 한 프로세스에서 돌기 때"
 "문에 uv에 닿는 테스트는 `#[serial]`을 붙이거나 env 잠금 안에서 실행합니다."
 
-#: src/development/ci-cd.md:191
+#: src/development/ci-cd.md:195
 msgid "Criterion errors corrupt the benchmark parser output"
 msgstr "Criterion 에러가 벤치마크 파서 출력을 오염시킨다"
 
-#: src/development/ci-cd.md:193
+#: src/development/ci-cd.md:197
 msgid ""
 "`rust-cache` restores `target/` with the criterion tree present but its "
 "`sample.json` baselines pruned out. Criterion then fails to load a baseline "
@@ -14924,7 +14944,7 @@ msgstr ""
 "낸 상태로 `target/`을 복원합니다. 그러면 criterion은 있어야 마땅해 보이는 "
 "baseline을 읽지 못하고, 그 에러를 표준출력에 *줄 중간에* 씁니다:"
 
-#: src/development/ci-cd.md:198
+#: src/development/ci-cd.md:202
 msgid ""
 "```\n"
 "test clap_parse_create ... Criterion.rs ERROR: error: Failed to access file\n"
@@ -14938,7 +14958,7 @@ msgstr ""
 "bench:      41,347 ns/iter (+/- 2,364)\n"
 "```"
 
-#: src/development/ci-cd.md:204
+#: src/development/ci-cd.md:208
 msgid ""
 "`benchmark-action`'s parser needs `test NAME ... bench: N ns/iter` on one "
 "line. Split in two, it reports \"no benchmark result\" even though every "
@@ -14950,7 +14970,7 @@ msgstr ""
 "음\"으로 보고합니다. 콜드 캐시에서 통과하는 이유는 반쯤 읽을 트리 자체가 없"
 "기 때문입니다."
 
-#: src/development/ci-cd.md:209
+#: src/development/ci-cd.md:213
 msgid ""
 "Each bench step therefore starts with `rm -rf target/criterion`. The gate "
 "compares against `gh-pages` history and never against criterion's local "
@@ -14960,11 +14980,11 @@ msgstr ""
 "`gh-pages` 이력과 비교하지 criterion의 로컬 baseline과는 비교하지 않으므로, "
 "지워도 잃는 것이 없습니다."
 
-#: src/development/ci-cd.md:213
+#: src/development/ci-cd.md:217
 msgid "Two benchmark-action invocations collide on gh-pages"
 msgstr "benchmark-action을 두 번 호출하면 gh-pages에서 충돌한다"
 
-#: src/development/ci-cd.md:215
+#: src/development/ci-cd.md:219
 msgid ""
 "The first invocation fetches `gh-pages` into a local branch and commits its "
 "entry onto it — even on PRs, where it simply never pushes. A second "
@@ -14978,11 +14998,11 @@ msgstr ""
 "도 전에 스텝이 실패합니다. 두 번째 스텝에 `skip-fetch-gh-pages: true`를 주면 "
 "첫 번째가 가져온 것을 재사용합니다."
 
-#: src/development/ci-cd.md:222
+#: src/development/ci-cd.md:226
 msgid "`cargo bench | tee` swallows failures"
 msgstr "`cargo bench | tee`가 실패를 삼킨다"
 
-#: src/development/ci-cd.md:224
+#: src/development/ci-cd.md:228
 msgid ""
 "Without `set -o pipefail` the step exits with `tee`'s status, so a genuinely "
 "failing `cargo bench` reports success and resurfaces one step later as a "
@@ -14992,11 +15012,11 @@ msgstr ""
 "로 실패한 `cargo bench`가 성공으로 보고되고, 한 스텝 뒤에 알아보기 어려운 파"
 "싱 에러로 다시 나타납니다."
 
-#: src/development/ci-cd.md:228
+#: src/development/ci-cd.md:232
 msgid "Docs guards run on PRs only for docs paths"
 msgstr "문서 가드는 PR에서는 문서 경로에 한해 돈다"
 
-#: src/development/ci-cd.md:230
+#: src/development/ci-cd.md:234
 msgid ""
 "`docs.yml` — the mdBook build, the `ko.po` staleness round-trip and the "
 "Pages deploy — triggers only on `v*` tags. `docs-check.yml` runs the same "
@@ -15015,7 +15035,7 @@ msgstr ""
 "하고 `pages` concurrency group에 들어가지 않게 하기 위해서다. 그 경로 밖에 있"
 "는 사실은 `ci.yml` Lint 잡의 검사 두 개가 맡는다:"
 
-#: src/development/ci-cd.md:239
+#: src/development/ci-cd.md:243
 msgid ""
 "`scripts/check-doc-references.py` compares facts copied into `README.md`, "
 "`CONTRIBUTING.md`, `llms.txt`, `llms-full.txt` and the docs against the code "
@@ -15030,7 +15050,7 @@ msgstr ""
 "는 `locales/app.yml`에서 가져옵니다. 모든 검사가 문서 대 코드입니다. 세 "
 "`llms` 파일을 서로 비교하면 셋 다 틀렸을 때도 통과합니다."
 
-#: src/development/ci-cd.md:245
+#: src/development/ci-cd.md:249
 msgid ""
 "`msgfmt --check` on `docs/po/*.po` catches structural damage such as a "
 "`msgstr` whose trailing newline no longer matches its `msgid`."
@@ -15038,7 +15058,7 @@ msgstr ""
 "`docs/po/*.po`에 대한 `msgfmt --check`는 `msgstr`의 끝 개행이 `msgid`와 더 이"
 "상 맞지 않는 것 같은 구조적 손상을 잡습니다."
 
-#: src/development/ci-cd.md:248
+#: src/development/ci-cd.md:252
 msgid ""
 "Editing any page under `docs/src/` still requires regenerating `ko.po` in "
 "the same commit. See [Docs Translation](docs-translation.md)."
@@ -15046,55 +15066,55 @@ msgstr ""
 "`docs/src/` 아래 페이지를 수정할 때는 여전히 같은 커밋에서 `ko.po`를 재생성해"
 "야 합니다. [문서 번역](docs-translation.md)을 참고하세요."
 
-#: src/development/ci-cd.md:251
+#: src/development/ci-cd.md:255
 msgid "Secrets"
 msgstr "시크릿"
 
-#: src/development/ci-cd.md:253
+#: src/development/ci-cd.md:257
 msgid "Secret"
 msgstr "시크릿"
 
-#: src/development/ci-cd.md:253
+#: src/development/ci-cd.md:257
 msgid "Used by"
 msgstr "사용하는 곳"
 
-#: src/development/ci-cd.md:255
+#: src/development/ci-cd.md:259
 msgid "`RELEASE_PLZ_TOKEN`"
 msgstr "`RELEASE_PLZ_TOKEN`"
 
-#: src/development/ci-cd.md:255
+#: src/development/ci-cd.md:259
 msgid "Push release PRs and tags"
 msgstr "릴리스 PR과 태그 푸시"
 
-#: src/development/ci-cd.md:256
+#: src/development/ci-cd.md:260
 msgid "`CARGO_REGISTRY_TOKEN`"
 msgstr "`CARGO_REGISTRY_TOKEN`"
 
-#: src/development/ci-cd.md:256
+#: src/development/ci-cd.md:260
 msgid "Publish to crates.io"
 msgstr "crates.io 게시"
 
-#: src/development/ci-cd.md:257
+#: src/development/ci-cd.md:261
 msgid "`CODECOV_TOKEN`"
 msgstr "`CODECOV_TOKEN`"
 
-#: src/development/ci-cd.md:257
+#: src/development/ci-cd.md:261
 msgid "Upload coverage reports"
 msgstr "커버리지 리포트 업로드"
 
-#: src/development/ci-cd.md:258
+#: src/development/ci-cd.md:262
 msgid "`GITHUB_TOKEN`"
 msgstr "`GITHUB_TOKEN`"
 
-#: src/development/ci-cd.md:258
+#: src/development/ci-cd.md:262
 msgid "bench, docker"
 msgstr "bench, docker"
 
-#: src/development/ci-cd.md:258
+#: src/development/ci-cd.md:262
 msgid "Push `gh-pages`, publish to ghcr.io"
 msgstr "`gh-pages` 푸시, ghcr.io 게시"
 
-#: src/development/ci-cd.md:260
+#: src/development/ci-cd.md:264
 msgid ""
 "A workflow triggered by Dependabot reads the **Dependabot** secret store, "
 "not the Actions one. A secret both need has to be registered twice — `gh "
@@ -15106,7 +15126,7 @@ msgstr ""
 "CODECOV_TOKEN --app dependabot` — 그렇지 않으면 다른 곳에서는 통과하면서 "
 "Dependabot PR에서만 잡이 실패합니다."
 
-#: src/development/ci-cd.md:265
+#: src/development/ci-cd.md:269
 msgid ""
 "Default workflow permissions are `read`. Workflows that need more declare it "
 "explicitly — `bench.yml` needs `contents: write` for `gh-pages`, `docker-"
@@ -15116,11 +15136,11 @@ msgstr ""
 "다 — `bench.yml`은 `gh-pages`를 위해 `contents: write`가, `docker-build.yml`"
 "은 레지스트리를 위해 `packages: write`가 필요합니다."
 
-#: src/development/ci-cd.md:269
+#: src/development/ci-cd.md:273
 msgid "Releases"
 msgstr "릴리스"
 
-#: src/development/ci-cd.md:271
+#: src/development/ci-cd.md:275
 msgid ""
 "`release-plz` reads Conventional Commits on `main` and prepares the release; "
 "`release-plz.toml` holds the policy:"
@@ -15128,7 +15148,7 @@ msgstr ""
 "`release-plz`는 `main`의 Conventional Commits를 읽어 릴리스를 준비하며, 정책"
 "은 `release-plz.toml`에 있습니다:"
 
-#: src/development/ci-cd.md:274
+#: src/development/ci-cd.md:278
 msgid ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — documentation and "
 "chore commits do not trigger a release on their own."
@@ -15136,7 +15156,7 @@ msgstr ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — 문서와 잡무 커밋만"
 "으로는 릴리스가 생기지 않습니다."
 
-#: src/development/ci-cd.md:276
+#: src/development/ci-cd.md:280
 msgid ""
 "`features_always_increment_minor = true` — a `feat` bumps the minor version "
 "even in `0.x`, where cargo's default would only bump the patch."
@@ -15144,11 +15164,11 @@ msgstr ""
 "`features_always_increment_minor = true` — `0.x`에서도 `feat`이면 minor 버전"
 "이 올라갑니다. cargo 기본값이라면 patch만 올랐을 자리입니다."
 
-#: src/development/ci-cd.md:278
+#: src/development/ci-cd.md:282
 msgid "Changelog generation goes through `git-cliff` (`cliff.toml`)."
 msgstr "체인지로그 생성은 `git-cliff`(`cliff.toml`)를 거칩니다."
 
-#: src/development/ci-cd.md:280
+#: src/development/ci-cd.md:284
 msgid ""
 "`release-plz` only rewrites `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`. "
 "The `scuv <version>` samples in `README.md`, `CLAUDE.md`, `installation.md` "
@@ -15176,7 +15196,7 @@ msgstr ""
 "플로를 재실행시키지 않기 때문이고, 뒤이어 전체 가드를 다시 돌려서 `--fix`가 "
 "다루지 않는 참조가 어긋나 있으면 잡이 그대로 실패하게 합니다."
 
-#: src/development/ci-cd.md:293
+#: src/development/ci-cd.md:297
 msgid ""
 "Merging the release PR is what publishes: it creates the tag, the GitHub "
 "release, and the crates.io upload — and the `v*` tag is also what deploys "
@@ -15185,11 +15205,11 @@ msgstr ""
 "게시를 일으키는 것은 릴리스 PR의 머지입니다. 태그, GitHub 릴리스, crates.io "
 "업로드가 그때 만들어지며 — 그 `v*` 태그가 문서 사이트 배포까지 일으킵니다."
 
-#: src/development/ci-cd.md:297
+#: src/development/ci-cd.md:301
 msgid "Known gaps"
 msgstr "알려진 공백"
 
-#: src/development/ci-cd.md:299
+#: src/development/ci-cd.md:303
 msgid ""
 "Accurate as of the last revision of this page. Verify before relying on any "
 "of these being fixed."
@@ -15197,7 +15217,7 @@ msgstr ""
 "이 페이지를 마지막으로 고친 시점 기준입니다. 아래 항목이 해결됐다고 전제하기 "
 "전에 직접 확인하세요."
 
-#: src/development/ci-cd.md:302
+#: src/development/ci-cd.md:306
 msgid ""
 "**`codecov/project` has never posted.** `codecov.yml` states a target for "
 "it, and the config is live — setting `comment.require_changes` changed "
@@ -15220,7 +15240,7 @@ msgstr ""
 "하락은 잡지 못합니다. 게시 여부를 모르는 상태를 필수로 지정하면 모든 PR이 오"
 "지 않을 검사를 기다리게 됩니다."
 
-#: src/development/ci-cd.md:312
+#: src/development/ci-cd.md:316
 msgid ""
 "**The coverage floor is absolute, not relative.** `--fail-under-lines 80` is "
 "measured against llvm-cov, which reads 80.97% where Codecov reads 78.5%; the "
@@ -15235,7 +15255,7 @@ msgstr ""
 "다. 커버리지가 81%에서 80.1%로 떨어져도 걸리지 않으며, 이를 막으려면 "
 "`codecov/project`가 필요합니다. 위의 공백을 참고하세요."
 
-#: src/development/ci-cd.md:318
+#: src/development/ci-cd.md:322
 msgid ""
 "**The cache hit its limit.** 10.49 GB against the 10 GB allowance on "
 "2026-09-26: 139 caches for `main` (about 2 GB of them `v0-rust-*` keyed to "
@@ -15269,11 +15289,11 @@ msgstr ""
 "에서 lockfile 해시를 뗀 것)마다 가장 최근 항목, 즉 같은 toolchain과 환경으로 "
 "도는 이후 실행이 fallback으로 복원할 항목만 남긴다."
 
-#: src/development/ci-cd.md:336
+#: src/development/ci-cd.md:340
 msgid "Recently closed"
 msgstr "최근에 해결된 것"
 
-#: src/development/ci-cd.md:338
+#: src/development/ci-cd.md:342
 msgid ""
 "Left here because the reasoning is worth keeping, not because anything is "
 "outstanding."
@@ -15281,7 +15301,7 @@ msgstr ""
 "남겨 둔 이유는 그 판단 과정이 기록할 만해서이지, 아직 남은 문제가 있어서가 아"
 "닙니다."
 
-#: src/development/ci-cd.md:341
+#: src/development/ci-cd.md:345
 msgid ""
 "The weekly full mutation run tolerated missed mutants (exit 2) while a "
 "backlog was triaged: 55 escapes at first, 46 of them under `src/core/migrate/"
@@ -15299,7 +15319,7 @@ msgstr ""
 "`cfg(windows)` 쌍둥이 함수였으므로 다른 Windows 경로 도우미와 함께 `.cargo/"
 "mutants.toml`에서 제외했습니다. 이제 놓친 변이가 있으면 주간 잡이 실패합니다."
 
-#: src/development/ci-cd.md:350
+#: src/development/ci-cd.md:354
 msgid ""
 "Docs were only verified on release tags: the MSRV 1.89 bump edited pages "
 "under `docs/src/`, its PR went green, and the `v0.15.4` tag then failed at "
@@ -15314,7 +15334,7 @@ msgstr ""
 "조용한 절반이라 누군가 사이트를 열어 보기 전까지 아무도 몰랐다. 문서 경로를 "
 "건드리는 PR에서 빌드와 라운드트립을 돌리는 `docs-check.yml`로 닫음."
 
-#: src/development/ci-cd.md:357
+#: src/development/ci-cd.md:361
 msgid ""
 "Coverage uploads were rejected for months with `Token required because "
 "branch is protected` while the job reported success, because "
@@ -15332,7 +15352,7 @@ msgstr ""
 "릿 저장소를 읽기 때문에, 그쪽에도 토큰을 등록하기 전까지 모든 Dependabot PR"
 "이 같은 방식으로 계속 실패했습니다."
 
-#: src/development/ci-cd.md:365
+#: src/development/ci-cd.md:369
 msgid ""
 "Every release PR failed the Lint job because release-plz bumps `Cargo.toml` "
 "without touching the version samples in prose. Hand-fixed at v0.15.3, hit "
@@ -15346,7 +15366,7 @@ msgstr ""
 "니다. v0.15.3의 수정이 요구한 방향 그대로입니다 — 검사를 느슨하게 하는 대신 "
 "릴리스가 예시를 갱신하도록 가르치는 것입니다."
 
-#: src/development/ci-cd.md:370
+#: src/development/ci-cd.md:374
 msgid ""
 "Dependabot does not read `rust-version`, so it raised `rust-i18n` past the "
 "MSRV and every job died at dependency resolution before a line compiled. The "
@@ -15362,7 +15382,7 @@ msgstr ""
 "rustc 1.93.1을 요구)에 대한 `ignore`를 갖고 있으며, MSRV가 따라잡으면 지울 부"
 "채로 표시해 두었습니다."
 
-#: src/development/ci-cd.md:376
+#: src/development/ci-cd.md:380
 msgid ""
 "The weekly full mutation run had never once completed — 60 minutes killed it "
 "every time, and GitHub reports a timed-out job as _cancelled_, which reads "
@@ -15373,7 +15393,7 @@ msgstr ""
 "GitHub은 타임아웃된 잡을 _cancelled_ 로 보고하는데 이는 별일 아닌 것처럼 읽힙"
 "니다. 60분에 385/446개로 측정돼 타임아웃을 90분으로 올렸습니다."
 
-#: src/development/ci-cd.md:380
+#: src/development/ci-cd.md:384
 msgid ""
 "`aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now "
 "pinned to release tags. Dependabot could not follow either: it cannot bump a "
@@ -15384,7 +15404,7 @@ msgstr ""
 "올릴 수 없고, setup-uv는 v8부터 움직이는 메이저 태그 발행을 중단했기 때문입니"
 "다."
 
-#: src/development/ci-cd.md:384
+#: src/development/ci-cd.md:388
 msgid ""
 "Coverage and mutants ran tests as threads of one process after the rest of "
 "CI had moved to nextest, so a missing `#[serial]` could still make them "
@@ -15398,7 +15418,7 @@ msgstr ""
 "는 처음부터 합계에 들어 있지 않았습니다. 표본으로 잰 파일 세 개에서 mutants"
 "는 `cargo test`일 때의 절반 정도 시간이 걸렸습니다."
 
-#: src/development/ci-cd.md:389
+#: src/development/ci-cd.md:393
 msgid ""
 "`stable-ci` had four writers and, because `rust-cache` hashes workflow-level "
 "`env`, was never actually shared with `coverage.yml` or `mutants.yml` at "
@@ -15408,7 +15428,7 @@ msgstr ""
 "시에 넣기 때문에 `coverage.yml`이나 `mutants.yml`과는 애초에 공유된 적조차 없"
 "었습니다. 이제 각자 실제로 쓰는 키를 이름으로 밝힙니다."
 
-#: src/development/ci-cd.md:392
+#: src/development/ci-cd.md:396
 msgid ""
 "`release-plz.yml` had no concurrency group. It has one now, with `cancel-in-"
 "progress: false` — which delivers the \"must always complete\" intent that "
