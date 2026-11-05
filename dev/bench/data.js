@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793889196405,
+  "lastUpdate": 1793889198195,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12553,6 +12553,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 749,
             "range": "± 14",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cab66b9bf6433e00433104113e323558046b0c96",
+          "message": "Merge pull request #246 from ai-screams/feat/json-error-envelope\n\nfeat(output): print a failed command as a JSON envelope under --json",
+          "timestamp": "2026-11-05T23:28:52+09:00",
+          "tree_id": "67534ec2dae55f53bc51e940467afe364f20fc0a",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/cab66b9bf6433e00433104113e323558046b0c96"
+        },
+        "date": 1793889198159,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1567,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1024,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
