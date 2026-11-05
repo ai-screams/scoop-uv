@@ -17,9 +17,11 @@
 //!    the env's recorded Python matches the manifest. Skipped silently when
 //!    there's no manifest — drift only matters in manifest-managed projects.
 //!
-//! By default the command always exits 0; pass `--strict` to opt into
-//! `exit 1` when any check fails. This mirrors `doctor`'s default: surfacing
-//! information shouldn't break CI just because someone wanted to look.
+//! A report that completes exits 0 by default; pass `--strict` to opt into
+//! `exit 1` when any check fails. Errors that stop the run (an unknown env
+//! name, uv not found) still exit non-zero. Unlike `doctor`, which exits 1 or
+//! 2 on findings, surfacing information here shouldn't break CI just because
+//! someone wanted to look.
 
 mod checks;
 mod report;

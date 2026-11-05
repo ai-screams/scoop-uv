@@ -50,7 +50,7 @@ Available for all commands:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `SCUV_HOME` | Base directory for scuv | `~/.scuv` |
-| `SCUV_NO_AUTO` | Read at `scuv init`: stops activation on directory change (fish: stops startup activation) | (unset) |
+| `SCUV_NO_AUTO` | Read at `scuv init`: stops automatic activation at startup and on directory change | (unset) |
 | `SCUV_LANG` | Display language (en, ko, ja, pt-BR, es) | System locale |
 | `NO_COLOR` | Disable colored output when set to any non-empty value (an explicit `--color always` still colors) | (unset) |
 | `SCUV_VERSION` | Shell-session override; highest-priority version selector (set by `scuv shell`) | (unset) |
