@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793874701308,
+  "lastUpdate": 1793874703120,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12313,6 +12313,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 737,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "68c752701b31105ac530deb4edc0ee5236d4a623",
+          "message": "Merge pull request #244 from ai-screams/fix/uv-python-list-warnings\n\nfix(uv): pass on uv's warnings when python list succeeds",
+          "timestamp": "2026-11-05T19:27:10+09:00",
+          "tree_id": "474810192724c474c48af01abca48eada270f6ef",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/68c752701b31105ac530deb4edc0ee5236d4a623"
+        },
+        "date": 1793874703021,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 630,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 459,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
