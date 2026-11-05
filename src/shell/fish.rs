@@ -134,10 +134,7 @@ mod tests {
             script.contains("function _scuv_hook\n"),
             "Script missing auto-activate hook"
         );
-        assert!(
-            script.contains("function _scuv_on_pwd --on-variable PWD"),
-            "Script missing the PWD handler"
-        );
+        assert!(script.contains("function _scuv_on_pwd --on-variable PWD"));
     }
 
     #[test]
@@ -177,10 +174,7 @@ mod tests {
         );
 
         // An empty value counts as unset, as in the other three shells.
-        assert!(
-            script.contains(r#"if test -z "$SCUV_NO_AUTO""#),
-            "Script must test SCUV_NO_AUTO for a non-empty value"
-        );
+        assert!(script.contains(r#"if test -z "$SCUV_NO_AUTO""#));
 
         // Fails if the scoop-era SCOOP_NO_AUTO read comes back.
         assert!(!script.contains("SCOOP_NO_AUTO"));
