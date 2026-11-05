@@ -23,9 +23,13 @@ fn main() -> Result<()> {
     let quiet = cli.quiet;
     let output = Output::new(cli.command.verbosity(), quiet, colors, cli.command.json());
     scoop_uv::output::allow_diagnostics(quiet, cli.command.json());
+    // Read before dispatch consumes the command.
+    let json_name = cli.command.json().then(|| cli.command.json_name());
 
     if let Err(e) = dispatch(cli.command, &output) {
-        exit_with(&e, quiet, colors);
+        // A command that already printed its JSON (uninstall's partial
+        // cleanup) said everything there: nothing more on either stream.
+        exit_with(&e, quiet, colors, json_name, output.json_printed());
     }
     Ok(())
 }
@@ -233,16 +237,32 @@ fn dispatch(command: Commands, output: &Output) -> scoop_uv::error::Result<()> {
 ///   - `exit_code()` decides the process exit code (1 / 2 / 3) so CI scripts
 ///     can distinguish source-discovery failures (migrate, exit 3) from
 ///     generic operational errors (exit 1).
-fn exit_with(e: &scoop_uv::error::ScoopError, quiet: bool, colors: Colors) -> ! {
-    // Errors print as text even under --json (existing behavior).
-    let output = Output::new(0, quiet, colors, false);
-    if matches!(
-        e.render_policy(),
-        scoop_uv::error::ErrorRenderPolicy::Default
-    ) {
-        output.error(&e.to_string());
-        if let Some(suggestion) = e.suggestion() {
-            eprintln!("{suggestion}");
+///
+/// Under `--json` (`json_name` is the command's envelope name) the error is
+/// a JSON envelope on stdout instead of text on stderr. A Quiet error's
+/// command already printed its own envelope, so nothing is added, and the
+/// same holds when `json_printed` says the command printed JSON before
+/// failing.
+fn exit_with(
+    e: &scoop_uv::error::ScoopError,
+    quiet: bool,
+    colors: Colors,
+    json_name: Option<&'static str>,
+    json_printed: bool,
+) -> ! {
+    if !json_printed
+        && matches!(
+            e.render_policy(),
+            scoop_uv::error::ErrorRenderPolicy::Default
+        )
+    {
+        if let Some(command) = json_name {
+            Output::new(0, quiet, colors, true).json_error(command, e);
+        } else {
+            Output::new(0, quiet, colors, false).error(&e.to_string());
+            if let Some(suggestion) = e.suggestion() {
+                eprintln!("{suggestion}");
+            }
         }
     }
     std::process::exit(i32::from(e.exit_code()));

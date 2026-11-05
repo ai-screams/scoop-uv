@@ -58,7 +58,7 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
                     failed_envs: failed,
                     unverified_envs: plan.unverified,
                 };
-                println!("{}", incomplete_json(&e, &data));
+                output.print_json(&incomplete_json(&e, &data));
             }
         }
         return Err(e);
@@ -87,7 +87,7 @@ pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Re
             failed_count: data.failed_envs.len(),
         };
         if output.is_json() {
-            println!("{}", incomplete_json(&err, &data));
+            output.print_json(&incomplete_json(&err, &data));
         } else {
             output.error(&err.to_string());
         }

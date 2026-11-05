@@ -727,15 +727,27 @@ Success response:
 }
 ```
 
-Errors print as text on stderr even with `--json`, and stdout stays empty. For example
-`scuv create myenv --json` on an existing env exits 1 with:
+Under `--json` a failed command prints one error envelope on stdout instead of the error text on stderr;
+the exit code is unchanged. For example `scuv create myenv --json` on an existing env exits 1
+with:
+```json
+{
+  "status": "error",
+  "command": "create",
+  "error": {
+    "code": "ENV_ALREADY_EXISTS",
+    "message": "'myenv' already exists",
+    "suggestion": "→ Use --force to overwrite"
+  }
+}
 ```
-✗ 'myenv' already exists
-→ Use --force to overwrite
-```
-A few commands put a JSON error envelope on stdout instead, with the success `data` alongside:
+`message` and `suggestion` follow the display language; `code` is stable. A few commands
+put their own error envelope there instead, with the success `data` alongside:
 `diff --strict --json` (`DIFF_MISMATCH`), `verify --strict --json`, `migrate all --json`
-(`MIGRATE_BATCH_FAILED`) and an incomplete `uninstall --cascade --json`.
+(`MIGRATE_BATCH_FAILED`) and an incomplete `uninstall --cascade --json`. `doctor --json`
+always prints its report. A command-line parse error happens before any command runs, so
+clap prints it as text and exits 2. Up to scuv 0.18.1 other errors printed as text on
+stderr even with `--json`.
 
 ---
 

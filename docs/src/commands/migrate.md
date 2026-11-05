@@ -366,12 +366,13 @@ Per-env failure objects carry two additive fields:
   `"UV_COMMAND_FAILED"`). Scripts branch on this instead of parsing
   `error` (which is localized).
 
-### Exit-3 paths — no JSON envelope on stdout
+### Exit-3 paths — the generic error envelope
 
-Two distinct exit-3 cases exist; **neither emits a JSON envelope on
-stdout, even under `--json`.** The localized error message and
-install/lookup suggestion are written to stderr as plain text; stdout
-stays empty. Detect via the exit code.
+Two distinct exit-3 cases exist. Under `--json` each prints the generic
+error envelope on stdout (`status`, `command`, and `error` with `code`,
+the localized `message` and `suggestion`), without the `data` view the
+exit-2 envelope carries; without `--json` the message and suggestion go
+to stderr as text. The exit code stays `3` either way.
 
 | Command | Error variant | Trigger |
 |---------|---------------|---------|
@@ -386,14 +387,14 @@ scuv migrate all --json > out.json
 case $? in
   0) ;;
   2) echo "batch failure — read out.json for detail" ;;
-  3) echo "no source tool installed" ;;
+  3) echo "no source tool or env: $(jq -r .error.code out.json)" ;;
 esac
 ```
 
-The exit-2 path (batch failure) is the only `migrate all` failure path
-that emits a structured envelope on stdout. Bridging the exit-3
-asymmetry would require `batch/` (and `single.rs`) to emit a JSON error
-envelope before returning Err; tracked for a follow-up.
+Only the exit-2 envelope (batch failure) carries the per-env `data`;
+the exit-3 envelope has `error` alone. Up to scuv 0.18.1 the exit-3
+paths printed text on stderr even with `--json`, and stdout stayed
+empty.
 
 ## Migration Process
 

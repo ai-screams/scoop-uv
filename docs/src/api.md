@@ -735,6 +735,12 @@ Per-command exit code table:
 killed it), and with 1 when scuv cannot start it. A command-line parse error (unknown
 flag, missing argument) exits 2 from clap before any command runs.
 
+Under `--json`, an error that reaches `main.rs` with `ErrorRenderPolicy::Default` is printed
+as one envelope on stdout instead of text on stderr: `status: "error"`, the same `command`
+name the success envelope uses, and `error` with `code`, `message` and, when there is one,
+`suggestion`. A Quiet error, or a command that already printed JSON, adds nothing. The exit
+code is the same either way.
+
 4. **Documentation requirements**:
    - All `pub fn` must have doc comments
    - Examples in doctests where applicable
