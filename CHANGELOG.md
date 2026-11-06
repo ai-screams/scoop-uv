@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **output:** Print a failed command as a JSON envelope under --json ([#246](https://github.com/ai-screams/scoop-uv/pull/246))
+- **BREAKING**: with `--json`, a command that fails with an ordinary error now prints an error envelope on stdout
+  (`{"status": "error", "command": ..., "error": {"code", "message", "suggestion"?}}`). Up to 0.18.1 it printed text
+  on stderr and left stdout empty. Exit codes are unchanged, and so are `doctor --json` reports and argument errors.
 
 ### Documentation
 
@@ -21,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **shell:** Switch bash's hook instead of editing PROMPT_COMMAND ([#245](https://github.com/ai-screams/scoop-uv/pull/245))
 - **shell:** Make SCUV_NO_AUTO turn off all automatic activation ([#245](https://github.com/ai-screams/scoop-uv/pull/245))
+- **Behaviour change**: a non-empty `SCUV_NO_AUTO` now turns off both startup and directory-change activation in
+  bash, zsh, fish and PowerShell; up to 0.18.1 it turned off only one of the two, depending on the shell. Sourcing
+  the init script again after changing it also turns off the hook the earlier sourcing added.
 - **uv:** Pass on uv's warnings when python list succeeds ([#244](https://github.com/ai-screams/scoop-uv/pull/244))
 [0.19.0]: https://github.com/ai-screams/scoop-uv/compare/0.18.1...0.19.0
 
