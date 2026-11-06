@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793974761779,
+  "lastUpdate": 1793974763558,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12793,6 +12793,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1024,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2d52d386a32875e96b84efde0e792da5085cd51e",
+          "message": "Merge pull request #249 from ai-screams/docs/claude-md-merged-notes\n\ndocs(claude): note the SCUV_NO_AUTO hook, JSON error and uv warning rules",
+          "timestamp": "2026-11-06T23:12:02+09:00",
+          "tree_id": "f2b28e35354cb332e12e418076726e32cb209155",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/2d52d386a32875e96b84efde0e792da5085cd51e"
+        },
+        "date": 1793974763445,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1510,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 987,
+            "range": "± 16",
             "unit": "ns/iter"
           }
         ]
