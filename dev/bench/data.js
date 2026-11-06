@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794006486754,
+  "lastUpdate": 1794006488910,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12913,6 +12913,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 987,
             "range": "± 16",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eb445b1ee985a4ed2d3dfe9ba6cc4c196c86f726",
+          "message": "Merge pull request #250 from ai-screams/fix/doc-sync-po-scope\n\nfix(release): leave past-release mentions in ko.po alone",
+          "timestamp": "2026-11-07T08:04:16+09:00",
+          "tree_id": "6859a07c397c05905258143cfce32d570b66abd0",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/eb445b1ee985a4ed2d3dfe9ba6cc4c196c86f726"
+        },
+        "date": 1794006488818,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1325,
+            "range": "± 37",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 923,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
