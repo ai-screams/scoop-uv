@@ -137,10 +137,10 @@ Important detail:
 Use one of these local or temporary patterns:
 
 ```bash
-# Option 1) Disable auto-activation only in the current shell session
-export SCUV_NO_AUTO=1
+# Option 1) Stop auto-activation only in the current shell session
+scuv shell system
 # ...work here...
-unset SCUV_NO_AUTO
+scuv shell --unset
 
 # Option 2) For one project directory, force system Python locally
 cd ~/project
@@ -195,7 +195,7 @@ scuv list --python-version 3.12
 For automation:
 
 - Use `--json` for machine-readable output.
-- Use `--bare` for name-only output in shell scripts.
+- Use `--bare` for name-only output in shell scripts. It includes the `system` row.
 
 Example script to iterate each Python version and print associated environments
 (an env may record only the minor version, such as `3.12`, so cut the installed
@@ -204,7 +204,7 @@ versions down to `major.minor` first; a `3.12` filter also matches `3.12.x`):
 ```bash
 for v in $(scuv list --pythons --bare | cut -d. -f1,2 | sort -u); do
   echo "== Python $v =="
-  scuv list --python-version "$v" --bare
+  scuv list --python-version "$v" --bare | grep -vx system
 done
 ```
 
@@ -227,7 +227,7 @@ Validation and diagnostics:
 
 ```bash
 uv python list      # confirm interpreter discovery
-scuv info myenv    # confirm selected Python + Python Path
+scuv info myenv    # confirm selected Python version
 scuv doctor -v     # detect broken links/metadata issues
 ```
 

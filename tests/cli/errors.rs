@@ -227,3 +227,100 @@ fn closed_stdout_ends_quietly_by_sigpipe() {
     );
     assert!(!stderr.contains("panicked"), "stderr:\n{stderr}");
 }
+
+/// Under `--json` a failed command prints one error envelope on stdout,
+/// with its stable code, the message and the suggestion, and nothing on
+/// stderr. Without `--json` the text error stays on stderr.
+/// Fails if the error is printed as text under `--json`, if stdout holds
+/// anything but that one document, or if the exit code changes.
+#[test]
+fn json_errors_are_one_envelope_on_stdout() {
+    let fixture = TestFixture::new();
+    let out = scoop_cmd(&fixture.scoop_home)
+        .args(["info", "nosuch", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(json["status"], "error");
+    assert_eq!(json["command"], "info");
+    assert_eq!(json["error"]["code"], "ENV_NOT_FOUND");
+    assert!(
+        json["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("nosuch"),
+        "{json}"
+    );
+    assert!(json["error"]["suggestion"].is_string(), "{json}");
+    assert!(
+        out.stderr.is_empty(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let text = scoop_cmd(&fixture.scoop_home)
+        .args(["info", "nosuch"])
+        .output()
+        .unwrap();
+    assert_eq!(text.status.code(), Some(1));
+    assert!(text.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&text.stderr).contains("Can't find 'nosuch'"));
+}
+
+/// A nested command names itself as its success envelope does
+/// (`migrate @env` is `migrate`), and keeps its exit code: a source env
+/// that cannot be found is exit 3.
+#[test]
+fn json_errors_name_nested_commands_and_keep_exit_codes() {
+    let fixture = TestFixture::new();
+    let out = scoop_cmd(&fixture.scoop_home)
+        .env("HOME", fixture.temp_dir.path())
+        .env_remove("PYENV_ROOT")
+        .env_remove("WORKON_HOME")
+        .env_remove("CONDA_PREFIX")
+        .args(["migrate", "@env", "nosuch", "--json"])
+        .output()
+        .unwrap();
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(json["status"], "error");
+    assert_eq!(json["command"], "migrate");
+    assert_eq!(out.status.code(), Some(3), "{json}");
+}
+
+/// The command name for each envelope matches what the command's own
+/// success envelope uses.
+#[test]
+fn json_name_matches_the_success_envelopes() {
+    use clap::Parser;
+    use scoop_uv::cli::Cli;
+
+    for (args, name) in [
+        (&["scuv", "list", "--json"][..], "list"),
+        (&["scuv", "use", "x", "--json"], "use"),
+        (&["scuv", "create", "x", "--json"], "create"),
+        (&["scuv", "remove", "x", "--json"], "remove"),
+        (&["scuv", "install", "--json"], "install"),
+        (&["scuv", "uninstall", "3.12", "--json"], "uninstall"),
+        (&["scuv", "doctor", "--json"], "doctor"),
+        (&["scuv", "info", "x", "--json"], "info"),
+        (&["scuv", "lang", "--json"], "lang"),
+        (&["scuv", "status", "--json"], "status"),
+        (&["scuv", "clone", "x", "y", "--json"], "clone"),
+        (&["scuv", "import", "f.json", "--json"], "import"),
+        (&["scuv", "sync", "--json"], "sync"),
+        (&["scuv", "which", "python", "--json"], "which"),
+        (&["scuv", "prune", "--json"], "prune"),
+        (&["scuv", "gc", "--json"], "gc"),
+        (&["scuv", "man", "out", "--json"], "man"),
+        (&["scuv", "verify", "--json"], "verify"),
+        (&["scuv", "diff", "x", "y", "--json"], "diff"),
+        (&["scuv", "migrate", "list", "--json"], "migrate list"),
+        (&["scuv", "migrate", "all", "--json"], "migrate all"),
+        (&["scuv", "migrate", "@env", "x", "--json"], "migrate"),
+        (&["scuv", "self", "update", "--json"], "self update"),
+    ] {
+        let cli = Cli::try_parse_from(args).unwrap();
+        assert_eq!(cli.command.json_name(), name, "{args:?}");
+    }
+}

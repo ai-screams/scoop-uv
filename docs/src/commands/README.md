@@ -21,6 +21,7 @@ Complete reference for all scuv commands.
 | [`scuv export`](export.md) | - | Write a portable JSON snapshot of an env |
 | [`scuv import`](import.md) | - | Recreate an env from an export file (or stdin) |
 | [`scuv clone`](clone.md) | - | Duplicate an env (with or without packages) |
+| [`scuv diff`](diff.md) | - | Compare two envs (Python, packages, metadata) |
 | [`scuv migrate`](migrate.md) | - | Migrate from pyenv/conda/venvwrapper |
 | [`scuv gc`](gc.md) | - | Garbage-collect orphan virtualenvs |
 | [`scuv prune`](prune.md) | - | Prune the uv cache |
@@ -49,11 +50,11 @@ Available for all commands:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `SCUV_HOME` | Base directory for scuv | `~/.scuv` |
-| `SCUV_NO_AUTO` | Disable auto-activation | (unset) |
+| `SCUV_NO_AUTO` | Read at `scuv init`: stops automatic activation at startup and on directory change | (unset) |
 | `SCUV_LANG` | Display language (en, ko, ja, pt-BR, es) | System locale |
 | `NO_COLOR` | Disable colored output when set to any non-empty value (an explicit `--color always` still colors) | (unset) |
 | `SCUV_VERSION` | Shell-session override; highest-priority version selector (set by `scuv shell`) | (unset) |
-| `SCUV_ACTIVE` | Name of the currently active environment (set by the activation script; read by `status`/`which`/`run`) | (unset) |
+| `SCUV_ACTIVE` | Name of the currently active environment (set by the activation script; and by `run`; read by `list`, `info`, `status` and `which`) | (unset) |
 | `SCUV_RESOLVE_MAX_DEPTH` | Caps the parent-directory walk when resolving `.scuv-version` (0 = current dir only; unset = unlimited) | (unset) |
 
 ## Directory Layout

@@ -16,6 +16,8 @@ mod support;
 
 mod color;
 mod dispatch;
+#[cfg(unix)]
+mod doctor;
 mod errors;
 mod general;
 mod list;

@@ -12,6 +12,8 @@ mod virtualenv;
 #[cfg(test)]
 mod test_support;
 
+pub(crate) use uv::apply_uv_install;
+
 use super::types::Check;
 
 /// The default set of checks, in display order. Single place to register a check.

@@ -52,8 +52,8 @@ change is detected cleanly rather than silently mis-parsed.
 Field notes:
 - `environment.python` is the version recorded in the env's metadata, which
   comes from `version_info` in the env's `pyvenv.cfg`. Current uv writes the
-  minor version there (`3.12`); envs made with `--python-path` record the
-  interpreter's full version (e.g. `3.14.8`).
+  minor version there (`3.12`); envs made with `--python-path` pointing at an
+  interpreter uv does not manage record its full version (e.g. `3.14.8`).
 - `environment.created_at` is RFC 3339 and may be absent for hand-authored or
   pre-metadata exports.
 - `packages` is what `uv pip list` reports for the env — versions are pinned

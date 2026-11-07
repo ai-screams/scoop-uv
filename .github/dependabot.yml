@@ -30,6 +30,14 @@ updates:
       # permanent exclusion -- 4.x carries real changes we will eventually want.
       - dependency-name: "serial_test"
         versions: [">=4.0.0"]
+      # serde-saphyr is a dev-dependency only so the locale-parity test parses
+      # app.yml with the same YAML parser rust-i18n uses at build time (see the
+      # comment in Cargo.toml). rust-i18n-support 4.2.4 still requires ^1.2, so
+      # a 2.x bump would put two parsers in the lock and the test would no longer
+      # read the file the way the build does. Drop this entry when rust-i18n
+      # moves to serde-saphyr 2.
+      - dependency-name: "serde-saphyr"
+        update-types: ["version-update:semver-major"]
     groups:
       # Group all Rust dependencies into a single PR
       rust-dependencies:

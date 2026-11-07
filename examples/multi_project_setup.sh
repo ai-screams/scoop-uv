@@ -87,14 +87,16 @@ EOF
 fi
 echo
 
-# 4. Demonstrate auto-activation
-echo "4. Testing auto-activation..."
+# 4. Use each project's environment
+# In an interactive shell set up with `scuv init`, entering a project directory
+# activates its .scuv-version on the next prompt. A script has no prompt, so
+# each block below activates explicitly in a subshell.
+echo "4. Using each project's environment..."
 echo
 
 echo "   Switching to legacy-api:"
 cd ~/Projects/legacy-api
-eval "$(scuv init bash)"  # Re-init to trigger auto-activation
-echo "   Active: $(cat .scuv-version)"
+echo "   Configured: $(cat .scuv-version)"
 (
     eval "$(scuv shell legacy-api)"
     echo "   Python: $(python --version)"
@@ -104,7 +106,7 @@ echo
 
 echo "   Switching to current-webapp:"
 cd ~/Projects/current-webapp
-echo "   Active: $(cat .scuv-version)"
+echo "   Configured: $(cat .scuv-version)"
 (
     eval "$(scuv shell current-webapp)"
     echo "   Python: $(python --version)"
@@ -114,7 +116,7 @@ echo
 
 echo "   Switching to next-gen:"
 cd ~/Projects/next-gen
-echo "   Active: $(cat .scuv-version)"
+echo "   Configured: $(cat .scuv-version)"
 (
     eval "$(scuv shell next-gen)"
     echo "   Python: $(python --version)"

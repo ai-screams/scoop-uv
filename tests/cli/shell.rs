@@ -842,3 +842,281 @@ fn test_shell_fish_output_format() {
         .stdout(predicate::str::contains("set -gx SCUV_VERSION"))
         .stdout(predicate::str::contains("set -gx VIRTUAL_ENV"));
 }
+
+/// `SCUV_NO_AUTO` turns off automatic activation the same way in all four
+/// shells: no activation when the init script is sourced, none after `cd`
+/// into a project. An empty value counts as unset. Each shell is skipped when
+/// missing (see `find_shell`).
+///
+/// Fails if a shell still runs the startup hook (the stale activation is
+/// cleared), still registers the directory/prompt hook (the project env
+/// activates after `cd`), or treats an empty value as set.
+#[cfg(unix)]
+#[rstest::rstest]
+#[case::bash("bash")]
+#[case::zsh("zsh")]
+#[case::fish("fish")]
+#[case::pwsh("pwsh")]
+fn scuv_no_auto_turns_off_startup_and_hook(#[case] shell: &str) {
+    let Some(binary) = find_shell(shell) else {
+        eprintln!("skipping: no {shell} binary found");
+        return;
+    };
+    let (fixture, fake_uv) = fixture_with_data_hub();
+    let project = fixture.temp_dir.path().join("proj");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::write(project.join(".scuv-version"), "data-hub\n").unwrap();
+
+    // `cd` fires zsh's chpwd and fish's PWD handler; bash and PowerShell
+    // hook the prompt, so the script calls it the way a prompt would.
+    let (args, script): (&[&str], &str) = match shell {
+        "bash" => (
+            &["-c"],
+            concat!(
+                "eval \"$(command scuv init bash)\"; echo \"init=[$SCUV_ACTIVE]\"; ",
+                "cd proj; eval \"$PROMPT_COMMAND\"; echo \"cd=[$SCUV_ACTIVE]\"",
+            ),
+        ),
+        "zsh" => (
+            &["-f", "-c"],
+            concat!(
+                "eval \"$(command scuv init zsh)\"; echo \"init=[$SCUV_ACTIVE]\"; ",
+                "cd proj; echo \"cd=[$SCUV_ACTIVE]\"",
+            ),
+        ),
+        "fish" => (
+            &["-c"],
+            concat!(
+                "command scuv init fish | source; echo \"init=[$SCUV_ACTIVE]\"; ",
+                "cd proj; echo \"cd=[$SCUV_ACTIVE]\"",
+            ),
+        ),
+        _ => (
+            &["-NoProfile", "-NonInteractive", "-Command"],
+            concat!(
+                "Invoke-Expression (& scuv init powershell | Out-String)\n",
+                "\"init=[$env:SCUV_ACTIVE]\"\n",
+                "Set-Location proj; prompt | Out-Null\n",
+                "\"cd=[$env:SCUV_ACTIVE]\"\n",
+            ),
+        ),
+    };
+    let config_home = fixture.temp_dir.path().join("xdg-config");
+    std::fs::create_dir_all(&config_home).unwrap();
+
+    for (no_auto, expected) in [
+        ("1", ["init=[stale]", "cd=[stale]"]),
+        ("", ["init=[]", "cd=[data-hub]"]),
+    ] {
+        let output = std::process::Command::new(&binary)
+            .args(args)
+            .arg(script)
+            .env("HOME", fixture.temp_dir.path())
+            .env("XDG_CONFIG_HOME", &config_home)
+            .env("SCUV_HOME", &fixture.scoop_home)
+            .env("SCUV_LANG", "en")
+            .env("PATH", shell_test_path(&fake_uv))
+            .env("SCUV_NO_AUTO", no_auto)
+            .env_remove("SCUV_VERSION")
+            .env_remove("PROMPT_COMMAND")
+            .env_remove("BASH_ENV")
+            .env_remove("_SCUV_OLD_PATH")
+            .env_remove("_SCUV_OLD_PYTHONHOME")
+            .env("SCUV_ACTIVE", "stale")
+            .env("VIRTUAL_ENV", "/stale")
+            .current_dir(fixture.temp_dir.path())
+            .output()
+            .expect("shell must run");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        for line in expected {
+            assert!(
+                stdout.contains(line),
+                "{shell} with SCUV_NO_AUTO={no_auto:?}: missing {line:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+            );
+        }
+    }
+}
+
+/// Sourcing the init script again after setting `SCUV_NO_AUTO` takes out the
+/// hook the first sourcing added (the usual `source ~/.zshrc` after editing
+/// it), and sourcing twice without it leaves one. The hook is replaced by a
+/// counter after each sourcing, so the test counts real calls. bash also
+/// starts from a PROMPT_COMMAND of its own and gets a command another tool
+/// prepends later; both must stay exactly as they were.
+/// Each shell is skipped when missing.
+///
+/// Fails if two sourcings call the hook twice per prompt or `cd`, if the
+/// sourcing with `SCUV_NO_AUTO=1` leaves it registered, or if bash drops or
+/// rewrites the other command.
+#[cfg(unix)]
+#[rstest::rstest]
+#[case::bash("bash")]
+#[case::zsh("zsh")]
+#[case::fish("fish")]
+#[case::pwsh("pwsh")]
+fn sourcing_again_with_scuv_no_auto_removes_the_hook(#[case] shell: &str) {
+    let Some(binary) = find_shell(shell) else {
+        eprintln!("skipping: no {shell} binary found");
+        return;
+    };
+    let (fixture, fake_uv) = fixture_with_data_hub();
+    std::fs::create_dir_all(fixture.temp_dir.path().join("proj")).unwrap();
+
+    let (args, script): (&[&str], &str) = match shell {
+        "bash" => (
+            &["-c"],
+            concat!(
+                // A prompt command was there before scuv (one that names
+                // the hook in a quoted argument), and another tool
+                // prepends one after it: scuv's entry ends up in the middle.
+                "my_scuv_hook() { :; }; other() { :; }; PROMPT_COMMAND=\"my_scuv_hook 'a _scuv_hook;b'\"; ",
+                "eval \"$(command scuv init bash)\"; PROMPT_COMMAND=\"other;$PROMPT_COMMAND\"; ",
+                "eval \"$(command scuv init bash)\"; ",
+                // bash's `_scuv_hook` is the on/off switch; count the work.
+                "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"first=[$n]\"; ",
+                "export SCUV_NO_AUTO=1; eval \"$(command scuv init bash)\"; ",
+                "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"second=[$n]\"; ",
+                "echo \"pc=[$PROMPT_COMMAND]\"",
+            ),
+        ),
+        "zsh" => (
+            &["-f", "-c"],
+            concat!(
+                "eval \"$(command scuv init zsh)\"; eval \"$(command scuv init zsh)\"; ",
+                "n=0; _scuv_hook() { n=$((n+1)); }; cd proj; cd ..; echo \"first=[$((n/2))]\"; ",
+                "export SCUV_NO_AUTO=1; eval \"$(command scuv init zsh)\"; ",
+                "n=0; _scuv_hook() { n=$((n+1)); }; cd proj; echo \"second=[$n]\"",
+            ),
+        ),
+        "fish" => (
+            &["-c"],
+            concat!(
+                "command scuv init fish | source; command scuv init fish | source; ",
+                "set -g n 0; function _scuv_hook; set -g n (math $n + 1); end; ",
+                "cd proj; cd ..; echo \"first=[\"(math $n / 2)\"]\"; ",
+                "set -gx SCUV_NO_AUTO 1; command scuv init fish | source; ",
+                "set -g n 0; function _scuv_hook; set -g n (math $n + 1); end; ",
+                "cd proj; echo \"second=[$n]\"",
+            ),
+        ),
+        _ => (
+            &["-NoProfile", "-NonInteractive", "-Command"],
+            concat!(
+                "Invoke-Expression (& scuv init powershell | Out-String)\n",
+                "Invoke-Expression (& scuv init powershell | Out-String)\n",
+                "$global:n = 0; function global:_scuv_hook { $global:n++ }\n",
+                "prompt | Out-Null; \"first=[$global:n]\"\n",
+                "$env:SCUV_NO_AUTO = '1'\n",
+                "Invoke-Expression (& scuv init powershell | Out-String)\n",
+                "$global:n = 0; function global:_scuv_hook { $global:n++ }\n",
+                "prompt | Out-Null; \"second=[$global:n]\"\n",
+            ),
+        ),
+    };
+    let config_home = fixture.temp_dir.path().join("xdg-config");
+    std::fs::create_dir_all(&config_home).unwrap();
+    let output = std::process::Command::new(&binary)
+        .args(args)
+        .arg(script)
+        .env("HOME", fixture.temp_dir.path())
+        .env("XDG_CONFIG_HOME", &config_home)
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("SCUV_LANG", "en")
+        .env("PATH", shell_test_path(&fake_uv))
+        .env_remove("SCUV_NO_AUTO")
+        .env_remove("SCUV_VERSION")
+        .env_remove("PROMPT_COMMAND")
+        .env_remove("BASH_ENV")
+        .env_remove("_SCUV_OLD_PATH")
+        .env_remove("_SCUV_OLD_PYTHONHOME")
+        .env_remove("SCUV_ACTIVE")
+        .env_remove("VIRTUAL_ENV")
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("shell must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let mut expected = vec!["first=[1]", "second=[0]"];
+    if shell == "bash" {
+        // Nothing but scuv's own entry was ever added, and nothing else
+        // changed: the quoted argument survives.
+        expected.push("pc=[other;_scuv_hook;my_scuv_hook 'a _scuv_hook;b']");
+    }
+    for line in expected {
+        assert!(
+            stdout.contains(line),
+            "{shell}: missing {line:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        );
+    }
+}
+
+/// bash cases around an existing PROMPT_COMMAND. Each script prints
+/// `calls=[N]`, how often one prompt runs the activation work.
+///
+/// - `legacy`: a shell set up by scuv 0.18.1 or older already has
+///   `_scuv_hook` in PROMPT_COMMAND; sourcing the new script must not add a
+///   second one, and with SCUV_NO_AUTO=1 that old entry must stop working.
+/// - `nounset`: `set -u` shells source the script and toggle it without an
+///   unbound-variable error.
+/// - `inherited`: a child bash that inherits the exported PROMPT_COMMAND
+///   (scuv's entry included) and sets its own before sourcing gets one call.
+///
+/// Fails if the legacy entry is duplicated or ignores SCUV_NO_AUTO, if the
+/// script reads an unset variable, or if inherited state blocks or doubles
+/// the registration.
+#[cfg(unix)]
+#[rstest::rstest]
+#[case::legacy(concat!(
+    "PROMPT_COMMAND='other;_scuv_hook'; ",
+    "eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; other() { :; }; eval \"$PROMPT_COMMAND\"; echo \"on calls=[$n]\"; ",
+    "export SCUV_NO_AUTO=1; eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"off calls=[$n]\"",
+), &["on calls=[1]", "off calls=[0]"])]
+#[case::nounset(concat!(
+    "set -u; unset SCUV_NO_AUTO; eval \"$(command scuv init bash)\"; ",
+    "export SCUV_NO_AUTO=1; eval \"$(command scuv init bash)\"; ",
+    "export SCUV_NO_AUTO=; eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"on calls=[$n]\"; ",
+    "export SCUV_NO_AUTO=1; eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"off calls=[$n]\"",
+), &["on calls=[1]", "off calls=[0]"])]
+#[case::inherited(concat!(
+    "eval \"$(command scuv init bash)\"; export PROMPT_COMMAND; set -a; ",
+    "bash -c '",
+    "PROMPT_COMMAND=\":;$PROMPT_COMMAND\"; eval \"$(command scuv init bash)\"; ",
+    "n=0; _scuv_auto_activate() { n=$((n+1)); }; eval \"$PROMPT_COMMAND\"; echo \"child calls=[$n]\"'",
+), &["child calls=[1]"])]
+fn bash_prompt_command_registration(#[case] script: &str, #[case] expected: &[&str]) {
+    let Some(bash) = find_shell("bash") else {
+        eprintln!("skipping: no bash binary found");
+        return;
+    };
+    let (fixture, fake_uv) = fixture_with_data_hub();
+    let output = std::process::Command::new(bash)
+        .args(["-c", script])
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_HOME", &fixture.scoop_home)
+        .env("SCUV_LANG", "en")
+        .env("PATH", shell_test_path(&fake_uv))
+        // The hook body reads these; set them so `set -u` only tests the
+        // init script's own reads (`system` with nothing active is a no-op).
+        .env("SCUV_VERSION", "system")
+        .env("SCUV_ACTIVE", "")
+        .env_remove("SCUV_NO_AUTO")
+        .env_remove("PROMPT_COMMAND")
+        .env_remove("BASH_ENV")
+        .env_remove("_scuv_auto")
+        .current_dir(fixture.temp_dir.path())
+        .output()
+        .expect("bash must run");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    for line in expected {
+        assert!(
+            stdout.contains(line),
+            "missing {line:?}.\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        );
+    }
+}

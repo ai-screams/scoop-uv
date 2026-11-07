@@ -348,8 +348,8 @@ fn test_error_suggestions_provide_hints() {
     let err = ScoopError::UvNotFound;
     let suggestion = err.suggestion_in("en").expect("should have suggestion");
     assert!(
-        suggestion.contains("curl") && suggestion.contains("astral.sh"),
-        "UvNotFound suggestion should include install command"
+        suggestion.contains("scuv doctor --fix") && suggestion.contains("astral.sh"),
+        "UvNotFound suggestion should include how to install"
     );
 
     // PythonNotInstalled suggestion should suggest install command
@@ -801,7 +801,7 @@ fn test_suggestion_uv_not_found() {
     let err = ScoopError::UvNotFound;
     let suggestion = err.suggestion_in("en").unwrap();
     assert!(suggestion.starts_with("→"));
-    assert!(suggestion.contains("curl"));
+    assert!(suggestion.contains("scuv doctor --fix"));
     assert!(suggestion.contains("astral.sh"));
 }
 

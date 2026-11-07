@@ -9,8 +9,10 @@ use crate::paths;
 
 use super::source::EnvironmentStatus;
 
-/// EOL Python minor version threshold (3.8 and below are EOL as of 2024)
-const EOL_PYTHON_MINOR: u32 = 8;
+/// Newest Python 3 minor that has reached end of life: 3.10, on 2026-10-01
+/// (python.org release cycle; 3.9 ended 2025-10-31). Raise it when the next
+/// minor ends: 3.11 is due in 2027-10.
+const EOL_PYTHON_MINOR: u32 = 10;
 
 /// Calculate directory size in bytes.
 ///
@@ -90,7 +92,7 @@ pub fn check_name_conflict(name: &str) -> Option<PathBuf> {
 /// # Status Priority
 ///
 /// 1. Name conflict (existing scuv environment)
-/// 2. Python EOL (3.8 and below, or Python 2.x)
+/// 2. Python EOL (3.10 and below, or Python 2.x)
 /// 3. Ready to migrate
 ///
 /// # Examples
@@ -134,8 +136,10 @@ pub fn determine_status(name: &str, python_version: &str) -> EnvironmentStatus {
     EnvironmentStatus::Ready
 }
 
-/// Whether `python_version` is end-of-life: Python 2.x, or 3.8 and earlier
-/// (as of 2024). A version that does not parse is not called EOL.
+/// Whether `python_version` is end-of-life: Python 2.x, or 3.10 and earlier
+/// (see [`EOL_PYTHON_MINOR`]). A version that does not parse is not called
+/// EOL. Only the number is checked, so PyPy and other implementations get
+/// CPython's schedule.
 pub(crate) fn is_python_eol(python_version: &str) -> bool {
     let major_minor: Vec<&str> = python_version.split('.').collect();
     if major_minor.len() >= 2
@@ -161,6 +165,17 @@ mod tests {
     fn test_determine_status_eol_python38() {
         let status = determine_status("nonexistent_test_env_xyz", "3.8.0");
         assert!(matches!(status, EnvironmentStatus::PythonEol { .. }));
+    }
+
+    // The two minors that ended after the 2024 threshold: 3.9 (2025-10-31)
+    // and 3.10 (2026-10-01). 3.11 still gets security fixes until 2027-10.
+    #[rstest::rstest]
+    #[case::py39("3.9.18", true)]
+    #[case::py310("3.10.14", true)]
+    #[case::py310_minor_only("3.10", true)]
+    #[case::py311("3.11.0", false)]
+    fn is_python_eol_tracks_the_cpython_schedule(#[case] version: &str, #[case] eol: bool) {
+        assert_eq!(is_python_eol(version), eol);
     }
 
     #[test]

@@ -102,8 +102,11 @@ scuv diff baseline production --strict
 
 ## JSON output
 
-`--json` emits one envelope to stdout. Success and failure envelopes
-share the same `data` shape; only the top-level wrapper differs.
+`--json` emits one envelope to stdout. A completed comparison and the
+`--strict` failure (`DIFF_MISMATCH`) share the same `data` shape; only
+the top-level wrapper differs. An error that stops the comparison (an
+env that does not exist, unreadable metadata) prints the generic error
+envelope instead: `status`, `command` and `error`, with no `data`.
 
 ### Success envelope (default exit 0)
 
@@ -172,9 +175,11 @@ sides as `Option<T>`:
 | `"x"`      | `null`     | `true`    |
 | `null`     | `null`     | `false`   |
 
-The `null` side means **the value is not observable on that side** —
-regardless of whether the metadata file was missing, the field was
-absent, or the field was present-as-null in the JSON. Diff intentionally
+The `null` side means **the value is not observable on that side**:
+the metadata file was missing, or an optional field (`last_used`,
+`uv_version`) was absent or `null`. A metadata file missing a required
+field (`name`, `python_version`, `created_at`, `created_by`) is invalid,
+and the command fails instead. Diff intentionally
 does not surface the cause; if you need to know why, run `scuv info`
 on the env directly. (The `data.packages` shape uses non-nullable
 inner objects because pip never emits a "package present but no

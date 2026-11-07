@@ -20,6 +20,10 @@ scuv list [options]
 | `--bare` | Output names only (for scripting); hidden from `--help` |
 | `--json` | Output as JSON |
 
+`--pythons` shows what `uv python list` reports. uv 0.12.11 and later leave out an
+interpreter they cannot query and print a `warning:` line instead; scuv passes those lines on
+to stderr, except under `--quiet` or `--json`.
+
 ## Sort
 
 `--sort` reorders the output without changing what's shown:
@@ -146,7 +150,7 @@ scuv uninstall 3.12 --cascade
 
 ## Empty Results
 
-- If no Python versions are installed, `scuv list --pythons` shows no entries.
+- If no Python versions are installed, `scuv list --pythons` prints `No Python versions installed` and a hint to stderr (nothing with `--bare`).
 - If no environments exist, `scuv list` still shows the `system` row when
   a Python is on `PATH`. Only when there is none either does it print
   `No environments yet` and a `scuv create` hint (to stderr).

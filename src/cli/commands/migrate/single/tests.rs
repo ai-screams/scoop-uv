@@ -384,15 +384,15 @@ fn migrate_execute_options_clone() {
 // EOL Version Handling Tests
 // =========================================================================
 
-// Note: Testing actual EOL handling requires a mock environment with
-// an EOL Python version. The discovery logic marks Python 2.x as EOL.
-
-#[test]
+// Discovery classifies the mock env from its pyvenv.cfg version, then
+// `migrate @env` refuses an EOL one before touching uv.
+#[rstest::rstest]
+#[case::py27("py27_env", "2.7.18")]
+#[case::py310("py310_env", "3.10.14")]
 #[serial]
-fn migrate_environment_eol_without_force_fails() {
+fn migrate_environment_eol_without_force_fails(#[case] name: &str, #[case] version: &str) {
     with_full_migrate_env(|_scoop, pyenv| {
-        // Create environment with Python 2.7 (EOL)
-        create_mock_pyenv_env(pyenv.path(), "py27_env", "2.7.18");
+        create_mock_pyenv_env(pyenv.path(), name, version);
 
         let output = Output::new(0, false, crate::output::Colors::NONE, false);
         let opts = MigrateExecuteOptions {
@@ -401,9 +401,11 @@ fn migrate_environment_eol_without_force_fails() {
             ..Default::default()
         };
 
-        let result = migrate_environment(&output, "py27_env", &opts);
-        // Should fail because Python 2.7 is EOL
-        assert!(result.is_err());
+        let result = migrate_environment(&output, name, &opts);
+        assert!(
+            matches!(&result, Err(ScoopError::MigrationFailed { reason }) if reason.contains("is EOL")),
+            "{result:?}"
+        );
     });
 }
 

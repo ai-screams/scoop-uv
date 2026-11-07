@@ -52,7 +52,7 @@ Verify: `scuv --version`
 
 | Command | Description |
 |---------|-------------|
-| `scuv create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scuv create <name> [version]` | Create virtualenv (default: any Python 3, an installed one first) |
 | `scuv create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
 | `scuv create <name> <ver> --install-python` | Install Python on demand if missing (v0.11.0) |
 | `scuv use <name>` | Set + activate environment |
@@ -76,7 +76,7 @@ Verify: `scuv --version`
 
 | Command | Description |
 |---------|-------------|
-| `scuv sync` | Reconcile the active env with `.scuv.toml` |
+| `scuv sync` | Create the env named in `.scuv.toml` if missing and install its packages |
 | `scuv export <name>` | Snapshot env as JSON (schema v1) |
 | `scuv import <file>` | Restore env from JSON snapshot; `--name <new>` to rename |
 
@@ -88,7 +88,7 @@ Verify: `scuv --version`
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) — delete unused download/wheel cache entries. |
 | `scuv diff <a> <b>` | Compare two envs (Python version, packages, metadata); `--strict` exits 1 on any difference |
 | `scuv self update` | Update scuv itself from crates.io |
-| `scuv verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scuv.toml` Python matches (skipped if no manifest). Default always exits 0; `--strict` exits 1 on any issue. Pass `NAME` to check a single env. Complements `doctor` (system-level) and `gc` (orphan removal). |
+| `scuv verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scuv.toml` Python matches (skipped if no manifest). Default exits 0 once the report completes; `--strict` exits 1 if any check fails (warnings pass). Pass `NAME` to check a single env. Complements `doctor` (system-level) and `gc` (orphan removal). |
 | `scuv man [DIR]` | Generate man pages from the live `clap::Command` tree. Without `DIR`: print top-level `scuv.1` to stdout (pipe to `man -l -`). With `DIR`: write `scuv.1` + one `scuv-<sub>.1` per visible subcommand for distro packagers. |
 
 ### Python Management
@@ -96,7 +96,7 @@ Verify: `scuv --version`
 | Command | Description |
 |---------|-------------|
 | `scuv install [version]` | Install Python version via uv |
-| `scuv install --stable` | Install oldest supported Python (3.10) |
+| `scuv install --stable` | Install the oldest Python still receiving security fixes (3.11) |
 | `scuv uninstall <version>` | Remove Python version |
 | `scuv uninstall <version> --cascade` | Remove Python version + all environments using it |
 
@@ -175,14 +175,14 @@ src/
 │   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
 ├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
-├── error/         # ScoopError enum (39 variants, i18n Display; code/display/exit/migrate/suggestion)
+├── error/         # ScoopError enum (40 variants, i18n Display; code/display/exit/migrate/suggestion)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 232 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 255 keys
 ```
 
 ### Design Principles
@@ -242,9 +242,9 @@ Without `--cascade`, dependent environments remain and can become broken.
 Use non-global controls:
 
 ```bash
-# Disable auto-activation in current shell only
-export SCUV_NO_AUTO=1
-unset SCUV_NO_AUTO
+# Stop auto-activation in current shell only
+scuv shell system
+scuv shell --unset
 
 # Project-local behavior via .scuv-version
 scuv use system
@@ -319,7 +319,7 @@ The custom interpreter path is persisted in
 4. Default → Bash
 
 `init` and `completions` take the shell as a positional argument (`scuv init zsh`).
-A `--shell` long flag exists only on the hidden `activate` / `deactivate` commands.
+A `--shell` long flag exists on `shell` and on the hidden `activate` / `deactivate` commands.
 
 **Project Manifest (`.scuv.toml`, v0.11.0)**:
 
@@ -328,7 +328,7 @@ scuv discovers a `.scuv.toml` by walking up from cwd. Schema:
 ```toml
 [environment]
 name = "myproject"      # required; matches env-name regex
-python = "3.12"          # required; matches Python version regex
+python = "3.12"          # required; any non-empty Python request uv accepts
 
 [packages]
 default = ["pytest", "black"]   # always installed
@@ -337,7 +337,7 @@ dev     = ["ipython", "debugpy"] # optional named group
 
 - `deny_unknown_fields` is enforced — typos in keys are surfaced.
 - `[packages]` accepts a `default` list and arbitrary named groups (deserialised into a `BTreeMap` for stable iteration).
-- `scuv sync` reconciles the active env: warns and proceeds if the active env's Python version doesn't match `[environment].python` (will not auto-recreate).
+- `scuv sync` works on the env named by `[environment].name`, whichever env is active: it creates that env if missing, and warns and proceeds if an existing env's Python version doesn't match `[environment].python` (will not auto-recreate).
 - `[hooks]` is **not** implemented in v0.11.0 (requires a threat model first).
 
 **One-Shot Execution (`scuv run`, v0.11.0)**:
@@ -417,6 +417,7 @@ pub struct Metadata {
     pub created_by: String,          // "scuv X.Y.Z"
     pub uv_version: Option<String>,
     pub python_path: Option<String>, // Custom Python executable path (if --python-path was used)
+    pub last_used: Option<DateTime<Utc>>,
 }
 
 impl Metadata {
@@ -436,7 +437,7 @@ impl VersionService {
     pub fn set_global(env_name: &str) -> Result<()>;
     pub fn get_local(dir: &Path) -> Option<String>;
     pub fn get_global() -> Option<String>;
-    pub fn resolve(dir: &Path) -> Option<String>;  // local → parent walk → global
+    pub fn resolve(dir: &Path) -> Option<String>;  // SCUV_VERSION → local → parent walk → global
     pub fn resolve_current() -> Option<String>;
     pub fn unset_local(dir: &Path) -> Result<()>;
     pub fn unset_global() -> Result<()>;
@@ -463,7 +464,7 @@ impl Doctor {
 }
 ```
 
-Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck, LegacyCheck
+Built-in checks: UvCheck, HomeCheck, VirtualenvCheck, SymlinkCheck, ShellCheck, VersionCheck, VenvLinkCheck, LegacyCheck
 
 #### UvClient
 
@@ -726,18 +727,27 @@ Success response:
 }
 ```
 
-Error response:
+Under `--json` a failed command prints one error envelope on stdout instead of the error text on stderr;
+the exit code is unchanged. For example `scuv create myenv --json` on an existing env exits 1
+with:
 ```json
 {
   "status": "error",
   "command": "create",
   "error": {
     "code": "ENV_ALREADY_EXISTS",
-    "message": "Virtual environment 'myenv' already exists",
-    "suggestion": "Use a different name or remove the existing environment"
+    "message": "'myenv' already exists",
+    "suggestion": "→ Use --force to overwrite"
   }
 }
 ```
+`message` and `suggestion` follow the display language; `code` is stable. A few commands
+put their own error envelope there instead, with the success `data` alongside:
+`diff --strict --json` (`DIFF_MISMATCH`), `verify --strict --json`, `migrate all --json`
+(`MIGRATE_BATCH_FAILED`) and an incomplete `uninstall --cascade --json`. `doctor --json`
+always prints its report. A command-line parse error happens before any command runs, so
+clap prints it as text and exits 2. Up to scuv 0.18.1 other errors printed as text on
+stderr even with `--json`.
 
 ---
 
@@ -748,7 +758,7 @@ Error response:
 | `SCUV_HOME` | Override home directory (default: `~/.scuv`) |
 | `SCUV_VERSION` | Override version resolution (set by `scuv shell`) |
 | `SCUV_LANG` | Override language |
-| `SCUV_NO_AUTO` | Disable auto-activation when set to `1` |
+| `SCUV_NO_AUTO` | Read at `scuv init` when non-empty: stops automatic activation at startup and on directory change |
 | `SCUV_ACTIVE` | Set when a virtualenv is active (internal) |
 | `SCUV_RESOLVE_MAX_DEPTH` | Limit parent directory traversal (for NFS/SSHFS) |
 | `NO_COLOR` | Disable colored output when set to any non-empty value (standard) |
@@ -768,7 +778,7 @@ Error response:
 ### Adding a New Health Check
 
 1. Implement the `Check` trait in `core/doctor/checks/`
-2. Register in `Doctor::new()` checks vector
+2. Register it in `default_checks()` in `core/doctor/checks/mod.rs`
 
 ### Adding a New Migration Source
 
@@ -778,7 +788,7 @@ Error response:
 
 ### Adding Translations
 
-1. Add keys to `locales/app.yml` under all 4 language sections
+1. Add keys to `locales/app.yml` under all 5 language sections
 2. Use via `t!("key", arg = value)` macro
 
 ---

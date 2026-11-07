@@ -89,12 +89,23 @@ if FIX:
     #
     # Obsolete entries (`#~`) are left alone -- they describe text that no
     # longer exists in the source, so rewriting them would invent history.
+    #
+    # Only entries whose `#:` reference points at a page fixed above are
+    # touched. Other pages mention past releases on purpose ("Up to scuv
+    # 0.18.1 ..."); the Markdown side of those is never rewritten, so changing
+    # their msgid would strand the entry and fail the ko.po round trip.
+    sample_pages = ("src/installation.md:", "src/api.md:")
     for rel in PO_FILES:
         body = read(rel)
         blocks = body.split("\n\n")
         touched = False
         for i, block in enumerate(blocks):
             if block.startswith("#~"):
+                continue
+            refs = " ".join(
+                line for line in block.splitlines() if line.startswith("#:")
+            )
+            if not any(f" {page}" in f" {refs}" for page in sample_pages):
                 continue
             msgid_versions = {
                 m.group(1)

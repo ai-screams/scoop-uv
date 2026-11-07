@@ -35,7 +35,7 @@ An env is considered **healthy** when every check is Pass or Skip.
 
 ## Exit codes
 
-By default, `verify` always exits 0 — even when checks fail. This matches `doctor`'s philosophy: surfacing information shouldn't break CI just because someone wanted to look at the report. Pass `--strict` to opt into `exit 1` when any env has at least one **Fail** check (Warn alone does not trigger the non-zero exit).
+By default, `verify` exits 0 whenever it could run the checks, even when some fail: surfacing information shouldn't break CI just because someone wanted to look at the report. `doctor` differs here and exits `1` or `2` on findings. A named env that does not exist is an error and exits 1. Pass `--strict` to opt into `exit 1` when any env has at least one **Fail** check (Warn alone does not trigger the non-zero exit).
 
 ## verify vs doctor vs gc
 

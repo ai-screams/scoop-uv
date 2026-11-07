@@ -59,7 +59,7 @@ jobs:
       - name: Verify scuv installation
         run: |
           scuv --version
-          scuv doctor
+          scuv doctor || true  # exits 2 here: a runner has no shell hook
 
       # 7. Create test environment
       - name: Create test environment
@@ -91,7 +91,7 @@ jobs:
       # 11. Clean up (optional, runner is ephemeral anyway)
       - name: Clean up
         if: always()
-        run: scuv remove test-env
+        run: scuv remove test-env --force
 
   lint:
     name: Lint and format check

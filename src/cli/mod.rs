@@ -90,6 +90,51 @@ impl Commands {
         }
     }
 
+    /// The `command` a JSON envelope names for this command, matching what
+    /// each command passes to `json_success` (`migrate @env` is `migrate`).
+    ///
+    /// Exhaustive like [`Commands::json`]; commands without `--json` get
+    /// their own name and never use it.
+    pub fn json_name(&self) -> &'static str {
+        match self {
+            Self::List { .. } => "list",
+            Self::Use { .. } => "use",
+            Self::Create { .. } => "create",
+            Self::Remove { .. } => "remove",
+            Self::Install { .. } => "install",
+            Self::Uninstall { .. } => "uninstall",
+            Self::Doctor { .. } => "doctor",
+            Self::Info { .. } => "info",
+            Self::Lang { .. } => "lang",
+            Self::Status { .. } => "status",
+            Self::Clone { .. } => "clone",
+            Self::Import { .. } => "import",
+            Self::Sync { .. } => "sync",
+            Self::Which { .. } => "which",
+            Self::Prune { .. } => "prune",
+            Self::Gc { .. } => "gc",
+            Self::Man { .. } => "man",
+            Self::Verify { .. } => "verify",
+            Self::Diff { .. } => "diff",
+            Self::Migrate { command } => match command {
+                Some(MigrateCommand::List { .. }) => "migrate list",
+                Some(MigrateCommand::All { .. }) => "migrate all",
+                Some(MigrateCommand::Env { .. }) | None => "migrate",
+            },
+            Self::Self_ {
+                command: SelfCommand::Update { .. },
+            } => "self update",
+            Self::Init { .. } => "init",
+            Self::Completions { .. } => "completions",
+            Self::Resolve => "resolve",
+            Self::Activate { .. } => "activate",
+            Self::Deactivate { .. } => "deactivate",
+            Self::Shell { .. } => "shell",
+            Self::Run { .. } => "run",
+            Self::Export { .. } => "export",
+        }
+    }
+
     /// Verbosity requested with `-v` (only `doctor` has it).
     pub fn verbosity(&self) -> u8 {
         match self {
@@ -374,11 +419,11 @@ pub enum Commands {
         #[arg(name = "VERSION")]
         python_version: Option<String>,
 
-        /// Install latest stable Python (default if no version specified)
+        /// Ask uv for Python 3 (default); a uv-managed 3.x already satisfies it
         #[arg(long)]
         latest: bool,
 
-        /// Install oldest fully-supported Python (more stable)
+        /// Install the oldest Python still receiving security fixes
         #[arg(long)]
         stable: bool,
 
@@ -416,7 +461,7 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
 
-        /// Automatically fix issues where possible
+        /// Fix issues where possible; installing a missing uv asks first
         #[arg(long)]
         fix: bool,
     },

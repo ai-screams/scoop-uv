@@ -55,7 +55,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv list --pythons` | List installed Python versions |
 | `scuv list --python-version <VER>` | Filter environments by Python version |
 | `scuv list --sort <name|created|last-used>` | Sort order; None-timestamps sort last with name tie-break (0.13.0) |
-| `scuv create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scuv create <name> [version]` | Create virtualenv (default: any Python 3, an installed one first) |
 | `scuv create <name> --python-path <PATH>` | Create virtualenv with specific Python executable |
 | `scuv create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
 | `scuv use <name>` | Set + activate environment |
@@ -72,7 +72,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since 0.13.0 |
 | `scuv which <exe>` | Resolve an executable path inside the active env (v0.11.0) |
 | `scuv run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
-| `scuv sync` | Reconcile the active env with `.scuv.toml` manifest (v0.11.0) |
+| `scuv sync` | Create the env named in `.scuv.toml` if missing and install its packages (v0.11.0) |
 | `scuv export <name>` | Snapshot env as JSON (schema v1) (v0.11.0) |
 | `scuv import <file>` | Restore env from JSON snapshot; `--name <new>` to rename (v0.11.0) |
 | `scuv doctor` | Health check |
@@ -89,7 +89,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
 | `scuv diff <a> <b>` | Compare two envs (Python version, packages, metadata); `--strict` exits 1 on any difference |
 | `scuv self update` | Update scuv itself from crates.io |
-| `scuv verify [NAME]` | Per-env health diagnosis (6 checks). Default always exits 0; `--strict` exits 1 on any issue |
+| `scuv verify [NAME]` | Per-env health diagnosis (6 checks). Default exits 0 once the report completes; `--strict` exits 1 if any check fails (warnings pass) |
 | `scuv man [DIR]` | Generate man pages — stdout for top-level, or write `scuv.1` + `scuv-<sub>.1` per subcommand into DIR |
 
 Most commands support `--json` for machine-readable output.
@@ -142,8 +142,8 @@ Without `--cascade`, dependent environments are not removed and may break.
 ### Project-Scoped Auto-Activation Control
 
 ```bash
-export SCUV_NO_AUTO=1
-unset SCUV_NO_AUTO
+scuv shell system
+scuv shell --unset
 
 scuv use system
 scuv use myproject
@@ -197,7 +197,7 @@ Priority (first match wins):
 scuv outputs shell code to stdout; the shell wrapper `eval`s it (pyenv pattern).
 Auto-activation triggers on directory change when `.scuv-version` is present.
 
-Disable auto-activation: `export SCUV_NO_AUTO=1`
+Stop automatic activation: set `SCUV_NO_AUTO=1` before `scuv init` runs (read once at init; stops both the startup and the directory-change activation)
 
 ### Environment Name Rules
 

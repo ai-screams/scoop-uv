@@ -37,19 +37,24 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: false
 
       # Own key for the same reason as coverage.yml: this workflow's `env`
       # differs from ci.yml's, so `stable-ci` was never actually shared with
-      # it. This job runs on every PR, so it is the one that keeps the entry
-      # fresh — the weekly full job below only reads it.
+      # it. Nothing writes this key today: this job runs only on pull
+      # requests, so its main-only save never fires, and the full job below
+      # does not save. A writer would buy little: cargo-mutants first copies
+      # the tree without the checkout's target/ and builds the baseline
+      # there (later mutants reuse that copy's build), so a restored target/
+      # goes unused and only the registry download would be saved. The
+      # baseline build takes about 65s (full run, 2026-11-02); PR #237's 55
+      # mutants took 14 minutes.
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "mutants"
-          # Only main writes; a PR run restores this key but leaves no copy behind
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install cargo-mutants
@@ -113,13 +118,11 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.3.0
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: false
 
-      # Read-only consumer of the key the incremental job maintains: this runs
-      # weekly, so writing from here would mostly serve to evict a fresher
-      # entry.
+      # Restore only; see the incremental job for why no job writes this key.
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:

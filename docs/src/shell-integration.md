@@ -1,14 +1,14 @@
 # Shell Integration
 
-scuv uses a shell wrapper pattern (like pyenv) where the CLI outputs shell code that gets evaluated by the shell.
+scuv uses a shell wrapper pattern (like pyenv) where the CLI outputs shell code that gets evaluated by the shell. `scuv use` itself only writes the version file; the wrapper then evaluates `scuv activate` (or `deactivate` for `system`).
 
 ## How It Works
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ User runs   │ --> │ CLI outputs │ --> │ Shell evals │
-│ scuv use   │     │ export ...  │     │ the output  │
-└─────────────┘     └─────────────┘     └─────────────┘
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ User runs    │ --> │ CLI outputs  │ --> │ Shell evals  │
+│ scuv activate│     │ export ...   │     │ the output   │
+└──────────────┘     └──────────────┘     └──────────────┘
 ```
 
 The `scuv` shell function wraps the CLI binary (simplified; the real one also
@@ -93,17 +93,21 @@ autoload -Uz add-zsh-hook
 add-zsh-hook chpwd _scuv_hook
 ```
 
-**Bash**: Uses `PROMPT_COMMAND`
+**Bash**: Uses `PROMPT_COMMAND`, through one entry added the first time and never edited
 
 ```bash
-PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"
+PROMPT_COMMAND="_scuv_hook;$PROMPT_COMMAND"   # _scuv_hook does nothing while auto-activation is off
 ```
 
 **Fish**: Uses `--on-variable PWD` event handler
 
 ```fish
-function _scuv_hook --on-variable PWD
+function _scuv_hook
     # Check for version file and activate/deactivate
+end
+
+function _scuv_on_pwd --on-variable PWD
+    _scuv_hook
 end
 ```
 
@@ -134,24 +138,38 @@ scuv shell system        # Set SCUV_VERSION=system (this terminal only)
 |----------|-------------|---------|
 | `SCUV_HOME` | Base directory | `~/.scuv` |
 | `SCUV_VERSION` | Override version (highest priority) | (unset) |
-| `SCUV_NO_AUTO` | Disable auto-activation | (unset) |
+| `SCUV_NO_AUTO` | Read at `scuv init`; see [Disable Auto-Activation](#disable-auto-activation) | (unset) |
 | `SCUV_ACTIVE` | Currently active environment | (set by scuv) |
 | `SCUV_RESOLVE_MAX_DEPTH` | Limit parent directory traversal | (unlimited) |
 
 ### Disable Auto-Activation
 
+`SCUV_NO_AUTO` is read once, when your shell sources `scuv init`, so set it to a non-empty
+value before the `scuv init` line in your rc file:
+
 ```bash
 export SCUV_NO_AUTO=1
+eval "$(scuv init bash)"
 ```
+
+It turns off both automatic activations in every shell: the one when the shell starts and
+the one when you change directory (bash and PowerShell check on each prompt, zsh and fish
+on each `cd`). An empty value counts as unset. `scuv activate`, `scuv use` and `scuv shell`
+still work.
+
+Changing the variable in a running shell takes effect when the init script is sourced again
+(`source ~/.zshrc`, for example), which also turns off the hook the earlier sourcing added.
+Up to scuv 0.18.1 the variable turned off only one of the two, and which one depended on
+the shell.
 
 ### Temporary and Project-Scoped Control
 
-Disable only in the current shell session (does not affect global settings):
+Stop activation in the current shell session only (does not affect global settings):
 
 ```bash
-export SCUV_NO_AUTO=1
+scuv shell system
 # ...work without auto-activation...
-unset SCUV_NO_AUTO
+scuv shell --unset
 ```
 
 For one project directory, use local version files instead of global settings:

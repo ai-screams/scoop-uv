@@ -56,7 +56,7 @@ migration. Don't skip the `rm` step: a leftover old binary keeps running
 
 ```bash
 scuv --version
-# scuv 0.17.2
+# scuv 0.19.0
 ```
 
 ## Troubleshooting
@@ -84,11 +84,17 @@ scuv requires uv to be installed and available in PATH. Verify:
 uv --version
 ```
 
-If not installed, run:
+If not installed, run `scuv doctor --fix` in a terminal (macOS and Linux). It shows the
+official installer commands and runs them only after you confirm. See
+[`scuv doctor`](commands/doctor.md#installing-uv) for details.
+
+To install uv yourself, run:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
+
+On Windows, follow the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
 
 ## Next Steps
 

@@ -21,7 +21,7 @@ All virtualenvs are stored in `~/.scuv/virtualenvs/`. Override with `SCUV_HOME` 
 | `scuv list` | List virtualenvs (aliases: `ls`) |
 | `scuv list --pythons` | List installed Python versions |
 | `scuv list --sort <name\|created\|last-used>` | Sort order; envs missing the timestamp sort last with name tie-break (0.13.0) |
-| `scuv create <name> [version]` | Create virtualenv (default: latest Python) |
+| `scuv create <name> [version]` | Create virtualenv (default: any Python 3, an installed one first) |
 | `scuv create <name> <ver> --install-python` | Create env; install Python on demand if missing (v0.11.0) |
 | `scuv use <name>` | Set + activate environment |
 | `scuv use <name> --global` | Set as global default |
@@ -36,7 +36,7 @@ All virtualenvs are stored in `~/.scuv/virtualenvs/`. Override with `SCUV_HOME` 
 | `scuv status` | Summarise current state (Active/Configured/System/None) (v0.11.0); includes `Last used:` since 0.13.0 |
 | `scuv which <exe>` | Resolve an executable inside the active env (v0.11.0) |
 | `scuv run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
-| `scuv sync` | Reconcile the active env with `.scuv.toml` manifest (v0.11.0) |
+| `scuv sync` | Create the env named in `.scuv.toml` if missing and install its packages (v0.11.0) |
 | `scuv export <name>` | Snapshot an env as JSON (schema v1) (v0.11.0) |
 | `scuv import <file>` | Restore an env from a JSON snapshot (v0.11.0) |
 | `scuv doctor` | Health check |
@@ -108,8 +108,8 @@ Without `--cascade`, dependent environments are not removed and may become broke
 
 ```bash
 # Current shell only (temporary disable)
-export SCUV_NO_AUTO=1
-unset SCUV_NO_AUTO
+scuv shell system
+scuv shell --unset
 
 # Project-local behavior (writes .scuv-version in current dir)
 scuv use system
@@ -174,7 +174,7 @@ Auto-activation triggers on directory change when `.scuv-version` is present.
 
 Supported shells: bash, zsh, fish, PowerShell (Core 7.x+ and Windows PowerShell 5.1+)
 
-Disable auto-activation: `export SCUV_NO_AUTO=1`
+Stop automatic activation: set `SCUV_NO_AUTO=1` before `scuv init` runs (read once at init; stops both the startup and the directory-change activation)
 
 ### Environment Name Rules
 

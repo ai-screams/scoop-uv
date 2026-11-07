@@ -13,7 +13,7 @@ scuv create <name> [python-version]
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `name` | Yes | - | Name for the new virtualenv |
-| `python-version` | No | `3` (latest) | Python version (e.g., `3.12`, `3.11.8`) |
+| `python-version` | No | `3` (any Python 3; an installed one first) | Python version (e.g., `3.12`, `3.11.8`) |
 
 ## Options
 
@@ -28,7 +28,7 @@ scuv create <name> [python-version]
 
 ```bash
 scuv create myproject 3.12      # Create with Python 3.12
-scuv create webapp              # Create with latest Python
+scuv create webapp              # Create with Python 3 (an installed one first)
 scuv create myenv 3.11 --force  # Overwrite if exists
 
 # Auto-install Python first if the version is missing
@@ -101,8 +101,11 @@ The path must point to a valid, executable Python binary. scuv will:
 2. Auto-detect the Python version from the binary
 3. Store the custom path in the environment's metadata
 
-`scuv info` shows the version detected from that binary; the path itself
-is stored as `python_path` in the env's `.scoop-metadata.json`:
+`scuv info` shows the version uv records in the env's `pyvenv.cfg`: the full
+version for an interpreter uv does not manage (`/usr/bin/python3` → `3.9.6`),
+the minor version for one it does (`3.12`). The version detected from the
+binary is the fallback. The path itself is stored as `python_path` in the
+env's `.scoop-metadata.json`:
 
 ```bash
 scuv info debug-env

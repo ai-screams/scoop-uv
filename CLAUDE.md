@@ -12,10 +12,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Language**: Rust (Edition 2024, MSRV 1.89)
 - **License**: MIT OR Apache-2.0
-- **Version**: scuv 0.17.2 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
-- **Tests**: ~1090 (unit, `tests/cli/` integration, i18n parity, doctests), 0 clippy warnings — counts drift; `cargo test` is the source of truth
+- **Version**: scuv 0.19.0 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
+- **Tests**: lib unit, `tests/cli/` integration, i18n parity and doctests; 0 clippy warnings. `cargo test -- --list` gives the counts
 - **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
-- **CI/CD design**: `docs/src/development/ci-cd.md` documents what each of the 13 workflows guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
+- **CI/CD design**: `docs/src/development/ci-cd.md` documents what each workflow guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
 - **Test tooling**: rstest (table tests), proptest, cargo-mutants (mutation), cargo-fuzz (nightly `fuzz/` workspace); see `.docs/dev/testing-strategy.md`
 - **i18n**: English, Korean, Japanese, Portuguese-BR, Spanish (rust-i18n)
 - **Shells**: bash, zsh, fish, PowerShell
@@ -26,6 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **PowerShell must NEVER define a `scoop` function/alias** (would shadow scoop.sh, the Windows package manager — the reason for the rename). Enforced by `init_script_never_defines_scoop` test.
 - fish init/shell idiom is `scuv init fish | source` — `eval (...)` does NOT work in fish (splits multi-line output). The same holds inside the fish wrapper and hook: `activate`/`deactivate`/`shell` output is piped to `source` with an explicit `--shell fish`, because fish does not export `FISH_VERSION` and `detect_shell` would otherwise print bash syntax. `tests/cli/shell.rs::fish_wrapper_and_hook_source_multiline_scripts` runs the real thing when a `fish` binary is installed; the CI Test and MSRV jobs install one and set `SCUV_REQUIRE_FISH` so a missing fish fails there instead of skipping (coverage and mutants run without fish and skip).
 - bash/zsh/PowerShell wrappers and hooks also name their shell (`--shell bash|zsh|powershell`): detection reads `PSModulePath` before `ZSH_VERSION`, and Windows sets it for every process, Git Bash included. PowerShell evaluates scuv output as `Invoke-Expression (& ... | Out-String)` — without `Out-String` it gets an array of lines and refuses it (the documented profile line too). `tests/cli/shell.rs` runs real bash, zsh and pwsh (`posix_wrappers_and_hook_name_their_shell`, `powershell_wrapper_and_hook_evaluate_multiline_scripts`); CI requires them via `SCUV_REQUIRE_ZSH`/`SCUV_REQUIRE_PWSH`.
+- `SCUV_NO_AUTO` (non-empty, read when the init script is sourced) turns off startup and directory-change activation in all four shells, and sourcing again reconciles the hook. bash never rewrites `PROMPT_COMMAND`: it appends `_scuv_hook` once if absent, and the hook checks `_scuv_auto`, which every source resets. Init scripts must survive `set -u` (`${var:-}`), and shell tests clear inherited `_scuv_*` state.
 - Deliberately KEPT legacy identifiers (on-disk/serialized format compat): `.scoop-metadata.json`, export-schema field `scoop_export_version`. Do not "fix" these.
 
 ## Collaboration Rules (MUST FOLLOW)
@@ -79,11 +80,12 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 - PR CI runs `cargo-mutants --in-diff`: new `Check`-trait impls and thin wrappers need direct dispatch tests or the Mutants gate fails. It runs under nextest, which skips doctests: a mutant only a doctest kills is MISSED, so cover the behaviour with a unit test.
 - `.cargo/mutants.toml` `exclude_re` matches the full mutant description, not the function name — a bare `"foo"` silently drops every mutant in `foo`, including ones the tests kill. Exclude the exact description (`"delete match arm \\[major\\] in foo"`); verify the delta with `cargo mutants --config <alt>.toml --list --file '<glob>'` + `comm`.
 - A green `Mutants (diff)` proves little on a test-only PR — no production lines changed — and `Mutants (full)` is skipped on PRs. Verify mutation claims locally with `cargo mutants --file '<glob>'`.
+- cargo-mutants builds from a copy of the tree without `target/`, so caching `target/` does not speed up the mutants jobs; it saves only the registry download (`ci-cd.md`).
 - `--in-diff` scopes mutants to the *enclosing function*, not the changed lines — touching one line in an untested function surfaces its pre-existing gaps as new failures. Check whether the missed mutant is one your change could have caused before treating it as a regression.
 - A `cfg!(target_os = ...)` inside a match guard or `if` yields a mutant that is equivalent on one OS (CI mutants run on Linux), so `--in-diff` reports it MISSED. Pass the platform in as a `bool` parameter (`rc_files(shell, home, cfg!(target_os = "macos"))`) and test both values.
 - Tests that need `uv` use `FakeUv` (src/test_utils.rs; see `with_fake_uv_home` in gc/tests.rs), which puts a fake `uv` script in front of `PATH`. Keep its script to shell builtins (`printf`/`echo`): if `uv python list` fails, gc falls back to "no Pythons" and a fail-closed test passes vacuously — so also assert the fake's listing is non-empty.
 - To make a directory read fail, put a regular file where the directory should be; `chmod 000` does not stop root, and the test then proves nothing in root CI.
-- `codecov/patch` = base coverage − 5% (codecov.yml); a split/move refactor counts relocated lines as new. Per-file patch misses: `curl -s "https://api.codecov.io/api/v2/github/ai-screams/repos/scoop-uv/compare/?pullid=<n>"` → `.files[].totals.patch`.
+- `codecov/patch` = base coverage − 5% (codecov.yml); a split/move refactor counts relocated lines as new, and every continuation line of a multi-line `assert!` message is an uncovered line (it runs only on failure), so keep assert messages on one line. Per-file patch misses: `curl -s "https://api.codecov.io/api/v2/github/ai-screams/repos/scoop-uv/compare/?pullid=<n>"` → `.files[].totals.patch`.
 
 ## Dependabot & Release Automation
 
@@ -172,9 +174,10 @@ src/
 │   ├── bash.rs, zsh.rs, fish.rs, powershell.rs  # Shell-specific scripts
 │   ├── scripts/   # Wrapper/completion bodies, pulled in with include_str! (listed in Cargo.toml `include`)
 │   └── common.rs  # Shared utilities (version check, 4-shell macros)
-├── uv/            # uv CLI wrapper (client.rs) + version policy (version.rs)
+├── uv/            # uv CLI wrapper (client.rs), version policy (version.rs), `doctor --fix` installer (install.rs)
 ├── output/        # Terminal UI & JSON output
 │   ├── color.rs   # Colors decision, made once in main
+│   ├── json/      # JSON response types (`JsonResponse` envelope)
 │   └── time.rs    # English fuzzy-age formatter for last_used display
 ├── error/         # ScoopError module (code, display, exit codes, migrate, suggestion; i18n Display)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
@@ -205,13 +208,17 @@ Per-module deep dives live in untracked `AGENTS.md` files (src/, src/core/, src/
 
 **Recorded Python versions**: current uv links an env to a minor version and writes `version_info = 3.12` into pyvenv.cfg, which the metadata copies. Never compare a recorded version with `uv python list`'s `3.12.14` by string equality; `gc` uses a component-wise prefix (`gc::scan::version_covers`).
 
+**JSON errors**: under `--json`, `main` prints a failure as an error envelope on stdout. A command that prints its own JSON before failing must go through `output.print_json`, which sets `json_printed()`, so `main` adds nothing.
+
+**uv diagnostics**: warnings a *successful* `uv python list` prints are forwarded to stderr behind `output::diagnostics_allowed()` (set once in `main`, off under `--quiet`/`--json`); a failing uv's stderr becomes the error message instead. Route any new uv stderr passthrough through the same gate.
+
 **Version File Priority**: `SCUV_VERSION` env > `.scuv-version` (local + parent walk) > `~/.scuv/version`
 
 **Shell Type Detection**: Auto-detects via `FISH_VERSION`, `PSModulePath`, `ZSH_VERSION` (in priority order). Override with `--shell` option.
 
 ## CLI Commands
 
-> **Tip:** 19 subcommands take `--json`; `grep -B12 'json: bool' src/cli/mod.rs` lists them. Not on: activate, completions, deactivate, export (already emits JSON), init, migrate (its subcommands have it, the parent doesn't), resolve, run, shell.
+> **Tip:** most subcommands take `--json`, plus `migrate list|all|@env` and `self update`; `grep -B12 'json: bool' src/cli/mod.rs` lists them. Not on: activate, completions, deactivate, export (already emits JSON), init, migrate (its subcommands have it, the parent doesn't), resolve, run, shell.
 
 | Command | Aliases | Description |
 |---------|---------|-------------|
@@ -283,7 +290,7 @@ Adding a subcommand also means adding it to the four hand-written completion scr
 
 - Regex: `^[a-zA-Z][a-zA-Z0-9_-]*$`
 - Must start with letter (not number, to distinguish from version strings like "3.12")
-- Reserved words: 28 entries in `RESERVED_NAMES` (src/validate.rs) — read it rather than trusting a copy here; it grows with every new subcommand
+- Reserved words: `RESERVED_NAMES` (src/validate.rs) — read it rather than trusting a copy here; it grows with every new subcommand
 
 ## Documentation Style
 
@@ -403,12 +410,13 @@ t!("error.virtualenv_not_found", name = name)
 ```
 
 **Translation file**: `locales/app.yml`
-- 232 keys total (error.* 43, suggestion.* 17); parity across all 5 locales enforced by tests/i18n_completeness.rs
+- Key parity across all 5 locales enforced by tests/i18n_completeness.rs
 - Adding a locale touches 7 files: `locales/app.yml`, `SUPPORTED_LANGS` (src/i18n.rs), `LOCALES` (tests/i18n_completeness.rs), and the hand-written `scuv lang` completion lists in all four shells (`src/shell/{bash,zsh,fish,powershell}.rs`). Missing `LOCALES` fails silently — CI passes with that locale unverified. A missed completion list fails `lang_completion_list_matches_supported_langs` in that shell's module, and a doc that still enumerates the old list fails `check-doc-references.py`. Contributor guide: `docs/src/development/translation.md`.
 - ko conventions: no semicolons in ko values; "scuv"(스커브) has no batchim — particles are 가/를/는/와/로 (never 이/을/은/과/으로). Hand-edit ko/ja, never blind-sed.
 - `docs/po/ko.po`: regenerate via `MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po && msgmerge --update po/ko.po po/messages.pot`; CI (tag push) requires the committed file to round-trip byte-identical. Install the versions `docs.yml` pins (mdbook 0.5.3, mdbook-i18n-helpers 0.4.0) — latest produces a different `.pot`. `messages.pot` is untracked; only `ko.po` is committed.
   - Reproducing that guard locally also needs: restore `POT-Creation-Date`/`PO-Revision-Date` from the pre-merge copy (msgmerge rewrites both to "now" → phantom diff), and `msgcat --width=79` any hand-written msgstr (unwrapped lines are gettext-version-sensitive; CI's gettext may differ from Homebrew's). Done when two consecutive runs leave the file byte-identical with 0 fuzzy.
   - Check `mdbook --version` first: a wrong version makes the xgettext renderer fail (`missing field items`), msgmerge then reuses the stale `messages.pot`, and new msgids silently never reach `ko.po`. Grep `ko.po` for the new text.
+  - Several open PRs that each touch `docs/po/ko.po` conflict in turn: after merging one, rebase the next onto `main` and regenerate `ko.po` instead of hand-resolving the conflict.
   - In-page links inside a msgstr must use the translated heading's id (`[TOCTOU 가드](#toctou-가드)`); keeping the English anchor breaks the link in the ko book.
 - The ko.po staleness guard runs in two places: `docs-check.yml` ("Documentation checks") on PRs that touch the docs paths it lists, and `docs.yml` (build + deploy) on `v*` tags. A PR outside those paths only gets `msgfmt --check` from the CI Lint job.
 - `docs.yml`'s `deploy` job has no branch guard — a `workflow_dispatch` from any branch publishes that branch to production Pages. Verify on `main` only.

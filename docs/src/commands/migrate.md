@@ -29,7 +29,30 @@ scuv migrate all
 |--------|-----------|
 | **pyenv-virtualenv** | `~/.pyenv/versions/` (non-system virtualenvs) |
 | **virtualenvwrapper** | `$WORKON_HOME` or `~/.virtualenvs/` |
-| **conda** | `conda info --envs` |
+| **conda** | `$CONDA_PREFIX/envs`, `~/.conda/envs`, `~/anaconda3/envs`, `~/miniconda3/envs`, `~/miniforge3/envs` |
+
+## End-of-life Python
+
+scuv treats an env as end of life (EOL) when its Python is 2.x or 3.10 and
+earlier. 3.9 reached end of life on 2025-10-31 and 3.10 on 2026-10-01, following
+CPython's schedule. Only the version number is checked, so a PyPy env gets the
+same cutoff. For a source env that is otherwise healthy and has no name
+conflict, without `--force`:
+
+- `migrate list` marks the env `⚠` with `(Python 3.10.14 is EOL)`.
+- `migrate @env <name>` refuses it and exits `2`.
+- `migrate all` skips it and still exits `0` when nothing else failed, so check
+  `migrate list` (or the `skipped` array in `--json`) to see what was left behind.
+
+Other states come first. A name conflict is reported as a conflict (and fails
+`migrate all` with exit `2`), and a corrupted source is reported as corrupted
+(`migrate @env` exits `3`, `migrate all` skips it). Choosing Overwrite at the
+interactive conflict prompt acts like `--force`, so it migrates an EOL env too.
+`--rename` does not skip the EOL check of a conflicting env, though
+`--rename --dry-run` only prints the plan and does not run that check.
+
+Released versions up to 0.18.0 used a cutoff of 3.8, so 3.9 and 3.10 envs
+migrated without `--force`.
 
 ## Options
 
@@ -56,7 +79,7 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | (a) all envs migrated, (b) no envs found but source tools are installed, or (c) only non-conflict skips occurred (EOL / corrupted envs in the skipped bucket, no preflight name conflicts, no per-env failures) |
-| `2` | At least one per-env failure **or** at least one preflight name conflict without `--force`. Returned via `MigrationBatchFailed` |
+| `2` | At least one per-env failure **or** at least one preflight name conflict without `--force`, **or** two sources offering the same env name in one batch. `--force` does not resolve that case: the first source migrates, and the skipped one needs `scuv migrate @env <name> --source <tool> --rename <other>` (without `--source`, `@env` finds the env that already migrated). Returned via `MigrationBatchFailed` |
 | `3` | No source tool (pyenv / virtualenvwrapper / conda) is detected on the system. Returned via `MigrationSourcesNotFound` |
 
 ### `migrate @env <name>`
@@ -64,12 +87,12 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | The env migrated successfully (or the user chose `Skip` at the interactive conflict prompt) |
-| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--yes` or `--json` skips the prompt) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
+| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--yes`, `--json` or a non-terminal stderr skips the prompt) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
 | `3` | The named source env was not found in the requested source (`PyenvEnvNotFound`, `VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **or** the source env is `CorruptedEnvironment` |
 
 ### `migrate list`
 
-Exit `0` is informational. `list` only fails when a discovery I/O error occurs (exit `1`, via the catchall).
+Exit `0` is informational. A source whose scan fails is left out of the list instead of failing the command, so exit `0` does not prove that every source was read.
 
 Notes:
 
@@ -89,7 +112,7 @@ contract.
 |----------------------|----------------|
 | Ready | Migrated normally |
 | Name conflict with an existing scuv env | The existing scuv env is overwritten in place |
-| EOL Python version (e.g. 2.7) | Migrated anyway (the EOL guard is intentionally bypassed) |
+| EOL Python version (e.g. 2.7, 3.10) | Migrated anyway (the EOL guard is intentionally bypassed) |
 | Corrupted source env | **Not bypassed** — still returns `CorruptedEnvironment` (exit 3) |
 
 ### `--auto-rename` (name-conflict only)
@@ -116,7 +139,7 @@ $ scuv migrate @env myproject --auto-rename --yes
 
 The generated name is `<name>-pyenv` for every source, including
 `virtualenvwrapper` and `conda`. When that name is taken as well, scuv
-picks a numbered name such as `myproject-2`.
+picks the first free numbered name (`myproject-1`, then `myproject-2`, and so on).
 
 The EOL guard still applies to a renamed env. When the source env both
 conflicts by name and runs an end-of-life Python, `--auto-rename` stops
@@ -201,6 +224,7 @@ $ scuv migrate all --yes
 ```bash
 # Exits 2 if any env failed or a name conflict was skipped.
 # Exits 3 if no source tool is installed on the runner.
+# EOL envs are skipped without changing the exit code.
 scuv migrate all --yes
 ```
 
@@ -342,12 +366,13 @@ Per-env failure objects carry two additive fields:
   `"UV_COMMAND_FAILED"`). Scripts branch on this instead of parsing
   `error` (which is localized).
 
-### Exit-3 paths — no JSON envelope on stdout
+### Exit-3 paths — the generic error envelope
 
-Two distinct exit-3 cases exist; **neither emits a JSON envelope on
-stdout, even under `--json`.** The localized error message and
-install/lookup suggestion are written to stderr as plain text; stdout
-stays empty. Detect via the exit code.
+Two distinct exit-3 cases exist. Under `--json` each prints the generic
+error envelope on stdout (`status`, `command`, and `error` with `code`,
+the localized `message` and `suggestion`), without the `data` view the
+exit-2 envelope carries; without `--json` the message and suggestion go
+to stderr as text. The exit code stays `3` either way.
 
 | Command | Error variant | Trigger |
 |---------|---------------|---------|
@@ -362,14 +387,14 @@ scuv migrate all --json > out.json
 case $? in
   0) ;;
   2) echo "batch failure — read out.json for detail" ;;
-  3) echo "no source tool installed" ;;
+  3) echo "no source tool or env: $(jq -r .error.code out.json)" ;;
 esac
 ```
 
-The exit-2 path (batch failure) is the only `migrate all` failure path
-that emits a structured envelope on stdout. Bridging the exit-3
-asymmetry would require `batch/` (and `single.rs`) to emit a JSON error
-envelope before returning Err; tracked for a follow-up.
+Only the exit-2 envelope (batch failure) carries the per-env `data`;
+the exit-3 envelope has `error` alone. Up to scuv 0.18.1 the exit-3
+paths printed text on stderr even with `--json`, and stdout stayed
+empty.
 
 ## Migration Process
 

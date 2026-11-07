@@ -97,8 +97,8 @@ $ scuv lang xx
 ```
 
 An unsupported code changes nothing and exits `1`. With `--json` the
-error is printed as text on stderr, as for every other command, and
-stdout stays empty.
+error is a JSON envelope on stdout (`"code": "LANG_NOT_SUPPORTED"`), as
+for every other command.
 
 ### JSON Output
 
