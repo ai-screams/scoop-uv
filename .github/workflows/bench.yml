@@ -1,6 +1,7 @@
 # Criterion benchmark regression gate
 #
-# Runs the three bench binaries on every PR and push to main. On main,
+# Runs the three bench binaries on every push to main and on every PR
+# that changes a file they build from (the scope step below). On main,
 # results are pushed to the `gh-pages` branch as the new baseline. On
 # PRs, results are compared against that baseline: a comment is left at
 # any regression past `alert-threshold`, and the workflow FAILS past
@@ -33,14 +34,63 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          # Full history only where the step below needs a merge-base.
+          # Keep '0' quoted: a bare 0 is falsy and the expression would
+          # fall through to '1'.
+          fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
+
+      # Skip the expensive steps on a PR that changes no file they read.
+      # Gating steps, not the job, keeps every matrix check posted under
+      # its real (required) name; a job-level `if` is evaluated before the
+      # matrix expands and posts one check with the expression unexpanded,
+      # and `on.paths` would leave the required checks Pending. Anything
+      # short of a positive "no match" runs everything, and a skipped run
+      # says so in the job summary. Classifier tests and the reasoning:
+      # docs/src/development/ci-cd.md, "Skip what a PR cannot affect".
+      - id: scope
+        name: Decide whether this PR changes code
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          CODE_PATHS: '^(src/|benches/|locales/|\.cargo/|\.github/actions/|Cargo\.(toml|lock)$|build\.rs$|rust-toolchain\.toml$|\.gitattributes$|\.github/workflows/bench\.yml$)'
+        run: |
+          # errexit stays on; each expected failure is handled where it
+          # happens. -z keeps paths unquoted (a non-ASCII or newline name
+          # would otherwise slip past the ^-anchored pattern), and
+          # --no-renames lists both sides of a rename.
+          code=true
+          reason="not a pull request: running everything"
+          if [ "$EVENT" = pull_request ]; then
+            list="$RUNNER_TEMP/changed-files"
+            if ! git diff --name-only --no-renames -z "$BASE...$HEAD" > "$list"; then
+              reason="git diff failed: running everything"
+            else
+              rc=0
+              grep -zqE "$CODE_PATHS" "$list" || rc=$?
+              case $rc in
+                0) reason="code paths changed" ;;
+                1) code=false; reason="no code paths changed: tests skipped, not run" ;;
+                *) reason="path match failed (grep $rc): running everything" ;;
+              esac
+            fi
+          fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "$reason (code=$code)"
+          echo "$reason (code=$code)" >> "$GITHUB_STEP_SUMMARY" || true
 
       - name: Install Rust (pinned by rust-toolchain.toml)
+        if: steps.scope.outputs.code != 'false'
         # rust-toolchain.toml drives the version; this just makes sure
         # rustup is fresh enough to honour the manifest.
         run: rustup show active-toolchain || rustup toolchain install
 
       - name: Cache cargo + target/
+        if: steps.scope.outputs.code != 'false'
         uses: Swatinem/rust-cache@v2
         with:
           # Per-workflow cache key so unit-test cache doesn't churn the
@@ -79,6 +129,7 @@ jobs:
       # whichever runner the job lands on. No threshold both tolerates
       # that and catches anything, so it is tracked rather than gated.
       - name: Run CPU benchmarks
+        if: steps.scope.outputs.code != 'false'
         run: |
           set -o pipefail
           rm -rf target/criterion
@@ -87,6 +138,7 @@ jobs:
             | tee bench_cpu.txt
 
       - name: Run filesystem benchmarks
+        if: steps.scope.outputs.code != 'false'
         run: |
           set -o pipefail
           rm -rf target/criterion
@@ -101,6 +153,7 @@ jobs:
       #   git add README.md && git commit -m "bootstrap bench gh-pages"
       #   git push origin gh-pages
       - name: Store / compare CPU benchmark results
+        if: steps.scope.outputs.code != 'false'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: scoop-uv benchmarks
@@ -150,6 +203,7 @@ jobs:
       # 3.4x spread so the alert path stays quiet in normal operation;
       # `fail-on-alert: false` is what actually makes this non-blocking.
       - name: Store filesystem benchmark results
+        if: steps.scope.outputs.code != 'false'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: scoop-uv filesystem benchmarks
