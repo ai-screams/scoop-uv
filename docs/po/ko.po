@@ -13335,111 +13335,125 @@ msgstr "멀티 소스 통합 (Docker 매트릭스)"
 
 #: src/development/testing.md:502
 msgid ""
-"The Dockerfile builds three per-source leaf stages — `pyenv-test`, `conda-"
-"test`, `venvwrapper-test` — on top of a shared `scuv-test-base`. Each "
-"carries only the source-tool it migrates from, so CI can matrix-build just "
-"one variant."
+"The Dockerfile builds three per-source fixture stages, `pyenv-fixture`, "
+"`conda-fixture` and `venvwrapper-fixture`, on top of a shared `scuv-test-"
+"base`. Each carries only the source tool it migrates from, and none depends "
+"on the source tree, so a change under `src/` leaves their layers cached. The "
+"`pyenv-test`, `conda-test` and `venvwrapper-test` stages add the image's own "
+"`scuv` binary on top for the interactive shells below."
 msgstr ""
-"Dockerfile은 공유 `scuv-test-base` 위에 `pyenv-test`, `conda-test`, "
-"`venvwrapper-test` 세 가지 소스별 리프 스테이지를 빌드합니다. 각 스테이지는 "
-"마이그레이션하는 소스 도구만 포함하므로, CI에서 하나의 변형만 선택적으로 매트"
-"릭스 빌드할 수 있습니다."
+"Dockerfile은 공유 `scuv-test-base` 위에 `pyenv-fixture`, `conda-fixture`, "
+"`venvwrapper-fixture` 세 가지 소스별 fixture 스테이지를 빌드합니다. 각 스테이"
+"지는 마이그레이션하는 소스 도구만 포함하고 소스 트리에 의존하지 않으므로, "
+"`src/` 아래가 바뀌어도 레이어 캐시가 그대로 유지됩니다. `pyenv-test`, `conda-"
+"test`, `venvwrapper-test` 스테이지는 아래의 대화형 셸을 위해 그 위에 이미지 "
+"자체의 `scuv` 바이너리를 더합니다."
 
-#: src/development/testing.md:508
+#: src/development/testing.md:511
 msgid "# Local (sequential)\n"
 msgstr "# Local (sequential)\n"
 
-#: src/development/testing.md:512
+#: src/development/testing.md:515
 msgid "# Local (all three sequentially)\n"
 msgstr "# Local (all three sequentially)\n"
 
-#: src/development/testing.md:515
+#: src/development/testing.md:518
 msgid "# Drop into a single variant for ad-hoc debugging\n"
 msgstr "# Drop into a single variant for ad-hoc debugging\n"
 
-#: src/development/testing.md:520
+#: src/development/testing.md:523
 msgid ""
 "CI runs all three in parallel via `.github/workflows/integration-test.yml`'s "
 "strategy.matrix with per-source BuildKit cache scoping (`cache-from/"
-"to=type=gha,scope=<src>`)."
+"to=type=gha,scope=<src>`). Each job builds the fixture stage and compiles "
+"the workspace once, inside the container: nextest builds the debug `scuv` "
+"binary with the tests, and `SCUV_ENTRYPOINT_BUILD=0` stops the entrypoint's "
+"own release build. It then checks with `docker/scripts/check_fixture.py` "
+"that `scuv migrate list --json` finds that image's fixture env ready to "
+"migrate."
 msgstr ""
-"CI는 `.github/workflows/integration-test.yml`의 strategy.matrix를 통해 세 가"
-"지를 모두 병렬로 실행하며, 소스별 BuildKit 캐시 범위(`cache-from/"
-"to=type=gha,scope=<src>`)를 사용합니다."
+"CI는 `.github/workflows/integration-test.yml`의 strategy.matrix로 세 가지를 "
+"병렬 실행하며, 소스별로 BuildKit 캐시 범위를 나눕니다(`cache-from/"
+"to=type=gha,scope=<src>`). 각 job은 fixture 스테이지를 빌드한 뒤 컨테이너 안"
+"에서 워크스페이스를 한 번만 컴파일합니다. nextest가 테스트와 함께 debug "
+"`scuv` 바이너리를 빌드하고, `SCUV_ENTRYPOINT_BUILD=0`이 entrypoint 자체의 "
+"release 빌드를 막습니다. 이어서 `docker/scripts/check_fixture.py`로 `scuv "
+"migrate list --json`이 그 이미지의 fixture 환경을 마이그레이션 가능한 상태로 "
+"찾는지 확인합니다."
 
-#: src/development/testing.md:524
+#: src/development/testing.md:533
 msgid "Benchmarks (Criterion)"
 msgstr "벤치마크 (Criterion)"
 
-#: src/development/testing.md:526
+#: src/development/testing.md:535
 msgid "Three bench binaries live in `benches/`:"
 msgstr "`benches/`에 세 개의 벤치 바이너리가 있습니다:"
 
-#: src/development/testing.md:528
+#: src/development/testing.md:537
 msgid "Binary"
 msgstr "바이너리"
 
-#: src/development/testing.md:528
+#: src/development/testing.md:537
 msgid "Targets"
 msgstr "대상"
 
-#: src/development/testing.md:530
+#: src/development/testing.md:539
 msgid "`parsing`"
 msgstr "`parsing`"
 
-#: src/development/testing.md:530
+#: src/development/testing.md:539
 msgid "clap parse, TOML manifest, JSON `uv python list`"
 msgstr "clap 파싱, TOML 매니페스트, JSON `uv python list`"
 
-#: src/development/testing.md:531
+#: src/development/testing.md:540
 msgid "`validation`"
 msgstr "`validation`"
 
-#: src/development/testing.md:531
+#: src/development/testing.md:540
 msgid "`is_valid_env_name` across 6 representative inputs"
 msgstr "6가지 대표 입력에 대한 `is_valid_env_name`"
 
-#: src/development/testing.md:532 src/development/ci-cd.md:72
+#: src/development/testing.md:541 src/development/ci-cd.md:72
 msgid "`path_lookup`"
 msgstr "`path_lookup`"
 
-#: src/development/testing.md:532
+#: src/development/testing.md:541
 msgid "`find_executable_in` hit + miss"
 msgstr "`find_executable_in` 히트 + 미스"
 
-#: src/development/testing.md:534
+#: src/development/testing.md:543
 msgid "Local workflow"
 msgstr "로컬 워크플로우"
 
-#: src/development/testing.md:537
+#: src/development/testing.md:546
 msgid "# Run all benches once (no baseline diffing)\n"
 msgstr "# Run all benches once (no baseline diffing)\n"
 
-#: src/development/testing.md:539
+#: src/development/testing.md:548
 msgid "# Save current results as a named baseline (default: \"main\")\n"
 msgstr "# Save current results as a named baseline (default: \"main\")\n"
 
-#: src/development/testing.md:541
+#: src/development/testing.md:550
 msgid "# saves as \"main\"\n"
 msgstr "# saves as \"main\"\n"
 
-#: src/development/testing.md:542
+#: src/development/testing.md:551
 msgid "# saves as \"before-X\"\n"
 msgstr "# saves as \"before-X\"\n"
 
-#: src/development/testing.md:543
+#: src/development/testing.md:552
 msgid "# Compare current results against a saved baseline\n"
 msgstr "# Compare current results against a saved baseline\n"
 
-#: src/development/testing.md:545
+#: src/development/testing.md:554
 msgid "# vs \"main\"\n"
 msgstr "# vs \"main\"\n"
 
-#: src/development/testing.md:547
+#: src/development/testing.md:556
 msgid "# Run all benches inside Docker (reproducible)\n"
 msgstr "# Run all benches inside Docker (reproducible)\n"
 
-#: src/development/testing.md:552
+#: src/development/testing.md:561
 msgid ""
 "Criterion writes HTML reports to `target/criterion/report/index.html` for "
 "visual diffing."
@@ -13447,33 +13461,33 @@ msgstr ""
 "Criterion은 HTML 보고서를 `target/criterion/report/index.html`에 작성하여 시"
 "각적 비교를 지원합니다."
 
-#: src/development/testing.md:555
+#: src/development/testing.md:564
 msgid "CI regression gate"
 msgstr "CI 회귀 게이트"
 
-#: src/development/testing.md:557
+#: src/development/testing.md:566
 msgid "`.github/workflows/bench.yml` runs every PR and push:"
 msgstr "`.github/workflows/bench.yml`은 모든 PR과 푸시에서 실행됩니다:"
 
-#: src/development/testing.md:559
+#: src/development/testing.md:568
 msgid ""
 "On `main`: results are pushed to the `gh-pages` branch as the new baseline."
 msgstr "`main`에서: 결과가 새 기준선으로 `gh-pages` 브랜치에 푸시됩니다."
 
-#: src/development/testing.md:561
+#: src/development/testing.md:570
 msgid "On PRs: results are compared against that baseline."
 msgstr "PR에서: 결과가 해당 기준선과 비교됩니다."
 
-#: src/development/testing.md:562
+#: src/development/testing.md:571
 msgid "**CPU benches (`parsing`, `validation`)**: alert and fail past 250%"
 msgstr "**CPU 벤치(`parsing`, `validation`)**: 250%를 넘으면 경고하고 실패"
 
-#: src/development/testing.md:563
+#: src/development/testing.md:572
 msgid "**Filesystem bench (`path_lookup`)**: alert past 500%, never fails"
 msgstr ""
 "**파일 시스템 벤치(`path_lookup`)**: 500%를 넘으면 경고하며 실패하지 않음"
 
-#: src/development/testing.md:565
+#: src/development/testing.md:574
 msgid ""
 "Thresholds account for GitHub-hosted runner variance (10-30% per-bench noise "
 "is normal on shared CPU). Tighten by running on a self-hosted runner with "
@@ -16137,6 +16151,15 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid ""
+#~ "CI runs all three in parallel via `.github/workflows/integration-"
+#~ "test.yml`'s strategy.matrix with per-source BuildKit cache scoping "
+#~ "(`cache-from/to=type=gha,scope=<src>`)."
+#~ msgstr ""
+#~ "CI는 `.github/workflows/integration-test.yml`의 strategy.matrix를 통해 세 "
+#~ "가지를 모두 병렬로 실행하며, 소스별 BuildKit 캐시 범위(`cache-from/"
+#~ "to=type=gha,scope=<src>`)를 사용합니다."
 
 #~ msgid ""
 #~ "`--json` emits one envelope to stdout. Success and failure envelopes "

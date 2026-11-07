@@ -66,8 +66,12 @@ mkdir -p "$WORKON_HOME"
 
 # ============================================================
 # scuv build (workspace version takes precedence)
+#
+# SCUV_ENTRYPOINT_BUILD=0 skips it: CI's integration run compiles the
+# workspace itself (nextest builds the bin with the tests), and a second
+# release build here only doubled the job's compile time.
 # ============================================================
-if [ -d "/workspace/src" ]; then
+if [ "${SCUV_ENTRYPOINT_BUILD:-1}" != "0" ] && [ -d "/workspace/src" ]; then
   SCUV_BIN="/workspace/target/release/scuv"
 
   # Build scuv if binary doesn't exist or source is newer

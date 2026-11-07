@@ -499,10 +499,13 @@ persistence.
 
 ## Multi-source Integration (Docker matrix)
 
-The Dockerfile builds three per-source leaf stages — `pyenv-test`,
-`conda-test`, `venvwrapper-test` — on top of a shared `scuv-test-base`.
-Each carries only the source-tool it migrates from, so CI can
-matrix-build just one variant.
+The Dockerfile builds three per-source fixture stages, `pyenv-fixture`,
+`conda-fixture` and `venvwrapper-fixture`, on top of a shared
+`scuv-test-base`. Each carries only the source tool it migrates from,
+and none depends on the source tree, so a change under `src/` leaves
+their layers cached. The `pyenv-test`, `conda-test` and
+`venvwrapper-test` stages add the image's own `scuv` binary on top for
+the interactive shells below.
 
 ```bash
 # Local (sequential)
@@ -520,6 +523,12 @@ make docker-shell-conda
 CI runs all three in parallel via
 `.github/workflows/integration-test.yml`'s strategy.matrix with
 per-source BuildKit cache scoping (`cache-from/to=type=gha,scope=<src>`).
+Each job builds the fixture stage and compiles the workspace once, inside
+the container: nextest builds the debug `scuv` binary with the tests, and
+`SCUV_ENTRYPOINT_BUILD=0` stops the entrypoint's own release build. It
+then checks with `docker/scripts/check_fixture.py` that
+`scuv migrate list --json` finds that image's fixture env ready to
+migrate.
 
 ## Benchmarks (Criterion)
 
