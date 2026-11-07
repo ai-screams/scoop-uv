@@ -2,12 +2,19 @@
 # ============================================================
 # Multi-stage Dockerfile for scuv test environment
 # Layout:
-#   base → pyenv → python → scuv-build → shells → scuv-test-base
-#                                                    ├── pyenv-test
-#                                                    ├── conda-test
-#                                                    ├── venvwrapper-test
-#                                                    ├── slim   (alias-ish)
-#                                                    └── full   (all fixtures)
+#   base → scuv-build                     (compiles the scuv binary)
+#   base → pyenv → python → shells → scuv-test-base
+#                                      ├── pyenv-fixture       → pyenv-test → slim
+#                                      ├── conda-fixture       → conda-test
+#                                      ├── venvwrapper-fixture → venvwrapper-test
+#                                      └── full   (all fixtures)
+#
+# The *-fixture stages carry no scuv binary and never depend on the
+# source tree, so a change under src/ leaves every fixture layer cached.
+# CI's integration tests build those and compile the workspace inside the
+# container. *-test, slim and full add /usr/local/bin/scuv from
+# scuv-build as their last layer, for compose dev shells and the
+# published images.
 #
 # Best practices:
 #   - BuildKit cache mounts (apt, pyenv, cargo registry/git)
@@ -97,12 +104,15 @@ RUN python --version && pip --version
 # ============================================================
 # Stage: scuv-build — compile the scuv binary
 # ============================================================
-FROM python AS scuv-build
+FROM base AS scuv-build
 
 RUN rustup default stable
 
-COPY Cargo.toml Cargo.lock /build/scuv/
+COPY Cargo.toml Cargo.lock build.rs /build/scuv/
 COPY src /build/scuv/src
+# rust_i18n embeds locales/app.yml at compile time; without it the
+# binary prints translation keys instead of messages.
+COPY locales /build/scuv/locales
 # `[[bench]]` entries in Cargo.toml reference files in benches/. Cargo
 # parses the manifest before compiling anything, so the bench sources
 # must exist on disk even when we only `cargo build` the binary.
@@ -118,12 +128,16 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
     cargo build --release \
     && cp target/release/scuv /usr/local/bin/scuv
 
-RUN scuv --version
+# This stage has no uv, so any command stops at the uv check: its message
+# shows the locales were embedded (a binary built without them prints the
+# key `error.uv_not_found` instead).
+RUN scuv --version \
+    && (SCUV_LANG=en scuv info no-such-env 2>&1 || true) | grep -q "uv not found (scuv's core engine)"
 
 # ============================================================
 # Stage: shells — zsh and fish base configs
 # ============================================================
-FROM scuv-build AS shells
+FROM python AS shells
 
 # Basic zsh configuration
 RUN echo '# scuv zsh config\n\
@@ -192,15 +206,15 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash", "-l"]
 
 # ============================================================
-# Leaf stage: pyenv-test — pyenv-virtualenv fixture only
+# Fixture stage: pyenv-fixture — pyenv-virtualenv fixture only
 # ============================================================
-FROM scuv-test-base AS pyenv-test
+FROM scuv-test-base AS pyenv-fixture
 
 ARG PYTHON_312_VERSION
 RUN pyenv virtualenv ${PYTHON_312_VERSION} test-pyenv-312
 
 # ============================================================
-# Leaf stage: conda-test — Miniforge + conda env fixture
+# Fixture stage: conda-fixture — Miniforge + conda env fixture
 #
 # Why Miniforge over Miniconda:
 #   - MIT-licensed installer (Miniconda's installer + default channel
@@ -209,7 +223,7 @@ RUN pyenv virtualenv ${PYTHON_312_VERSION} test-pyenv-312
 #     package set, no anaconda.com terms
 #   - Multi-arch (amd64 + arm64) without per-arch URL juggling
 # ============================================================
-FROM scuv-test-base AS conda-test
+FROM scuv-test-base AS conda-fixture
 
 ARG MINIFORGE_VERSION
 ENV CONDA_DIR="/opt/conda"
@@ -224,9 +238,9 @@ ENV PATH="$CONDA_DIR/bin:$PATH"
 RUN conda create -n test-conda-312 python=3.12 -y && conda clean -afy
 
 # ============================================================
-# Leaf stage: venvwrapper-test — virtualenvwrapper fixture
+# Fixture stage: venvwrapper-fixture — virtualenvwrapper fixture
 # ============================================================
-FROM scuv-test-base AS venvwrapper-test
+FROM scuv-test-base AS venvwrapper-fixture
 
 ENV WORKON_HOME="/root/.virtualenvs"
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
@@ -234,6 +248,19 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 
 RUN bash -c "source $(which virtualenvwrapper.sh) && \
     mkvirtualenv -p python3.12 test-venvwrapper-312"
+
+# ============================================================
+# Leaf stages: <source>-test — a fixture plus the image's scuv binary
+# (compose dev shells; pyenv-test is also the base of slim)
+# ============================================================
+FROM pyenv-fixture AS pyenv-test
+COPY --from=scuv-build /usr/local/bin/scuv /usr/local/bin/scuv
+
+FROM conda-fixture AS conda-test
+COPY --from=scuv-build /usr/local/bin/scuv /usr/local/bin/scuv
+
+FROM venvwrapper-fixture AS venvwrapper-test
+COPY --from=scuv-build /usr/local/bin/scuv /usr/local/bin/scuv
 
 # ============================================================
 # Stage: slim — minimal CI environment (pyenv only)
@@ -255,7 +282,7 @@ ARG PYTHON_312_VERSION
 RUN pyenv virtualenv ${PYTHON_312_VERSION} test-pyenv-312 && \
     pyenv virtualenv ${PYTHON_311_VERSION} test-pyenv-311
 
-# conda (Miniforge — see conda-test stage for rationale)
+# conda (Miniforge — see conda-fixture stage for rationale)
 ARG MINIFORGE_VERSION
 ENV CONDA_DIR="/opt/conda"
 RUN ARCH=$(uname -m) && \
@@ -273,3 +300,5 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     pip install virtualenvwrapper && mkdir -p "$WORKON_HOME"
 RUN bash -c "source $(which virtualenvwrapper.sh) && \
     mkvirtualenv -p python3.12 test-venvwrapper-312"
+
+COPY --from=scuv-build /usr/local/bin/scuv /usr/local/bin/scuv
