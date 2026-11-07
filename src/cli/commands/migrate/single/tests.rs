@@ -436,6 +436,50 @@ fn resolve_target_allow_eol_proceeds_without_force() {
     assert!(matches!(refused, Err(ScoopError::MigrationFailed { .. })));
 }
 
+/// `--rename` to a taken name is refused for a source whose own name is
+/// free, EOL or not, so a dry run cannot report success for it. Fails if
+/// `resolve_target` stops checking the rename target outside a conflict.
+#[rstest::rstest]
+#[case::ready(EnvironmentStatus::Ready)]
+#[case::eol(EnvironmentStatus::PythonEol { version: "3.10.14".to_string() })]
+#[serial]
+fn resolve_target_refuses_a_taken_rename(#[case] status: EnvironmentStatus) {
+    crate::test_utils::with_temp_scoop_home(|home| {
+        std::fs::create_dir_all(home.path().join("virtualenvs").join("taken")).unwrap();
+        let opts = MigrateExecuteOptions {
+            rename: Some("taken".into()),
+            allow_eol: true,
+            dry_run: true,
+            ..Default::default()
+        };
+        let refused = resolve_target(&quiet_output(), "old", &status, &opts);
+        assert!(
+            matches!(&refused, Err(ScoopError::MigrationNameConflict { name, .. }) if name == "taken"),
+            "{:?}",
+            refused.as_ref().map(|t| t.as_ref().map(|t| &t.name))
+        );
+
+        let forced = MigrateExecuteOptions {
+            force: true,
+            ..opts.clone()
+        };
+        assert!(
+            resolve_target(&quiet_output(), "old", &status, &forced)
+                .unwrap()
+                .is_some()
+        );
+        let free = MigrateExecuteOptions {
+            rename: Some("free".into()),
+            ..opts
+        };
+        assert!(
+            resolve_target(&quiet_output(), "old", &status, &free)
+                .unwrap()
+                .is_some()
+        );
+    });
+}
+
 /// `--force` keeps allowing EOL as before `--allow-eol` existed.
 #[rstest::rstest]
 #[case(false, false, false)]

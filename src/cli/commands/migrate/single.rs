@@ -173,7 +173,25 @@ fn resolve_target(
             });
         }
     }
+    // The source's own name is free, but `--rename` may point at a taken
+    // one. The migrator refuses that only on a real run; a dry run would
+    // report success.
+    if opts.rename.is_some() {
+        ensure_rename_free(&target.name, opts.force)?;
+    }
     Ok(Some(target))
+}
+
+/// `--rename`'s target must not exist unless `--force` overwrites it.
+fn ensure_rename_free(new_name: &str, force: bool) -> Result<()> {
+    let renamed_path = crate::paths::virtualenv_path(new_name)?;
+    if renamed_path.exists() && !force {
+        return Err(ScoopError::MigrationNameConflict {
+            name: new_name.to_string(),
+            existing: renamed_path,
+        });
+    }
+    Ok(())
 }
 
 /// Whether the conflict prompt can run: dialoguer draws it on stderr and
@@ -202,13 +220,7 @@ fn resolve_name_conflict(
             output.info(&t!("migrate.auto_rename", name = &target.name));
         }
     } else if opts.rename.is_some() {
-        let renamed_path = crate::paths::virtualenv_path(&target.name)?;
-        if renamed_path.exists() && !opts.force {
-            return Err(ScoopError::MigrationNameConflict {
-                name: target.name,
-                existing: renamed_path,
-            });
-        }
+        ensure_rename_free(&target.name, opts.force)?;
     } else if opts.force {
         if !opts.json {
             output.warn(&t!("migrate.overwriting"));

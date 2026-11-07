@@ -230,8 +230,7 @@ $ scuv migrate all --yes
 ```bash
 # Exits 2 if any env failed or a name conflict was skipped.
 # Exits 3 if no source tool is installed on the runner.
-# EOL envs are skipped without changing the exit code.
-# Add --allow-eol to migrate them as well.
+# EOL envs are skipped without changing the exit code; add --allow-eol to migrate them.
 scuv migrate all --yes
 ```
 

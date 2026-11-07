@@ -161,6 +161,10 @@ mod tests {
         assert_eq!(core.rename_to.as_deref(), Some("renamed"));
         assert!(!core.skip_packages && !core.auto_install_python);
 
+        // `--allow-eol` never turns into overwrite permission.
+        let eol_only = opts.migrate_options(false, None);
+        assert!(eol_only.allow_eol && !eol_only.force);
+
         let plain = MigrateExecuteOptions::default().migrate_options(false, None);
         assert!(!plain.dry_run && !plain.force && !plain.allow_eol && !plain.strict);
         assert!(!plain.delete_source && plain.rename_to.is_none());
