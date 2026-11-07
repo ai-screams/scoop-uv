@@ -912,11 +912,11 @@ error.uv_not_found:
   es: "uv no encontrado (el motor principal de scuv)"
 
 error.uv_command_failed:
-  en: "uv %{command} failed: %{message}"
-  ko: "uv %{command} 실패: %{message}"
-  pt-BR: "uv %{command} falhou: %{message}"
-  ja: "uv %{command} 失敗: %{message}"
-  es: "uv %{command} falló: %{message}"
+  en: "%{command} failed: %{message}"
+  ko: "%{command} 실패: %{message}"
+  pt-BR: "%{command} falhou: %{message}"
+  ja: "%{command} 失敗: %{message}"
+  es: "%{command} falló: %{message}"
 
 error.path_error:
   en: "Path error: %{message}"
