@@ -14925,12 +14925,12 @@ msgstr ""
 msgid ""
 "A job-level `if` is evaluated before the matrix expands, so a skipped matrix "
 "job posts one check with the expression unexpanded (`Mutants (full $"
-"{{ matrix.shard }}/2)` is that), and the three required `Docker Integration "
+"{{ matrix.shard }}/4)` is that), and the three required `Docker Integration "
 "(<source>)` names would never appear."
 msgstr ""
 "job 수준의 `if`는 matrix가 펼쳐지기 전에 평가됩니다. 그래서 건너뛴 matrix job"
 "은 식이 펼쳐지지 않은 이름으로 검사 하나만 올리고(`Mutants (full $"
-"{{ matrix.shard }}/2)`가 그 예입니다), 필수 검사인 `Docker Integration "
+"{{ matrix.shard }}/4)`가 그 예입니다), 필수 검사인 `Docker Integration "
 "(<source>)` 세 이름은 끝내 나타나지 않습니다."
 
 #: src/development/ci-cd.md:169
@@ -15595,14 +15595,18 @@ msgstr ""
 #: src/development/ci-cd.md:432
 msgid ""
 "At 90 minutes the weekly full run still timed out as the suite grew (the "
-"2026-10-19 and 2026-11-02 runs). It now runs as two round-robin shards, each "
-"with its own 90-minute limit; a trial run took 42 and 43 minutes."
+"2026-10-19 and 2026-11-02 runs). It was split into two round-robin shards, "
+"each with its own 90-minute limit, which took 42 and 58 minutes on "
+"2026-11-07; it now runs as four, and each mutant builds with the debug-less "
+"`mutants` profile (`.cargo/mutants.toml`)."
 msgstr ""
 "90분으로도 테스트가 늘면서 주간 full 실행이 다시 타임아웃됐습니다"
-"(2026-10-19, 2026-11-02 실행). 지금은 round-robin shard 두 개로 나눠 각각 90"
-"분 제한을 두며, 시험 실행에서 42분과 43분이 걸렸습니다."
+"(2026-10-19, 2026-11-02 실행). 그래서 각각 90분 제한을 둔 round-robin shard "
+"두 개로 나눴고, 2026-11-07에는 42분과 58분이 걸렸습니다. 지금은 네 개로 나눠 "
+"돌리며, 변이마다 디버그 정보를 끈 `mutants` profile로 빌드합니다(`.cargo/"
+"mutants.toml`)."
 
-#: src/development/ci-cd.md:435
+#: src/development/ci-cd.md:437
 msgid ""
 "`aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now "
 "pinned to release tags. Dependabot could not follow either: it cannot bump a "
@@ -15613,7 +15617,7 @@ msgstr ""
 "올릴 수 없고, setup-uv는 v8부터 움직이는 메이저 태그 발행을 중단했기 때문입니"
 "다."
 
-#: src/development/ci-cd.md:439
+#: src/development/ci-cd.md:441
 msgid ""
 "Coverage and mutants ran tests as threads of one process after the rest of "
 "CI had moved to nextest, so a missing `#[serial]` could still make them "
@@ -15627,7 +15631,7 @@ msgstr ""
 "는 처음부터 합계에 들어 있지 않았습니다. 표본으로 잰 파일 세 개에서 mutants"
 "는 `cargo test`일 때의 절반 정도 시간이 걸렸습니다."
 
-#: src/development/ci-cd.md:444
+#: src/development/ci-cd.md:446
 msgid ""
 "`stable-ci` had four writers and, because `rust-cache` hashes workflow-level "
 "`env`, was never actually shared with `coverage.yml` or `mutants.yml` at "
@@ -15637,7 +15641,7 @@ msgstr ""
 "시에 넣기 때문에 `coverage.yml`이나 `mutants.yml`과는 애초에 공유된 적조차 없"
 "었습니다. 이제 각자 실제로 쓰는 키를 이름으로 밝힙니다."
 
-#: src/development/ci-cd.md:447
+#: src/development/ci-cd.md:449
 msgid ""
 "`release-plz.yml` had no concurrency group. It has one now, with `cancel-in-"
 "progress: false` — which delivers the \"must always complete\" intent that "

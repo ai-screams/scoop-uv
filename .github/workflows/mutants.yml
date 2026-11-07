@@ -97,21 +97,25 @@ jobs:
   # documented in .cargo/mutants.toml (the 2026-10-08 full run: 481 mutants,
   # 3 missed, all three closed since), so a missed mutant fails the job.
   #
-  # Split over two shards. One job took 57-90 minutes against the 90-minute
+  # Split over four shards. One job took 57-90 minutes against the 90-minute
   # limit (the 2026-10-19 and 2026-11-02 runs hit it), about 90% of it
-  # rebuilding the tree once per mutant; the two shards took 42 and 43
-  # minutes. Round-robin rather than the default slice: on the 2026-10-08
-  # timings it splits the mutant time 43.5/42.9 minutes, against 45.2/41.3
-  # for consecutive slices.
+  # rebuilding the tree once per mutant. Two shards took 42 and 58 minutes
+  # on 2026-11-07, too close to the limit as the suite grows; four split
+  # the 555 mutants 139/139/139/138. Round-robin rather than the default
+  # slice: on the 2026-10-08 timings it split the mutant time 43.5/42.9
+  # minutes over two shards, against 45.2/41.3 for consecutive slices.
+  # Every shard keeps its own baseline: a scheduled run has no earlier test
+  # job, so skipping it could count mutants as caught by an already failing
+  # suite.
   full:
-    name: Mutants (full ${{ matrix.shard }}/2)
+    name: Mutants (full ${{ matrix.shard }}/4)
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1]
+        shard: [0, 1, 2, 3]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -150,11 +154,11 @@ jobs:
       - name: Run full mutation suite
         run: |
           set +e
-          cargo mutants --no-shuffle -vV --shard ${{ matrix.shard }}/2 --sharding round-robin
+          cargo mutants --no-shuffle -vV --shard ${{ matrix.shard }}/4 --sharding round-robin
           ec=$?
           set -e
           case $ec in
-            0) echo "All mutants caught." ;;
+            0) echo "All tested viable mutants caught." ;;
             2) echo "::error::cargo-mutants found missed mutants (exit 2); see the uploaded artifact."; exit 2 ;;
             *) echo "::error::cargo-mutants failed with exit $ec"; exit $ec ;;
           esac
