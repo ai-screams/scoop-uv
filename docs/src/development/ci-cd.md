@@ -147,10 +147,12 @@ workflow cannot change what either of them builds or tests: 6 of the 20
 PRs merged between 2026-10-15 and 2026-11-07 were like that, and each ran
 both in full. Both workflows now start with a `scope` step that diffs the
 PR against its merge-base and lets the later steps run only when a file
-they read changed. Each workflow lists its own inputs in `CODE_PATHS`
-(sources, tests, benches, `locales/`, the cargo and nextest configs, the
-toolchain file, root `.gitattributes`, the workflow file itself, and for
-integration `docker/` and `.dockerignore`).
+they read changed. Each workflow lists its own inputs in `CODE_PATHS`.
+Both watch `src/`, `benches/`, `locales/`, `.cargo/`, `.github/actions/`,
+`Cargo.toml`,
+`Cargo.lock`, `build.rs`, the toolchain file, root `.gitattributes` and
+their own workflow file; integration also watches `tests/`, `.config/`
+(nextest), `docker/` and `.dockerignore`.
 
 The check stays required and still reports: the job runs, the step
 decides, and the later steps carry
