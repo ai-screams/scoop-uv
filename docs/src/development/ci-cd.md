@@ -381,6 +381,9 @@ outstanding.
   killed it every time, and GitHub reports a timed-out job as *cancelled*,
   which reads as benign. Measured at 385/446 mutants in 60 minutes, so the
   timeout is now 90.
+- At 90 minutes the weekly full run still timed out as the suite grew (the
+  2026-10-19 and 2026-11-02 runs). It now runs as two round-robin shards,
+  each with its own 90-minute limit; a trial run took 42 and 43 minutes.
 - `aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now
   pinned to release tags. Dependabot could not follow either: it cannot
   bump a branch ref, and setup-uv stopped publishing moving major tags at
