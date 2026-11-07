@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794017574911,
+  "lastUpdate": 1794017576644,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -13273,6 +13273,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 776,
             "range": "± 25",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dac5c73ef4766842163ac45335ce7d99ab4a2543",
+          "message": "Merge pull request #253 from ai-screams/feat/migrate-allow-eol\n\nfeat(migrate): add --allow-eol to migrate EOL envs without overwriting",
+          "timestamp": "2026-11-07T11:09:30+09:00",
+          "tree_id": "8a90e684a71ec91569830f2cd54e24428b453154",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/dac5c73ef4766842163ac45335ce7d99ab4a2543"
+        },
+        "date": 1794017576577,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1124,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 733,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
