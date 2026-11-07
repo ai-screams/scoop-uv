@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794066820533,
+  "lastUpdate": 1794066822291,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -13993,6 +13993,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 460,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a56949462489a23449f90353ec6d06026cac6fa2",
+          "message": "Merge pull request #259 from ai-screams/ci/mutants-four-shards\n\nci(mutants): [#259] run the full suite on four shards, built without debug info",
+          "timestamp": "2026-11-08T00:49:30+09:00",
+          "tree_id": "779b79ff442ab77f4c1dc6a3c426406c15602961",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/a56949462489a23449f90353ec6d06026cac6fa2"
+        },
+        "date": 1794066822194,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 632,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 462,
+            "range": "± 7",
             "unit": "ns/iter"
           }
         ]
