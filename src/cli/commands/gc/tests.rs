@@ -288,6 +288,11 @@ fn aggressive_gc_fails_with_uv_error_when_python_list_fails() {
         matches!(&err, crate::error::ScoopError::UvCommandFailed { message, .. } if message.contains("fake list failure")),
         "expected uv's list error, got {err:?}"
     );
+    let msg = err.message_in("en");
+    assert!(
+        msg.starts_with("uv python list") && !msg.contains("uv uv"),
+        "{msg}"
+    );
     assert!(!uv.list_calls().is_empty(), "the fake uv was not reached");
     assert!(orphan.exists(), "nothing may be removed after the failure");
     assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");

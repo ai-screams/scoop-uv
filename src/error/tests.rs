@@ -91,11 +91,27 @@ fn test_uv_not_found_message() {
 #[test]
 fn test_uv_command_failed_message() {
     let err = ScoopError::UvCommandFailed {
-        command: "venv".to_string(),
+        command: "uv venv".to_string(),
         message: "Python not found".to_string(),
     };
-    assert!(err.message_in("en").contains("uv venv failed"));
+    assert!(err.message_in("en").starts_with("uv venv failed"));
     assert!(err.message_in("en").contains("Python not found"));
+}
+
+/// The command string already starts with `uv` (every caller in
+/// `uv/client.rs` passes the full command line), so no locale may add
+/// another one. Fails if a template goes back to `uv %{command}`.
+#[test]
+fn test_uv_command_failed_names_uv_once() {
+    let err = ScoopError::UvCommandFailed {
+        command: "uv python list".to_string(),
+        message: "boom".to_string(),
+    };
+    for locale in ["en", "ko", "ja", "pt-BR", "es"] {
+        let msg = err.message_in(locale);
+        assert!(msg.starts_with("uv python list "), "{locale}: {msg}");
+        assert!(!msg.contains("uv uv"), "{locale}: {msg}");
+    }
 }
 
 #[test]
@@ -392,7 +408,7 @@ fn test_invalid_env_name_provides_reason() {
 #[test]
 fn test_uv_command_failed_includes_details() {
     let err = ScoopError::UvCommandFailed {
-        command: "venv".to_string(),
+        command: "uv venv".to_string(),
         message: "Python 3.15 not found".to_string(),
     };
     let msg = err.message_in("en");
