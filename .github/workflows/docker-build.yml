@@ -95,12 +95,20 @@ jobs:
           # Provenance only on push (incompatible with load on PRs)
           provenance: ${{ github.event_name != 'pull_request' && 'mode=max' || 'false' }}
 
-      # Verify build on PR (don't push)
+      # Verify build on PR (don't push). No workspace is mounted, so this
+      # runs the image's own /usr/local/bin/scuv, which the final stage
+      # copies in from scuv-build: it must start, print translated
+      # messages (not i18n keys) and emit a shell init script.
       - name: Test build (PR only)
         if: github.event_name == 'pull_request'
         run: |
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }} \
-            pyenv versions
+            bash -c 'set -eo pipefail
+              pyenv versions
+              test "$(command -v scuv)" = /usr/local/bin/scuv
+              (SCUV_LANG=en scuv info no-such-env 2>&1 || true) |
+                grep "Can.t find .no-such-env. environment" >/dev/null
+              scuv init bash | grep _scuv_hook >/dev/null'
 
   # ============================================================
   # Security scan with Trivy

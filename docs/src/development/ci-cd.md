@@ -186,7 +186,8 @@ got the fake one, and both assertions broke. `#[serial]` only keeps marked
 tests apart. Every job that runs the suite now uses cargo-nextest, which
 gives each test its own process: the test, MSRV and Docker integration jobs
 run `cargo nextest run --profile ci` (`.config/nextest.toml`; no retries, so
-a race stays visible) plus `cargo test --doc` for the doctests nextest skips,
+a race stays visible), the test and MSRV jobs add `cargo test --doc` for the
+doctests nextest skips,
 coverage runs `cargo llvm-cov nextest --profile ci`, and mutants sets
 `test_tool = "nextest"`. The tests that reach uv are also marked `#[serial]`
 or run under the env lock, because a local `cargo test` still runs them in

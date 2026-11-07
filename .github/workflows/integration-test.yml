@@ -1,7 +1,7 @@
 # Docker-based Integration Tests — multi-source matrix
 #
-# Builds each per-source Docker stage (pyenv-test / conda-test /
-# venvwrapper-test) in parallel via a GH Actions matrix, with per-source
+# Builds each per-source Docker fixture stage (pyenv-fixture /
+# conda-fixture / venvwrapper-fixture) in parallel via a GH Actions matrix, with per-source
 # BuildKit cache scoping so the variants don't fight over the same cache.
 # Replaces the previous pyenv-only setup; the matrix subsumes that case.
 
@@ -34,6 +34,21 @@ jobs:
       fail-fast: false
       matrix:
         source-env: [pyenv, conda, venvwrapper]
+        # The env each image's fixture stage creates, the source_type
+        # `scuv migrate list --json` reports for it, and its Python.
+        include:
+          - source-env: pyenv
+            fixture: test-pyenv-312
+            source-type: pyenv
+            python: "3.12"
+          - source-env: conda
+            fixture: test-conda-312
+            source-type: conda
+            python: "3.12"
+          - source-env: venvwrapper
+            fixture: test-venvwrapper-312
+            source-type: virtualenv_wrapper
+            python: "3.12"
 
     steps:
       - name: Checkout repository
@@ -42,10 +57,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      # Build the matching leaf stage with GHA cache scoped per source-env
+      # Build the matching fixture stage with GHA cache scoped per source-env
       # so the three matrix shards don't overwrite each other's cache.
-      # mode=max exports every layer (not just the final image), which is
-      # essential for our cargo-chef-style dependency layer reuse.
+      # mode=max exports every layer (not just the final image), so the
+      # intermediate stages (Python builds, fixture installs) are reused too.
+      # It holds no Cargo artifacts: the fixture stages compile nothing, and
+      # the workspace is compiled by `docker run` below, outside BuildKit.
       #
       # Only pushes to main export: a PR run reads main's cache but writes
       # nothing, so closed PRs stop leaving ~2 GB of blobs behind. And the
@@ -53,14 +70,18 @@ jobs:
       # LRU eviction ran during an export and failed a green build with
       # `error writing layer blob: not_found` (#198). A missed cache write
       # costs the next run a rebuild; it must not fail this one.
-      - name: Build ${{ matrix.source-env }}-test image
+      # The *-fixture stages carry no scuv binary and do not depend on the
+      # source tree (docker/Dockerfile header), so a change under src/
+      # leaves every fixture layer cached; the workspace is compiled once,
+      # inside the container, by the step below.
+      - name: Build ${{ matrix.source-env }}-fixture image
         uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/Dockerfile
-          target: ${{ matrix.source-env }}-test
+          target: ${{ matrix.source-env }}-fixture
           load: true
-          tags: scuv:${{ matrix.source-env }}-test
+          tags: scuv:${{ matrix.source-env }}-fixture
           cache-from: type=gha,scope=integration-${{ matrix.source-env }}
           cache-to: ${{ github.event_name != 'pull_request' && format('type=gha,mode=max,scope=integration-{0},ignore-error=true', matrix.source-env) || '' }}
 
@@ -72,8 +93,19 @@ jobs:
         # failures in fresh containers don't abort the entrypoint.
         # --run-ignored all: the image has uv and Python 3.12, so the tests
         # that need them (ignored on a bare runner) run here as well.
-        # nextest runs each test in its own process (.config/nextest.toml);
-        # it skips doctests, so `cargo test --doc` follows.
+        # nextest runs each test in its own process (.config/nextest.toml)
+        # and builds the scuv binary along with the tests, so this is the
+        # only compile: SCUV_ENTRYPOINT_BUILD=0 stops entrypoint.sh from
+        # running its own release build first. Debug profile: nothing here
+        # needs an optimized binary, and the release build with LTO cost
+        # more than the tests. Doctests are left to ci.yml's Test and MSRV
+        # jobs; none of them touch the fixtures.
+        # The image has zsh and fish, so the shell tests must run, not skip.
+        # check_fixture.py then asserts that `migrate list` finds this
+        # image's fixture env, ready, with a working interpreter: the
+        # migration tests build their own fake trees and `migrate list`
+        # exits 0 on an empty result, so nothing else would notice a
+        # broken fixture.
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
@@ -81,10 +113,13 @@ jobs:
             -e CARGO_TERM_COLOR=always \
             -e RUST_BACKTRACE=1 \
             -e SCUV_LANG=en \
-            scuv:${{ matrix.source-env }}-test \
+            -e SCUV_ENTRYPOINT_BUILD=0 \
+            -e SCUV_REQUIRE_FISH=1 \
+            -e SCUV_REQUIRE_ZSH=1 \
+            scuv:${{ matrix.source-env }}-fixture \
             bash -c "
-              cargo build --release &&
-              cargo nextest run --profile ci --release --run-ignored all &&
-              cargo test --release --doc &&
-              ./target/release/scuv migrate list
+              set -o pipefail &&
+              cargo nextest run --profile ci --run-ignored all &&
+              ./target/debug/scuv migrate list --json |
+                python3 docker/scripts/check_fixture.py ${{ matrix.fixture }} ${{ matrix.source-type }} ${{ matrix.python }}
             "
