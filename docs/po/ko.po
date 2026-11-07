@@ -3134,7 +3134,7 @@ msgid "Location"
 msgstr "위치"
 
 #: src/commands/index.md:62 src/development/architecture.md:85
-#: src/development/architecture.md:343 src/development/ci-cd.md:258
+#: src/development/architecture.md:343 src/development/ci-cd.md:303
 msgid "Purpose"
 msgstr "용도"
 
@@ -14414,8 +14414,7 @@ msgstr "막아내는 것"
 msgid "`ci.yml`"
 msgstr "`ci.yml`"
 
-#: src/development/ci-cd.md:11 src/development/ci-cd.md:12
-#: src/development/ci-cd.md:13 src/development/ci-cd.md:14
+#: src/development/ci-cd.md:11 src/development/ci-cd.md:13
 msgid "PR, main"
 msgstr "PR, main"
 
@@ -14434,12 +14433,16 @@ msgstr ""
 msgid "`integration-test.yml`"
 msgstr "`integration-test.yml`"
 
+#: src/development/ci-cd.md:12 src/development/ci-cd.md:14
+msgid "PR (steps skipped without code changes), main"
+msgstr "PR(코드 변경이 없으면 단계 건너뜀), main"
+
 #: src/development/ci-cd.md:12
 msgid "Migration breaking for pyenv / conda / virtualenvwrapper users"
 msgstr "pyenv / conda / virtualenvwrapper 사용자의 마이그레이션 실패"
 
-#: src/development/ci-cd.md:13 src/development/ci-cd.md:150
-#: src/development/ci-cd.md:262
+#: src/development/ci-cd.md:13 src/development/ci-cd.md:195
+#: src/development/ci-cd.md:307
 msgid "`coverage.yml`"
 msgstr "`coverage.yml`"
 
@@ -14447,7 +14450,7 @@ msgstr "`coverage.yml`"
 msgid "Untested code paths going unnoticed"
 msgstr "테스트되지 않은 코드 경로를 모르고 지나가는 것"
 
-#: src/development/ci-cd.md:14 src/development/ci-cd.md:154
+#: src/development/ci-cd.md:14 src/development/ci-cd.md:199
 msgid "`bench.yml`"
 msgstr "`bench.yml`"
 
@@ -14455,7 +14458,7 @@ msgstr "`bench.yml`"
 msgid "Performance regressions in parsing and validation"
 msgstr "파싱과 검증의 성능 회귀"
 
-#: src/development/ci-cd.md:15 src/development/ci-cd.md:151
+#: src/development/ci-cd.md:15 src/development/ci-cd.md:196
 msgid "`mutants.yml`"
 msgstr "`mutants.yml`"
 
@@ -14479,7 +14482,7 @@ msgstr "PR, main, 매주"
 msgid "Vulnerable dependencies, disallowed licences, untrusted sources"
 msgstr "취약한 의존성, 허용되지 않은 라이선스, 신뢰할 수 없는 출처"
 
-#: src/development/ci-cd.md:17 src/development/ci-cd.md:153
+#: src/development/ci-cd.md:17 src/development/ci-cd.md:198
 msgid "`msrv-check.yml`"
 msgstr "`msrv-check.yml`"
 
@@ -14545,8 +14548,8 @@ msgstr "`v*` 태그"
 msgid "Broken documentation site"
 msgstr "깨진 문서 사이트"
 
-#: src/development/ci-cd.md:22 src/development/ci-cd.md:260
-#: src/development/ci-cd.md:261
+#: src/development/ci-cd.md:22 src/development/ci-cd.md:305
+#: src/development/ci-cd.md:306
 msgid "`release-plz.yml`"
 msgstr "`release-plz.yml`"
 
@@ -14872,10 +14875,124 @@ msgstr ""
 "나왔고, 이들을 덮는 단위 테스트를 추가했습니다."
 
 #: src/development/ci-cd.md:142
+msgid "Skip what a PR cannot affect"
+msgstr "PR이 영향을 줄 수 없는 검사 건너뛰기"
+
+#: src/development/ci-cd.md:144
+msgid ""
+"Docker Integration is the slowest required check, and Benchmarks the slowest "
+"optional one. A PR that edits only docs, `CLAUDE.md` or another workflow "
+"cannot change what either of them builds or tests: 6 of the 20 PRs merged "
+"between 2026-10-15 and 2026-11-07 were like that, and each ran both in full. "
+"Both workflows now start with a `scope` step that diffs the PR against its "
+"merge-base and lets the later steps run only when a file they read changed. "
+"Each workflow lists its own inputs in `CODE_PATHS` (sources, tests, benches, "
+"`locales/`, the cargo and nextest configs, the toolchain file, root "
+"`.gitattributes`, the workflow file itself, and for integration `docker/` "
+"and `.dockerignore`)."
+msgstr ""
+"Docker Integration은 가장 느린 필수 검사이고, Benchmarks는 가장 느린 선택 검"
+"사입니다. 문서, `CLAUDE.md`, 다른 워크플로만 고친 PR은 둘이 빌드하거나 테스트"
+"하는 대상을 바꿀 수 없습니다. 2026-10-15부터 2026-11-07까지 머지된 PR 20개 "
+"중 6개가 그랬는데, 모두 두 워크플로를 끝까지 실행했습니다. 이제 두 워크플로"
+"는 `scope` 단계로 시작합니다. 이 단계는 PR을 merge-base와 비교해, 뒤 단계들"
+"이 읽는 파일이 바뀌었을 때만 그 단계들을 실행합니다. 각 워크플로는 자기 입력"
+"을 `CODE_PATHS`에 나열합니다(소스, 테스트, 벤치, `locales/`, cargo와 nextest "
+"설정, 툴체인 파일, 루트 `.gitattributes`, 워크플로 파일 자신, 통합 테스트는 "
+"여기에 `docker/`와 `.dockerignore`)."
+
+#: src/development/ci-cd.md:155
+msgid ""
+"The check stays required and still reports: the job runs, the step decides, "
+"and the later steps carry `if: steps.scope.outputs.code != 'false'`. Two "
+"simpler mechanisms do not work here:"
+msgstr ""
+"검사는 계속 필수이고 결과도 계속 올라옵니다. job은 실행되고, 그 단계가 판단하"
+"며, 뒤 단계들에는 `if: steps.scope.outputs.code != 'false'`가 붙습니다. 더 간"
+"단한 두 방법은 여기서 쓸 수 없습니다."
+
+#: src/development/ci-cd.md:160
+msgid ""
+"`on.paths` skips the whole workflow, and a required check of a skipped "
+"workflow stays Pending, which blocks the merge."
+msgstr ""
+"`on.paths`는 워크플로 전체를 건너뛰는데, 건너뛴 워크플로의 필수 검사는 "
+"Pending으로 남아 머지를 막습니다."
+
+#: src/development/ci-cd.md:162
+msgid ""
+"A job-level `if` is evaluated before the matrix expands, so a skipped matrix "
+"job posts one check with the expression unexpanded (`Mutants (full $"
+"{{ matrix.shard }}/2)` is that), and the three required `Docker Integration "
+"(<source>)` names would never appear."
+msgstr ""
+"job 수준의 `if`는 matrix가 펼쳐지기 전에 평가됩니다. 그래서 건너뛴 matrix job"
+"은 식이 펼쳐지지 않은 이름으로 검사 하나만 올리고(`Mutants (full $"
+"{{ matrix.shard }}/2)`가 그 예입니다), 필수 검사인 `Docker Integration "
+"(<source>)` 세 이름은 끝내 나타나지 않습니다."
+
+#: src/development/ci-cd.md:167
+msgid "The step is built to fail toward running everything:"
+msgstr ""
+"이 단계는 판단이 어긋나면 모두 실행하는 쪽으로 실패하도록 만들었습니다."
+
+#: src/development/ci-cd.md:169
+msgid ""
+"It diffs the event's own `base.sha...head.sha`, so a re-run or a later push "
+"cannot classify a different revision; only PR runs fetch full history "
+"(`fetch-depth: 0`) for the merge-base."
+msgstr ""
+"이벤트 자체의 `base.sha...head.sha`를 비교하므로, 재실행이나 이후 push가 다"
+"른 리비전을 분류할 수 없습니다. merge-base가 필요한 PR 실행만 전체 이력을 받"
+"습니다(`fetch-depth: 0`)."
+
+#: src/development/ci-cd.md:172
+msgid ""
+"`--no-renames` lists both sides of a rename, so moving a file out of `docker/"
+"` still counts as touching `docker/`."
+msgstr ""
+"`--no-renames`는 이름 변경의 양쪽 경로를 모두 나열하므로, 파일을 `docker/` 밖"
+"으로 옮겨도 `docker/`를 건드린 것으로 셉니다."
+
+#: src/development/ci-cd.md:174
+msgid ""
+"`-z` with `grep -z` keeps paths unquoted; without it, git prints a non-ASCII "
+"or newline-containing name in quotes and a pattern anchored with `^` misses "
+"it."
+msgstr ""
+"`-z`와 `grep -z`를 함께 쓰면 경로가 따옴표 없이 그대로 전달됩니다. 이것이 없"
+"으면 git은 ASCII가 아니거나 줄바꿈이 든 이름을 따옴표로 감싸 출력하고, `^`로 "
+"고정한 패턴이 그 이름을 놓칩니다."
+
+#: src/development/ci-cd.md:177
+msgid ""
+"Only grep's \"no match\" (exit 1) skips. A failed diff (an unknown SHA, "
+"unrelated histories), a grep error and any non-PR event run everything. A "
+"failed write of the step output fails the job instead of leaving it green "
+"with nothing run."
+msgstr ""
+"grep의 \"일치 없음\"(종료 코드 1)일 때만 건너뜁니다. diff 실패(알 수 없는 "
+"SHA, 관련 없는 이력), grep 오류, PR이 아닌 이벤트는 모두 전체를 실행합니다. "
+"단계 출력 쓰기에 실패하면, 아무것도 실행하지 않은 채 초록으로 남기지 않고 job"
+"을 실패시킵니다."
+
+#: src/development/ci-cd.md:182
+msgid ""
+"A skipped run is green but did not test anything; the job summary says `no "
+"code paths changed: tests skipped, not run`. The cases above were checked "
+"with the step's script under the runner's `bash --noprofile --norc -eo "
+"pipefail` and GNU grep before it landed."
+msgstr ""
+"건너뛴 실행은 초록이지만 아무것도 테스트하지 않았습니다. job 요약에는 `no "
+"code paths changed: tests skipped, not run`이라고 나옵니다. 위의 경우들은 반"
+"영 전에 러너와 같은 `bash --noprofile --norc -eo pipefail`과 GNU grep으로 이 "
+"단계의 스크립트를 실행해 확인했습니다."
+
+#: src/development/ci-cd.md:187
 msgid "One cache per toolchain, one writer per cache"
 msgstr "툴체인마다 캐시 하나, 캐시마다 writer 하나"
 
-#: src/development/ci-cd.md:144
+#: src/development/ci-cd.md:189
 msgid ""
 "`Swatinem/rust-cache` keys on `shared-key`, so jobs sharing a key share a "
 "cache:"
@@ -14883,47 +15000,47 @@ msgstr ""
 "`Swatinem/rust-cache`는 `shared-key`로 캐시를 구분하므로, 키를 공유하는 잡들"
 "은 캐시를 공유합니다:"
 
-#: src/development/ci-cd.md:147
+#: src/development/ci-cd.md:192
 msgid "`shared-key`"
 msgstr "`shared-key`"
 
-#: src/development/ci-cd.md:147
+#: src/development/ci-cd.md:192
 msgid "Jobs"
 msgstr "잡"
 
-#: src/development/ci-cd.md:149
+#: src/development/ci-cd.md:194
 msgid "`stable-ci`"
 msgstr "`stable-ci`"
 
-#: src/development/ci-cd.md:149
+#: src/development/ci-cd.md:194
 msgid "`ci.yml` lint / test / uv-floor / shellcheck"
 msgstr "`ci.yml`의 lint / test / uv-floor / shellcheck"
 
-#: src/development/ci-cd.md:150
+#: src/development/ci-cd.md:195
 msgid "`coverage`"
 msgstr "`coverage`"
 
-#: src/development/ci-cd.md:151
+#: src/development/ci-cd.md:196
 msgid "`mutants`"
 msgstr "`mutants`"
 
-#: src/development/ci-cd.md:152
+#: src/development/ci-cd.md:197
 msgid "`msrv`"
 msgstr "`msrv`"
 
-#: src/development/ci-cd.md:152
+#: src/development/ci-cd.md:197
 msgid "`ci.yml` msrv"
 msgstr "`ci.yml`의 msrv"
 
-#: src/development/ci-cd.md:153
+#: src/development/ci-cd.md:198
 msgid "`msrv-verify`"
 msgstr "`msrv-verify`"
 
-#: src/development/ci-cd.md:154
+#: src/development/ci-cd.md:199
 msgid "`bench`"
 msgstr "`bench`"
 
-#: src/development/ci-cd.md:156
+#: src/development/ci-cd.md:201
 msgid ""
 "MSRV artifacts are kept separate on purpose: a different compiler produces "
 "incompatible output, and sharing would mean both jobs permanently "
@@ -14932,7 +15049,7 @@ msgstr ""
 "MSRV 산출물을 분리해 둔 것은 의도적입니다. 컴파일러가 다르면 호환되지 않는 결"
 "과물이 나오고, 공유하면 두 잡이 서로의 캐시를 계속 무효화하게 됩니다."
 
-#: src/development/ci-cd.md:160
+#: src/development/ci-cd.md:205
 msgid ""
 "Within a shared key there is at most one writer. `ci.yml` marks lint and "
 "shellcheck `save-if: false` so only the test job — which produces the "
@@ -14956,7 +15073,7 @@ msgstr ""
 "준 빌드는 약 65초(full 실행, 2026-11-02)이고, PR #237의 mutant 55개는 14분이 "
 "걸렸습니다."
 
-#: src/development/ci-cd.md:171
+#: src/development/ci-cd.md:216
 msgid ""
 "Note that `rust-cache` folds workflow-level `env` into its key hash. Two "
 "jobs can declare the same `shared-key` and still land on different caches if "
@@ -14966,11 +15083,11 @@ msgstr ""
 "두 잡이 같은 `shared-key`를 선언해도 워크플로가 설정한 환경 변수가 다르면 서"
 "로 다른 캐시에 떨어질 수 있습니다."
 
-#: src/development/ci-cd.md:175
+#: src/development/ci-cd.md:220
 msgid "Failure modes worth remembering"
 msgstr "기억해 둘 만한 실패 양상"
 
-#: src/development/ci-cd.md:177
+#: src/development/ci-cd.md:222
 msgid ""
 "These cost real debugging time. They are recorded so the next person "
 "recognises them faster."
@@ -14978,11 +15095,11 @@ msgstr ""
 "아래는 실제로 디버깅 시간을 잡아먹은 것들입니다. 다음 사람이 더 빨리 알아보도"
 "록 기록해 둡니다."
 
-#: src/development/ci-cd.md:180
+#: src/development/ci-cd.md:225
 msgid "An unmarked test picks up another test's fake uv"
 msgstr "표시 없는 테스트가 다른 테스트의 가짜 uv를 집어 간다"
 
-#: src/development/ci-cd.md:182
+#: src/development/ci-cd.md:227
 msgid ""
 "The `v0.17.1` release PR failed Docker Integration in two tests that had "
 "passed on the same source a minute earlier, on `main`. One `#[serial]` test "
@@ -15010,11 +15127,11 @@ msgstr ""
 "한 프로세스에서 돌기 때문에 uv에 닿는 테스트는 `#[serial]`을 붙이거나 env 잠"
 "금 안에서 실행합니다."
 
-#: src/development/ci-cd.md:196
+#: src/development/ci-cd.md:241
 msgid "Criterion errors corrupt the benchmark parser output"
 msgstr "Criterion 에러가 벤치마크 파서 출력을 오염시킨다"
 
-#: src/development/ci-cd.md:198
+#: src/development/ci-cd.md:243
 msgid ""
 "`rust-cache` restores `target/` with the criterion tree present but its "
 "`sample.json` baselines pruned out. Criterion then fails to load a baseline "
@@ -15024,7 +15141,7 @@ msgstr ""
 "낸 상태로 `target/`을 복원합니다. 그러면 criterion은 있어야 마땅해 보이는 "
 "baseline을 읽지 못하고, 그 에러를 표준출력에 *줄 중간에* 씁니다:"
 
-#: src/development/ci-cd.md:203
+#: src/development/ci-cd.md:248
 msgid ""
 "```\n"
 "test clap_parse_create ... Criterion.rs ERROR: error: Failed to access file\n"
@@ -15038,7 +15155,7 @@ msgstr ""
 "bench:      41,347 ns/iter (+/- 2,364)\n"
 "```"
 
-#: src/development/ci-cd.md:209
+#: src/development/ci-cd.md:254
 msgid ""
 "`benchmark-action`'s parser needs `test NAME ... bench: N ns/iter` on one "
 "line. Split in two, it reports \"no benchmark result\" even though every "
@@ -15050,7 +15167,7 @@ msgstr ""
 "음\"으로 보고합니다. 콜드 캐시에서 통과하는 이유는 반쯤 읽을 트리 자체가 없"
 "기 때문입니다."
 
-#: src/development/ci-cd.md:214
+#: src/development/ci-cd.md:259
 msgid ""
 "Each bench step therefore starts with `rm -rf target/criterion`. The gate "
 "compares against `gh-pages` history and never against criterion's local "
@@ -15060,11 +15177,11 @@ msgstr ""
 "`gh-pages` 이력과 비교하지 criterion의 로컬 baseline과는 비교하지 않으므로, "
 "지워도 잃는 것이 없습니다."
 
-#: src/development/ci-cd.md:218
+#: src/development/ci-cd.md:263
 msgid "Two benchmark-action invocations collide on gh-pages"
 msgstr "benchmark-action을 두 번 호출하면 gh-pages에서 충돌한다"
 
-#: src/development/ci-cd.md:220
+#: src/development/ci-cd.md:265
 msgid ""
 "The first invocation fetches `gh-pages` into a local branch and commits its "
 "entry onto it — even on PRs, where it simply never pushes. A second "
@@ -15078,11 +15195,11 @@ msgstr ""
 "도 전에 스텝이 실패합니다. 두 번째 스텝에 `skip-fetch-gh-pages: true`를 주면 "
 "첫 번째가 가져온 것을 재사용합니다."
 
-#: src/development/ci-cd.md:227
+#: src/development/ci-cd.md:272
 msgid "`cargo bench | tee` swallows failures"
 msgstr "`cargo bench | tee`가 실패를 삼킨다"
 
-#: src/development/ci-cd.md:229
+#: src/development/ci-cd.md:274
 msgid ""
 "Without `set -o pipefail` the step exits with `tee`'s status, so a genuinely "
 "failing `cargo bench` reports success and resurfaces one step later as a "
@@ -15092,11 +15209,11 @@ msgstr ""
 "로 실패한 `cargo bench`가 성공으로 보고되고, 한 스텝 뒤에 알아보기 어려운 파"
 "싱 에러로 다시 나타납니다."
 
-#: src/development/ci-cd.md:233
+#: src/development/ci-cd.md:278
 msgid "Docs guards run on PRs only for docs paths"
 msgstr "문서 가드는 PR에서는 문서 경로에 한해 돈다"
 
-#: src/development/ci-cd.md:235
+#: src/development/ci-cd.md:280
 msgid ""
 "`docs.yml` — the mdBook build, the `ko.po` staleness round-trip and the "
 "Pages deploy — triggers only on `v*` tags. `docs-check.yml` runs the same "
@@ -15115,7 +15232,7 @@ msgstr ""
 "하고 `pages` concurrency group에 들어가지 않게 하기 위해서다. 그 경로 밖에 있"
 "는 사실은 `ci.yml` Lint 잡의 검사 두 개가 맡는다:"
 
-#: src/development/ci-cd.md:244
+#: src/development/ci-cd.md:289
 msgid ""
 "`scripts/check-doc-references.py` compares facts copied into `README.md`, "
 "`CONTRIBUTING.md`, `llms.txt`, `llms-full.txt` and the docs against the code "
@@ -15130,7 +15247,7 @@ msgstr ""
 "는 `locales/app.yml`에서 가져옵니다. 모든 검사가 문서 대 코드입니다. 세 "
 "`llms` 파일을 서로 비교하면 셋 다 틀렸을 때도 통과합니다."
 
-#: src/development/ci-cd.md:250
+#: src/development/ci-cd.md:295
 msgid ""
 "`msgfmt --check` on `docs/po/*.po` catches structural damage such as a "
 "`msgstr` whose trailing newline no longer matches its `msgid`."
@@ -15138,7 +15255,7 @@ msgstr ""
 "`docs/po/*.po`에 대한 `msgfmt --check`는 `msgstr`의 끝 개행이 `msgid`와 더 이"
 "상 맞지 않는 것 같은 구조적 손상을 잡습니다."
 
-#: src/development/ci-cd.md:253
+#: src/development/ci-cd.md:298
 msgid ""
 "Editing any page under `docs/src/` still requires regenerating `ko.po` in "
 "the same commit. See [Docs Translation](docs-translation.md)."
@@ -15146,55 +15263,55 @@ msgstr ""
 "`docs/src/` 아래 페이지를 수정할 때는 여전히 같은 커밋에서 `ko.po`를 재생성해"
 "야 합니다. [문서 번역](docs-translation.md)을 참고하세요."
 
-#: src/development/ci-cd.md:256
+#: src/development/ci-cd.md:301
 msgid "Secrets"
 msgstr "시크릿"
 
-#: src/development/ci-cd.md:258
+#: src/development/ci-cd.md:303
 msgid "Secret"
 msgstr "시크릿"
 
-#: src/development/ci-cd.md:258
+#: src/development/ci-cd.md:303
 msgid "Used by"
 msgstr "사용하는 곳"
 
-#: src/development/ci-cd.md:260
+#: src/development/ci-cd.md:305
 msgid "`RELEASE_PLZ_TOKEN`"
 msgstr "`RELEASE_PLZ_TOKEN`"
 
-#: src/development/ci-cd.md:260
+#: src/development/ci-cd.md:305
 msgid "Push release PRs and tags"
 msgstr "릴리스 PR과 태그 푸시"
 
-#: src/development/ci-cd.md:261
+#: src/development/ci-cd.md:306
 msgid "`CARGO_REGISTRY_TOKEN`"
 msgstr "`CARGO_REGISTRY_TOKEN`"
 
-#: src/development/ci-cd.md:261
+#: src/development/ci-cd.md:306
 msgid "Publish to crates.io"
 msgstr "crates.io 게시"
 
-#: src/development/ci-cd.md:262
+#: src/development/ci-cd.md:307
 msgid "`CODECOV_TOKEN`"
 msgstr "`CODECOV_TOKEN`"
 
-#: src/development/ci-cd.md:262
+#: src/development/ci-cd.md:307
 msgid "Upload coverage reports"
 msgstr "커버리지 리포트 업로드"
 
-#: src/development/ci-cd.md:263
+#: src/development/ci-cd.md:308
 msgid "`GITHUB_TOKEN`"
 msgstr "`GITHUB_TOKEN`"
 
-#: src/development/ci-cd.md:263
+#: src/development/ci-cd.md:308
 msgid "bench, docker"
 msgstr "bench, docker"
 
-#: src/development/ci-cd.md:263
+#: src/development/ci-cd.md:308
 msgid "Push `gh-pages`, publish to ghcr.io"
 msgstr "`gh-pages` 푸시, ghcr.io 게시"
 
-#: src/development/ci-cd.md:265
+#: src/development/ci-cd.md:310
 msgid ""
 "A workflow triggered by Dependabot reads the **Dependabot** secret store, "
 "not the Actions one. A secret both need has to be registered twice — `gh "
@@ -15206,7 +15323,7 @@ msgstr ""
 "CODECOV_TOKEN --app dependabot` — 그렇지 않으면 다른 곳에서는 통과하면서 "
 "Dependabot PR에서만 잡이 실패합니다."
 
-#: src/development/ci-cd.md:270
+#: src/development/ci-cd.md:315
 msgid ""
 "Default workflow permissions are `read`. Workflows that need more declare it "
 "explicitly — `bench.yml` needs `contents: write` for `gh-pages`, `docker-"
@@ -15216,11 +15333,11 @@ msgstr ""
 "다 — `bench.yml`은 `gh-pages`를 위해 `contents: write`가, `docker-build.yml`"
 "은 레지스트리를 위해 `packages: write`가 필요합니다."
 
-#: src/development/ci-cd.md:274
+#: src/development/ci-cd.md:319
 msgid "Releases"
 msgstr "릴리스"
 
-#: src/development/ci-cd.md:276
+#: src/development/ci-cd.md:321
 msgid ""
 "`release-plz` reads Conventional Commits on `main` and prepares the release; "
 "`release-plz.toml` holds the policy:"
@@ -15228,7 +15345,7 @@ msgstr ""
 "`release-plz`는 `main`의 Conventional Commits를 읽어 릴리스를 준비하며, 정책"
 "은 `release-plz.toml`에 있습니다:"
 
-#: src/development/ci-cd.md:279
+#: src/development/ci-cd.md:324
 msgid ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — documentation and "
 "chore commits do not trigger a release on their own."
@@ -15236,7 +15353,7 @@ msgstr ""
 "`release_commits = \"^(feat|fix|perf|refactor|revert)\"` — 문서와 잡무 커밋만"
 "으로는 릴리스가 생기지 않습니다."
 
-#: src/development/ci-cd.md:281
+#: src/development/ci-cd.md:326
 msgid ""
 "`features_always_increment_minor = true` — a `feat` bumps the minor version "
 "even in `0.x`, where cargo's default would only bump the patch."
@@ -15244,11 +15361,11 @@ msgstr ""
 "`features_always_increment_minor = true` — `0.x`에서도 `feat`이면 minor 버전"
 "이 올라갑니다. cargo 기본값이라면 patch만 올랐을 자리입니다."
 
-#: src/development/ci-cd.md:283
+#: src/development/ci-cd.md:328
 msgid "Changelog generation goes through `git-cliff` (`cliff.toml`)."
 msgstr "체인지로그 생성은 `git-cliff`(`cliff.toml`)를 거칩니다."
 
-#: src/development/ci-cd.md:285
+#: src/development/ci-cd.md:330
 msgid ""
 "`release-plz` only rewrites `Cargo.toml`, `Cargo.lock` and `CHANGELOG.md`. "
 "The `scuv <version>` samples in `README.md`, `CLAUDE.md`, `installation.md` "
@@ -15276,7 +15393,7 @@ msgstr ""
 "플로를 재실행시키지 않기 때문이고, 뒤이어 전체 가드를 다시 돌려서 `--fix`가 "
 "다루지 않는 참조가 어긋나 있으면 잡이 그대로 실패하게 합니다."
 
-#: src/development/ci-cd.md:298
+#: src/development/ci-cd.md:343
 msgid ""
 "Merging the release PR is what publishes: it creates the tag, the GitHub "
 "release, and the crates.io upload — and the `v*` tag is also what deploys "
@@ -15285,11 +15402,11 @@ msgstr ""
 "게시를 일으키는 것은 릴리스 PR의 머지입니다. 태그, GitHub 릴리스, crates.io "
 "업로드가 그때 만들어지며 — 그 `v*` 태그가 문서 사이트 배포까지 일으킵니다."
 
-#: src/development/ci-cd.md:302
+#: src/development/ci-cd.md:347
 msgid "Known gaps"
 msgstr "알려진 공백"
 
-#: src/development/ci-cd.md:304
+#: src/development/ci-cd.md:349
 msgid ""
 "Accurate as of the last revision of this page. Verify before relying on any "
 "of these being fixed."
@@ -15297,7 +15414,7 @@ msgstr ""
 "이 페이지를 마지막으로 고친 시점 기준입니다. 아래 항목이 해결됐다고 전제하기 "
 "전에 직접 확인하세요."
 
-#: src/development/ci-cd.md:307
+#: src/development/ci-cd.md:352
 msgid ""
 "**`codecov/project` has never posted.** `codecov.yml` states a target for "
 "it, and the config is live — setting `comment.require_changes` changed "
@@ -15320,7 +15437,7 @@ msgstr ""
 "하락은 잡지 못합니다. 게시 여부를 모르는 상태를 필수로 지정하면 모든 PR이 오"
 "지 않을 검사를 기다리게 됩니다."
 
-#: src/development/ci-cd.md:317
+#: src/development/ci-cd.md:362
 msgid ""
 "**The coverage floor is absolute, not relative.** `--fail-under-lines 80` is "
 "measured against llvm-cov, which reads 80.97% where Codecov reads 78.5%; the "
@@ -15335,7 +15452,7 @@ msgstr ""
 "다. 커버리지가 81%에서 80.1%로 떨어져도 걸리지 않으며, 이를 막으려면 "
 "`codecov/project`가 필요합니다. 위의 공백을 참고하세요."
 
-#: src/development/ci-cd.md:323
+#: src/development/ci-cd.md:368
 msgid ""
 "**The cache hit its limit.** 10.49 GB against the 10 GB allowance on "
 "2026-09-26: 139 caches for `main` (about 2 GB of them `v0-rust-*` keyed to "
@@ -15369,11 +15486,11 @@ msgstr ""
 "에서 lockfile 해시를 뗀 것)마다 가장 최근 항목, 즉 같은 toolchain과 환경으로 "
 "도는 이후 실행이 fallback으로 복원할 항목만 남긴다."
 
-#: src/development/ci-cd.md:341
+#: src/development/ci-cd.md:386
 msgid "Recently closed"
 msgstr "최근에 해결된 것"
 
-#: src/development/ci-cd.md:343
+#: src/development/ci-cd.md:388
 msgid ""
 "Left here because the reasoning is worth keeping, not because anything is "
 "outstanding."
@@ -15381,7 +15498,7 @@ msgstr ""
 "남겨 둔 이유는 그 판단 과정이 기록할 만해서이지, 아직 남은 문제가 있어서가 아"
 "닙니다."
 
-#: src/development/ci-cd.md:346
+#: src/development/ci-cd.md:391
 msgid ""
 "The weekly full mutation run tolerated missed mutants (exit 2) while a "
 "backlog was triaged: 55 escapes at first, 46 of them under `src/core/migrate/"
@@ -15399,7 +15516,7 @@ msgstr ""
 "`cfg(windows)` 쌍둥이 함수였으므로 다른 Windows 경로 도우미와 함께 `.cargo/"
 "mutants.toml`에서 제외했습니다. 이제 놓친 변이가 있으면 주간 잡이 실패합니다."
 
-#: src/development/ci-cd.md:355
+#: src/development/ci-cd.md:400
 msgid ""
 "Docs were only verified on release tags: the MSRV 1.89 bump edited pages "
 "under `docs/src/`, its PR went green, and the `v0.15.4` tag then failed at "
@@ -15414,7 +15531,7 @@ msgstr ""
 "조용한 절반이라 누군가 사이트를 열어 보기 전까지 아무도 몰랐다. 문서 경로를 "
 "건드리는 PR에서 빌드와 라운드트립을 돌리는 `docs-check.yml`로 닫음."
 
-#: src/development/ci-cd.md:362
+#: src/development/ci-cd.md:407
 msgid ""
 "Coverage uploads were rejected for months with `Token required because "
 "branch is protected` while the job reported success, because "
@@ -15432,7 +15549,7 @@ msgstr ""
 "릿 저장소를 읽기 때문에, 그쪽에도 토큰을 등록하기 전까지 모든 Dependabot PR"
 "이 같은 방식으로 계속 실패했습니다."
 
-#: src/development/ci-cd.md:370
+#: src/development/ci-cd.md:415
 msgid ""
 "Every release PR failed the Lint job because release-plz bumps `Cargo.toml` "
 "without touching the version samples in prose. Hand-fixed at v0.15.3, hit "
@@ -15446,7 +15563,7 @@ msgstr ""
 "니다. v0.15.3의 수정이 요구한 방향 그대로입니다 — 검사를 느슨하게 하는 대신 "
 "릴리스가 예시를 갱신하도록 가르치는 것입니다."
 
-#: src/development/ci-cd.md:375
+#: src/development/ci-cd.md:420
 msgid ""
 "Dependabot does not read `rust-version`, so it raised `rust-i18n` past the "
 "MSRV and every job died at dependency resolution before a line compiled. The "
@@ -15462,7 +15579,7 @@ msgstr ""
 "rustc 1.93.1을 요구)에 대한 `ignore`를 갖고 있으며, MSRV가 따라잡으면 지울 부"
 "채로 표시해 두었습니다."
 
-#: src/development/ci-cd.md:381
+#: src/development/ci-cd.md:426
 msgid ""
 "The weekly full mutation run had never once completed — 60 minutes killed it "
 "every time, and GitHub reports a timed-out job as _cancelled_, which reads "
@@ -15473,7 +15590,7 @@ msgstr ""
 "GitHub은 타임아웃된 잡을 _cancelled_ 로 보고하는데 이는 별일 아닌 것처럼 읽힙"
 "니다. 60분에 385/446개로 측정돼 타임아웃을 90분으로 올렸습니다."
 
-#: src/development/ci-cd.md:385
+#: src/development/ci-cd.md:430
 msgid ""
 "At 90 minutes the weekly full run still timed out as the suite grew (the "
 "2026-10-19 and 2026-11-02 runs). It now runs as two round-robin shards, each "
@@ -15483,7 +15600,7 @@ msgstr ""
 "(2026-10-19, 2026-11-02 실행). 지금은 round-robin shard 두 개로 나눠 각각 90"
 "분 제한을 두며, 시험 실행에서 42분과 43분이 걸렸습니다."
 
-#: src/development/ci-cd.md:388
+#: src/development/ci-cd.md:433
 msgid ""
 "`aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now "
 "pinned to release tags. Dependabot could not follow either: it cannot bump a "
@@ -15494,7 +15611,7 @@ msgstr ""
 "올릴 수 없고, setup-uv는 v8부터 움직이는 메이저 태그 발행을 중단했기 때문입니"
 "다."
 
-#: src/development/ci-cd.md:392
+#: src/development/ci-cd.md:437
 msgid ""
 "Coverage and mutants ran tests as threads of one process after the rest of "
 "CI had moved to nextest, so a missing `#[serial]` could still make them "
@@ -15508,7 +15625,7 @@ msgstr ""
 "는 처음부터 합계에 들어 있지 않았습니다. 표본으로 잰 파일 세 개에서 mutants"
 "는 `cargo test`일 때의 절반 정도 시간이 걸렸습니다."
 
-#: src/development/ci-cd.md:397
+#: src/development/ci-cd.md:442
 msgid ""
 "`stable-ci` had four writers and, because `rust-cache` hashes workflow-level "
 "`env`, was never actually shared with `coverage.yml` or `mutants.yml` at "
@@ -15518,7 +15635,7 @@ msgstr ""
 "시에 넣기 때문에 `coverage.yml`이나 `mutants.yml`과는 애초에 공유된 적조차 없"
 "었습니다. 이제 각자 실제로 쓰는 키를 이름으로 밝힙니다."
 
-#: src/development/ci-cd.md:400
+#: src/development/ci-cd.md:445
 msgid ""
 "`release-plz.yml` had no concurrency group. It has one now, with `cancel-in-"
 "progress: false` — which delivers the \"must always complete\" intent that "

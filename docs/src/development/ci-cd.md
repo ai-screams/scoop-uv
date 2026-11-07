@@ -9,9 +9,9 @@ that shaped them.
 | Workflow | Trigger | Guards against |
 |----------|---------|----------------|
 | `ci.yml` | PR, main | Unformatted code, clippy warnings, failing tests (including the shell integration in real bash, zsh, fish and pwsh), MSRV drift, broken shell scripts, stale reference docs, malformed `.po`, files missing from the published crate |
-| `integration-test.yml` | PR, main | Migration breaking for pyenv / conda / virtualenvwrapper users |
+| `integration-test.yml` | PR (steps skipped without code changes), main | Migration breaking for pyenv / conda / virtualenvwrapper users |
 | `coverage.yml` | PR, main | Untested code paths going unnoticed |
-| `bench.yml` | PR, main | Performance regressions in parsing and validation |
+| `bench.yml` | PR (steps skipped without code changes), main | Performance regressions in parsing and validation |
 | `mutants.yml` | PR (diff), weekly (full) | Tests that execute code without asserting on it |
 | `security.yml` | PR, main, weekly | Vulnerable dependencies, disallowed licences, untrusted sources |
 | `msrv-check.yml` | `Cargo.toml`/`Cargo.lock` changes | A declared MSRV that no longer compiles |
@@ -138,6 +138,51 @@ failing test. nextest does not run doctests, so a mutant that only a doctest
 kills counts as `MISSED` — cover that behaviour with a unit test. The
 switch turned up three such mutants in `src/core/migrate/common.rs`
 (`dir_size`, `check_name_conflict`); unit tests were added for them.
+
+### Skip what a PR cannot affect
+
+Docker Integration is the slowest required check, and Benchmarks the
+slowest optional one. A PR that edits only docs, `CLAUDE.md` or another
+workflow cannot change what either of them builds or tests: 6 of the 20
+PRs merged between 2026-10-15 and 2026-11-07 were like that, and each ran
+both in full. Both workflows now start with a `scope` step that diffs the
+PR against its merge-base and lets the later steps run only when a file
+they read changed. Each workflow lists its own inputs in `CODE_PATHS`
+(sources, tests, benches, `locales/`, the cargo and nextest configs, the
+toolchain file, root `.gitattributes`, the workflow file itself, and for
+integration `docker/` and `.dockerignore`).
+
+The check stays required and still reports: the job runs, the step
+decides, and the later steps carry
+`if: steps.scope.outputs.code != 'false'`. Two simpler mechanisms do not
+work here:
+
+- `on.paths` skips the whole workflow, and a required check of a skipped
+  workflow stays Pending, which blocks the merge.
+- A job-level `if` is evaluated before the matrix expands, so a skipped
+  matrix job posts one check with the expression unexpanded
+  (`Mutants (full ${{ matrix.shard }}/2)` is that), and the three
+  required `Docker Integration (<source>)` names would never appear.
+
+The step is built to fail toward running everything:
+
+- It diffs the event's own `base.sha...head.sha`, so a re-run or a later
+  push cannot classify a different revision; only PR runs fetch full
+  history (`fetch-depth: 0`) for the merge-base.
+- `--no-renames` lists both sides of a rename, so moving a file out of
+  `docker/` still counts as touching `docker/`.
+- `-z` with `grep -z` keeps paths unquoted; without it, git prints a
+  non-ASCII or newline-containing name in quotes and a pattern
+  anchored with `^` misses it.
+- Only grep's "no match" (exit 1) skips. A failed diff (an unknown SHA,
+  unrelated histories), a grep error and any non-PR event run everything.
+  A failed write of the step output fails the job instead of leaving it
+  green with nothing run.
+
+A skipped run is green but did not test anything; the job summary says
+`no code paths changed: tests skipped, not run`. The cases above were
+checked with the step's script under the runner's
+`bash --noprofile --norc -eo pipefail` and GNU grep before it landed.
 
 ### One cache per toolchain, one writer per cache
 
