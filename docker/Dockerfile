@@ -246,8 +246,13 @@ ENV WORKON_HOME="/root/.virtualenvs"
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     pip install virtualenvwrapper && mkdir -p "$WORKON_HOME"
 
-RUN bash -c "source $(which virtualenvwrapper.sh) && \
-    mkvirtualenv -p python3.12 test-venvwrapper-312"
+# `which virtualenvwrapper.sh` finds pyenv's shim, a script that execs
+# pyenv: sourcing it replaced this shell, mkvirtualenv never ran, and the
+# step still exited 0 with an empty WORKON_HOME. `pyenv which` gives the
+# real file. The `test` fails the build if the env is missing again.
+RUN bash -c "source \"\$(pyenv which virtualenvwrapper.sh)\" && \
+    mkvirtualenv -p python3.12 test-venvwrapper-312" \
+    && test -x "$WORKON_HOME/test-venvwrapper-312/bin/python"
 
 # ============================================================
 # Leaf stages: <source>-test — a fixture plus the image's scuv binary
@@ -298,7 +303,9 @@ RUN conda create -n test-conda-312 python=3.12 -y && conda clean -afy
 ENV WORKON_HOME="/root/.virtualenvs"
 RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     pip install virtualenvwrapper && mkdir -p "$WORKON_HOME"
-RUN bash -c "source $(which virtualenvwrapper.sh) && \
-    mkvirtualenv -p python3.12 test-venvwrapper-312"
+# See venvwrapper-fixture for why this uses `pyenv which`.
+RUN bash -c "source \"\$(pyenv which virtualenvwrapper.sh)\" && \
+    mkvirtualenv -p python3.12 test-venvwrapper-312" \
+    && test -x "$WORKON_HOME/test-venvwrapper-312/bin/python"
 
 COPY --from=scuv-build /usr/local/bin/scuv /usr/local/bin/scuv
