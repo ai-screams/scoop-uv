@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794064302845,
+  "lastUpdate": 1794064304453,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -13753,6 +13753,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1023,
             "range": "± 6",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3c7aa8d791fdbc98751604c2321e21da8fae0a9d",
+          "message": "Merge pull request #257 from ai-screams/ci/integration-compile-once\n\nci(integration): [#257] compile the workspace once per Docker Integration job",
+          "timestamp": "2026-11-08T00:07:44+09:00",
+          "tree_id": "11423e89e0bab8629cbf25d8b7071d29df0ce999",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/3c7aa8d791fdbc98751604c2321e21da8fae0a9d"
+        },
+        "date": 1794064304340,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1513,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 987,
+            "range": "± 11",
             "unit": "ns/iter"
           }
         ]
