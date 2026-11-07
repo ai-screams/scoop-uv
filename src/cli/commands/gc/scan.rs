@@ -223,6 +223,10 @@ pub(super) fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutc
 /// [`referenced_versions`]), it names none as unused and returns the reason,
 /// which the caller surfaces. Claiming a live Python is unused would let
 /// `gc --aggressive --yes` uninstall it and break the env.
+///
+/// # Errors
+///
+/// Returns uv's error when `uv python list` fails.
 pub(super) fn scan_unused_pythons(
     leaving: &[&str],
 ) -> Result<(Vec<UnusedPython>, Option<PythonSkip>)> {
@@ -233,7 +237,9 @@ pub(super) fn scan_unused_pythons(
         Err(_) => return Ok((Vec::new(), None)),
     };
     // Only uv-managed Pythons: a system interpreter is not uv's to uninstall.
-    let installed = uv.list_managed_pythons().unwrap_or_default();
+    // A failing listing ends the command with uv's error, before anything is
+    // removed: reading it as "no Pythons" would report nothing to clean.
+    let installed = uv.list_managed_pythons()?;
     if installed.is_empty() {
         return Ok((Vec::new(), None));
     }
