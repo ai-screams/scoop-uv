@@ -163,7 +163,7 @@ work here:
   workflow stays Pending, which blocks the merge.
 - A job-level `if` is evaluated before the matrix expands, so a skipped
   matrix job posts one check with the expression unexpanded
-  (`Mutants (full ${{ matrix.shard }}/2)` is that), and the three
+  (`Mutants (full ${{ matrix.shard }}/4)` is that), and the three
   required `Docker Integration (<source>)` names would never appear.
 
 The step is built to fail toward running everything:
@@ -430,8 +430,10 @@ outstanding.
   which reads as benign. Measured at 385/446 mutants in 60 minutes, so the
   timeout is now 90.
 - At 90 minutes the weekly full run still timed out as the suite grew (the
-  2026-10-19 and 2026-11-02 runs). It now runs as two round-robin shards,
-  each with its own 90-minute limit; a trial run took 42 and 43 minutes.
+  2026-10-19 and 2026-11-02 runs). It was split into two round-robin
+  shards, each with its own 90-minute limit, which took 42 and 58 minutes
+  on 2026-11-07; it now runs as four, and each mutant builds with the
+  debug-less `mutants` profile (`.cargo/mutants.toml`).
 - `aquasecurity/trivy-action@master` and `astral-sh/setup-uv@v7` are now
   pinned to release tags. Dependabot could not follow either: it cannot
   bump a branch ref, and setup-uv stopped publishing moving major tags at

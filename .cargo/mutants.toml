@@ -202,6 +202,17 @@ exclude_re = [
 # `check_name_conflict -> None`); unit tests now cover them.
 test_tool = "nextest"
 
+# Building is about 92% of the summed per-mutant time of a full run
+# (2026-11-07: 85.4 of 92.7 minutes across both shards). Two measurements
+# of the profile, both rust 1.89:
+# - Linux: rebuilding the test targets after a one-line edit to
+#   src/validate.rs (`cargo test --workspace --no-run`) took 2.3 s instead
+#   of 4.1 s on average over three runs.
+# - macOS: a whole `--file src/validate.rs` run (42 mutants) took 126 s
+#   with it and 125 s without; macOS keeps debug info out of the link.
+# The profile is defined in Cargo.toml.
+profile = "mutants"
+
 # The unmutated suite takes 2-3 s under nextest (about 10 s under `cargo test`)
 # on a laptop, so 8x lands below the 30 s floor and the floor sets the timeout.
 # The headroom keeps a slow runner from reporting false timeouts.

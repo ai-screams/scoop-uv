@@ -114,6 +114,13 @@ harness = false
 # call site inside an infrastructure bump. Revisit as a standalone cleanup.
 uninlined_format_args = "allow"
 
+# Selected only by cargo-mutants (`profile` in .cargo/mutants.toml). It
+# disables debug info to cut each mutant's rebuild; debug assertions and
+# overflow checks stay as in `test`.
+[profile.mutants]
+inherits = "test"
+debug = "none"
+
 [profile.release]
 lto = true
 strip = true
