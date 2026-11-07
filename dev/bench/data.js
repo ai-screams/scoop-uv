@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794061487980,
+  "lastUpdate": 1794061489442,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -13633,6 +13633,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1030,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "90e6402f7dd2aef84b5f70f91d9a26cef552bce6",
+          "message": "Merge pull request #255 from ai-screams/fix/uv-command-failed-double-prefix\n\nfix(error): [#255] name uv once in uv command failures",
+          "timestamp": "2026-11-07T23:20:29+09:00",
+          "tree_id": "0dedcbff64fa52be036672015c4e9513d62ca07f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/90e6402f7dd2aef84b5f70f91d9a26cef552bce6"
+        },
+        "date": 1794061489330,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1556,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1023,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
