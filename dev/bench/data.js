@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794018309479,
+  "lastUpdate": 1794018311099,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -13393,6 +13393,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 733,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "19740283ccc2f3ad526954c15e2f2124b0afafb7",
+          "message": "Merge pull request #251 from ai-screams/ci/shard-mutants-full\n\nci(mutants): split the full run over two shards",
+          "timestamp": "2026-11-07T11:21:03+09:00",
+          "tree_id": "3bf398d91883b0ad53397e3fbbb601a5c7acba18",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/19740283ccc2f3ad526954c15e2f2124b0afafb7"
+        },
+        "date": 1794018310985,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1522,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1010,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
