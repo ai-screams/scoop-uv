@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794025810911,
+  "lastUpdate": 1794061487980,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -10624,6 +10624,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/reserved_reject",
             "value": 16,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 182,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "90e6402f7dd2aef84b5f70f91d9a26cef552bce6",
+          "message": "Merge pull request #255 from ai-screams/fix/uv-command-failed-double-prefix\n\nfix(error): [#255] name uv once in uv command failures",
+          "timestamp": "2026-11-07T23:20:29+09:00",
+          "tree_id": "0dedcbff64fa52be036672015c4e9513d62ca07f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/90e6402f7dd2aef84b5f70f91d9a26cef552bce6"
+        },
+        "date": 1794061487122,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 89429,
+            "range": "± 571",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 107610,
+            "range": "± 734",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 2909,
+            "range": "± 92",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 669,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 87,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 92,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 85,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 78,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 18,
             "range": "± 0",
             "unit": "ns/iter"
           },
