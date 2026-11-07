@@ -7,9 +7,7 @@ use rust_i18n::t;
 use std::io::IsTerminal;
 use std::path::Path;
 
-use crate::core::migrate::{
-    EnvironmentStatus, MigrateOptions, MigrationResult, Migrator, SourceEnvironment,
-};
+use crate::core::migrate::{EnvironmentStatus, MigrationResult, Migrator, SourceEnvironment};
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
 
@@ -85,15 +83,10 @@ pub fn migrate_environment(
     };
 
     let migrator = Migrator::new()?;
-    let options = MigrateOptions {
-        dry_run: opts.dry_run,
-        force: target.force,
-        skip_packages: false,
-        rename_to: (target.name != name).then(|| target.name.clone()),
-        strict: opts.strict,
-        delete_source: opts.delete_source,
-        auto_install_python: false,
-    };
+    let options = opts.migrate_options(
+        target.force,
+        (target.name != name).then(|| target.name.clone()),
+    );
 
     if !opts.json {
         if opts.dry_run {
@@ -138,8 +131,8 @@ fn print_source_info(output: &Output, name: &str, source: &SourceEnvironment) {
 }
 
 /// Decides the target name and whether to overwrite, from the source's
-/// status. `Ok(None)` means the user chose to skip; EOL (without --force)
-/// and corrupted sources are errors.
+/// status. `Ok(None)` means the user chose to skip; EOL (without
+/// --allow-eol or --force) and corrupted sources are errors.
 fn resolve_target(
     output: &Output,
     name: &str,
@@ -157,10 +150,10 @@ fn resolve_target(
             return resolve_name_conflict(output, name, existing, opts, target, can_prompt());
         }
         EnvironmentStatus::PythonEol { version } => {
-            if !opts.force {
+            if !opts.allows_eol() {
                 if !opts.json {
                     output.warn(&t!("migrate.eol_warning", version = version));
-                    output.info(&t!("migrate.eol_force_hint"));
+                    output.info(&t!("migrate.eol_allow_hint"));
                 }
                 return Err(ScoopError::MigrationFailed {
                     reason: format!("Python {} is EOL", version),
@@ -180,7 +173,25 @@ fn resolve_target(
             });
         }
     }
+    // The source's own name is free, but `--rename` may point at a taken
+    // one. The migrator refuses that only on a real run; a dry run would
+    // report success.
+    if opts.rename.is_some() {
+        ensure_rename_free(&target.name, opts.force)?;
+    }
     Ok(Some(target))
+}
+
+/// `--rename`'s target must not exist unless `--force` overwrites it.
+fn ensure_rename_free(new_name: &str, force: bool) -> Result<()> {
+    let renamed_path = crate::paths::virtualenv_path(new_name)?;
+    if renamed_path.exists() && !force {
+        return Err(ScoopError::MigrationNameConflict {
+            name: new_name.to_string(),
+            existing: renamed_path,
+        });
+    }
+    Ok(())
 }
 
 /// Whether the conflict prompt can run: dialoguer draws it on stderr and
@@ -209,13 +220,7 @@ fn resolve_name_conflict(
             output.info(&t!("migrate.auto_rename", name = &target.name));
         }
     } else if opts.rename.is_some() {
-        let renamed_path = crate::paths::virtualenv_path(&target.name)?;
-        if renamed_path.exists() && !opts.force {
-            return Err(ScoopError::MigrationNameConflict {
-                name: target.name,
-                existing: renamed_path,
-            });
-        }
+        ensure_rename_free(&target.name, opts.force)?;
     } else if opts.force {
         if !opts.json {
             output.warn(&t!("migrate.overwriting"));

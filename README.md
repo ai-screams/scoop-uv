@@ -475,7 +475,7 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 
 > **Supported sources:** pyenv-virtualenv, virtualenvwrapper, conda
 
-> Flags: `--source {pyenv|virtualenvwrapper|conda}`, `--dry-run`, `--force`, `--yes`, `--strict`, `--delete-source`, `--json`; `@env` also `--rename`/`--auto-rename`.
+> Flags: `--source {pyenv|virtualenvwrapper|conda}`, `--dry-run`, `--force`, `--allow-eol`, `--yes`, `--strict`, `--delete-source`, `--json`; `@env` also `--rename`/`--auto-rename`.
 
 ### Cleanup 🧹
 

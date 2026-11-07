@@ -39,6 +39,7 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
         Some(MigrateCommand::All {
             dry_run,
             force,
+            allow_eol,
             yes,
             json,
             strict,
@@ -48,6 +49,7 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             let opts = MigrateExecuteOptions {
                 dry_run,
                 force,
+                allow_eol,
                 yes,
                 json,
                 strict,
@@ -61,6 +63,7 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             name,
             dry_run,
             force,
+            allow_eol,
             yes,
             json,
             strict,
@@ -72,6 +75,7 @@ pub fn execute(output: &Output, command: Option<MigrateCommand>) -> Result<()> {
             let opts = MigrateExecuteOptions {
                 dry_run,
                 force,
+                allow_eol,
                 yes,
                 json,
                 strict,

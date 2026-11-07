@@ -28,6 +28,7 @@ pub(super) struct PartitionedEnvs<'a> {
 pub(super) fn partition_envs<'a>(
     environments: &'a [SourceEnvironment],
     force: bool,
+    allow_eol: bool,
     venvs_dir: &Path,
 ) -> PartitionedEnvs<'a> {
     let mut migratable: Vec<&SourceEnvironment> = Vec::new();
@@ -63,14 +64,14 @@ pub(super) fn partition_envs<'a>(
     let mut claimed: HashMap<String, SourceType> = HashMap::new();
 
     for env in environments {
-        let is_ready = matches!(env.status, EnvironmentStatus::Ready);
-        let force_eligible = force
-            && matches!(
-                env.status,
-                EnvironmentStatus::PythonEol { .. } | EnvironmentStatus::NameConflict { .. }
-            );
+        let eligible = match env.status {
+            EnvironmentStatus::Ready => true,
+            EnvironmentStatus::PythonEol { .. } => allow_eol,
+            EnvironmentStatus::NameConflict { .. } => force,
+            EnvironmentStatus::Corrupted { .. } => false,
+        };
 
-        if is_ready || force_eligible {
+        if eligible {
             let key = env.name.to_ascii_lowercase();
             if let Some(winner) = claimed.get(&key) {
                 let target = venvs_dir.join(&env.name);
@@ -100,7 +101,7 @@ pub(super) fn partition_envs<'a>(
             }),
             EnvironmentStatus::PythonEol { version } => skipped.push(MigrateSkipped {
                 name: env.name.clone(),
-                reason: format!("Python {} is EOL (use --force)", version),
+                reason: format!("Python {} is EOL (use --allow-eol)", version),
             }),
             EnvironmentStatus::NameConflict { existing } => {
                 conflicts.push(MigrationConflictDetail {
@@ -169,7 +170,7 @@ mod tests {
             create_test_env_from("web", SourceType::Conda),
         ];
 
-        let p = partition_envs(&envs, false, Path::new("/venvs"));
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
 
         assert_eq!(p.migratable.len(), 1, "only the first claim may migrate");
         assert_eq!(p.migratable[0].source_type, SourceType::Pyenv);
@@ -203,7 +204,7 @@ mod tests {
             create_test_env_from("web", SourceType::VirtualenvWrapper),
         ];
 
-        let p = partition_envs(&envs, true, Path::new("/venvs"));
+        let p = partition_envs(&envs, true, true, Path::new("/venvs"));
 
         assert_eq!(p.migratable.len(), 1);
         assert_eq!(p.conflicts.len(), 1);
@@ -219,7 +220,7 @@ mod tests {
             create_test_env_from("web", SourceType::Conda),
         ];
 
-        let p = partition_envs(&envs, false, Path::new("/venvs"));
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
 
         assert_eq!(p.migratable.len(), 1);
         assert_eq!(p.migratable[0].name, "Web");
@@ -235,7 +236,7 @@ mod tests {
             create_test_env_from("api", SourceType::Conda),
         ];
 
-        let p = partition_envs(&envs, false, Path::new("/venvs"));
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
 
         assert_eq!(p.migratable.len(), 2);
         assert!(p.conflicts.is_empty());
@@ -249,7 +250,7 @@ mod tests {
             create_test_env("ready2", EnvironmentStatus::Ready),
         ];
 
-        let p = partition_envs(&envs, false, Path::new("/venvs"));
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
         assert_eq!(p.migratable.len(), 2);
         assert!(p.conflicts.is_empty());
         assert!(p.skipped.is_empty());
@@ -264,12 +265,12 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, false, Path::new("/venvs"));
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
         assert!(p.migratable.is_empty());
         assert_eq!(p.skipped.len(), 1);
         assert!(p.skipped[0].reason.contains("corrupted"));
 
-        let p_force = partition_envs(&envs, true, Path::new("/venvs"));
+        let p_force = partition_envs(&envs, true, true, Path::new("/venvs"));
         assert!(p_force.migratable.is_empty());
     }
 
@@ -282,7 +283,7 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, false, Path::new("/venvs"));
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
         assert!(p.migratable.is_empty());
         assert_eq!(p.skipped.len(), 1);
         assert!(p.skipped[0].reason.contains("2.7.18"));
@@ -298,9 +299,36 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, true, Path::new("/venvs"));
+        let p = partition_envs(&envs, true, true, Path::new("/venvs"));
         assert_eq!(p.migratable.len(), 1);
         assert!(p.skipped.is_empty());
+    }
+
+    /// `--allow-eol` alone takes the EOL env and leaves the conflict alone.
+    /// Fails if `--allow-eol` stops admitting EOL envs, or starts admitting
+    /// name conflicts (which would overwrite without `--force`).
+    #[test]
+    fn partition_allow_eol_includes_eol_but_not_conflicts() {
+        let envs = vec![
+            create_test_env(
+                "eol",
+                EnvironmentStatus::PythonEol {
+                    version: "3.10.14".to_string(),
+                },
+            ),
+            create_test_env(
+                "taken",
+                EnvironmentStatus::NameConflict {
+                    existing: PathBuf::from("/venvs/taken"),
+                },
+            ),
+        ];
+
+        let p = partition_envs(&envs, false, true, Path::new("/venvs"));
+        let names: Vec<&str> = p.migratable.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(names, ["eol"]);
+        assert_eq!(p.conflicts.len(), 1);
+        assert_eq!(p.conflicts[0].name, "taken");
     }
 
     #[test]
@@ -315,7 +343,7 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, false, Path::new("/venvs"));
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
         assert!(p.migratable.is_empty());
         assert_eq!(p.conflicts.len(), 1);
         assert_eq!(p.conflicts[0].name, "dup");
@@ -333,7 +361,7 @@ mod tests {
             },
         )];
 
-        let p = partition_envs(&envs, true, Path::new("/venvs"));
+        let p = partition_envs(&envs, true, true, Path::new("/venvs"));
         assert_eq!(p.migratable.len(), 1);
         assert!(p.conflicts.is_empty());
         assert!(p.skipped.is_empty());
@@ -363,14 +391,14 @@ mod tests {
             ),
         ];
 
-        let p = partition_envs(&envs, false, Path::new("/venvs"));
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
         assert_eq!(p.migratable.len(), 1);
         assert_eq!(p.migratable[0].name, "ready");
         assert_eq!(p.conflicts.len(), 1);
         // skipped has: eol + corrupted + conflict
         assert_eq!(p.skipped.len(), 3);
 
-        let p_force = partition_envs(&envs, true, Path::new("/venvs"));
+        let p_force = partition_envs(&envs, true, true, Path::new("/venvs"));
         // ready + eol + conflict (not corrupted)
         assert_eq!(p_force.migratable.len(), 3);
         assert!(p_force.conflicts.is_empty());
