@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794016601657,
+  "lastUpdate": 1794016603119,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -13153,6 +13153,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 471,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6da5eb926c934b9713ae19144da98615ac330710",
+          "message": "Merge pull request #252 from ai-screams/fix/gc-aggressive-uv-list-error\n\nfix(gc): stop with uv's error when --aggressive cannot list Pythons",
+          "timestamp": "2026-11-07T10:52:22+09:00",
+          "tree_id": "2afb2e8fa5f45bc8c1e3eec008ec3352cb51a235",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/6da5eb926c934b9713ae19144da98615ac330710"
+        },
+        "date": 1794016603049,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1177,
+            "range": "± 121",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 776,
+            "range": "± 25",
             "unit": "ns/iter"
           }
         ]
