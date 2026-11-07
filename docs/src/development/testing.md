@@ -56,7 +56,7 @@ cargo test --release
 
 ### How CI Runs Them
 
-CI and the Docker integration images run the suite with
+CI's Test and MSRV jobs run the suite with
 [cargo-nextest](https://nexte.st), which gives every test its own process:
 
 ```bash

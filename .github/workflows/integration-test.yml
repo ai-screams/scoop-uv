@@ -34,18 +34,21 @@ jobs:
       fail-fast: false
       matrix:
         source-env: [pyenv, conda, venvwrapper]
-        # The env each image's fixture stage creates, and the source_type
-        # `scuv migrate list --json` reports for it.
+        # The env each image's fixture stage creates, the source_type
+        # `scuv migrate list --json` reports for it, and its Python.
         include:
           - source-env: pyenv
             fixture: test-pyenv-312
             source-type: pyenv
+            python: "3.12"
           - source-env: conda
             fixture: test-conda-312
             source-type: conda
+            python: "3.12"
           - source-env: venvwrapper
             fixture: test-venvwrapper-312
             source-type: virtualenv_wrapper
+            python: "3.12"
 
     steps:
       - name: Checkout repository
@@ -56,8 +59,10 @@ jobs:
 
       # Build the matching fixture stage with GHA cache scoped per source-env
       # so the three matrix shards don't overwrite each other's cache.
-      # mode=max exports every layer (not just the final image), which is
-      # essential for our cargo-chef-style dependency layer reuse.
+      # mode=max exports every layer (not just the final image), so the
+      # intermediate stages (Python builds, fixture installs) are reused too.
+      # It holds no Cargo artifacts: the fixture stages compile nothing, and
+      # the workspace is compiled by `docker run` below, outside BuildKit.
       #
       # Only pushes to main export: a PR run reads main's cache but writes
       # nothing, so closed PRs stop leaving ~2 GB of blobs behind. And the
@@ -116,5 +121,5 @@ jobs:
               set -o pipefail &&
               cargo nextest run --profile ci --run-ignored all &&
               ./target/debug/scuv migrate list --json |
-                python3 docker/scripts/check_fixture.py ${{ matrix.fixture }} ${{ matrix.source-type }}
+                python3 docker/scripts/check_fixture.py ${{ matrix.fixture }} ${{ matrix.source-type }} ${{ matrix.python }}
             "
