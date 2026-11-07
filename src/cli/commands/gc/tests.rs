@@ -263,6 +263,36 @@ fn aggressive_gc_uninstalls_nothing_when_metadata_unreadable() {
     });
 }
 
+/// `gc --aggressive --yes` whose `uv python list` fails ends with uv's error
+/// before removing anything. Fails if the listing error is swallowed again
+/// (`unwrap_or_default`): the command then succeeds and removes the orphan.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn aggressive_gc_fails_with_uv_error_when_python_list_fails() {
+    let home = tempfile::tempdir().unwrap();
+    let uv = FakeUv::new(&["3.12.1"]);
+    let path = uv.path_var();
+    let _env = env_guard(&[
+        (paths::SCUV_HOME_ENV, Some(home.path().to_str().unwrap())),
+        ("PATH", Some(path.as_str())),
+        ("FAKE_UV_LIST_FAILS", Some("1")),
+    ]);
+    let orphan = paths::virtualenvs_dir().unwrap().join("orphan");
+    fs::create_dir_all(&orphan).unwrap();
+
+    let output = Output::new(0, true, crate::output::Colors::NONE, false);
+    let err = execute(&output, true, true, None).unwrap_err();
+
+    assert!(
+        matches!(&err, crate::error::ScoopError::UvCommandFailed { message, .. } if message.contains("fake list failure")),
+        "expected uv's list error, got {err:?}"
+    );
+    assert!(!uv.list_calls().is_empty(), "the fake uv was not reached");
+    assert!(orphan.exists(), "nothing may be removed after the failure");
+    assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
+}
+
 // ==========================================================================
 // Q3 regression — TOCTOU between scan and remove. We simulate by
 // building a fake orphan record that points at a path which is

@@ -218,7 +218,7 @@ msgstr "LLM 레퍼런스"
 #: src/commands/doctor.md:58 src/commands/info.md:92 src/commands/status.md:112
 #: src/commands/which.md:36 src/commands/run.md:43 src/commands/sync.md:65
 #: src/commands/import.md:39 src/commands/clone.md:39
-#: src/commands/migrate.md:149 src/commands/gc.md:97 src/commands/prune.md:25
+#: src/commands/migrate.md:155 src/commands/gc.md:99 src/commands/prune.md:25
 #: src/commands/verify.md:50 src/commands/diff.md:60 src/commands/lang.md:52
 #: src/commands/self.md:28 src/commands/init.md:45 src/commands/shell.md:53
 #: src/commands/completions.md:17 src/examples.md:1
@@ -722,7 +722,7 @@ msgstr "자주 쓰는 명령어"
 msgid "Task"
 msgstr "작업"
 
-#: src/quick-start.md:97 src/commands/index.md:7 src/commands/migrate.md:377
+#: src/quick-start.md:97 src/commands/index.md:7 src/commands/migrate.md:383
 #: src/commands/verify.md:42 src/api.md:726 src/llms.md:19
 msgid "Command"
 msgstr "명령어"
@@ -1035,7 +1035,7 @@ msgstr "변수"
 #: src/commands/sync.md:14 src/commands/export.md:14 src/commands/export.md:20
 #: src/commands/import.md:14 src/commands/import.md:20 src/commands/clone.md:14
 #: src/commands/clone.md:21 src/commands/migrate.md:20
-#: src/commands/migrate.md:59 src/commands/gc.md:90 src/commands/prune.md:21
+#: src/commands/migrate.md:64 src/commands/gc.md:92 src/commands/prune.md:21
 #: src/commands/diff.md:35 src/commands/lang.md:23 src/commands/lang.md:29
 #: src/commands/self.md:13 src/commands/init.md:13 src/commands/shell.md:21
 #: src/commands/shell.md:27 src/commands/completions.md:13
@@ -1857,7 +1857,7 @@ msgstr "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 
 #: src/python-management.md:299 src/commands/uninstall.md:124
 #: src/commands/uninstall.md:214 src/commands/uninstall.md:216
-#: src/commands/doctor.md:91 src/commands/migrate.md:179
+#: src/commands/doctor.md:91 src/commands/migrate.md:185
 msgid "'myproject'"
 msgstr "'myproject'"
 
@@ -2350,7 +2350,7 @@ msgstr "# Option 4) 이 터미널에서만 임시 재정의 (파일 변경 없�
 msgid "# ...test...\n"
 msgstr "# ...test...\n"
 
-#: src/faq.md:158 src/commands/migrate.md:97
+#: src/faq.md:158 src/commands/migrate.md:103
 msgid "Notes:"
 msgstr "참고:"
 
@@ -3018,7 +3018,7 @@ msgstr "모든 명령에 사용 가능합니다:"
 #: src/commands/uninstall.md:19 src/commands/doctor.md:13
 #: src/commands/info.md:22 src/commands/which.md:20 src/commands/sync.md:14
 #: src/commands/export.md:20 src/commands/import.md:20 src/commands/clone.md:21
-#: src/commands/migrate.md:59 src/commands/gc.md:90 src/commands/prune.md:21
+#: src/commands/migrate.md:64 src/commands/gc.md:92 src/commands/prune.md:21
 #: src/commands/diff.md:35 src/commands/lang.md:29 src/commands/self.md:13
 #: src/commands/shell.md:27 src/commands/man.md:26
 msgid "Option"
@@ -3196,7 +3196,7 @@ msgstr "사용법"
 #: src/commands/uninstall.md:17 src/commands/doctor.md:11
 #: src/commands/info.md:20 src/commands/which.md:18 src/commands/sync.md:12
 #: src/commands/export.md:18 src/commands/import.md:18 src/commands/clone.md:19
-#: src/commands/migrate.md:57 src/commands/gc.md:88 src/commands/prune.md:19
+#: src/commands/migrate.md:62 src/commands/gc.md:90 src/commands/prune.md:19
 #: src/commands/diff.md:33 src/commands/lang.md:27 src/commands/self.md:11
 #: src/commands/shell.md:25 src/commands/man.md:24
 msgid "Options"
@@ -3239,7 +3239,7 @@ msgstr "이름만 출력 (스크립팅용); `--help`에서 숨겨짐"
 #: src/commands/uninstall.md:23 src/commands/doctor.md:16
 #: src/commands/info.md:26 src/commands/which.md:23 src/commands/sync.md:18
 #: src/commands/import.md:24 src/commands/clone.md:25
-#: src/commands/migrate.md:62 src/commands/gc.md:95 src/commands/prune.md:23
+#: src/commands/migrate.md:67 src/commands/gc.md:97 src/commands/prune.md:23
 #: src/commands/diff.md:37 src/commands/lang.md:33 src/commands/self.md:18
 #: src/commands/man.md:28
 msgid "`--json`"
@@ -3247,7 +3247,7 @@ msgstr "`--json`"
 
 #: src/commands/list.md:21 src/commands/info.md:26 src/commands/which.md:23
 #: src/commands/sync.md:18 src/commands/import.md:24 src/commands/clone.md:25
-#: src/commands/gc.md:95 src/commands/lang.md:33
+#: src/commands/gc.md:97 src/commands/lang.md:33
 msgid "Output as JSON"
 msgstr "JSON 형식으로 출력"
 
@@ -4065,8 +4065,8 @@ msgstr "Python 버전을 설치합니다."
 msgid "`version`"
 msgstr "`version`"
 
-#: src/commands/install.md:15 src/commands/migrate.md:83
-#: src/commands/migrate.md:91 src/api.md:722
+#: src/commands/install.md:15 src/commands/migrate.md:89
+#: src/commands/migrate.md:97 src/api.md:722
 msgid "`3`"
 msgstr "`3`"
 
@@ -4470,9 +4470,9 @@ msgstr "# {\n"
 #: src/commands/uninstall.md:146 src/commands/info.md:63
 #: src/commands/status.md:83 src/commands/status.md:84 src/commands/sync.md:97
 #: src/commands/import.md:59 src/commands/clone.md:56
-#: src/commands/migrate.md:246 src/commands/migrate.md:257
-#: src/commands/migrate.md:265 src/commands/migrate.md:291
-#: src/commands/migrate.md:328 src/commands/gc.md:149 src/commands/verify.md:67
+#: src/commands/migrate.md:252 src/commands/migrate.md:263
+#: src/commands/migrate.md:271 src/commands/migrate.md:297
+#: src/commands/migrate.md:334 src/commands/gc.md:151 src/commands/verify.md:67
 #: src/commands/verify.md:76 src/commands/verify.md:77
 #: src/commands/verify.md:78 src/commands/verify.md:79
 #: src/commands/verify.md:80 src/commands/verify.md:81 src/commands/diff.md:115
@@ -4483,9 +4483,9 @@ msgstr "\"status\""
 
 #: src/commands/uninstall.md:146 src/commands/info.md:63
 #: src/commands/status.md:83 src/commands/sync.md:97 src/commands/import.md:59
-#: src/commands/clone.md:56 src/commands/migrate.md:246
-#: src/commands/migrate.md:291 src/commands/migrate.md:309
-#: src/commands/migrate.md:356 src/commands/gc.md:149 src/commands/verify.md:67
+#: src/commands/clone.md:56 src/commands/migrate.md:252
+#: src/commands/migrate.md:297 src/commands/migrate.md:315
+#: src/commands/migrate.md:362 src/commands/gc.md:151 src/commands/verify.md:67
 #: src/commands/diff.md:115 src/commands/lang.md:108 src/commands/self.md:48
 msgid "\"success\""
 msgstr "\"success\""
@@ -4496,9 +4496,9 @@ msgstr "#   \"command\": \"uninstall\",\n"
 
 #: src/commands/uninstall.md:148 src/commands/info.md:65
 #: src/commands/status.md:85 src/commands/sync.md:99 src/commands/import.md:61
-#: src/commands/clone.md:58 src/commands/migrate.md:248
-#: src/commands/migrate.md:293 src/commands/migrate.md:336
-#: src/commands/gc.md:151 src/commands/verify.md:69 src/commands/diff.md:117
+#: src/commands/clone.md:58 src/commands/migrate.md:254
+#: src/commands/migrate.md:299 src/commands/migrate.md:342
+#: src/commands/gc.md:153 src/commands/verify.md:69 src/commands/diff.md:117
 #: src/commands/diff.md:162 src/commands/lang.md:110 src/commands/self.md:50
 msgid "\"data\""
 msgstr "\"data\""
@@ -4513,8 +4513,8 @@ msgstr "\"removed_envs\""
 
 #: src/commands/uninstall.md:150 src/commands/info.md:66
 #: src/commands/sync.md:101 src/commands/export.md:41
-#: src/commands/migrate.md:252 src/commands/migrate.md:296
-#: src/commands/migrate.md:347 src/commands/migrate.md:351 src/api.md:155
+#: src/commands/migrate.md:258 src/commands/migrate.md:302
+#: src/commands/migrate.md:353 src/commands/migrate.md:357 src/api.md:155
 msgid "\"myproject\""
 msgstr "\"myproject\""
 
@@ -5005,15 +5005,15 @@ msgstr ""
 "표시되며, 디스크에 메타데이터가 전혀 없는 경우에는 행 자체가 생략됩니다."
 
 #: src/commands/info.md:55 src/commands/status.md:79 src/commands/import.md:55
-#: src/commands/clone.md:52 src/commands/migrate.md:231
+#: src/commands/clone.md:52 src/commands/migrate.md:237
 #: src/commands/lang.md:103 src/commands/self.md:44
 msgid "JSON Output"
 msgstr "JSON 출력"
 
 #: src/commands/info.md:64 src/commands/status.md:84 src/commands/sync.md:98
 #: src/commands/import.md:60 src/commands/clone.md:57
-#: src/commands/migrate.md:247 src/commands/migrate.md:292
-#: src/commands/migrate.md:329 src/commands/gc.md:150 src/commands/verify.md:68
+#: src/commands/migrate.md:253 src/commands/migrate.md:298
+#: src/commands/migrate.md:335 src/commands/gc.md:152 src/commands/verify.md:68
 #: src/commands/diff.md:116 src/commands/diff.md:154 src/commands/lang.md:109
 #: src/commands/self.md:49
 msgid "\"command\""
@@ -5027,11 +5027,11 @@ msgstr "\"info\""
 #: src/commands/info.md:79 src/commands/info.md:80 src/commands/info.md:81
 #: src/commands/status.md:87 src/commands/export.md:41
 #: src/commands/export.md:46 src/commands/export.md:47
-#: src/commands/import.md:62 src/commands/migrate.md:252
-#: src/commands/migrate.md:260 src/commands/migrate.md:296
-#: src/commands/migrate.md:340 src/commands/migrate.md:347
-#: src/commands/migrate.md:351 src/commands/gc.md:154 src/commands/gc.md:155
-#: src/commands/gc.md:156 src/commands/verify.md:72 src/commands/verify.md:76
+#: src/commands/import.md:62 src/commands/migrate.md:258
+#: src/commands/migrate.md:266 src/commands/migrate.md:302
+#: src/commands/migrate.md:346 src/commands/migrate.md:353
+#: src/commands/migrate.md:357 src/commands/gc.md:156 src/commands/gc.md:157
+#: src/commands/gc.md:158 src/commands/verify.md:72 src/commands/verify.md:76
 #: src/commands/verify.md:77 src/commands/verify.md:78
 #: src/commands/verify.md:79 src/commands/verify.md:80
 #: src/commands/verify.md:81 src/commands/diff.md:123 src/commands/diff.md:124
@@ -5047,17 +5047,17 @@ msgstr "\"python\""
 
 #: src/commands/info.md:67 src/commands/status.md:90 src/commands/sync.md:102
 #: src/commands/export.md:42 src/commands/import.md:63 src/commands/clone.md:61
-#: src/commands/migrate.md:253 src/commands/migrate.md:297
-#: src/commands/migrate.md:303 src/commands/verify.md:74
+#: src/commands/migrate.md:259 src/commands/migrate.md:303
+#: src/commands/migrate.md:309 src/commands/verify.md:74
 #: src/commands/diff.md:121 src/commands/diff.md:128 src/api.md:113
 #: src/api.md:156 src/development/testing.md:366
 msgid "\"3.12\""
 msgstr "\"3.12\""
 
 #: src/commands/info.md:68 src/commands/status.md:89 src/commands/clone.md:62
-#: src/commands/migrate.md:254 src/commands/migrate.md:262
-#: src/commands/migrate.md:301 src/commands/gc.md:154 src/commands/gc.md:155
-#: src/commands/gc.md:156
+#: src/commands/migrate.md:260 src/commands/migrate.md:268
+#: src/commands/migrate.md:307 src/commands/gc.md:156 src/commands/gc.md:157
+#: src/commands/gc.md:158
 msgid "\"path\""
 msgstr "\"path\""
 
@@ -5086,8 +5086,8 @@ msgstr "\"last_used\""
 msgid "\"2026-06-02T09:00:00.746201+00:00\""
 msgstr "\"2026-06-02T09:00:00.746201+00:00\""
 
-#: src/commands/info.md:72 src/commands/migrate.md:256
-#: src/commands/migrate.md:264
+#: src/commands/info.md:72 src/commands/migrate.md:262
+#: src/commands/migrate.md:270
 msgid "\"size_bytes\""
 msgstr "\"size_bytes\""
 
@@ -5104,8 +5104,8 @@ msgstr "\"8 MB\""
 msgid "\"packages\""
 msgstr "\"packages\""
 
-#: src/commands/info.md:75 src/commands/migrate.md:268
-#: src/commands/migrate.md:309 src/commands/migrate.md:356
+#: src/commands/info.md:75 src/commands/migrate.md:274
+#: src/commands/migrate.md:315 src/commands/migrate.md:362
 #: src/commands/verify.md:85
 msgid "\"total\""
 msgstr "\"total\""
@@ -5120,7 +5120,7 @@ msgstr "\"certifi\""
 
 #: src/commands/info.md:77 src/commands/info.md:78 src/commands/info.md:79
 #: src/commands/info.md:80 src/commands/info.md:81 src/commands/export.md:46
-#: src/commands/export.md:47 src/commands/migrate.md:265
+#: src/commands/export.md:47 src/commands/migrate.md:271
 #: src/commands/diff.md:123 src/commands/diff.md:124
 msgid "\"version\""
 msgstr "\"version\""
@@ -5203,7 +5203,7 @@ msgstr "`status`는 다음 네 가지 상태 중 하나로 결정됩니다:"
 msgid "State"
 msgstr "상태"
 
-#: src/commands/status.md:17 src/commands/migrate.md:377
+#: src/commands/status.md:17 src/commands/migrate.md:383
 #: src/development/ci-cd.md:9
 msgid "Trigger"
 msgstr "트리거"
@@ -5345,7 +5345,7 @@ msgid "\"myenv\""
 msgstr "\"myenv\""
 
 #: src/commands/status.md:88 src/commands/import.md:65
-#: src/commands/migrate.md:249
+#: src/commands/migrate.md:255
 msgid "\"source\""
 msgstr "\"source\""
 
@@ -5473,7 +5473,7 @@ msgstr "종료 코드"
 
 #: src/commands/which.md:46 src/commands/sync.md:113 src/commands/export.md:71
 #: src/commands/import.md:72 src/commands/clone.md:71
-#: src/commands/migrate.md:79 src/commands/migrate.md:87
+#: src/commands/migrate.md:85 src/commands/migrate.md:93
 #: src/commands/diff.md:51 src/commands/lang.md:37 src/api.md:717
 msgid "Code"
 msgstr "코드"
@@ -5593,7 +5593,7 @@ msgstr "`--with <GROUP>`"
 msgid "Install an extra package group on top of `default` (repeatable)"
 msgstr "`default` 위에 추가 패키지 그룹을 설치합니다 (반복 가능)"
 
-#: src/commands/sync.md:17 src/commands/migrate.md:63
+#: src/commands/sync.md:17 src/commands/migrate.md:68
 msgid "`--dry-run`"
 msgstr "`--dry-run`"
 
@@ -5835,7 +5835,7 @@ msgstr "\"debugpy\""
 msgid "\"env_created\""
 msgstr "\"env_created\""
 
-#: src/commands/sync.md:106 src/commands/migrate.md:300 src/commands/gc.md:152
+#: src/commands/sync.md:106 src/commands/migrate.md:306 src/commands/gc.md:154
 msgid "\"dry_run\""
 msgstr "\"dry_run\""
 
@@ -6296,7 +6296,7 @@ msgstr "# 단일 환경 마이그레이션\n"
 msgid "Subcommands"
 msgstr "서브커맨드"
 
-#: src/commands/migrate.md:20 src/commands/migrate.md:59
+#: src/commands/migrate.md:20 src/commands/migrate.md:64
 msgid "Subcommand"
 msgstr "서브커맨드"
 
@@ -6368,12 +6368,13 @@ msgid ""
 "earlier. 3.9 reached end of life on 2025-10-31 and 3.10 on 2026-10-01, "
 "following CPython's schedule. Only the version number is checked, so a PyPy "
 "env gets the same cutoff. For a source env that is otherwise healthy and has "
-"no name conflict, without `--force`:"
+"no name conflict, without `--allow-eol` or `--force`:"
 msgstr ""
 "scuv는 Python이 2.x이거나 3.10 이하인 환경을 지원이 끝난(EOL) 환경으로 봅니"
 "다. CPython 일정에 따라 3.9는 2025-10-31, 3.10은 2026-10-01에 지원이 끝났습니"
 "다. 버전 번호만 보므로 PyPy 환경에도 같은 기준이 적용됩니다. 그 밖에는 문제"
-"가 없고 이름 충돌도 없는 소스 환경이라면, `--force`가 없을 때:"
+"가 없고 이름 충돌도 없는 소스 환경이라면, `--allow-eol`과 `--force`가 모두 없"
+"을 때:"
 
 #: src/commands/migrate.md:42
 msgid "`migrate list` marks the env `⚠` with `(Python 3.10.14 is EOL)`."
@@ -6412,89 +6413,110 @@ msgstr ""
 
 #: src/commands/migrate.md:54
 msgid ""
+"`--allow-eol` lets such an env migrate and changes nothing else: a name "
+"conflict still stops it. `--force` allows EOL envs too, but it also "
+"overwrites a scuv env of the same name. Up to scuv 0.19.0 `--force` was the "
+"only way through."
+msgstr ""
+"`--allow-eol`은 이런 환경을 마이그레이션하게 할 뿐 다른 것은 바꾸지 않습니"
+"다. 이름이 충돌하면 여전히 멈춥니다. `--force`도 EOL 환경을 허용하지만, 같은 "
+"이름의 scuv 환경을 덮어쓰기도 합니다. scuv 0.19.0까지는 `--force`만이 방법이"
+"었습니다."
+
+#: src/commands/migrate.md:59
+msgid ""
 "Released versions up to 0.18.0 used a cutoff of 3.8, so 3.9 and 3.10 envs "
 "migrated without `--force`."
 msgstr ""
 "0.18.0까지 배포된 버전은 기준이 3.8이어서 3.9·3.10 환경이 `--force` 없이 옮겨"
 "졌습니다."
 
-#: src/commands/migrate.md:61
+#: src/commands/migrate.md:66
 msgid "`--source <pyenv\\|virtualenvwrapper\\|conda>`"
 msgstr "`--source <pyenv\\|virtualenvwrapper\\|conda>`"
 
-#: src/commands/migrate.md:61 src/commands/migrate.md:62
+#: src/commands/migrate.md:66 src/commands/migrate.md:67
 msgid "all subcommands"
 msgstr "모든 서브커맨드"
 
-#: src/commands/migrate.md:61
+#: src/commands/migrate.md:66
 msgid "Restrict to a single source tool"
 msgstr "단일 소스 도구로 제한합니다"
 
-#: src/commands/migrate.md:62
+#: src/commands/migrate.md:67
 msgid "Machine-readable output (see [JSON Output](#json-output))"
 msgstr "기계 가독 출력 (참고: [JSON 출력](#json-output))"
 
-#: src/commands/migrate.md:63 src/commands/migrate.md:64
-#: src/commands/migrate.md:65 src/commands/migrate.md:66
-#: src/commands/migrate.md:67
+#: src/commands/migrate.md:68 src/commands/migrate.md:69
+#: src/commands/migrate.md:70 src/commands/migrate.md:71
+#: src/commands/migrate.md:72 src/commands/migrate.md:73
 msgid "`@env`, `all`"
 msgstr "`@env`, `all`"
 
-#: src/commands/migrate.md:63
+#: src/commands/migrate.md:68
 msgid "Preview without making changes"
 msgstr "변경 없이 미리 보기"
 
-#: src/commands/migrate.md:64 src/commands/self.md:15
+#: src/commands/migrate.md:69 src/commands/self.md:15
 msgid "`--force`"
 msgstr "`--force`"
 
-#: src/commands/migrate.md:64
+#: src/commands/migrate.md:69
 msgid "Overwrite existing scuv env with the same name; bypass EOL Python guard"
 msgstr ""
 "동일한 이름의 기존 scuv 환경을 덮어씁니다; EOL Python 가드를 우회합니다"
 
-#: src/commands/migrate.md:65
+#: src/commands/migrate.md:70
+msgid "`--allow-eol`"
+msgstr "`--allow-eol`"
+
+#: src/commands/migrate.md:70
+msgid "Migrate envs whose Python is end of life; overwrites nothing"
+msgstr ""
+"Python 지원이 끝난 환경도 마이그레이션합니다. 아무것도 덮어쓰지 않습니다"
+
+#: src/commands/migrate.md:71
 msgid "`--yes`"
 msgstr "`--yes`"
 
-#: src/commands/migrate.md:65
+#: src/commands/migrate.md:71
 msgid "Skip the interactive confirmation prompt"
 msgstr "대화형 확인 프롬프트를 건너뜁니다"
 
-#: src/commands/migrate.md:66 src/commands/diff.md:38
+#: src/commands/migrate.md:72 src/commands/diff.md:38
 msgid "`--strict`"
 msgstr "`--strict`"
 
-#: src/commands/migrate.md:66
+#: src/commands/migrate.md:72
 msgid ""
 "Fail on the first package install error inside an env (default: keep going)"
 msgstr "환경 내 첫 번째 패키지 설치 오류에서 실패합니다(기본값: 계속 진행)"
 
-#: src/commands/migrate.md:67
+#: src/commands/migrate.md:73
 msgid "`--delete-source`"
 msgstr "`--delete-source`"
 
-#: src/commands/migrate.md:67
+#: src/commands/migrate.md:73
 msgid "Remove the source env after successful migration"
 msgstr "마이그레이션 성공 후 소스 환경을 제거합니다"
 
-#: src/commands/migrate.md:68
+#: src/commands/migrate.md:74
 msgid "`--rename <new-name>`"
 msgstr "`--rename <new-name>`"
 
-#: src/commands/migrate.md:68 src/commands/migrate.md:69
+#: src/commands/migrate.md:74 src/commands/migrate.md:75
 msgid "`@env`"
 msgstr "`@env`"
 
-#: src/commands/migrate.md:68
+#: src/commands/migrate.md:74
 msgid "Migrate under a different name"
 msgstr "다른 이름으로 마이그레이션합니다"
 
-#: src/commands/migrate.md:69
+#: src/commands/migrate.md:75
 msgid "`--auto-rename`"
 msgstr "`--auto-rename`"
 
-#: src/commands/migrate.md:69
+#: src/commands/migrate.md:75
 msgid ""
 "On name conflict, migrate under `<name>-pyenv` automatically (conflicts with "
 "`--force`)"
@@ -6502,18 +6524,18 @@ msgstr ""
 "이름 충돌 시 `<name>-pyenv` 이름으로 자동 마이그레이션합니다(`--force`와 충"
 "돌)"
 
-#: src/commands/migrate.md:71
+#: src/commands/migrate.md:77
 msgid ""
 "Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands."
 msgstr ""
 "전역 플래그(`--quiet`, `--color`, `--no-color`)는 모든 서브커맨드에 적용됩니"
 "다."
 
-#: src/commands/migrate.md:73 src/commands/verify.md:36 src/commands/diff.md:47
+#: src/commands/migrate.md:79 src/commands/verify.md:36 src/commands/diff.md:47
 msgid "Exit codes"
 msgstr "종료 코드"
 
-#: src/commands/migrate.md:75
+#: src/commands/migrate.md:81
 msgid ""
 "`scuv migrate` follows the [layered exit-code contract](../api.md#process-"
 "exit-codes). The mapping differs slightly between `migrate all` (which "
@@ -6524,21 +6546,21 @@ msgstr ""
 "릅니다. 환경을 반복하기 전에 버킷으로 분류하는 `migrate all`과 단일 환경 경로"
 "(`@env`, `list`) 사이에 매핑이 약간 다릅니다."
 
-#: src/commands/migrate.md:77 src/commands/migrate.md:379
+#: src/commands/migrate.md:83 src/commands/migrate.md:385
 msgid "`migrate all`"
 msgstr "`migrate all`"
 
-#: src/commands/migrate.md:79 src/commands/migrate.md:87
+#: src/commands/migrate.md:85 src/commands/migrate.md:93
 #: src/commands/diff.md:51
 msgid "Returned when"
 msgstr "반환 조건"
 
-#: src/commands/migrate.md:81 src/commands/migrate.md:89
+#: src/commands/migrate.md:87 src/commands/migrate.md:95
 #: src/commands/diff.md:53 src/api.md:719
 msgid "`0`"
 msgstr "`0`"
 
-#: src/commands/migrate.md:81
+#: src/commands/migrate.md:87
 msgid ""
 "(a) all envs migrated, (b) no envs found but source tools are installed, or "
 "(c) only non-conflict skips occurred (EOL / corrupted envs in the skipped "
@@ -6548,11 +6570,11 @@ msgstr ""
 "어 있음, 또는 (c) 충돌 없는 건너뜀만 발생(건너뛴 버킷의 EOL / 손상된 환경, 사"
 "전 점검 이름 충돌 없음, 환경별 실패 없음)"
 
-#: src/commands/migrate.md:82 src/commands/migrate.md:90 src/api.md:721
+#: src/commands/migrate.md:88 src/commands/migrate.md:96 src/api.md:721
 msgid "`2`"
 msgstr "`2`"
 
-#: src/commands/migrate.md:82
+#: src/commands/migrate.md:88
 msgid ""
 "At least one per-env failure **or** at least one preflight name conflict "
 "without `--force`, **or** two sources offering the same env name in one "
@@ -6568,7 +6590,7 @@ msgstr ""
 "source`가 없으면 `@env`가 이미 마이그레이션된 환경을 찾습니다). "
 "`MigrationBatchFailed`를 통해 반환됩니다"
 
-#: src/commands/migrate.md:83
+#: src/commands/migrate.md:89
 msgid ""
 "No source tool (pyenv / virtualenvwrapper / conda) is detected on the "
 "system. Returned via `MigrationSourcesNotFound`"
@@ -6576,12 +6598,12 @@ msgstr ""
 "시스템에서 소스 도구(pyenv / virtualenvwrapper / conda)가 감지되지 않았습니"
 "다. `MigrationSourcesNotFound`를 통해 반환됩니다"
 
-#: src/commands/migrate.md:85 src/commands/migrate.md:380
-#: src/commands/migrate.md:381
+#: src/commands/migrate.md:91 src/commands/migrate.md:386
+#: src/commands/migrate.md:387
 msgid "`migrate @env <name>`"
 msgstr "`migrate @env <name>`"
 
-#: src/commands/migrate.md:89
+#: src/commands/migrate.md:95
 msgid ""
 "The env migrated successfully (or the user chose `Skip` at the interactive "
 "conflict prompt)"
@@ -6589,17 +6611,19 @@ msgstr ""
 "환경이 성공적으로 마이그레이션되었습니다(또는 사용자가 대화형 충돌 프롬프트에"
 "서 `Skip`을 선택했습니다)"
 
-#: src/commands/migrate.md:90
+#: src/commands/migrate.md:96
 msgid ""
 "`MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--"
 "yes`, `--json` or a non-terminal stderr skips the prompt) **or** "
-"`MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set)"
+"`MigrationFailed` (e.g. requested env's Python is EOL and neither `--allow-"
+"eol` nor `--force` is set)"
 msgstr ""
 "`MigrationNameConflict`(scuv home에 환경 존재, `--force` 미설정, `--yes`나 "
 "`--json` 또는 터미널이 아닌 stderr로 프롬프트를 건너뜀) **또는** "
-"`MigrationFailed`(예: 요청된 환경의 Python이 EOL이고 `--force` 미설정)"
+"`MigrationFailed`(예: 요청된 환경의 Python이 EOL이고 `--allow-eol`과 `--"
+"force` 모두 미설정)"
 
-#: src/commands/migrate.md:91
+#: src/commands/migrate.md:97
 msgid ""
 "The named source env was not found in the requested source "
 "(`PyenvEnvNotFound`, `VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **or** "
@@ -6609,11 +6633,11 @@ msgstr ""
 "`VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **또는** 소스 환경이 "
 "`CorruptedEnvironment`입니다"
 
-#: src/commands/migrate.md:93
+#: src/commands/migrate.md:99
 msgid "`migrate list`"
 msgstr "`migrate list`"
 
-#: src/commands/migrate.md:95
+#: src/commands/migrate.md:101
 msgid ""
 "Exit `0` is informational. A source whose scan fails is left out of the list "
 "instead of failing the command, so exit `0` does not prove that every source "
@@ -6622,7 +6646,7 @@ msgstr ""
 "종료 코드 `0`은 정보성입니다. 스캔에 실패한 소스는 명령을 실패시키지 않고 목"
 "록에서 빠지므로, `0`이 모든 소스를 읽었다는 뜻은 아닙니다."
 
-#: src/commands/migrate.md:99
+#: src/commands/migrate.md:105
 msgid ""
 "Before v0.14, `migrate all` always exited `0` regardless of per-env outcome. "
 "CI gates need `0.14+` to distinguish success from a batch where some envs "
@@ -6632,7 +6656,7 @@ msgstr ""
 "니다. 일부 환경이 실패한 배치와 성공을 구별하려면 CI 게이트에서 `0.14+` 이상"
 "이 필요합니다."
 
-#: src/commands/migrate.md:100
+#: src/commands/migrate.md:106
 msgid ""
 "When `migrate all` returns `MigrationBatchFailed`, the human summary and "
 "JSON envelope are already on stdout/stderr; `main.rs` suppresses the global "
@@ -6642,11 +6666,11 @@ msgstr ""
 "과 JSON 봉투는 이미 stdout/stderr에 출력됩니다. `main.rs`는 중복 노이즈를 방"
 "지하기 위해 전역 `error:` 접두사를 억제합니다."
 
-#: src/commands/migrate.md:102
+#: src/commands/migrate.md:108
 msgid "\\--force vs --auto-rename (single env, `@env`)"
 msgstr "\\--force vs --auto-rename (단일 환경, `@env`)"
 
-#: src/commands/migrate.md:104
+#: src/commands/migrate.md:110
 msgid ""
 "The two flags are mutually exclusive (`clap`\\-enforced via `conflicts_with "
 "= \"force\"`). For `migrate all` only `--force` is available; conflicts "
@@ -6656,56 +6680,56 @@ msgstr ""
 "제됩니다). `migrate all`에서는 `--force`만 사용 가능하며, `--force` 없는 충돌"
 "은 exit-2 계약에 포함됩니다."
 
-#: src/commands/migrate.md:109
+#: src/commands/migrate.md:115
 msgid "`--force` (recommended for guaranteed resolution)"
 msgstr "`--force` (확실한 해결을 위해 권장)"
 
-#: src/commands/migrate.md:111
+#: src/commands/migrate.md:117
 msgid "Status of source env"
 msgstr "소스 환경 상태"
 
-#: src/commands/migrate.md:111
+#: src/commands/migrate.md:117
 msgid "With `--force`"
 msgstr "`--force` 사용 시"
 
-#: src/commands/migrate.md:113
+#: src/commands/migrate.md:119
 msgid "Ready"
 msgstr "준비됨"
 
-#: src/commands/migrate.md:113
+#: src/commands/migrate.md:119
 msgid "Migrated normally"
 msgstr "정상적으로 마이그레이션됨"
 
-#: src/commands/migrate.md:114
+#: src/commands/migrate.md:120
 msgid "Name conflict with an existing scuv env"
 msgstr "기존 scuv 환경과 이름 충돌"
 
-#: src/commands/migrate.md:114
+#: src/commands/migrate.md:120
 msgid "The existing scuv env is overwritten in place"
 msgstr "기존 scuv 환경이 제자리에서 덮어씌워집니다"
 
-#: src/commands/migrate.md:115
+#: src/commands/migrate.md:121
 msgid "EOL Python version (e.g. 2.7, 3.10)"
 msgstr "EOL Python 버전 (예: 2.7, 3.10)"
 
-#: src/commands/migrate.md:115
+#: src/commands/migrate.md:121
 msgid "Migrated anyway (the EOL guard is intentionally bypassed)"
 msgstr "어쨌든 마이그레이션됩니다(EOL 가드가 의도적으로 우회됨)"
 
-#: src/commands/migrate.md:116
+#: src/commands/migrate.md:122
 msgid "Corrupted source env"
 msgstr "손상된 소스 환경"
 
-#: src/commands/migrate.md:116
+#: src/commands/migrate.md:122
 msgid "**Not bypassed** — still returns `CorruptedEnvironment` (exit 3)"
 msgstr ""
 "**우회되지 않음** — 여전히 `CorruptedEnvironment`를 반환합니다(종료 코드 3)"
 
-#: src/commands/migrate.md:118
+#: src/commands/migrate.md:124
 msgid "`--auto-rename` (name-conflict only)"
 msgstr "`--auto-rename` (이름 충돌 시에만)"
 
-#: src/commands/migrate.md:120
+#: src/commands/migrate.md:126
 msgid ""
 "`--auto-rename` is a convenience for the pure name-conflict case: when a "
 "scuv env with the same name already exists, the migration proceeds under an "
@@ -6717,11 +6741,11 @@ msgstr ""
 "다. EOL / 손상 등 **다른 상태는 재정의하지 않으며**, 기존 scuv 환경을 삭제하"
 "거나 덮어쓰지도 **않습니다**."
 
-#: src/commands/migrate.md:130 src/commands/migrate.md:132
+#: src/commands/migrate.md:136 src/commands/migrate.md:138
 msgid "'myproject-pyenv'"
 msgstr "'myproject-pyenv'"
 
-#: src/commands/migrate.md:140
+#: src/commands/migrate.md:146
 msgid ""
 "The generated name is `<name>-pyenv` for every source, including "
 "`virtualenvwrapper` and `conda`. When that name is taken as well, scuv picks "
@@ -6731,22 +6755,23 @@ msgstr ""
 "pyenv`입니다. 그 이름도 이미 사용 중이면 scuv가 비어 있는 첫 번호 이름"
 "(`myproject-1`, `myproject-2` 순서)을 고릅니다."
 
-#: src/commands/migrate.md:144
+#: src/commands/migrate.md:150
 msgid ""
 "The EOL guard still applies to a renamed env. When the source env both "
 "conflicts by name and runs an end-of-life Python, `--auto-rename` stops with "
-"`Python <version> is end-of-life. Use --force to migrate anyway.` (exit 2)."
+"`Python <version> is end-of-life. Use --allow-eol to migrate anyway.` (exit "
+"2)."
 msgstr ""
 "이름을 바꾼 환경에도 EOL 가드는 그대로 적용됩니다. 원본 환경이 이름도 충돌하"
 "고 지원이 종료된(end-of-life) Python도 쓰면, `--auto-rename`은 `Python "
-"<version> is end-of-life. Use --force to migrate anyway.`를 출력하고 멈춥니다"
-"(exit 2)."
+"<version> is end-of-life. Use --allow-eol to migrate anyway.`를 출력하고 멈춥"
+"니다(exit 2)."
 
-#: src/commands/migrate.md:151
+#: src/commands/migrate.md:157
 msgid "List Migratable Environments"
 msgstr "마이그레이션 가능한 환경 목록"
 
-#: src/commands/migrate.md:166
+#: src/commands/migrate.md:172
 msgid ""
 "Each env line starts with `✓` when it is ready to migrate, `⚠` for a name "
 "conflict or an end-of-life Python (followed by the reason, such as `(Python "
@@ -6759,15 +6784,15 @@ msgstr ""
 "은 이유가 붙음), 환경이 손상되었으면 `✗`로 시작합니다. 그룹으로 묶인 환경 줄"
 "은 stdout으로, `•`, `✓ Found` 줄은 stderr로 출력됩니다."
 
-#: src/commands/migrate.md:172
+#: src/commands/migrate.md:178
 msgid "Migrate Single Environment"
 msgstr "단일 환경 마이그레이션"
 
-#: src/commands/migrate.md:187
+#: src/commands/migrate.md:193
 msgid "Migrate All"
 msgstr "전체 마이그레이션"
 
-#: src/commands/migrate.md:202
+#: src/commands/migrate.md:208
 msgid ""
 "When some envs fail or conflict, the summary names them and the command "
 "exits 2:"
@@ -6775,19 +6800,23 @@ msgstr ""
 "일부 환경이 실패하거나 충돌하면 요약에 그 이름이 표시되고 커맨드는 exit 2로 "
 "종료합니다:"
 
-#: src/commands/migrate.md:222
+#: src/commands/migrate.md:228
 msgid "CI gate (fail the build on batch failure)"
 msgstr "CI 게이트 (배치 실패 시 빌드 실패)"
 
-#: src/commands/migrate.md:225
+#: src/commands/migrate.md:231
 msgid "# Exits 2 if any env failed or a name conflict was skipped.\n"
 msgstr "# Exits 2 if any env failed or a name conflict was skipped.\n"
 
-#: src/commands/migrate.md:226
-msgid "# EOL envs are skipped without changing the exit code.\n"
-msgstr "# EOL 환경은 건너뛰어도 종료 코드가 바뀌지 않습니다.\n"
+#: src/commands/migrate.md:232
+msgid ""
+"# EOL envs are skipped without changing the exit code; add --allow-eol to "
+"migrate them.\n"
+msgstr ""
+"# EOL 환경은 건너뛰어도 종료 코드가 바뀌지 않습니다. 옮기려면 --allow-eol을 "
+"붙입니다.\n"
 
-#: src/commands/migrate.md:233
+#: src/commands/migrate.md:239
 msgid ""
 "All three subcommands accept `--json`. The envelope follows scuv's standard "
 "shape: `{status, command, data}` on success; `{status: \"error\", command, "
@@ -6799,11 +6828,11 @@ msgstr ""
 "한 실패 경로의 경우 `{status: \"error\", command, error: { code, "
 "message, ... }, data}` 형태를 사용합니다."
 
-#: src/commands/migrate.md:238
+#: src/commands/migrate.md:244
 msgid "`migrate list --json`"
 msgstr "`migrate list --json`"
 
-#: src/commands/migrate.md:240
+#: src/commands/migrate.md:246
 msgid ""
 "`data` carries the requested `source` filter string (`\"pyenv\"`, "
 "`\"virtualenvwrapper\"`, `\"conda\"`, or `\"all\"`), the full `environments` "
@@ -6813,76 +6842,76 @@ msgstr ""
 "`\"conda\"`, 또는 `\"all\"`), 전체 `environments` 배열, 그리고 상태별로 분류"
 "된 `summary`가 포함됩니다."
 
-#: src/commands/migrate.md:247
+#: src/commands/migrate.md:253
 msgid "\"migrate list\""
 msgstr "\"migrate list\""
 
-#: src/commands/migrate.md:249
+#: src/commands/migrate.md:255
 msgid "\"all\""
 msgstr "\"all\""
 
-#: src/commands/migrate.md:250
+#: src/commands/migrate.md:256
 msgid "\"environments\""
 msgstr "\"environments\""
 
-#: src/commands/migrate.md:253 src/commands/migrate.md:261
-#: src/commands/migrate.md:297 src/commands/diff.md:128 src/api.md:156
+#: src/commands/migrate.md:259 src/commands/migrate.md:267
+#: src/commands/migrate.md:303 src/commands/diff.md:128 src/api.md:156
 msgid "\"python_version\""
 msgstr "\"python_version\""
 
-#: src/commands/migrate.md:254
+#: src/commands/migrate.md:260
 msgid "\"/home/u/.virtualenvs/myproject\""
 msgstr "\"/home/u/.virtualenvs/myproject\""
 
-#: src/commands/migrate.md:255 src/commands/migrate.md:263
-#: src/commands/migrate.md:341 src/commands/migrate.md:352
+#: src/commands/migrate.md:261 src/commands/migrate.md:269
+#: src/commands/migrate.md:347 src/commands/migrate.md:358
 msgid "\"source_type\""
 msgstr "\"source_type\""
 
-#: src/commands/migrate.md:255 src/commands/migrate.md:263
-#: src/commands/migrate.md:341 src/commands/migrate.md:352
+#: src/commands/migrate.md:261 src/commands/migrate.md:269
+#: src/commands/migrate.md:347 src/commands/migrate.md:358
 msgid "\"virtualenv_wrapper\""
 msgstr "\"virtualenv_wrapper\""
 
-#: src/commands/migrate.md:257 src/commands/migrate.md:268
+#: src/commands/migrate.md:263 src/commands/migrate.md:274
 msgid "\"ready\""
 msgstr "\"ready\""
 
-#: src/commands/migrate.md:260
+#: src/commands/migrate.md:266
 msgid "\"oldenv\""
 msgstr "\"oldenv\""
 
-#: src/commands/migrate.md:261 src/commands/migrate.md:265
+#: src/commands/migrate.md:267 src/commands/migrate.md:271
 msgid "\"3.7.17\""
 msgstr "\"3.7.17\""
 
-#: src/commands/migrate.md:262
+#: src/commands/migrate.md:268
 msgid "\"/home/u/.virtualenvs/oldenv\""
 msgstr "\"/home/u/.virtualenvs/oldenv\""
 
-#: src/commands/migrate.md:265
+#: src/commands/migrate.md:271
 msgid "\"python_eol\""
 msgstr "\"python_eol\""
 
-#: src/commands/migrate.md:268 src/commands/migrate.md:309
-#: src/commands/migrate.md:356 src/commands/verify.md:85
+#: src/commands/migrate.md:274 src/commands/migrate.md:315
+#: src/commands/migrate.md:362 src/commands/verify.md:85
 #: src/commands/diff.md:133
 msgid "\"summary\""
 msgstr "\"summary\""
 
-#: src/commands/migrate.md:268
+#: src/commands/migrate.md:274
 msgid "\"conflict\""
 msgstr "\"conflict\""
 
-#: src/commands/migrate.md:268
+#: src/commands/migrate.md:274
 msgid "\"eol\""
 msgstr "\"eol\""
 
-#: src/commands/migrate.md:268
+#: src/commands/migrate.md:274
 msgid "\"corrupted\""
 msgstr "\"corrupted\""
 
-#: src/commands/migrate.md:273
+#: src/commands/migrate.md:279
 msgid ""
 "The `status` field is an object whose own `status` key names the state: "
 "`{\"status\": \"ready\"}`, `{\"status\": \"name_conflict\", \"existing\": "
@@ -6900,11 +6929,11 @@ msgstr ""
 "니다. `size_bytes`는 환경 안 일반 파일 크기의 합이며, `migrate list`를 실행"
 "할 때 측정합니다."
 
-#: src/commands/migrate.md:280
+#: src/commands/migrate.md:286
 msgid "`migrate all --json` — success path"
 msgstr "`migrate all --json` — 성공 경로"
 
-#: src/commands/migrate.md:282
+#: src/commands/migrate.md:288
 msgid ""
 "`MigrateAllData` carries five top-level data keys. `conflicts[]` (new in "
 "0.14) is **additive** — name-conflict envs continue to appear in `skipped[]` "
@@ -6920,50 +6949,50 @@ msgstr ""
 "`conflicts[]`는 구조화된 뷰이므로, 소비자가 `skipped[]`의 로컬라이즈된 "
 "`reason` 문자열을 파싱하지 않고도 실패 유형별로 분기할 수 있습니다."
 
-#: src/commands/migrate.md:292 src/commands/migrate.md:329
+#: src/commands/migrate.md:298 src/commands/migrate.md:335
 msgid "\"migrate all\""
 msgstr "\"migrate all\""
 
-#: src/commands/migrate.md:294 src/commands/migrate.md:337
+#: src/commands/migrate.md:300 src/commands/migrate.md:343
 msgid "\"migrated\""
 msgstr "\"migrated\""
 
-#: src/commands/migrate.md:298
+#: src/commands/migrate.md:304
 msgid "\"packages_migrated\""
 msgstr "\"packages_migrated\""
 
-#: src/commands/migrate.md:299
+#: src/commands/migrate.md:305
 msgid "\"packages_failed\""
 msgstr "\"packages_failed\""
 
-#: src/commands/migrate.md:301 src/commands/migrate.md:353
+#: src/commands/migrate.md:307 src/commands/migrate.md:359
 msgid "\"/home/u/.scuv/virtualenvs/myproject\""
 msgstr "\"/home/u/.scuv/virtualenvs/myproject\""
 
-#: src/commands/migrate.md:302
+#: src/commands/migrate.md:308
 msgid "\"source_deleted\""
 msgstr "\"source_deleted\""
 
-#: src/commands/migrate.md:303
+#: src/commands/migrate.md:309
 msgid "\"actual_python_version\""
 msgstr "\"actual_python_version\""
 
-#: src/commands/migrate.md:306 src/commands/migrate.md:309
-#: src/commands/migrate.md:338 src/commands/migrate.md:356
+#: src/commands/migrate.md:312 src/commands/migrate.md:315
+#: src/commands/migrate.md:344 src/commands/migrate.md:362
 msgid "\"failed\""
 msgstr "\"failed\""
 
-#: src/commands/migrate.md:307 src/commands/migrate.md:309
-#: src/commands/migrate.md:346 src/commands/migrate.md:356
+#: src/commands/migrate.md:313 src/commands/migrate.md:315
+#: src/commands/migrate.md:352 src/commands/migrate.md:362
 #: src/commands/self.md:53
 msgid "\"skipped\""
 msgstr "\"skipped\""
 
-#: src/commands/migrate.md:308 src/commands/migrate.md:349
+#: src/commands/migrate.md:314 src/commands/migrate.md:355
 msgid "\"conflicts\""
 msgstr "\"conflicts\""
 
-#: src/commands/migrate.md:314
+#: src/commands/migrate.md:320
 msgid ""
 "`actual_python_version` currently repeats the source env's `python_version`. "
 "`source_deleted` reflects whether `--delete-source` was honored for this "
@@ -6973,11 +7002,11 @@ msgstr ""
 "다. `source_deleted`는 이 환경에 `--delete-source`가 적용되었는지를 반영합니"
 "다. `dry_run`은 커맨드 실행 시 사용한 플래그를 그대로 나타냅니다."
 
-#: src/commands/migrate.md:319
+#: src/commands/migrate.md:325
 msgid "`migrate all --json` — failure path (exit 2)"
 msgstr "`migrate all --json` — 실패 경로 (exit 2)"
 
-#: src/commands/migrate.md:321
+#: src/commands/migrate.md:327
 msgid ""
 "Returned when at least one per-env failure occurred, or at least one "
 "preflight name conflict was detected without `--force`. The envelope embeds "
@@ -6987,49 +7016,49 @@ msgstr ""
 "돌이 하나 이상 감지된 경우 반환됩니다. envelope에 전체 데이터 뷰가 포함되므"
 "로, 실패 측에서도 세부 정보를 잃지 않습니다."
 
-#: src/commands/migrate.md:328 src/commands/migrate.md:330
-#: src/commands/migrate.md:343 src/commands/diff.md:153
+#: src/commands/migrate.md:334 src/commands/migrate.md:336
+#: src/commands/migrate.md:349 src/commands/diff.md:153
 #: src/commands/diff.md:155
 msgid "\"error\""
 msgstr "\"error\""
 
-#: src/commands/migrate.md:331 src/commands/diff.md:156
+#: src/commands/migrate.md:337 src/commands/diff.md:156
 msgid "\"code\""
 msgstr "\"code\""
 
-#: src/commands/migrate.md:331
+#: src/commands/migrate.md:337
 msgid "\"MIGRATE_BATCH_FAILED\""
 msgstr "\"MIGRATE_BATCH_FAILED\""
 
-#: src/commands/migrate.md:332 src/commands/diff.md:157
+#: src/commands/migrate.md:338 src/commands/diff.md:157
 msgid "\"message\""
 msgstr "\"message\""
 
-#: src/commands/migrate.md:332
+#: src/commands/migrate.md:338
 msgid "\"Migration finished with 1 failure(s) and 1 name conflict(s)\""
 msgstr "\"Migration finished with 1 failure(s) and 1 name conflict(s)\""
 
-#: src/commands/migrate.md:333
+#: src/commands/migrate.md:339
 msgid "\"failed_count\""
 msgstr "\"failed_count\""
 
-#: src/commands/migrate.md:334
+#: src/commands/migrate.md:340
 msgid "\"conflict_count\""
 msgstr "\"conflict_count\""
 
-#: src/commands/migrate.md:340
+#: src/commands/migrate.md:346
 msgid "\"brokenpip\""
 msgstr "\"brokenpip\""
 
-#: src/commands/migrate.md:342
+#: src/commands/migrate.md:348
 msgid "\"error_code\""
 msgstr "\"error_code\""
 
-#: src/commands/migrate.md:342
+#: src/commands/migrate.md:348
 msgid "\"MIGRATE_EXTRACTION_FAILED\""
 msgstr "\"MIGRATE_EXTRACTION_FAILED\""
 
-#: src/commands/migrate.md:343
+#: src/commands/migrate.md:349
 msgid ""
 "\"Couldn't extract packages: pip not found at /home/u/.virtualenvs/brokenpip/"
 "bin/pip\""
@@ -7037,24 +7066,24 @@ msgstr ""
 "\"Couldn't extract packages: pip not found at /home/u/.virtualenvs/brokenpip/"
 "bin/pip\""
 
-#: src/commands/migrate.md:347 src/commands/gc.md:154 src/commands/gc.md:155
-#: src/commands/gc.md:156
+#: src/commands/migrate.md:353 src/commands/gc.md:156 src/commands/gc.md:157
+#: src/commands/gc.md:158
 msgid "\"reason\""
 msgstr "\"reason\""
 
-#: src/commands/migrate.md:347
+#: src/commands/migrate.md:353
 msgid "\"name conflict (use --force)\""
 msgstr "\"name conflict (use --force)\""
 
-#: src/commands/migrate.md:353
+#: src/commands/migrate.md:359
 msgid "\"existing\""
 msgstr "\"existing\""
 
-#: src/commands/migrate.md:361
+#: src/commands/migrate.md:367
 msgid "Per-env failure objects carry two additive fields:"
 msgstr "환경별 실패 객체에는 두 가지 추가 필드가 있습니다:"
 
-#: src/commands/migrate.md:363
+#: src/commands/migrate.md:369
 msgid ""
 "`source_type` (`\"pyenv\"`, `\"virtualenv_wrapper\"`, `\"conda\"`) — origin "
 "tool."
@@ -7062,7 +7091,7 @@ msgstr ""
 "`source_type` (`\"pyenv\"`, `\"virtualenv_wrapper\"`, `\"conda\"`) — 원본 도"
 "구."
 
-#: src/commands/migrate.md:364
+#: src/commands/migrate.md:370
 msgid ""
 "`error_code` — the stable `ScoopError::code()` constant (e.g. "
 "`\"MIGRATE_EXTRACTION_FAILED\"`, `\"MIGRATE_NAME_CONFLICT\"`, "
@@ -7074,11 +7103,11 @@ msgstr ""
 "`\"UV_COMMAND_FAILED\"`)입니다. 로컬라이즈된 `error` 문자열을 파싱하는 대신, "
 "스크립트에서 이 값을 기반으로 분기할 수 있습니다."
 
-#: src/commands/migrate.md:369
+#: src/commands/migrate.md:375
 msgid "Exit-3 paths — the generic error envelope"
 msgstr "Exit-3 경로 — 일반 오류 envelope"
 
-#: src/commands/migrate.md:371
+#: src/commands/migrate.md:377
 msgid ""
 "Two distinct exit-3 cases exist. Under `--json` each prints the generic "
 "error envelope on stdout (`status`, `command`, and `error` with `code`, the "
@@ -7092,50 +7121,50 @@ msgstr ""
 "니다. `--json`이 없으면 메시지와 제안이 stderr에 텍스트로 나갑니다. 종료 코드"
 "는 어느 쪽이든 `3`입니다."
 
-#: src/commands/migrate.md:377
+#: src/commands/migrate.md:383
 msgid "Error variant"
 msgstr "오류 변형"
 
-#: src/commands/migrate.md:379
+#: src/commands/migrate.md:385
 msgid "`MigrationSourcesNotFound`"
 msgstr "`MigrationSourcesNotFound`"
 
-#: src/commands/migrate.md:379
+#: src/commands/migrate.md:385
 msgid "No source tool detected at all (pyenv / virtualenvwrapper / conda)"
 msgstr "소스 도구(pyenv / virtualenvwrapper / conda)가 전혀 감지되지 않음"
 
-#: src/commands/migrate.md:380
+#: src/commands/migrate.md:386
 msgid "`PyenvEnvNotFound` / `VenvWrapperEnvNotFound` / `CondaEnvNotFound`"
 msgstr "`PyenvEnvNotFound` / `VenvWrapperEnvNotFound` / `CondaEnvNotFound`"
 
-#: src/commands/migrate.md:380
+#: src/commands/migrate.md:386
 msgid "The named env isn't present in the requested (or any) source"
 msgstr "지정한 환경이 요청한(또는 어떤) 소스에도 존재하지 않음"
 
-#: src/commands/migrate.md:381
+#: src/commands/migrate.md:387
 msgid "`CorruptedEnvironment`"
 msgstr "`CorruptedEnvironment`"
 
-#: src/commands/migrate.md:381
+#: src/commands/migrate.md:387
 msgid ""
 "The named env exists but its layout is broken (missing python, broken "
 "pyvenv.cfg, etc)"
 msgstr ""
 "지정한 환경은 존재하지만 레이아웃이 손상됨(Python 누락, pyvenv.cfg 손상 등)"
 
-#: src/commands/migrate.md:383
+#: src/commands/migrate.md:389
 msgid "Script template:"
 msgstr "스크립트 템플릿:"
 
-#: src/commands/migrate.md:389
+#: src/commands/migrate.md:395
 msgid "\"batch failure — read out.json for detail\""
 msgstr "\"batch failure — read out.json for detail\""
 
-#: src/commands/migrate.md:390
+#: src/commands/migrate.md:396
 msgid "\"no source tool or env: $(jq -r .error.code out.json)\""
 msgstr ""
 
-#: src/commands/migrate.md:394
+#: src/commands/migrate.md:400
 msgid ""
 "Only the exit-2 envelope (batch failure) carries the per-env `data`; the "
 "exit-3 envelope has `error` alone. Up to scuv 0.18.1 the exit-3 paths "
@@ -7145,27 +7174,27 @@ msgstr ""
 "`error`만 있습니다. scuv 0.18.1까지는 exit-3 경로가 `--json`이어도 stderr에 "
 "텍스트를 출력했고 stdout은 비어 있었습니다."
 
-#: src/commands/migrate.md:399
+#: src/commands/migrate.md:405
 msgid "Migration Process"
 msgstr "마이그레이션 프로세스"
 
-#: src/commands/migrate.md:401
+#: src/commands/migrate.md:407
 msgid "**Discovery**: Scans configured source paths for virtual environments"
 msgstr "**검색**: 가상 환경을 위해 설정된 소스 경로를 스캔합니다."
 
-#: src/commands/migrate.md:402
+#: src/commands/migrate.md:408
 msgid "**Extraction**: Identifies Python version and installed packages"
 msgstr "**추출**: Python 버전과 설치된 패키지를 식별합니다."
 
-#: src/commands/migrate.md:403
+#: src/commands/migrate.md:409
 msgid "**Recreation**: Creates new scuv environment with same Python version"
 msgstr "**재생성**: 동일한 Python 버전으로 새 scuv 환경을 생성합니다."
 
-#: src/commands/migrate.md:404
+#: src/commands/migrate.md:410
 msgid "**Package Install**: Reinstalls packages using `uv pip install`"
 msgstr "**패키지 설치**: `uv pip install`을 사용해 패키지를 재설치합니다."
 
-#: src/commands/migrate.md:405
+#: src/commands/migrate.md:411
 msgid ""
 "**Cleanup**: Originals are preserved by default; `--delete-source` removes "
 "them after successful migration"
@@ -7173,12 +7202,12 @@ msgstr ""
 "**정리**: 원본은 기본적으로 보존됩니다. 마이그레이션 성공 후 `--delete-"
 "source`를 사용하면 원본이 제거됩니다."
 
-#: src/commands/migrate.md:407 src/commands/lang.md:139
+#: src/commands/migrate.md:413 src/commands/lang.md:139
 #: src/development/architecture.md:436
 msgid "Notes"
 msgstr "참고 사항"
 
-#: src/commands/migrate.md:409
+#: src/commands/migrate.md:415
 msgid ""
 "Original environments are preserved by default; use `--delete-source` to "
 "remove sources after migration"
@@ -7186,20 +7215,20 @@ msgstr ""
 "원본 환경은 기본적으로 보존됩니다. 마이그레이션 후 소스를 제거하려면 `--"
 "delete-source`를 사용하세요."
 
-#: src/commands/migrate.md:410
+#: src/commands/migrate.md:416
 msgid "Package versions are preserved where possible"
 msgstr "가능한 경우 패키지 버전이 보존됩니다."
 
-#: src/commands/migrate.md:411
+#: src/commands/migrate.md:417
 msgid ""
 "Migration creates fresh environments using `uv` for improved performance"
 msgstr "마이그레이션은 성능 향상을 위해 `uv`를 사용해 새 환경을 생성합니다."
 
-#: src/commands/migrate.md:413 src/development/code-quality.md:386
+#: src/commands/migrate.md:419 src/development/code-quality.md:386
 msgid "Performance"
 msgstr "성능"
 
-#: src/commands/migrate.md:415
+#: src/commands/migrate.md:421
 msgid ""
 "`scuv migrate all` fans out across all CPU cores via [rayon](https://docs.rs/"
 "rayon) when migrating more than one environment. The dominant cost (uv venv "
@@ -7211,7 +7240,7 @@ msgstr ""
 "pip install)은 서브프로세스의 I/O 바운드이므로, 처리 시간은 코어 수에 거의 선"
 "형적으로 비례합니다."
 
-#: src/commands/migrate.md:420
+#: src/commands/migrate.md:426
 msgid ""
 "`--dry-run` stays sequential — preview output is more useful when ordered. "
 "Progress lines may interleave when multiple envs finish close together. In "
@@ -7292,7 +7321,7 @@ msgstr ""
 msgid "Healthy environments are left untouched."
 msgstr "정상적인 환경은 그대로 유지됩니다."
 
-#: src/commands/gc.md:25 src/commands/gc.md:93
+#: src/commands/gc.md:25 src/commands/gc.md:95
 msgid "`--aggressive`"
 msgstr "`--aggressive`"
 
@@ -7368,36 +7397,51 @@ msgstr ""
 
 #: src/commands/gc.md:40
 msgid ""
+"If uv cannot list its Pythons when `gc --aggressive` first looks for them "
+"(`uv python list` fails), `gc` stops with uv's error before removing "
+"anything, environments included; under `--json` that is the error envelope. "
+"Up to scuv 0.19.0 it reported no Python and carried on. When uv is not on "
+"`PATH` at all, `--aggressive` reports no Python and the environment cleanup "
+"goes ahead."
+msgstr ""
+"`gc --aggressive`가 처음 Python을 찾을 때 uv가 목록을 내지 못하면(`uv python "
+"list` 실패), `gc`는 환경을 포함해 아무것도 지우지 않고 uv의 오류로 끝납니다. "
+"`--json`이면 에러 envelope로 나옵니다. scuv 0.19.0까지는 Python이 없다고 보고"
+"하고 계속 진행했습니다. uv가 아예 `PATH`에 없으면 `--aggressive`는 Python을 "
+"하나도 보고하지 않고 환경 정리는 그대로 진행합니다."
+
+#: src/commands/gc.md:42
+msgid ""
 "Warnings are not printed under `--json` or `--quiet`; the JSON output then "
 "has an empty `pythons` array."
 msgstr ""
 "`--json`이나 `--quiet`에서는 경고가 출력되지 않습니다. 이때 JSON 출력의 "
 "`pythons`는 빈 배열입니다."
 
-#: src/commands/gc.md:42
+#: src/commands/gc.md:44
 msgid ""
 "With `--yes`, the Python scan runs again right before uninstalling. Every "
 "environment it lists at that moment protects the Python it uses, including a "
 "candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or "
 "failed to remove. If this second scan cannot tell which Pythons are in use, "
-"nothing is uninstalled, and each Python left alone gets a warning and the "
-"JSON outcome `skipped_in_use`. If uv itself can no longer be found at that "
-"point, nothing is uninstalled either; those Pythons get the outcome "
-"`skipped_no_uv`."
+"uv's listing included, nothing is uninstalled, and each Python left alone "
+"gets a warning and the JSON outcome `skipped_in_use`. If uv itself can no "
+"longer be found at that point, nothing is uninstalled either; those Pythons "
+"get the outcome `skipped_no_uv`."
 msgstr ""
 "`--yes`를 주면 제거 직전에 Python 스캔을 한 번 더 합니다. 그 시점에 목록에 잡"
 "힌 환경은 모두 해당 환경이 사용하는 Python을 보호합니다. `gc`가 남기기로 한 "
 "후보([TOCTOU 가드](#toctou-가드) 참고)나 삭제에 실패한 후보도 마찬가지입니"
-"다. 이 두 번째 스캔에서 어떤 Python이 쓰이는지 알 수 없으면 아무것도 제거하"
-"지 않고, 남겨진 Python마다 경고가 출력되며 JSON에는 `skipped_in_use` 결과로 "
-"기록됩니다. 그 시점에 uv를 찾을 수 없어도 아무것도 제거하지 않으며, 이때 결과"
-"는 `skipped_no_uv`입니다."
+"다. 이 두 번째 스캔에서 uv의 목록 조회를 포함해 어떤 Python이 쓰이는지 알 수 "
+"없으면 아무것도 제거하지 않고, 남겨진 Python마다 경고가 출력되며 JSON에는 "
+"`skipped_in_use` 결과로 기록됩니다. 그 시점에 uv를 찾을 수 없어도 아무것도 제"
+"거하지 않으며, 이때 결과는 `skipped_no_uv`입니다."
 
-#: src/commands/gc.md:44 src/commands/gc.md:94
+#: src/commands/gc.md:46 src/commands/gc.md:96
 msgid "`--older-than <DURATION>`"
 msgstr "`--older-than <DURATION>`"
 
-#: src/commands/gc.md:46
+#: src/commands/gc.md:48
 msgid ""
 "Flag environments whose `last_used` timestamp is older than the given "
 "duration. Accepts `<n>d` (days), `<n>w` (weeks = 7d), and `<n>y` (years = "
@@ -7407,7 +7451,7 @@ msgstr ""
 "`<n>d`(일), `<n>w`(주 = 7일), `<n>y`(년 = 365일) 형식을 허용합니다. 예: "
 "`30d`, `2w`, `1y`."
 
-#: src/commands/gc.md:48
+#: src/commands/gc.md:50
 msgid ""
 "**Months are deliberately rejected** — `m` is ambiguous between \"minute\" "
 "and \"month\", and calendar months would require timezone-aware arithmetic "
@@ -7419,7 +7463,7 @@ msgstr ""
 "만 유휴 환경 휴리스틱의 정확도 개선 효과는 미미합니다. 대신 `30d` 또는 `1y`"
 "를 사용하세요."
 
-#: src/commands/gc.md:50
+#: src/commands/gc.md:52
 msgid ""
 "The maximum allowed value is 200 years (`200y`); larger values are rejected "
 "to keep the resulting cutoff inside chrono's representable range."
@@ -7427,7 +7471,7 @@ msgstr ""
 "허용되는 최대값은 200년(`200y`)입니다. 더 큰 값은 결과로 산출되는 컷오프 시점"
 "이 chrono의 표현 가능 범위를 벗어나므로 거부됩니다."
 
-#: src/commands/gc.md:52
+#: src/commands/gc.md:54
 msgid ""
 "**Note on system clock**: the cutoff is `Utc::now() - <duration>`, so the "
 "threshold moves with the system clock. A host whose clock is wrong (NTP "
@@ -7442,15 +7486,15 @@ msgstr ""
 "환경이 달라질 수 있습니다. 이는 보안 경계가 아닌 최선 노력 휴리스틱이므로, 클"
 "록을 신뢰할 수 있을 때만 `--yes`와 함께 사용하세요."
 
-#: src/commands/gc.md:59
+#: src/commands/gc.md:61
 msgid "Conservative rules"
 msgstr "보수적인 규칙"
 
-#: src/commands/gc.md:61
+#: src/commands/gc.md:63
 msgid "Two cases are **never** flagged as stale, by design:"
 msgstr "설계상 **절대로** 유휴 상태로 표시되지 않는 두 가지 케이스가 있습니다:"
 
-#: src/commands/gc.md:63
+#: src/commands/gc.md:65
 msgid ""
 "**`last_used = None`** — fresh envs that have never been activated since the "
 "field landed, _and_ envs whose metadata predates the field. Either way we "
@@ -7460,7 +7504,7 @@ msgstr ""
 "경, _그리고_ 필드 도입 이전에 생성된 메타데이터를 가진 환경. 어느 경우든 환경"
 "이 사용되지 않는다는 양성 근거가 없습니다."
 
-#: src/commands/gc.md:64
+#: src/commands/gc.md:66
 msgid ""
 "**Corrupt metadata** — if we can't read the metadata, we don't pretend to "
 "know its age."
@@ -7468,7 +7512,7 @@ msgstr ""
 "**손상된 메타데이터** — 메타데이터를 읽을 수 없으면, 해당 환경의 나이를 알 "
 "수 없다고 판단합니다."
 
-#: src/commands/gc.md:66
+#: src/commands/gc.md:68
 msgid ""
 "If you want to clean up un-activated envs anyway, surface them with `scuv "
 "list --sort last-used` — envs missing `last_used` always sort to the bottom "
@@ -7479,11 +7523,11 @@ msgstr ""
 "세요 — `last_used`가 없는 환경은 항상 목록 하단으로 정렬됩니다 — 그런 다음 "
 "`scuv remove <name>`으로 개별 환경을 제거합니다. 스크립트로 열거하려면:"
 
-#: src/commands/gc.md:72
+#: src/commands/gc.md:74
 msgid "'.data.virtualenvs[] | select(.last_used == null) | .name'"
 msgstr "'.data.virtualenvs[] | select(.last_used == null) | .name'"
 
-#: src/commands/gc.md:75
+#: src/commands/gc.md:77
 msgid ""
 "(Note: `scuv verify` checks per-env health — metadata / interpreter / "
 "manifest drift — and intentionally does NOT flag a healthy env just because "
@@ -7493,11 +7537,11 @@ msgstr ""
 "리프트 — 를 검사하며, 한 번도 활성화되지 않은 정상적인 환경을 유휴로 표시하"
 "지 **않습니다**.)"
 
-#: src/commands/gc.md:79
+#: src/commands/gc.md:81
 msgid "TOCTOU guard"
 msgstr "TOCTOU 가드"
 
-#: src/commands/gc.md:81
+#: src/commands/gc.md:83
 msgid ""
 "Between the `--older-than` scan and the actual delete, an env may be "
 "activated. Each candidate is re-checked just before removal:"
@@ -7505,7 +7549,7 @@ msgstr ""
 "`--older-than` 스캔과 실제 삭제 사이에 환경이 활성화될 수 있습니다. 각 후보"
 "는 제거 직전에 다시 확인합니다:"
 
-#: src/commands/gc.md:83
+#: src/commands/gc.md:85
 msgid ""
 "`skipped_recently_used` — the env was touched after the scan; `last_used` is "
 "now at-or-newer than the original cutoff, so it is no longer stale."
@@ -7513,7 +7557,7 @@ msgstr ""
 "`skipped_recently_used` — 스캔 이후 환경이 사용되었습니다. `last_used`가 원"
 "래 컷오프 이상으로 업데이트되어 더 이상 유휴 상태가 아닙니다."
 
-#: src/commands/gc.md:84
+#: src/commands/gc.md:86
 msgid ""
 "`skipped_no_data` — metadata became unreadable or missing between scan and "
 "remove. We refuse to delete envs we can no longer reason about."
@@ -7521,7 +7565,7 @@ msgstr ""
 "`skipped_no_data` — 스캔과 제거 사이에 메타데이터를 읽을 수 없거나 사라진 경"
 "우. 더 이상 판단할 수 없는 환경은 삭제하지 않습니다."
 
-#: src/commands/gc.md:86
+#: src/commands/gc.md:88
 msgid ""
 "Both surface in the JSON envelope as `outcome` values so scripts can "
 "distinguish them from `removed` / `failed`."
@@ -7529,31 +7573,31 @@ msgstr ""
 "두 가지 모두 JSON envelope에서 `outcome` 값으로 나타나므로, 스크립트에서 "
 "`removed` / `failed`와 구분할 수 있습니다."
 
-#: src/commands/gc.md:92
+#: src/commands/gc.md:94
 msgid "`-y`, `--yes`"
 msgstr "`-y`, `--yes`"
 
-#: src/commands/gc.md:92
+#: src/commands/gc.md:94
 msgid "Actually remove the candidates (default: preview only)"
 msgstr "후보를 실제로 제거합니다(기본값: 미리보기만)."
 
-#: src/commands/gc.md:93
+#: src/commands/gc.md:95
 msgid "Also remove uv-managed Python versions that no environment uses"
 msgstr "어떤 환경에서도 사용하지 않는 uv 관리 Python 버전도 함께 제거합니다."
 
-#: src/commands/gc.md:94
+#: src/commands/gc.md:96
 msgid "Also flag envs idle past the cutoff (`30d` / `2w` / `1y`)"
 msgstr "컷오프 이후 유휴 상태인 환경도 표시합니다(`30d` / `2w` / `1y`)."
 
-#: src/commands/gc.md:100
+#: src/commands/gc.md:102
 msgid "# See what would be removed\n"
 msgstr "# See what would be removed\n"
 
-#: src/commands/gc.md:102 src/commands/gc.md:111 src/commands/gc.md:121
+#: src/commands/gc.md:104 src/commands/gc.md:113 src/commands/gc.md:123
 msgid "# Sample output:\n"
 msgstr "# Sample output:\n"
 
-#: src/commands/gc.md:104 src/commands/gc.md:113 src/commands/gc.md:123
+#: src/commands/gc.md:106 src/commands/gc.md:115 src/commands/gc.md:125
 msgid ""
 "#   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-"
 "env\n"
@@ -7561,37 +7605,37 @@ msgstr ""
 "#   - broken-env (Python interpreter missing)  ~/.scuv/virtualenvs/broken-"
 "env\n"
 
-#: src/commands/gc.md:106
+#: src/commands/gc.md:108
 msgid "# • (dry run — pass `--yes` to actually remove)\n"
 msgstr "# • (dry run — pass `--yes` to actually remove)\n"
 
-#: src/commands/gc.md:108
+#: src/commands/gc.md:110
 msgid "# Stale envs join the same list, in name order\n"
 msgstr "# 오래 쓰지 않은(stale) 환경도 같은 목록에 이름순으로 포함됨\n"
 
-#: src/commands/gc.md:115
+#: src/commands/gc.md:117
 msgid ""
 "#   - rogue-dir (no .scoop-metadata.json)  ~/.scuv/virtualenvs/rogue-dir\n"
 msgstr ""
 "#   - rogue-dir (no .scoop-metadata.json)  ~/.scuv/virtualenvs/rogue-dir\n"
 
-#: src/commands/gc.md:118
+#: src/commands/gc.md:120
 msgid "# Unused uv-managed Pythons get their own list\n"
 msgstr "# 사용하지 않는 uv 관리 Python은 별도 목록으로 표시됨\n"
 
-#: src/commands/gc.md:125
+#: src/commands/gc.md:127
 msgid "# • Unused Python versions (2):\n"
 msgstr "# • Unused Python versions (2):\n"
 
-#: src/commands/gc.md:127
+#: src/commands/gc.md:129
 msgid "#   - Python 3.11.9\n"
 msgstr "#   - Python 3.11.9\n"
 
-#: src/commands/gc.md:130
+#: src/commands/gc.md:132
 msgid "# Actually clean up\n"
 msgstr "# Actually clean up\n"
 
-#: src/commands/gc.md:135
+#: src/commands/gc.md:137
 msgid ""
 "The `- ` item lines go to stdout; the `• ` header and footer lines go to "
 "stderr, so `scuv gc 2>/dev/null` prints only the candidates. With nothing to "
@@ -7602,71 +7646,71 @@ msgstr ""
 "gc 2>/dev/null`은 후보만 출력합니다. 제거할 것이 없으면 `gc`는 `✓ Nothing to "
 "clean up — all environments look healthy`를 stderr에 출력합니다."
 
-#: src/commands/gc.md:140 src/commands/verify.md:63 src/commands/diff.md:103
+#: src/commands/gc.md:142 src/commands/verify.md:63 src/commands/diff.md:103
 msgid "JSON output"
 msgstr "JSON 출력"
 
-#: src/commands/gc.md:150
+#: src/commands/gc.md:152
 msgid "\"gc\""
 msgstr "\"gc\""
 
-#: src/commands/gc.md:153 src/commands/verify.md:70
+#: src/commands/gc.md:155 src/commands/verify.md:70
 msgid "\"envs\""
 msgstr "\"envs\""
 
-#: src/commands/gc.md:154
+#: src/commands/gc.md:156
 msgid "\"broken-env\""
 msgstr "\"broken-env\""
 
-#: src/commands/gc.md:154
+#: src/commands/gc.md:156
 msgid "\"/Users/x/.scuv/virtualenvs/broken-env\""
 msgstr "\"/Users/x/.scuv/virtualenvs/broken-env\""
 
-#: src/commands/gc.md:154
+#: src/commands/gc.md:156
 msgid "\"broken_python\""
 msgstr "\"broken_python\""
 
-#: src/commands/gc.md:154 src/commands/gc.md:155 src/commands/gc.md:156
+#: src/commands/gc.md:156 src/commands/gc.md:157 src/commands/gc.md:158
 msgid "\"outcome\""
 msgstr "\"outcome\""
 
-#: src/commands/gc.md:154 src/commands/gc.md:155 src/commands/gc.md:156
+#: src/commands/gc.md:156 src/commands/gc.md:157 src/commands/gc.md:158
 msgid "\"pending\""
 msgstr "\"pending\""
 
-#: src/commands/gc.md:155
+#: src/commands/gc.md:157
 msgid "\"old-poc\""
 msgstr "\"old-poc\""
 
-#: src/commands/gc.md:155
+#: src/commands/gc.md:157
 msgid "\"/Users/x/.scuv/virtualenvs/old-poc\""
 msgstr "\"/Users/x/.scuv/virtualenvs/old-poc\""
 
-#: src/commands/gc.md:155
+#: src/commands/gc.md:157
 msgid "\"stale\""
 msgstr "\"stale\""
 
-#: src/commands/gc.md:155
+#: src/commands/gc.md:157
 msgid "\"age_days\""
 msgstr "\"age_days\""
 
-#: src/commands/gc.md:156
+#: src/commands/gc.md:158
 msgid "\"rogue-dir\""
 msgstr "\"rogue-dir\""
 
-#: src/commands/gc.md:156
+#: src/commands/gc.md:158
 msgid "\"/Users/x/.scuv/virtualenvs/rogue-dir\""
 msgstr "\"/Users/x/.scuv/virtualenvs/rogue-dir\""
 
-#: src/commands/gc.md:156
+#: src/commands/gc.md:158
 msgid "\"missing_metadata\""
 msgstr "\"missing_metadata\""
 
-#: src/commands/gc.md:158
+#: src/commands/gc.md:160
 msgid "\"pythons\""
 msgstr "\"pythons\""
 
-#: src/commands/gc.md:163
+#: src/commands/gc.md:165
 msgid ""
 "`reason` stays a flat string for all variants — orphans use the existing "
 "`\"missing_metadata\"` / `\"broken_python\"` values; stale records add "
@@ -7680,20 +7724,20 @@ msgstr ""
 "소비자는 변경 없이 계속 동작하며, 유일한 추가 변경은 새로운 `outcome` 값인 "
 "`skipped_recently_used`와 `skipped_no_data`입니다."
 
-#: src/commands/gc.md:170 src/commands/prune.md:35 src/commands/verify.md:102
+#: src/commands/gc.md:172 src/commands/prune.md:35 src/commands/verify.md:102
 #: src/commands/diff.md:196 src/commands/self.md:61 src/commands/man.md:43
 msgid "See also"
 msgstr "참고 항목"
 
-#: src/commands/gc.md:172
+#: src/commands/gc.md:174
 msgid "[`prune`](prune.md) — clean the uv cache"
 msgstr "[`prune`](prune.md) — uv cache 정리"
 
-#: src/commands/gc.md:173
+#: src/commands/gc.md:175
 msgid "[`doctor`](doctor.md) — diagnose without removing"
 msgstr "[`doctor`](doctor.md) — 삭제 없이 진단"
 
-#: src/commands/gc.md:174
+#: src/commands/gc.md:176
 msgid "[`remove`](remove.md) — delete a specific environment by name"
 msgstr "[`remove`](remove.md) — 이름으로 특정 환경 삭제"
 

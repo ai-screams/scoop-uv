@@ -37,7 +37,7 @@ scuv treats an env as end of life (EOL) when its Python is 2.x or 3.10 and
 earlier. 3.9 reached end of life on 2025-10-31 and 3.10 on 2026-10-01, following
 CPython's schedule. Only the version number is checked, so a PyPy env gets the
 same cutoff. For a source env that is otherwise healthy and has no name
-conflict, without `--force`:
+conflict, without `--allow-eol` or `--force`:
 
 - `migrate list` marks the env `⚠` with `(Python 3.10.14 is EOL)`.
 - `migrate @env <name>` refuses it and exits `2`.
@@ -51,6 +51,11 @@ interactive conflict prompt acts like `--force`, so it migrates an EOL env too.
 `--rename` does not skip the EOL check of a conflicting env, though
 `--rename --dry-run` only prints the plan and does not run that check.
 
+`--allow-eol` lets such an env migrate and changes nothing else: a name
+conflict still stops it. `--force` allows EOL envs too, but it also
+overwrites a scuv env of the same name. Up to scuv 0.19.0 `--force` was the
+only way through.
+
 Released versions up to 0.18.0 used a cutoff of 3.8, so 3.9 and 3.10 envs
 migrated without `--force`.
 
@@ -62,6 +67,7 @@ migrated without `--force`.
 | `--json` | all subcommands | Machine-readable output (see [JSON Output](#json-output)) |
 | `--dry-run` | `@env`, `all` | Preview without making changes |
 | `--force` | `@env`, `all` | Overwrite existing scuv env with the same name; bypass EOL Python guard |
+| `--allow-eol` | `@env`, `all` | Migrate envs whose Python is end of life; overwrites nothing |
 | `--yes` | `@env`, `all` | Skip the interactive confirmation prompt |
 | `--strict` | `@env`, `all` | Fail on the first package install error inside an env (default: keep going) |
 | `--delete-source` | `@env`, `all` | Remove the source env after successful migration |
@@ -87,7 +93,7 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | The env migrated successfully (or the user chose `Skip` at the interactive conflict prompt) |
-| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--yes`, `--json` or a non-terminal stderr skips the prompt) **or** `MigrationFailed` (e.g. requested env's Python is EOL and `--force` not set) |
+| `2` | `MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--yes`, `--json` or a non-terminal stderr skips the prompt) **or** `MigrationFailed` (e.g. requested env's Python is EOL and neither `--allow-eol` nor `--force` is set) |
 | `3` | The named source env was not found in the requested source (`PyenvEnvNotFound`, `VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **or** the source env is `CorruptedEnvironment` |
 
 ### `migrate list`
@@ -143,7 +149,7 @@ picks the first free numbered name (`myproject-1`, then `myproject-2`, and so on
 
 The EOL guard still applies to a renamed env. When the source env both
 conflicts by name and runs an end-of-life Python, `--auto-rename` stops
-with `Python <version> is end-of-life. Use --force to migrate anyway.`
+with `Python <version> is end-of-life. Use --allow-eol to migrate anyway.`
 (exit 2).
 
 ## Examples
@@ -224,7 +230,7 @@ $ scuv migrate all --yes
 ```bash
 # Exits 2 if any env failed or a name conflict was skipped.
 # Exits 3 if no source tool is installed on the runner.
-# EOL envs are skipped without changing the exit code.
+# EOL envs are skipped without changing the exit code; add --allow-eol to migrate them.
 scuv migrate all --yes
 ```
 

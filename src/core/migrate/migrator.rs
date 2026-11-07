@@ -35,8 +35,10 @@ pub enum PythonAvailability {
 pub struct MigrateOptions {
     /// Skip package installation (structure only)
     pub skip_packages: bool,
-    /// Force overwrite existing environments
+    /// Force overwrite existing environments (also allows EOL Python)
     pub force: bool,
+    /// Allow an end-of-life source Python without overwriting anything
+    pub allow_eol: bool,
     /// Dry run mode (no actual changes)
     pub dry_run: bool,
     /// New name for the environment (if renaming)
@@ -113,10 +115,10 @@ pub struct Migrator {
     extractor: PackageExtractor,
 }
 
-/// The refusal for an end-of-life source Python without --force.
+/// The refusal for an end-of-life source Python without --allow-eol or --force.
 fn eol_error(version: &str) -> ScoopError {
     ScoopError::MigrationFailed {
-        reason: format!("Python {version} is end-of-life. Use --force to migrate anyway."),
+        reason: format!("Python {version} is end-of-life. Use --allow-eol to migrate anyway."),
     }
 }
 
@@ -163,14 +165,15 @@ impl Migrator {
                         name: source.name.clone(),
                         existing: existing.clone(),
                     })
-                } else if super::common::is_python_eol(&source.python_version) {
+                } else if !options.allow_eol && super::common::is_python_eol(&source.python_version)
+                {
                     Err(eol_error(&source.python_version))
                 } else {
                     Ok(())
                 }
             }
             EnvironmentStatus::PythonEol { version } => {
-                if options.force {
+                if options.force || options.allow_eol {
                     Ok(())
                 } else {
                     Err(eol_error(version))
@@ -600,6 +603,45 @@ mod tests {
                 .validate_source(&supported, &renamed("test-pyenv"))
                 .is_ok()
         );
+    }
+
+    /// `allow_eol` admits an EOL source, including one a conflict hid behind
+    /// a rename, but never an unrenamed conflict. Fails if `allow_eol` is
+    /// ignored in either EOL branch, or starts overriding a name conflict.
+    #[test]
+    fn validate_source_allow_eol_admits_eol_but_not_conflicts() {
+        let migrator = Migrator {
+            uv: UvClient::with_path(PathBuf::from("/mock/uv")),
+            extractor: PackageExtractor::new(),
+        };
+        let allow = MigrateOptions {
+            allow_eol: true,
+            ..MigrateOptions::default()
+        };
+        let eol = mock_source(
+            "test",
+            EnvironmentStatus::PythonEol {
+                version: "3.10.14".to_string(),
+            },
+        );
+        assert!(migrator.validate_source(&eol, &allow).is_ok());
+
+        let mut conflict = mock_source(
+            "test",
+            EnvironmentStatus::NameConflict {
+                existing: PathBuf::from("/home/u/.scuv/virtualenvs/test"),
+            },
+        );
+        conflict.python_version = "3.10.14".to_string();
+        assert!(matches!(
+            migrator.validate_source(&conflict, &allow),
+            Err(ScoopError::MigrationNameConflict { .. })
+        ));
+        let renamed = MigrateOptions {
+            rename_to: Some("test-pyenv".to_string()),
+            ..allow
+        };
+        assert!(migrator.validate_source(&conflict, &renamed).is_ok());
     }
 
     #[test]

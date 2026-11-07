@@ -409,6 +409,96 @@ fn migrate_environment_eol_without_force_fails(#[case] name: &str, #[case] versi
     });
 }
 
+/// `--allow-eol` lets an EOL source through without turning on overwrite.
+/// Fails if `resolve_target` ignores `allow_eol`, or hands it on as
+/// `force`.
+#[test]
+fn resolve_target_allow_eol_proceeds_without_force() {
+    let opts = MigrateExecuteOptions {
+        allow_eol: true,
+        ..Default::default()
+    };
+    let status = EnvironmentStatus::PythonEol {
+        version: "3.10.14".to_string(),
+    };
+    let target = resolve_target(&quiet_output(), "old", &status, &opts)
+        .unwrap()
+        .expect("--allow-eol proceeds");
+    assert_eq!(target.name, "old");
+    assert!(!target.force, "--allow-eol must not overwrite");
+
+    let refused = resolve_target(
+        &quiet_output(),
+        "old",
+        &status,
+        &MigrateExecuteOptions::default(),
+    );
+    assert!(matches!(refused, Err(ScoopError::MigrationFailed { .. })));
+}
+
+/// `--rename` to a taken name is refused for a source whose own name is
+/// free, EOL or not, so a dry run cannot report success for it. Fails if
+/// `resolve_target` stops checking the rename target outside a conflict.
+#[rstest::rstest]
+#[case::ready(EnvironmentStatus::Ready)]
+#[case::eol(EnvironmentStatus::PythonEol { version: "3.10.14".to_string() })]
+#[serial]
+fn resolve_target_refuses_a_taken_rename(#[case] status: EnvironmentStatus) {
+    crate::test_utils::with_temp_scoop_home(|home| {
+        std::fs::create_dir_all(home.path().join("virtualenvs").join("taken")).unwrap();
+        let opts = MigrateExecuteOptions {
+            rename: Some("taken".into()),
+            allow_eol: true,
+            dry_run: true,
+            ..Default::default()
+        };
+        let refused = resolve_target(&quiet_output(), "old", &status, &opts);
+        assert!(
+            matches!(&refused, Err(ScoopError::MigrationNameConflict { name, .. }) if name == "taken"),
+            "{:?}",
+            refused.as_ref().map(|t| t.as_ref().map(|t| &t.name))
+        );
+
+        let forced = MigrateExecuteOptions {
+            force: true,
+            ..opts.clone()
+        };
+        assert!(
+            resolve_target(&quiet_output(), "old", &status, &forced)
+                .unwrap()
+                .is_some()
+        );
+        let free = MigrateExecuteOptions {
+            rename: Some("free".into()),
+            ..opts
+        };
+        assert!(
+            resolve_target(&quiet_output(), "old", &status, &free)
+                .unwrap()
+                .is_some()
+        );
+    });
+}
+
+/// `--force` keeps allowing EOL as before `--allow-eol` existed.
+#[rstest::rstest]
+#[case(false, false, false)]
+#[case(true, false, true)]
+#[case(false, true, true)]
+#[case(true, true, true)]
+fn allows_eol_is_force_or_allow_eol(
+    #[case] force: bool,
+    #[case] allow_eol: bool,
+    #[case] want: bool,
+) {
+    let opts = MigrateExecuteOptions {
+        force,
+        allow_eol,
+        ..Default::default()
+    };
+    assert_eq!(opts.allows_eol(), want);
+}
+
 // =========================================================================
 // resolve_name_conflict: the non-interactive branches, in priority order
 // =========================================================================

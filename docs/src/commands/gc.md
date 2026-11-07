@@ -37,9 +37,11 @@ Without `--aggressive`, Python versions are never touched — even ones that loo
 - **The environment directory cannot be read** — if `~/.scuv/virtualenvs` is unreadable from the start, `gc` stops with an error before touching anything. If it becomes unreadable later, during the Python scan, a warning is printed and no Python is reported.
 - **A remaining environment has unreadable metadata** — its Python version is unknown, so a warning is printed and no Python is reported. A cleanup candidate with unreadable metadata does not count: it is going away.
 
+If uv cannot list its Pythons when `gc --aggressive` first looks for them (`uv python list` fails), `gc` stops with uv's error before removing anything, environments included; under `--json` that is the error envelope. Up to scuv 0.19.0 it reported no Python and carried on. When uv is not on `PATH` at all, `--aggressive` reports no Python and the environment cleanup goes ahead.
+
 Warnings are not printed under `--json` or `--quiet`; the JSON output then has an empty `pythons` array.
 
-With `--yes`, the Python scan runs again right before uninstalling. Every environment it lists at that moment protects the Python it uses, including a candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or failed to remove. If this second scan cannot tell which Pythons are in use, nothing is uninstalled, and each Python left alone gets a warning and the JSON outcome `skipped_in_use`. If uv itself can no longer be found at that point, nothing is uninstalled either; those Pythons get the outcome `skipped_no_uv`.
+With `--yes`, the Python scan runs again right before uninstalling. Every environment it lists at that moment protects the Python it uses, including a candidate that `gc` decided to keep (see [TOCTOU guard](#toctou-guard)) or failed to remove. If this second scan cannot tell which Pythons are in use, uv's listing included, nothing is uninstalled, and each Python left alone gets a warning and the JSON outcome `skipped_in_use`. If uv itself can no longer be found at that point, nothing is uninstalled either; those Pythons get the outcome `skipped_no_uv`.
 
 ## `--older-than <DURATION>`
 
