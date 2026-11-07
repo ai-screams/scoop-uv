@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use serde::Serialize;
 
 use crate::cli::MigrateSource;
-use crate::core::migrate::{MigrationResult, SourceEnvironment, SourceType};
+use crate::core::migrate::{MigrateOptions, MigrationResult, SourceEnvironment, SourceType};
 
 /// JSON output for migrate list command
 #[derive(Debug, Serialize)]
@@ -94,8 +94,10 @@ pub struct MigrateAllSummary {
 pub struct MigrateExecuteOptions {
     /// Preview migration without making changes
     pub dry_run: bool,
-    /// Force overwrite existing environments
+    /// Force overwrite existing environments (also allows EOL Python)
     pub force: bool,
+    /// Allow EOL Python without overwriting anything
+    pub allow_eol: bool,
     /// Skip confirmation prompts
     pub yes: bool,
     /// Output as JSON
@@ -112,12 +114,57 @@ pub struct MigrateExecuteOptions {
     pub source_filter: Option<MigrateSource>,
 }
 
+impl MigrateExecuteOptions {
+    /// Whether an end-of-life source Python may migrate: `--allow-eol`, or
+    /// `--force`, which allowed it before `--allow-eol` existed.
+    pub fn allows_eol(&self) -> bool {
+        self.force || self.allow_eol
+    }
+
+    /// The core migrator's options for one environment: `force` and
+    /// `rename_to` are decided per environment, the rest come from the flags.
+    pub fn migrate_options(&self, force: bool, rename_to: Option<String>) -> MigrateOptions {
+        MigrateOptions {
+            dry_run: self.dry_run,
+            force,
+            allow_eol: self.allow_eol,
+            skip_packages: false,
+            rename_to,
+            strict: self.strict,
+            delete_source: self.delete_source,
+            auto_install_python: false,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
     // =========================================================================
     // MigrateAllSummary / MigrateSkipped / MigrateFailure shape
     // =========================================================================
+
+    /// The flags reach the core migrator. Fails if `migrate_options` drops
+    /// `allow_eol` (an EOL env would then pass the CLI check and still be
+    /// refused by the migrator) or any other flag.
+    #[test]
+    fn migrate_options_carries_the_flags() {
+        let opts = MigrateExecuteOptions {
+            dry_run: true,
+            allow_eol: true,
+            strict: true,
+            delete_source: true,
+            ..Default::default()
+        };
+        let core = opts.migrate_options(true, Some("renamed".to_string()));
+        assert!(core.dry_run && core.force && core.allow_eol && core.strict && core.delete_source);
+        assert_eq!(core.rename_to.as_deref(), Some("renamed"));
+        assert!(!core.skip_packages && !core.auto_install_python);
+
+        let plain = MigrateExecuteOptions::default().migrate_options(false, None);
+        assert!(!plain.dry_run && !plain.force && !plain.allow_eol && !plain.strict);
+        assert!(!plain.delete_source && plain.rename_to.is_none());
+    }
 
     #[test]
     fn migrate_all_summary_counts_match() {

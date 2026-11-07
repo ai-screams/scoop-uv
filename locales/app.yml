@@ -745,12 +745,12 @@ migrate.eol_warning:
   ja: "Python %{version} はサポートが終了しています (EOL)"
   es: "Python %{version} ha llegado al fin de su ciclo de vida (EOL)"
 
-migrate.eol_force_hint:
-  en: "→ Use --force to proceed anyway"
-  ko: "→ --force로 강제 진행"
-  pt-BR: "→ Use --force para prosseguir mesmo assim"
-  ja: "→ --force で強制的に続行します"
-  es: "→ Usar --force para continuar de todos modos"
+migrate.eol_allow_hint:
+  en: "→ Use --allow-eol to proceed anyway"
+  ko: "→ --allow-eol로 그래도 진행"
+  pt-BR: "→ Use --allow-eol para prosseguir mesmo assim"
+  ja: "→ --allow-eol で続行します"
+  es: "→ Usar --allow-eol para continuar de todos modos"
 
 migrate.eol_proceeding:
   en: "Python %{version} is EOL, proceeding anyway"

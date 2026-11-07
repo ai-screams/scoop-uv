@@ -65,7 +65,12 @@ pub fn migrate_all_environments(output: &Output, opts: &MigrateExecuteOptions) -
         migratable,
         conflicts,
         skipped,
-    } = partition_envs(&environments, opts.force, &paths::virtualenvs_dir()?);
+    } = partition_envs(
+        &environments,
+        opts.force,
+        opts.allows_eol(),
+        &paths::virtualenvs_dir()?,
+    );
     let conflict_count = conflicts.len();
 
     // Nothing migratable: unresolved conflicts fail (exit 2, rendered here

@@ -134,6 +134,39 @@ fn migrate_all_environments_dry_run_propagates_pip_failure() {
     });
 }
 
+/// `migrate all --allow-eol` plans an EOL env instead of skipping it. The
+/// mock env has no pip, so the dry run then fails on that env. Fails if the
+/// batch plans with `--force` alone: the EOL env is skipped and the batch
+/// succeeds with nothing to migrate.
+#[test]
+#[serial]
+fn migrate_all_environments_allow_eol_plans_eol_envs() {
+    with_full_migrate_env(|_scoop, pyenv| {
+        create_mock_pyenv_env(pyenv.path(), "old_env", "3.10.14");
+
+        let output = Output::new(0, false, Colors::NONE, false);
+        let opts = MigrateExecuteOptions {
+            source_filter: Some(MigrateSource::Pyenv),
+            dry_run: true,
+            yes: true,
+            allow_eol: true,
+            ..Default::default()
+        };
+
+        let result = migrate_all_environments(&output, &opts);
+        assert!(
+            matches!(
+                result,
+                Err(ScoopError::MigrationBatchFailed {
+                    failed_count: 1,
+                    conflict_count: 0,
+                })
+            ),
+            "{result:?}"
+        );
+    });
+}
+
 #[test]
 #[serial]
 fn migrate_all_environments_json_emits_failure_envelope() {

@@ -200,6 +200,10 @@ pub enum MigrateCommand {
         #[arg(short, long)]
         force: bool,
 
+        /// Include EOL Python versions, without overwriting anything
+        #[arg(long)]
+        allow_eol: bool,
+
         /// Skip confirmation prompts
         #[arg(short, long)]
         yes: bool,
@@ -230,9 +234,13 @@ pub enum MigrateCommand {
         #[arg(short = 'n', long)]
         dry_run: bool,
 
-        /// Overwrite if environment already exists in scuv
+        /// Overwrite if environment already exists in scuv (also allows EOL Python)
         #[arg(short, long)]
         force: bool,
+
+        /// Migrate even if the Python version is end of life, without overwriting anything
+        #[arg(long)]
+        allow_eol: bool,
 
         /// Skip confirmation prompts
         #[arg(short, long)]

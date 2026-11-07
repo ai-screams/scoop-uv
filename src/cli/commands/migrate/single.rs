@@ -7,9 +7,7 @@ use rust_i18n::t;
 use std::io::IsTerminal;
 use std::path::Path;
 
-use crate::core::migrate::{
-    EnvironmentStatus, MigrateOptions, MigrationResult, Migrator, SourceEnvironment,
-};
+use crate::core::migrate::{EnvironmentStatus, MigrationResult, Migrator, SourceEnvironment};
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
 
@@ -85,15 +83,10 @@ pub fn migrate_environment(
     };
 
     let migrator = Migrator::new()?;
-    let options = MigrateOptions {
-        dry_run: opts.dry_run,
-        force: target.force,
-        skip_packages: false,
-        rename_to: (target.name != name).then(|| target.name.clone()),
-        strict: opts.strict,
-        delete_source: opts.delete_source,
-        auto_install_python: false,
-    };
+    let options = opts.migrate_options(
+        target.force,
+        (target.name != name).then(|| target.name.clone()),
+    );
 
     if !opts.json {
         if opts.dry_run {
@@ -138,8 +131,8 @@ fn print_source_info(output: &Output, name: &str, source: &SourceEnvironment) {
 }
 
 /// Decides the target name and whether to overwrite, from the source's
-/// status. `Ok(None)` means the user chose to skip; EOL (without --force)
-/// and corrupted sources are errors.
+/// status. `Ok(None)` means the user chose to skip; EOL (without
+/// --allow-eol or --force) and corrupted sources are errors.
 fn resolve_target(
     output: &Output,
     name: &str,
@@ -157,10 +150,10 @@ fn resolve_target(
             return resolve_name_conflict(output, name, existing, opts, target, can_prompt());
         }
         EnvironmentStatus::PythonEol { version } => {
-            if !opts.force {
+            if !opts.allows_eol() {
                 if !opts.json {
                     output.warn(&t!("migrate.eol_warning", version = version));
-                    output.info(&t!("migrate.eol_force_hint"));
+                    output.info(&t!("migrate.eol_allow_hint"));
                 }
                 return Err(ScoopError::MigrationFailed {
                     reason: format!("Python {} is EOL", version),

@@ -409,6 +409,52 @@ fn migrate_environment_eol_without_force_fails(#[case] name: &str, #[case] versi
     });
 }
 
+/// `--allow-eol` lets an EOL source through without turning on overwrite.
+/// Fails if `resolve_target` ignores `allow_eol`, or hands it on as
+/// `force`.
+#[test]
+fn resolve_target_allow_eol_proceeds_without_force() {
+    let opts = MigrateExecuteOptions {
+        allow_eol: true,
+        ..Default::default()
+    };
+    let status = EnvironmentStatus::PythonEol {
+        version: "3.10.14".to_string(),
+    };
+    let target = resolve_target(&quiet_output(), "old", &status, &opts)
+        .unwrap()
+        .expect("--allow-eol proceeds");
+    assert_eq!(target.name, "old");
+    assert!(!target.force, "--allow-eol must not overwrite");
+
+    let refused = resolve_target(
+        &quiet_output(),
+        "old",
+        &status,
+        &MigrateExecuteOptions::default(),
+    );
+    assert!(matches!(refused, Err(ScoopError::MigrationFailed { .. })));
+}
+
+/// `--force` keeps allowing EOL as before `--allow-eol` existed.
+#[rstest::rstest]
+#[case(false, false, false)]
+#[case(true, false, true)]
+#[case(false, true, true)]
+#[case(true, true, true)]
+fn allows_eol_is_force_or_allow_eol(
+    #[case] force: bool,
+    #[case] allow_eol: bool,
+    #[case] want: bool,
+) {
+    let opts = MigrateExecuteOptions {
+        force,
+        allow_eol,
+        ..Default::default()
+    };
+    assert_eq!(opts.allows_eol(), want);
+}
+
 // =========================================================================
 // resolve_name_conflict: the non-interactive branches, in priority order
 // =========================================================================

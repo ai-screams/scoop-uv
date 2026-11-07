@@ -5,15 +5,20 @@ use crate::support::*;
 /// A pyenv tree under `root` holding one env, `name`, with a stub
 /// interpreter: enough for discovery to report it without running Python.
 fn fake_pyenv_env(root: &std::path::Path, name: &str) {
-    let env = root.join("versions/3.12.14/envs").join(name);
+    fake_pyenv_env_with(root, name, "3.12.14");
+}
+
+/// [`fake_pyenv_env`] on Python `version`.
+fn fake_pyenv_env_with(root: &std::path::Path, name: &str, version: &str) {
+    let env = root.join(format!("versions/{version}/envs")).join(name);
     std::fs::create_dir_all(env.join("bin")).unwrap();
     std::fs::write(
         env.join("pyvenv.cfg"),
-        "home = /usr/bin\nversion_info = 3.12.14\n",
+        format!("home = /usr/bin\nversion_info = {version}\n"),
     )
     .unwrap();
     let python = env.join("bin/python");
-    std::fs::write(&python, "#!/bin/sh\necho Python 3.12.14\n").unwrap();
+    std::fs::write(&python, format!("#!/bin/sh\necho Python {version}\n")).unwrap();
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
@@ -68,4 +73,45 @@ fn migrate_list_reports_each_env_size() {
         .map(|f| std::fs::metadata(env.join(f)).unwrap().len())
         .sum::<u64>();
     assert_eq!(size, Some(expected), "{json}");
+}
+
+/// An EOL env without a flag is refused (exit 2) and the hint names
+/// `--allow-eol`, not `--force`, which would also overwrite.
+#[cfg(unix)]
+#[test]
+fn migrate_env_eol_hint_names_allow_eol() {
+    let fixture = TestFixture::new();
+    let pyenv = fixture.temp_dir.path().join("pyenv");
+    fake_pyenv_env_with(&pyenv, "old", "3.10.14");
+
+    scoop_cmd(&fixture.scoop_home)
+        .args(["migrate", "@env", "old"])
+        .env("PYENV_ROOT", &pyenv)
+        .env("HOME", fixture.temp_dir.path())
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains("--allow-eol"));
+}
+
+/// `--allow-eol` does not overwrite: an EOL env whose name is taken still
+/// stops as a name conflict (exit 2) and the existing env keeps its files.
+/// Fails if `--allow-eol` is handed on as `--force`.
+#[cfg(unix)]
+#[test]
+fn migrate_env_allow_eol_does_not_overwrite_a_conflict() {
+    let fixture = TestFixture::new();
+    let pyenv = fixture.temp_dir.path().join("pyenv");
+    fake_pyenv_env_with(&pyenv, "old", "3.10.14");
+    let existing = fixture.scoop_home.join("virtualenvs/old");
+    std::fs::create_dir_all(&existing).unwrap();
+    std::fs::write(existing.join("keep"), "x").unwrap();
+
+    scoop_cmd(&fixture.scoop_home)
+        .args(["migrate", "@env", "old", "--allow-eol"])
+        .env("PYENV_ROOT", &pyenv)
+        .env("HOME", fixture.temp_dir.path())
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains("'old' already exists"));
+    assert!(existing.join("keep").exists());
 }
