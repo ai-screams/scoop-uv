@@ -44,22 +44,18 @@ fi
 # ============================================================
 # virtualenvwrapper setup — env vars only, do NOT source the script.
 #
-# Earlier attempts wrapped `source virtualenvwrapper.sh` with `set +e`
-# / `set -e` and even `(...) || true` to contain its initialisation
-# failures. None of those work: virtualenvwrapper.sh has internal
-# `exit N` paths (not `return`) that fire when its Python helpers
-# can't be imported in this minimal container, and `set +e` does NOT
-# protect a parent shell against an explicit `exit` in a sourced
-# script. That manifested as the venvwrapper integration CI shard
-# dying with exit 127 in 0.4s, before our entrypoint produced any
-# output.
+# An earlier version sourced `$(which virtualenvwrapper.sh)` here, with
+# `set +e` around it, and the venvwrapper integration CI shard died with
+# exit 127 in 0.4s before the entrypoint printed anything. `which`
+# finds pyenv's shim, a script that ends in `exec pyenv exec ...`:
+# sourcing it replaces this shell, so neither `set +e` nor `|| true`
+# can contain it, and the `exec "$@"` at the end never runs.
 #
 # Sourcing isn't actually needed here: `scuv migrate list`
 # discovers virtualenvwrapper envs by enumerating $WORKON_HOME,
 # which doesn't require the `mkvirtualenv`/`workon` shell functions
-# to be loaded. Interactive shells (`docker run -it ... bash`) load
-# /root/.bashrc which DOES source virtualenvwrapper, so the
-# developer-shell UX is unchanged.
+# to be loaded. Interactive shells load /root/.bashrc (and the
+# compose-mounted .zshrc), which source it through `pyenv which`.
 # ============================================================
 export WORKON_HOME="/root/.virtualenvs"
 mkdir -p "$WORKON_HOME"

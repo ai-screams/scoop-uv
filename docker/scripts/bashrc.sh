@@ -20,8 +20,10 @@ fi
 # virtualenvwrapper (if installed)
 # ============================================================
 export WORKON_HOME="/root/.virtualenvs"
-if command -v virtualenvwrapper.sh &> /dev/null; then
-    source "$(which virtualenvwrapper.sh)"
+# Not `which`: that finds pyenv's shim, which execs pyenv and replaces
+# this shell before the prompt. `pyenv which` resolves the real script.
+if vw="$(pyenv which virtualenvwrapper.sh 2>/dev/null)"; then
+    source "$vw"
 fi
 
 # ============================================================

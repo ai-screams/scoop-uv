@@ -254,6 +254,16 @@ RUN bash -c "source \"\$(pyenv which virtualenvwrapper.sh)\" && \
     mkvirtualenv -p python3.12 test-venvwrapper-312" \
     && test -x "$WORKON_HOME/test-venvwrapper-312/bin/python"
 
+# The dev shells source virtualenvwrapper from the rc files. Sourcing the
+# shim there replaced the shell before the prompt: bash on a terminal ended
+# with `pyenv: bash: command not found` (exit 127), because a sourced
+# shim takes its program name from the shell's $0. Fails the build if
+# `workon` is not defined after each rc file.
+COPY docker/scripts/zshrc.sh /tmp/zshrc.sh
+RUN bash -ic 'type -t workon' 2>/dev/null | grep -qx function \
+    && zsh -c 'source /tmp/zshrc.sh && whence -w workon' | grep -q ': function$' \
+    && rm /tmp/zshrc.sh
+
 # ============================================================
 # Leaf stages: <source>-test — a fixture plus the image's scuv binary
 # (compose dev shells; pyenv-test is also the base of slim)
@@ -307,5 +317,10 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
 RUN bash -c "source \"\$(pyenv which virtualenvwrapper.sh)\" && \
     mkvirtualenv -p python3.12 test-venvwrapper-312" \
     && test -x "$WORKON_HOME/test-venvwrapper-312/bin/python"
+# Same rc check as venvwrapper-fixture.
+COPY docker/scripts/zshrc.sh /tmp/zshrc.sh
+RUN bash -ic 'type -t workon' 2>/dev/null | grep -qx function \
+    && zsh -c 'source /tmp/zshrc.sh && whence -w workon' | grep -q ': function$' \
+    && rm /tmp/zshrc.sh
 
 COPY --from=scuv-build /usr/local/bin/scuv /usr/local/bin/scuv
