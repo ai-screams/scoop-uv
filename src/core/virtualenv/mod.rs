@@ -63,15 +63,10 @@ pub(crate) fn create_venv_dir(uv: &UvClient, path: &Path, python: &str) -> Resul
 /// promise).
 pub(crate) fn write_metadata_file(path: &Path, metadata: &Metadata) -> Result<()> {
     let metadata_path = path.join(Metadata::FILE_NAME);
-    let dir = metadata_path.parent().ok_or_else(|| {
-        ScoopError::Io(std::io::Error::new(
-            std::io::ErrorKind::InvalidInput,
-            "metadata path has no parent",
-        ))
-    })?;
-
     let content = serde_json::to_string_pretty(metadata)?;
-    let mut tmp = tempfile::NamedTempFile::new_in(dir)?;
+    // The tempfile goes in the env directory, beside the target, so the
+    // rename stays on one filesystem.
+    let mut tmp = tempfile::NamedTempFile::new_in(path)?;
     tmp.write_all(content.as_bytes())?;
     tmp.persist(&metadata_path)
         .map_err(|e| ScoopError::Io(e.error))?;
