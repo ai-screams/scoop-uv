@@ -595,6 +595,15 @@ fn test_error_code_source_venvwrapper_env_not_found() {
 }
 
 #[test]
+fn test_error_code_doctor_findings() {
+    let err = ScoopError::DoctorFindings {
+        errors: 1,
+        warnings: 0,
+    };
+    assert_eq!(err.code(), "DOCTOR_FINDINGS");
+}
+
+#[test]
 fn test_error_code_source_env_not_found() {
     let err = ScoopError::SourceEnvNotFound { name: "x".into() };
     assert_eq!(err.code(), "SOURCE_ENV_NOT_FOUND");
