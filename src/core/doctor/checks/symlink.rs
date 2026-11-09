@@ -434,4 +434,140 @@ mod tests {
     fn installed_python_path_errors_for_a_version_nobody_has() {
         assert!(installed_python_path("0.0.1").is_err());
     }
+
+    /// `--fix` against a fake uv: every way relinking can end, with the
+    /// message the user sees.
+    #[cfg(unix)]
+    mod relink_paths {
+        use super::*;
+        use crate::test_utils::{FakeUv, LocaleGuard, env_guard};
+
+        fn with_uv<T>(
+            versions: &[&str],
+            extra: &[(&'static str, Option<&str>)],
+            f: impl FnOnce() -> T,
+        ) -> T {
+            let _locale = LocaleGuard::capture();
+            rust_i18n::set_locale("en");
+            let uv = FakeUv::new(versions);
+            let path = uv.path_var();
+            let mut vars: Vec<(&'static str, Option<&str>)> = vec![("PATH", Some(path.as_str()))];
+            vars.extend_from_slice(extra);
+            let _env = env_guard(&vars);
+            f()
+        }
+
+        fn message(r: &CheckResult) -> String {
+            match &r.status {
+                CheckStatus::Error(m) | CheckStatus::Warning(m) => m.clone(),
+                CheckStatus::Ok => String::new(),
+            }
+        }
+
+        fn env_with_metadata(dir: &Path) {
+            std::fs::create_dir_all(dir.join("bin")).unwrap();
+            let meta = Metadata::new("e".to_string(), "3.12".to_string(), None);
+            std::fs::write(
+                dir.join(Metadata::FILE_NAME),
+                serde_json::to_string(&meta).unwrap(),
+            )
+            .unwrap();
+        }
+
+        #[test]
+        #[serial]
+        fn installed_python_path_finds_an_installed_python() {
+            with_uv(&["3.12.0"], &[], || {
+                assert_eq!(
+                    installed_python_path("3.12").unwrap(),
+                    PathBuf::from("/fake/python3.12.0")
+                );
+            });
+        }
+
+        #[test]
+        #[serial]
+        fn installed_python_path_names_a_python_that_is_not_installed() {
+            with_uv(&[], &[], || {
+                let err = installed_python_path("3.12").unwrap_err();
+                assert_eq!(message(&err), "Python 3.12 not installed");
+                assert_eq!(err.suggestion.as_deref(), Some("scuv install 3.12"));
+            });
+        }
+
+        #[test]
+        #[serial]
+        fn installed_python_path_reports_a_failing_uv() {
+            with_uv(&["3.12.0"], &[("FAKE_UV_LIST_FAILS", Some("1"))], || {
+                let err = installed_python_path("3.12").unwrap_err();
+                assert_eq!(message(&err), "failed to find Python installation");
+            });
+        }
+
+        #[test]
+        #[serial]
+        fn installed_python_path_reports_a_missing_uv() {
+            let _locale = LocaleGuard::capture();
+            rust_i18n::set_locale("en");
+            let empty = tempfile::tempdir().unwrap();
+            let _env = env_guard(&[("PATH", Some(empty.path().to_str().unwrap()))]);
+            let err = installed_python_path("3.12").unwrap_err();
+            assert_eq!(message(&err), "uv not available");
+            assert_eq!(err.suggestion.as_deref(), Some("Install uv first"));
+        }
+
+        /// Without metadata or a pyvenv.cfg there is no version to look up.
+        #[test]
+        #[serial]
+        fn relink_needs_a_python_version() {
+            with_uv(&["3.12.0"], &[], || {
+                let tmp = tempfile::tempdir().unwrap();
+                let err = relink(&quiet(), tmp.path(), "e").unwrap_err();
+                assert_eq!(message(&err), "could not determine Python version for 'e'");
+            });
+        }
+
+        /// The whole repair: version from metadata, interpreter from uv,
+        /// link replaced. What fails this: `relink` stopping before
+        /// `replace_symlink`, or linking anything but uv's interpreter.
+        #[test]
+        #[serial]
+        fn relink_points_python_at_the_installed_interpreter() {
+            with_uv(&["3.12.0"], &[], || {
+                let tmp = tempfile::tempdir().unwrap();
+                env_with_metadata(tmp.path());
+                relink(&quiet(), tmp.path(), "e").unwrap();
+                let link = crate::paths::virtualenv_python_exe(tmp.path());
+                assert_eq!(
+                    std::fs::read_link(link).unwrap(),
+                    PathBuf::from("/fake/python3.12.0")
+                );
+            });
+        }
+
+        /// A directory where the link should be cannot be removed, and a
+        /// link whose parent is missing cannot be created.
+        #[test]
+        #[serial]
+        fn replace_symlink_reports_what_it_could_not_do() {
+            let _locale = LocaleGuard::capture();
+            rust_i18n::set_locale("en");
+            let tmp = tempfile::tempdir().unwrap();
+            let blocked = tmp.path().join("python");
+            std::fs::create_dir_all(blocked.join("inside")).unwrap();
+            let err = replace_symlink(Path::new("/x"), &blocked).unwrap_err();
+            assert!(
+                message(&err).starts_with("failed to remove old symlink: "),
+                "{err:?}"
+            );
+            assert_eq!(err.suggestion.as_deref(), Some("Check file permissions"));
+
+            let orphan = tmp.path().join("missing").join("python");
+            let err = replace_symlink(Path::new("/x"), &orphan).unwrap_err();
+            assert!(
+                message(&err).starts_with("failed to create symlink: "),
+                "{err:?}"
+            );
+        }
+    }
 }
