@@ -124,7 +124,46 @@ impl ScoopError {
             | Self::MigrationBatchFailed { .. }
             | Self::CascadeIncomplete { .. }
             | Self::DiffMismatch { .. } => ErrorRenderPolicy::Quiet,
-            _ => ErrorRenderPolicy::Default,
+
+            // Every other variant: main prints the error. Listed rather than
+            // `_` so a new variant has to be placed on one side or the other.
+            Self::VirtualenvNotFound { .. }
+            | Self::VirtualenvExists { .. }
+            | Self::InvalidEnvName { .. }
+            | Self::InvalidPythonVersion { .. }
+            | Self::UvNotFound
+            | Self::UvCommandFailed { .. }
+            | Self::PathError(_)
+            | Self::HomeNotFound
+            | Self::Io(_)
+            | Self::Json(_)
+            | Self::VersionFileNotFound { .. }
+            | Self::UnsupportedShell { .. }
+            | Self::UnsupportedLanguage { .. }
+            | Self::PythonNotInstalled { .. }
+            | Self::PythonInstallFailed { .. }
+            | Self::PythonUninstallFailed { .. }
+            | Self::NoPythonVersions { .. }
+            | Self::InvalidArgument { .. }
+            | Self::PyenvNotFound
+            | Self::PyenvEnvNotFound { .. }
+            | Self::VenvWrapperEnvNotFound { .. }
+            | Self::CondaEnvNotFound { .. }
+            | Self::SourceEnvNotFound { .. }
+            | Self::CorruptedEnvironment { .. }
+            | Self::PackageExtractionFailed { .. }
+            | Self::MigrationFailed { .. }
+            | Self::MigrationNameConflict { .. }
+            | Self::InvalidPythonPath { .. }
+            | Self::CascadeAborted
+            | Self::SelfUpdateFailed { .. }
+            | Self::NoActiveEnvironment
+            | Self::ExecutableNotFound { .. }
+            | Self::ManifestNotFound { .. }
+            | Self::InvalidExportFile { .. }
+            | Self::UnsupportedExportVersion { .. }
+            | Self::SitePackagesNotFound { .. }
+            | Self::MigrationSourcesNotFound { .. } => ErrorRenderPolicy::Default,
         }
     }
 }

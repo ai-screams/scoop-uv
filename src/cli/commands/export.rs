@@ -16,12 +16,6 @@ use crate::output::Output;
 /// Execute the `export` command.
 pub fn execute(output: &Output, name: &str, dest: Option<&Path>) -> Result<()> {
     let service = VirtualenvService::auto()?;
-    if !service.exists(name)? {
-        return Err(ScoopError::VirtualenvNotFound {
-            name: name.to_string(),
-        });
-    }
-
     let env_path = service.get_path(name)?;
     let metadata = service.read_metadata(&env_path);
 

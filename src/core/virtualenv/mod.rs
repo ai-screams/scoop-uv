@@ -44,6 +44,41 @@ pub struct VirtualenvService {
     uv: UvClient,
 }
 
+/// The directories under `virtualenvs/` that can be envs, as `(name, path)`
+/// in directory order: a missing `virtualenvs/` yields nothing, and the
+/// entries are read lazily, so a caller handles each before the next is
+/// read.
+///
+/// Skipped: entries whose read fails (a transient permission flake or a
+/// file removed mid-walk should not hide the rest), anything that is not a
+/// directory, symlinks, and names that are not UTF-8. Symlinks are judged
+/// by `file_type()` (no traversal), not `path.is_dir()` (which follows
+/// them): a symlink here would otherwise be listed as an env, and commands
+/// such as `scuv verify` would run the target's `bin/python` under the
+/// user's UID.
+///
+/// # Errors
+///
+/// Resolving `virtualenvs/` or opening it fails here, before any entry.
+pub(crate) fn env_dirs() -> Result<impl Iterator<Item = (String, PathBuf)>> {
+    let dir = paths::virtualenvs_dir()?;
+    let entries = if dir.exists() {
+        Some(fs::read_dir(&dir)?)
+    } else {
+        None
+    };
+    Ok(entries.into_iter().flatten().filter_map(|entry| {
+        let entry = entry.ok()?;
+        let ft = entry.file_type().ok()?;
+        if !ft.is_dir() || ft.is_symlink() {
+            return None;
+        }
+        let path = entry.path();
+        let name = path.file_name()?.to_str()?.to_string();
+        Some((name, path))
+    }))
+}
+
 impl VirtualenvService {
     /// Create a new service with the given uv client
     pub fn new(uv: UvClient) -> Self {
@@ -57,57 +92,28 @@ impl VirtualenvService {
 
     /// List all virtual environments
     pub fn list(&self) -> Result<Vec<VirtualenvInfo>> {
-        let venvs_dir = paths::virtualenvs_dir()?;
-
-        if !venvs_dir.exists() {
-            return Ok(Vec::new());
-        }
-
         let mut envs = Vec::new();
 
-        for entry in fs::read_dir(&venvs_dir)? {
-            // Per-entry tolerance — transient IO errors on a single entry
-            // shouldn't hide the rest of the directory from callers.
-            let entry = match entry {
-                Ok(e) => e,
-                Err(_) => continue,
+        for (name, path) in env_dirs()? {
+            // Single metadata read per entry: we extract every field
+            // the new VirtualenvInfo wants (python_version + the two
+            // timestamps) in one shot, so callers that sort by
+            // created_at / last_used don't drive a second pass over
+            // every metadata file. Cheap when corrupt — `None` is a
+            // valid bucket-end value for sort, and the legacy passive
+            // contract (display "-"/"never") is preserved.
+            let metadata = self.read_metadata(&path);
+            let (python_version, created_at, last_used) = match metadata {
+                Some(m) => (Some(m.python_version), Some(m.created_at), m.last_used),
+                None => (None, None, None),
             };
-            // Reject symlinks via file_type() (no traversal) instead of
-            // path.is_dir() (which follows symlinks). A symlink under
-            // virtualenvs/ would otherwise be enumerated as a normal env,
-            // and downstream commands like `scuv verify` would exec the
-            // target's bin/python — arbitrary execution under the user's
-            // UID. This is the same hardening gc::scan::scan_orphan_envs does;
-            // doing it here makes every caller of list() consistent.
-            let ft = match entry.file_type() {
-                Ok(t) => t,
-                Err(_) => continue,
-            };
-            if !ft.is_dir() || ft.is_symlink() {
-                continue;
-            }
-            let path = entry.path();
-            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                // Single metadata read per entry: we extract every field
-                // the new VirtualenvInfo wants (python_version + the two
-                // timestamps) in one shot, so callers that sort by
-                // created_at / last_used don't drive a second pass over
-                // every metadata file. Cheap when corrupt — `None` is a
-                // valid bucket-end value for sort, and the legacy passive
-                // contract (display "-"/"never") is preserved.
-                let metadata = self.read_metadata(&path);
-                let (python_version, created_at, last_used) = match metadata {
-                    Some(m) => (Some(m.python_version), Some(m.created_at), m.last_used),
-                    None => (None, None, None),
-                };
-                envs.push(VirtualenvInfo {
-                    name: name.to_string(),
-                    path: path.clone(),
-                    python_version,
-                    created_at,
-                    last_used,
-                });
-            }
+            envs.push(VirtualenvInfo {
+                name,
+                path,
+                python_version,
+                created_at,
+                last_used,
+            });
         }
 
         envs.sort_by(|a, b| a.name.cmp(&b.name));
@@ -193,15 +199,7 @@ impl VirtualenvService {
     /// existing-name check: an env named before its word was reserved
     /// can still be removed.
     pub fn delete(&self, name: &str) -> Result<()> {
-        validate::validate_existing_env_name(name)?;
-        let path = paths::virtualenv_path(name)?;
-
-        if !path.exists() {
-            return Err(ScoopError::VirtualenvNotFound {
-                name: name.to_string(),
-            });
-        }
-
+        let path = self.get_path(name)?;
         fs::remove_dir_all(&path)?;
         Ok(())
     }

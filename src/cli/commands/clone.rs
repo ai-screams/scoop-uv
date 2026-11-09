@@ -34,11 +34,6 @@ pub fn execute(
 
     let service = VirtualenvService::auto()?;
 
-    if !service.exists(src)? {
-        return Err(ScoopError::VirtualenvNotFound {
-            name: src.to_string(),
-        });
-    }
     let src_path = service.get_path(src)?;
     let dst_exists = service.exists(dst)?;
     if dst_exists {

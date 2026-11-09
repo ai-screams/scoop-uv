@@ -36,35 +36,9 @@ use super::types::{EnvGcReason, EnvOutcome, GcCandidate, PythonSkip, UnusedPytho
 /// swallowed so one bad entry doesn't abort the entire scan and hide
 /// other orphans from the user.
 pub(super) fn scan_orphan_envs() -> Result<Vec<GcCandidate>> {
-    let dir = paths::virtualenvs_dir()?;
-    if !dir.exists() {
-        return Ok(Vec::new());
-    }
-
     let mut orphans = Vec::new();
-    for entry in std::fs::read_dir(&dir)? {
-        // Per-entry tolerance: don't let a single read_dir item failure
-        // (e.g. permission flake, file removed mid-scan) abort the whole
-        // pass — that would silently hide orphans further in the listing.
-        let entry = match entry {
-            Ok(e) => e,
-            Err(_) => continue,
-        };
-        // Use file_type() (no traversal) instead of path.is_dir() (which
-        // follows symlinks). Skip symlinks unconditionally — see the
-        // symlink note in this function's doc comment for the rationale.
-        let ft = match entry.file_type() {
-            Ok(t) => t,
-            Err(_) => continue,
-        };
-        if !ft.is_dir() || ft.is_symlink() {
-            continue;
-        }
-        let path = entry.path();
-        let name = match path.file_name().and_then(|n| n.to_str()) {
-            Some(n) => n.to_string(),
-            None => continue,
-        };
+    // `env_dirs` skips symlinks (see the note above) and unreadable entries.
+    for (name, path) in crate::core::env_dirs()? {
         // Skip dotfiles — `gc` should leave alone anything that doesn't look
         // like an env name (e.g. `.DS_Store`, `.cache/`).
         if name.starts_with('.') {

@@ -23,9 +23,7 @@ pub fn execute(output: &Output, exe: &str, env: Option<&str>) -> Result<()> {
     }
 
     let service = VirtualenvService::auto()?;
-    if !service.exists(&env_name)? {
-        return Err(ScoopError::VirtualenvNotFound { name: env_name });
-    }
+    service.get_path(&env_name)?;
 
     let bin_dir = paths::virtualenv_bin(&env_name)?;
     let resolved =
