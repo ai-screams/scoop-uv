@@ -1253,3 +1253,32 @@ fn every_error_message_carries_its_fields() {
         problems.join("\n")
     );
 }
+
+/// Exactly the variants whose command renders its own report are Quiet;
+/// every other one leaves the error to `main`. What fails this: moving a
+/// variant to the other side of `render_policy`.
+#[test]
+fn only_self_reporting_variants_are_quiet() {
+    let mut quiet: Vec<String> = every_variant()
+        .iter()
+        .filter(|e| e.render_policy() == super::ErrorRenderPolicy::Quiet)
+        .map(|e| {
+            format!("{e:?}")
+                .split([' ', '('])
+                .next()
+                .unwrap()
+                .to_string()
+        })
+        .collect();
+    quiet.sort();
+    quiet.dedup();
+    assert_eq!(
+        quiet,
+        [
+            "CascadeIncomplete",
+            "DiffMismatch",
+            "MigrationBatchFailed",
+            "VerifyFailed"
+        ]
+    );
+}

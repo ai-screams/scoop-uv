@@ -3,7 +3,7 @@
 use chrono::Utc;
 
 use crate::core::{VirtualenvService, get_active_env, list_installed_packages};
-use crate::error::{Result, ScoopError};
+use crate::error::Result;
 use crate::output::{EnvInfoData, Output, PackagesInfo, format_last_used_value, format_size};
 use crate::paths::{abbreviate_home, calculate_dir_size};
 
@@ -12,12 +12,6 @@ const DEFAULT_PACKAGE_LIMIT: usize = 5;
 /// Execute the info command
 pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -> Result<()> {
     let service = VirtualenvService::auto()?;
-
-    if !service.exists(name)? {
-        return Err(ScoopError::VirtualenvNotFound {
-            name: name.to_string(),
-        });
-    }
 
     let path = service.get_path(name)?;
     let metadata = service.read_metadata(&path);
@@ -106,6 +100,7 @@ pub fn execute(output: &Output, name: &str, all_packages: bool, no_size: bool) -
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ScoopError;
     use crate::test_utils::with_temp_scoop_home;
     use serial_test::serial;
 

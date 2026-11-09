@@ -618,3 +618,36 @@ fn test_list_skips_symlink_entries() {
         assert_eq!(envs[0].name, "real");
     });
 }
+
+/// The walk behind `list` and `gc` (no uv needed): directories only, dot
+/// names included (gc drops them itself), symlinks and files skipped. What
+/// fails this: dropping the symlink or the directory test in `env_dirs`.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn env_dirs_yields_only_real_directories() {
+    with_temp_scoop_home(|temp_dir| {
+        let venvs_dir = temp_dir.path().join("virtualenvs");
+        fs::create_dir_all(venvs_dir.join("real")).unwrap();
+        fs::create_dir_all(venvs_dir.join(".hidden")).unwrap();
+        fs::write(venvs_dir.join("file"), "").unwrap();
+        let other = tempfile::TempDir::new().unwrap();
+        std::os::unix::fs::symlink(other.path(), venvs_dir.join("symlinked")).unwrap();
+
+        let mut names: Vec<String> = env_dirs().unwrap().map(|(name, _)| name).collect();
+        names.sort();
+        assert_eq!(names, [".hidden", "real"]);
+        let (_, path) = env_dirs().unwrap().find(|(n, _)| n == "real").unwrap();
+        assert_eq!(path, venvs_dir.join("real"));
+    });
+}
+
+/// A missing `virtualenvs/` is an empty walk, not an error.
+#[test]
+#[serial]
+fn env_dirs_is_empty_without_a_virtualenvs_dir() {
+    with_temp_scoop_home(|temp_dir| {
+        let _ = fs::remove_dir_all(temp_dir.path().join("virtualenvs"));
+        assert_eq!(env_dirs().unwrap().count(), 0);
+    });
+}

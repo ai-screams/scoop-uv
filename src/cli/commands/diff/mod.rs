@@ -122,28 +122,16 @@ pub(crate) fn execute_with<E: PackageEnumerator>(
 /// Look up both env paths. Returns the first missing name as
 /// [`ScoopError::VirtualenvNotFound`].
 ///
-/// Existence check goes through [`VirtualenvService::exists`] (which
-/// honours the same name-validation rules as every other command);
-/// the path itself comes from [`crate::paths::virtualenv_path`] so
-/// callers don't need a service handle just to know where an env
-/// lives on disk.
+/// Both go through [`VirtualenvService::get_path`], which validates the
+/// name like every other lookup, checks the env exists and returns its
+/// path, A before B.
 fn resolve_env_paths(
     service: &VirtualenvService,
     env_a: &str,
     env_b: &str,
 ) -> Result<(std::path::PathBuf, std::path::PathBuf)> {
-    if !service.exists(env_a)? {
-        return Err(ScoopError::VirtualenvNotFound {
-            name: env_a.to_string(),
-        });
-    }
-    if !service.exists(env_b)? {
-        return Err(ScoopError::VirtualenvNotFound {
-            name: env_b.to_string(),
-        });
-    }
-    let path_a = crate::paths::virtualenv_path(env_a)?;
-    let path_b = crate::paths::virtualenv_path(env_b)?;
+    let path_a = service.get_path(env_a)?;
+    let path_b = service.get_path(env_b)?;
     Ok((path_a, path_b))
 }
 

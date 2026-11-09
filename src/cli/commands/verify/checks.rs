@@ -8,7 +8,7 @@ use rust_i18n::t;
 
 use crate::core::manifest::{ScoopManifest, find_manifest_from_cwd};
 use crate::core::{Metadata, VirtualenvInfo, VirtualenvService};
-use crate::error::{Result, ScoopError};
+use crate::error::Result;
 use crate::validate::{self, PythonVersion};
 
 use super::types::{CheckKind, CheckResult, CheckStatus, EnvReport};
@@ -27,11 +27,6 @@ pub(super) fn collect_target_envs(
     match target {
         Some(name) => {
             validate::validate_existing_env_name(name)?;
-            if !service.exists(name)? {
-                return Err(ScoopError::VirtualenvNotFound {
-                    name: name.to_string(),
-                });
-            }
             let path = service.get_path(name)?;
             Ok(vec![VirtualenvInfo {
                 name: name.to_string(),

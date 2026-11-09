@@ -71,7 +71,7 @@ if ($env:PYTHONHOME) {{
             println!("$env:SCUV_ACTIVE = '{}'", name_escaped);
             println!("Remove-Item Env:\\PYTHONHOME -ErrorAction SilentlyContinue");
         }
-        _ => {
+        ShellType::Bash | ShellType::Zsh => {
             // Save original PATH only on first activation
             println!(
                 r#"if [ -z "$_SCUV_OLD_PATH" ]; then
@@ -129,7 +129,7 @@ end"#
 }}"#
             );
         }
-        _ => {
+        ShellType::Bash | ShellType::Zsh => {
             println!(
                 r#"if [ -n "$VIRTUAL_ENV" ]; then
     # Restore original PATH
@@ -159,7 +159,7 @@ pub fn print_unset_scoop_version(shell: ShellType) {
         ShellType::Powershell => {
             println!("Remove-Item Env:\\SCUV_VERSION -ErrorAction SilentlyContinue");
         }
-        _ => println!("unset SCUV_VERSION"),
+        ShellType::Bash | ShellType::Zsh => println!("unset SCUV_VERSION"),
     }
 }
 
@@ -176,6 +176,6 @@ pub fn print_export_scoop_version(shell: ShellType, value: &str) {
             let escaped = value.replace('\'', "''");
             println!("$env:SCUV_VERSION = '{}'", escaped);
         }
-        _ => println!("export SCUV_VERSION=\"{}\"", value),
+        ShellType::Bash | ShellType::Zsh => println!("export SCUV_VERSION=\"{}\"", value),
     }
 }

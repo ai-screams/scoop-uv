@@ -20,11 +20,7 @@ pub fn execute(_output: &Output, env_name: &str, command: &[String]) -> Result<(
     validate::validate_existing_env_name(env_name)?;
 
     let service = VirtualenvService::auto()?;
-    if !service.exists(env_name)? {
-        return Err(ScoopError::VirtualenvNotFound {
-            name: env_name.to_string(),
-        });
-    }
+    let venv_path = service.get_path(env_name)?;
 
     if command.is_empty() {
         return Err(ScoopError::InvalidArgument {
@@ -32,7 +28,6 @@ pub fn execute(_output: &Output, env_name: &str, command: &[String]) -> Result<(
         });
     }
 
-    let venv_path = service.get_path(env_name)?;
     let bin_dir = paths::virtualenv_bin(env_name)?;
 
     // Touch BEFORE spawn: long-running commands shouldn't leave the env
