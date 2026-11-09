@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794224154374,
+  "lastUpdate": 1794224155905,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -15073,6 +15073,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 793,
             "range": "± 7",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6792203060e98507584c2b829b261b48f57db7cd",
+          "message": "Merge pull request #269 from ai-screams/refactor/doctor-render-and-exit\n\nrefactor!: [#269] render the doctor report in the command and return its exit status",
+          "timestamp": "2026-11-09T20:29:46+09:00",
+          "tree_id": "cceee6824ac6df7060383415bdb127d8295951b3",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/6792203060e98507584c2b829b261b48f57db7cd"
+        },
+        "date": 1794224155820,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 534,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 396,
+            "range": "± 12",
             "unit": "ns/iter"
           }
         ]
