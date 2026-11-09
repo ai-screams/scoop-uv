@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794239325894,
+  "lastUpdate": 1794239327480,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -15793,6 +15793,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 933,
             "range": "± 6",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e9e627ecc7e7f1529952d83697dd422b602d8971",
+          "message": "Merge pull request #275 from ai-screams/fix/pyvenv-cfg-readers\n\nfix(migrate): [#275] read pyvenv.cfg the same way everywhere",
+          "timestamp": "2026-11-10T00:44:54+09:00",
+          "tree_id": "6c6f051fc4941e69cd926e2abd6b4b4e18b3d17f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/e9e627ecc7e7f1529952d83697dd422b602d8971"
+        },
+        "date": 1794239327388,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1330,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 919,
+            "range": "± 7",
             "unit": "ns/iter"
           }
         ]
