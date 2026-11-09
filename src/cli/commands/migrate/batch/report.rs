@@ -153,9 +153,9 @@ pub(super) fn render_human_summary(
         ));
     }
 
-    // Mixed success + conflict: previous version omitted conflict
-    // details from the summary, so the user got a Quiet exit 2 with
-    // no explanation about the conflict (Codex post-impl SHOULD #1).
+    // Mixed success + conflict: without the conflict details in the
+    // summary, the user would get a Quiet exit 2 with no explanation
+    // about the conflict.
     // Show the same conflict block here that the all-conflict branch
     // shows, so every non-JSON failure path explains itself.
     if !conflicts.is_empty() {

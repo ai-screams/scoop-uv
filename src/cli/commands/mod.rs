@@ -31,7 +31,7 @@ mod use_env;
 mod verify;
 mod which;
 
-// `duration` is module-private; Step 5's gc handler imports
+// `duration` is module-private; the gc handler imports
 // `parse_duration` via `use super::duration::parse_duration;` so the
 // helper isn't pinned in the crate's public surface area.
 

@@ -42,7 +42,7 @@ pub fn execute(
 
     output.info(&t!("import.creating", name = env_name, python = python));
 
-    // Match `scoop sync`'s ergonomic default: declarative entry points should
+    // Match `scuv sync`'s ergonomic default: declarative entry points should
     // bootstrap missing Python rather than fail.
     if !service.is_python_installed(&python)? {
         output.info(&t!("create.installing_python", version = python));

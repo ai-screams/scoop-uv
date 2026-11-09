@@ -333,7 +333,7 @@ mod tests {
 
     #[test]
     fn partition_conflict_excluded_without_force_appears_in_both_buckets() {
-        // Codex MUST FIX #2 contract: name-conflict appears in BOTH
+        // Contract: a name conflict appears in BOTH
         // `conflicts` (new structured surface) AND `skipped` (legacy
         // shape for backward compatibility with existing JSON consumers).
         let envs = vec![create_test_env(

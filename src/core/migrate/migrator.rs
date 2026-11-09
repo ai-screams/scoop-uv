@@ -6,35 +6,16 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::core::metadata::Metadata;
-use crate::error::{MigrationExitCode, Result, ScoopError};
+use crate::error::{Result, ScoopError};
 use crate::paths;
-use crate::uv::PythonInfo;
 use crate::uv::UvClient;
 
 use super::extractor::{ExtractionResult, PackageExtractor};
 use super::source::{EnvironmentStatus, SourceEnvironment};
 
-/// Result of Python version availability check
-#[derive(Debug)]
-pub enum PythonAvailability {
-    /// Exact version is installed
-    Available(PythonInfo),
-    /// Compatible version available (e.g., 3.9 instead of 3.9.1)
-    Compatible {
-        requested: String,
-        available: PythonInfo,
-    },
-    /// Not available, but can be installed by uv
-    CanInstall { version: String },
-    /// Not available at all
-    Unavailable { reason: String },
-}
-
 /// Options for migration
 #[derive(Debug, Clone, Default)]
 pub struct MigrateOptions {
-    /// Skip package installation (structure only)
-    pub skip_packages: bool,
     /// Force overwrite existing environments (also allows EOL Python)
     pub force: bool,
     /// Allow an end-of-life source Python without overwriting anything
@@ -47,8 +28,6 @@ pub struct MigrateOptions {
     pub strict: bool,
     /// Delete the original environment once every package has migrated
     pub delete_source: bool,
-    /// Automatically install Python if missing
-    pub auto_install_python: bool,
 }
 
 /// Result of a migration operation
@@ -72,20 +51,6 @@ pub struct MigrationResult {
     /// The version the new env's pyvenv.cfg records (`3.12` for uv's minor
     /// links); the source's version for a dry run or when pyvenv.cfg has none
     pub actual_python_version: String,
-}
-
-impl MigrationResult {
-    /// Returns the exit code based on migration result.
-    ///
-    /// Returns `Success` if all packages were migrated successfully,
-    /// `PartialSuccess` if some failed to install or to parse.
-    pub fn exit_code(&self) -> MigrationExitCode {
-        if self.packages_failed.is_empty() {
-            MigrationExitCode::Success
-        } else {
-            MigrationExitCode::PartialSuccess
-        }
-    }
 }
 
 /// Guard for rollback on failure
@@ -353,15 +318,7 @@ impl Migrator {
         let target_path = self.target_path(&target_name, options.force)?;
 
         // Extract packages from source
-        let packages = if options.skip_packages {
-            ExtractionResult {
-                packages: Vec::new(),
-                failed: Vec::new(),
-                total_found: 0,
-            }
-        } else {
-            self.extract_packages(source)?
-        };
+        let packages = self.extract_packages(source)?;
 
         if options.dry_run {
             return Ok(MigrationResult {
@@ -388,11 +345,7 @@ impl Migrator {
         let mut rollback = RollbackGuard::new(target_path.clone());
 
         // Install packages
-        let mut failed = if options.skip_packages {
-            Vec::new()
-        } else {
-            self.install_packages(&target_path, &packages, options.strict)?
-        };
+        let mut failed = self.install_packages(&target_path, &packages, options.strict)?;
         let packages_migrated = packages.packages.len() - failed.len();
         // Freeze lines that did not parse were never installed either.
         failed.extend(packages.failed);

@@ -154,19 +154,6 @@ impl Output {
         }
     }
 
-    /// Print a debug message (only if verbose)
-    pub fn debug(&self, msg: &str) {
-        if self.quiet || self.json || self.verbose == 0 {
-            return;
-        }
-
-        if !self.colors.stderr {
-            eprintln!("  {msg}");
-        } else {
-            eprintln!("  {}", msg.dimmed());
-        }
-    }
-
     /// Print a line to stdout (for list output)
     pub fn println(&self, msg: &str) {
         if self.quiet {

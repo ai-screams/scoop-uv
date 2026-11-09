@@ -370,24 +370,6 @@ impl PartialOrd for PythonVersion {
     }
 }
 
-/// Check if a version string is a special alias (latest, stable).
-///
-/// # Examples
-///
-/// ```
-/// use scoop_uv::validate::is_version_alias;
-///
-/// assert!(is_version_alias("latest"));
-/// assert!(is_version_alias("stable"));
-/// assert!(is_version_alias("LATEST"));  // case-insensitive
-///
-/// assert!(!is_version_alias("3.12"));
-/// assert!(!is_version_alias("beta"));
-/// ```
-pub fn is_version_alias(version: &str) -> bool {
-    matches!(version.trim().to_lowercase().as_str(), "latest" | "stable")
-}
-
 /// Validate that a path points to a valid Python executable.
 ///
 /// Checks that the path:
@@ -658,16 +640,6 @@ mod tests {
 
         let sorted: Vec<_> = versions.iter().collect();
         assert_eq!(sorted, vec![&v3_9, &v3_10, &v3_11, &v3_12]);
-    }
-
-    #[test]
-    fn test_is_version_alias() {
-        assert!(is_version_alias("latest"));
-        assert!(is_version_alias("LATEST"));
-        assert!(is_version_alias("stable"));
-        assert!(is_version_alias("  stable  "));
-        assert!(!is_version_alias("3.12"));
-        assert!(!is_version_alias(""));
     }
 
     #[test]

@@ -460,7 +460,6 @@ pub struct Doctor {
 impl Doctor {
     pub fn new() -> Self;
     pub fn run_all(&self) -> Vec<CheckResult>;
-    pub fn run_and_fix(&self, output: &Output) -> Vec<CheckResult>;
 }
 ```
 
@@ -486,7 +485,6 @@ impl UvClient {
     pub fn create_venv(&self, path: &Path, python_version: &str) -> Result<()>;
     pub fn install_python(&self, version: &str) -> Result<()>;
     pub fn uninstall_python(&self, version: &str) -> Result<()>;
-    pub fn list_pythons(&self) -> Result<Vec<PythonInfo>>;
     pub fn list_installed_pythons(&self) -> Result<Vec<PythonInfo>>;
     pub fn find_python(&self, version_pattern: &str) -> Result<Option<PythonInfo>>;
     pub fn pip_install(&self, venv_path: &Path, packages: &[String]) -> Result<()>;
@@ -572,7 +570,6 @@ impl Output {
     pub fn error(&self, msg: &str);
     pub fn info(&self, msg: &str);
     pub fn warn(&self, msg: &str);
-    pub fn debug(&self, msg: &str);
     pub fn println(&self, msg: &str);
     pub fn is_json(&self) -> bool;
     pub fn is_quiet(&self) -> bool;
@@ -695,24 +692,13 @@ pub enum ScoopError {
 impl ScoopError {
     pub fn code(&self) -> &'static str;                    // e.g., "ENV_NOT_FOUND"
     pub fn suggestion(&self) -> Option<String>;            // User-friendly fix suggestion
-    pub fn migration_exit_code(&self) -> MigrationExitCode;
+    pub fn exit_code(&self) -> u8;                        // Process exit code (1, 2 or 3)
 }
 ```
 
 Error code prefixes: `ENV_*`, `PYTHON_*`, `UV_*`, `IO_*`, `CONFIG_*`, `SHELL_*`, `ARG_*`, `SOURCE_*`, `MIGRATE_*`, `UNINSTALL_*`
 
 Display uses i18n via manual `Display` impl with `t!()` macro for all user-facing messages.
-
-### MigrationExitCode
-
-```rust
-pub enum MigrationExitCode {
-    Success = 0,
-    PartialSuccess = 1,
-    CompleteFailure = 2,
-    SourceError = 3,
-}
-```
 
 ---
 

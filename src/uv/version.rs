@@ -7,7 +7,7 @@
 /// Minimum supported uv version (major, minor, patch).
 ///
 /// `0.5.19` is the release that added `--output-format=json` to
-/// `uv python list` ([astral-sh/uv#10596]). [`UvClient::list_pythons`] parses
+/// `uv python list` ([astral-sh/uv#10596]). [`UvClient::list_installed_pythons`] parses
 /// that JSON rather than scraping the human-readable table, so anything older
 /// fails with `error: unexpected argument '--output-format' found` — the flag
 /// does not exist at all before this release.
@@ -18,7 +18,7 @@
 /// this exact version so the claim stays true.
 ///
 /// [astral-sh/uv#10596]: https://github.com/astral-sh/uv/pull/10596
-/// [`UvClient::list_pythons`]: crate::uv::UvClient::list_pythons
+/// [`UvClient::list_installed_pythons`]: crate::uv::UvClient::list_installed_pythons
 pub const MIN_VERSION: (u32, u32, u32) = (0, 5, 19);
 
 /// Parse `uv --version` stdout into a `(major, minor, patch)` tuple.

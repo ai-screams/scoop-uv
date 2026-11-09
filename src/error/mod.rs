@@ -9,7 +9,7 @@
 //! | [`display`]        | i18n rendering ([`ScoopError::message_in`] + `Display`) |
 //! | [`code`]           | stable JSON error codes ([`ScoopError::code`])          |
 //! | [`suggestion`]     | locale-aware fix hints ([`ScoopError::suggestion_in`])  |
-//! | [`migrate`]        | [`MigrationExitCode`] + per-variant exit mapping        |
+//! | [`exit`]           | process exit codes and render policy ([`ScoopError::exit_code`]) |
 //!
 //! All public API stays at `crate::error::ScoopError::*` regardless of
 //! which submodule defines the impl block.
@@ -21,11 +21,9 @@ use thiserror::Error;
 mod code;
 mod display;
 mod exit;
-mod migrate;
 mod suggestion;
 
 pub use exit::ErrorRenderPolicy;
-pub use migrate::MigrationExitCode;
 
 /// Result type alias using [`ScoopError`].
 pub type Result<T> = std::result::Result<T, ScoopError>;

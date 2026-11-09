@@ -29,12 +29,11 @@ exclude_re = [
     "UvClient::version",
     "UvClient::create_venv",
     "UvClient::install_python",
-    "UvClient::run_python_list",
     "UvClient::uninstall_python",
     "UvClient::pip_install",
     "UvClient::cache_prune",
-    # find_python reads list_installed_pythons -> run_python_list (excluded just
-    # above), which spawns `uv python list`. With no uv on the runner the real
+    # find_python reads list_installed_pythons, which spawns
+    # `uv python list`. With no uv on the runner the real
     # function returns Ok(None) anyway, so the Ok(None) mutant is indistinguishable
     # from correct behaviour — the same gap as its siblings here. The matching
     # logic it wraps (PythonVersion::parse + matches) IS mutation-tested in
@@ -69,7 +68,7 @@ exclude_re = [
     # CI even though no behaviour-flip mutation actually goes uncaught.
     # The function is 8 lines and obviously correct by inspection; the
     # return-value mutations are still covered by the find_manifest_*
-    # tests via the call sites in ScoopManifest::parse and scoop sync.
+    # tests via the call sites in ScoopManifest::parse and scuv sync.
     "find_manifest",
     # Equivalent mutation in all three discovery sources: `find_environment`
     # guards with `exists() && is_dir()` (conda, pyenv) / `!exists() ||
@@ -132,7 +131,6 @@ exclude_re = [
     # like `UvClient::version` rely on.
     "virtualenv_bin_dir",
     "virtualenv_python_exe",
-    "virtualenv_pip_exe",
     "virtualenv_activate_script",
     # The name-based `virtualenv_activate` has the same cfg(windows) twin
     # (Scripts/activate.bat): the full run reports that one MISSED on Linux.
@@ -158,8 +156,8 @@ exclude_re = [
     # and forwards the result. The parsing logic IS unit-tested via
     # parse_pip_list_json (5 fixture tests in src/uv/client.rs);
     # exercising the spawn requires a real uv + a real venv on the
-    # runner. Same rationale as the already-excluded pip_install and
-    # run_python_list. Without uv on the CI runner, mutating
+    # runner. Same rationale as the already-excluded pip_install.
+    # Without uv on the CI runner, mutating
     # `Ok(...)` to `Ok(vec![])` can't be killed by unit tests.
     "UvClient::pip_list",
     # DoctorCheck::run functions that shell out or inspect real state where a
