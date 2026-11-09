@@ -24,7 +24,9 @@ impl Doctor {
         self.checks.iter().flat_map(|c| c.run()).collect()
     }
 
-    /// Runs all checks and attempts to fix issues where possible.
+    /// Runs all checks and attempts to fix issues where possible, without
+    /// printing the results, so the caller can adjust them first. Fixes still
+    /// report their progress.
     ///
     /// Returns the results after attempting fixes. A fix can also clear an
     /// error another check reported: relinking an env's interpreter mends the
@@ -34,16 +36,6 @@ impl Doctor {
     /// replace the old. A check whose fix ran keeps what the fix returned —
     /// "Fixed …", or why it could not fix — which a re-run would replace
     /// with the generic finding.
-    pub fn run_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult> {
-        let results = self.collect_and_fix(output);
-        for result in &results {
-            output.doctor_check(result);
-        }
-        results
-    }
-
-    /// Does the work of [`Self::run_and_fix`] short of printing the results,
-    /// so the caller can adjust them first. Fixes still report their progress.
     pub(crate) fn collect_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult> {
         // Per check: its results, and whether any fix ran for it.
         let mut per_check: Vec<(Vec<CheckResult>, bool)> = Vec::with_capacity(self.checks.len());
@@ -178,7 +170,7 @@ mod tests {
     /// and still counted the env's "broken virtualenv" error, exit 2.
     /// Fails if the re-run after a fix is dropped.
     #[test]
-    fn run_and_fix_reruns_checks_a_later_fix_mended() {
+    fn collect_and_fix_reruns_checks_a_later_fix_mended() {
         let broken = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
         let doctor = Doctor {
             checks: vec![
@@ -187,7 +179,7 @@ mod tests {
                 Box::new(UnfixableCheck),
             ],
         };
-        let results = doctor.run_and_fix(&quiet_output());
+        let results = doctor.collect_and_fix(&quiet_output());
         let errors: Vec<_> = results
             .iter()
             .filter(|r| r.is_error())
@@ -233,7 +225,7 @@ mod tests {
     /// back into the generic finding, and a fix's own success line must not
     /// be re-run away. Fails if the re-run ignores whether a fix ran.
     #[test]
-    fn run_and_fix_keeps_what_each_fix_returned() {
+    fn collect_and_fix_keeps_what_each_fix_returned() {
         let broken = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(true));
         let doctor = Doctor {
             checks: vec![
@@ -242,7 +234,7 @@ mod tests {
                 Box::new(FixableCheck),
             ],
         };
-        let results = doctor.run_and_fix(&quiet_output());
+        let results = doctor.collect_and_fix(&quiet_output());
         let failing = results.iter().find(|r| r.id == "failing-fix").unwrap();
         assert!(
             matches!(&failing.status, CheckStatus::Error(m) if m == "specific reason"),
@@ -270,11 +262,11 @@ mod tests {
     }
 
     #[test]
-    fn run_and_fix_replaces_error_when_fix_returns_some() {
+    fn collect_and_fix_replaces_error_when_fix_returns_some() {
         let doctor = Doctor {
             checks: vec![Box::new(FixableCheck)],
         };
-        let results = doctor.run_and_fix(&quiet_output());
+        let results = doctor.collect_and_fix(&quiet_output());
         assert_eq!(results.len(), 1);
         assert!(
             results[0].is_ok(),
@@ -284,11 +276,11 @@ mod tests {
     }
 
     #[test]
-    fn run_and_fix_keeps_raw_error_when_fix_returns_none() {
+    fn collect_and_fix_keeps_raw_error_when_fix_returns_none() {
         let doctor = Doctor {
             checks: vec![Box::new(UnfixableCheck)],
         };
-        let results = doctor.run_and_fix(&quiet_output());
+        let results = doctor.collect_and_fix(&quiet_output());
         assert_eq!(results.len(), 1);
         assert!(
             results[0].is_error(),
@@ -297,13 +289,13 @@ mod tests {
     }
 
     #[test]
-    fn run_and_fix_dispatches_fix_per_check() {
+    fn collect_and_fix_dispatches_fix_per_check() {
         // Both checks run; only the fixable one's error is replaced — proving the
         // fix is dispatched on the producing check, not applied globally.
         let doctor = Doctor {
             checks: vec![Box::new(FixableCheck), Box::new(UnfixableCheck)],
         };
-        let results = doctor.run_and_fix(&quiet_output());
+        let results = doctor.collect_and_fix(&quiet_output());
         assert_eq!(results.len(), 2);
         assert!(
             results.iter().any(|r| r.id == "fixable" && r.is_ok()),

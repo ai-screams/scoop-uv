@@ -87,19 +87,6 @@ pub fn virtualenv_python_exe(venv_root: &Path) -> PathBuf {
     virtualenv_bin_dir(venv_root).join("python.exe")
 }
 
-/// Returns the pip executable path inside a virtualenv root.
-///
-/// On Unix this is `<root>/bin/pip`; on Windows `<root>/Scripts/pip.exe`.
-#[cfg(unix)]
-pub fn virtualenv_pip_exe(venv_root: &Path) -> PathBuf {
-    virtualenv_bin_dir(venv_root).join("pip")
-}
-
-#[cfg(windows)]
-pub fn virtualenv_pip_exe(venv_root: &Path) -> PathBuf {
-    virtualenv_bin_dir(venv_root).join("pip.exe")
-}
-
 /// Returns the activation script path inside a virtualenv root.
 ///
 /// On Unix this is `<root>/bin/activate` (POSIX shell). On Windows it is
@@ -886,12 +873,6 @@ mod tests {
         }
 
         #[test]
-        fn virtualenv_pip_exe_returns_bin_pip_on_unix() {
-            let root = std::path::PathBuf::from("/tmp/fake");
-            assert_eq!(virtualenv_pip_exe(&root), root.join("bin").join("pip"));
-        }
-
-        #[test]
         fn virtualenv_activate_script_returns_bin_activate_on_unix() {
             let root = std::path::PathBuf::from("/tmp/fake");
             assert_eq!(
@@ -982,15 +963,6 @@ mod tests {
             assert_eq!(
                 virtualenv_python_exe(&root),
                 root.join("Scripts").join("python.exe")
-            );
-        }
-
-        #[test]
-        fn virtualenv_pip_exe_returns_scripts_pip_exe_on_windows() {
-            let root = std::path::PathBuf::from("C:\\fake");
-            assert_eq!(
-                virtualenv_pip_exe(&root),
-                root.join("Scripts").join("pip.exe")
             );
         }
 

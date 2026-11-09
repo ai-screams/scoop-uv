@@ -7,10 +7,8 @@
 //!   global `error:` prefix and suggestion, or stay quiet because the
 //!   command already rendered its own output (verify report, etc.).
 //!
-//! Kept separate from `migrate.rs` (which owns *migration-domain*
-//! exit semantics via [`super::MigrationExitCode`]) so that process-exit
-//! decisions live in one place instead of being scattered across
-//! per-feature modules.
+//! Process-exit decisions live here in one place instead of being
+//! scattered across per-feature modules.
 //!
 //! # Narrow operational policy
 //!
@@ -70,8 +68,8 @@ impl ScoopError {
             // exit 1 (signal "I found something") and Quiet render policy.
             Self::VerifyFailed { .. } | Self::DiffMismatch { .. } => 1,
 
-            // Migration source-discovery (existing MigrationExitCode == 3).
-            // MigrationSourcesNotFound joined this arm in Inc 4 so that
+            // Migration source problems: a missing or broken source tool
+            // or env. MigrationSourcesNotFound is here so that
             // `scuv migrate all` on a system with no source tools
             // installed surfaces exit 3, distinct from generic exit 1.
             Self::PyenvNotFound
@@ -81,8 +79,8 @@ impl ScoopError {
             | Self::CorruptedEnvironment { .. }
             | Self::MigrationSourcesNotFound { .. } => 3,
 
-            // Migration-internal failures (existing MigrationExitCode == 2).
-            // MigrationBatchFailed is the new aggregate variant returned
+            // Migration-internal failures. MigrationBatchFailed is the
+            // aggregate variant returned
             // by `migrate all` when per-env failures or unresolved name
             // conflicts (without --force) occurred.
             Self::MigrationFailed { .. }

@@ -24,8 +24,9 @@ impl Colors {
         stderr: false,
     };
 
-    /// Color on both streams.
-    pub const ALL: Self = Self {
+    /// Color on both streams. Tests only: `main` decides each stream.
+    #[cfg(test)]
+    pub(crate) const ALL: Self = Self {
         stdout: true,
         stderr: true,
     };

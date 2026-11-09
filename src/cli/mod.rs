@@ -308,21 +308,16 @@ pub enum SelfCommand {
 /// `None` sort to the end with name-order tie-break — surfacing
 /// modern envs first instead of burying them under legacy-metadata
 /// neighbours.
-#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(ValueEnum, Clone, Copy, Debug, Default, PartialEq, Eq)]
 #[value(rename_all = "kebab-case")]
 pub enum ListSortMode {
     /// Alphabetical by env name (default).
+    #[default]
     Name,
     /// Most recently created first; envs without `created_at` last.
     Created,
     /// Most recently used first; envs without `last_used` last.
     LastUsed,
-}
-
-impl Default for ListSortMode {
-    fn default() -> Self {
-        Self::Name
-    }
 }
 
 /// Available commands

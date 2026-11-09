@@ -360,7 +360,7 @@ fn remove_skips_env_that_became_healthy() {
 }
 
 // ==========================================================================
-// Step 5 — `gc --older-than` / EnvGcReason::Stale contract
+// `gc --older-than` / EnvGcReason::Stale contract
 // ==========================================================================
 
 #[test]
@@ -393,7 +393,7 @@ fn stale_scan_matches_env_past_cutoff() {
 #[test]
 #[serial]
 fn stale_scan_never_matches_last_used_none() {
-    // Conservative rule from the v2 plan: `last_used = None` could
+    // Conservative rule: `last_used = None` could
     // mean "never used" (fresh env) or "predates the field" (legacy
     // metadata). Either way no positive evidence the env is unused —
     // refuse to flag it.
@@ -499,10 +499,9 @@ fn recheck_stale_reports_no_data_when_metadata_lost() {
 fn execute_rejects_invalid_older_than() {
     // Surface the parse error so a user with a typo gets a clear
     // message instead of "no envs to remove". Walk the major
-    // rejection arms so the Codex MEDIUM-2 ("`garbage` only" gap)
-    // is closed at the execute boundary too — including the
-    // u64::MAX value that Codex STOP-2 caught silently truncating
-    // in the previous parse_duration impl.
+    // rejection arms at the execute boundary, not just `garbage` —
+    // including u64::MAX, which an `as i64` cast in parse_duration
+    // would silently truncate.
     with_temp_scoop_home(|_| {
         let dir = paths::virtualenvs_dir().unwrap();
         fs::create_dir_all(&dir).unwrap();
@@ -586,9 +585,8 @@ fn recheck_stale_returns_none_when_still_past_cutoff() {
 #[test]
 #[serial]
 fn json_envelope_keeps_flat_reason_for_orphans() {
-    // Codex STOP-1 on this commit's predecessor: switching from
-    // `#[serde(rename)]` to `#[serde(tag = "kind")]` had silently
-    // changed the wire shape from `reason: "missing_metadata"` to
+    // Switching from `#[serde(rename)]` to `#[serde(tag = "kind")]`
+    // silently changes the wire shape from `reason: "missing_metadata"` to
     // `reason: {"kind": "missing_metadata"}`. Pin both contracts
     // (orphan = flat string, stale = flat string + sibling
     // age_days) so any future enum re-tagging immediately fails
@@ -627,7 +625,7 @@ fn json_envelope_keeps_flat_reason_for_orphans() {
 #[test]
 #[serial]
 fn remove_treats_not_found_as_already_removed() {
-    // Codex MEDIUM-1: parallel `--yes` would otherwise classify
+    // Parallel `--yes` would otherwise classify
     // the second runner's `remove_dir_all` as Failed via a noisy
     // NotFound. Pin the "absent at remove time → success"
     // contract so the JSON envelope doesn't lie about a phantom

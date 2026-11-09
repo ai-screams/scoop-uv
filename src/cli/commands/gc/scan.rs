@@ -93,8 +93,7 @@ pub(super) fn scan_orphan_envs() -> Result<Vec<GcCandidate>> {
 ///   `Some(_)` means the env is already an orphan — it'll be removed
 ///   via the orphan path. Flagging it twice would double-count and
 ///   confuse the JSON envelope.
-/// * **`last_used = None` never matches.** Codex review on the v2 plan
-///   was emphatic: a missing `last_used` could mean "never activated"
+/// * **`last_used = None` never matches.** A missing `last_used` could mean "never activated"
 ///   (fresh env) *or* "predates the field" (legacy metadata). Either
 ///   way we have no positive evidence the env is unused, so we refuse
 ///   to flag it. Users who really want to nuke un-activated envs can
@@ -147,7 +146,7 @@ pub(super) fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<GcCandidate>>
 /// Return `Some(reason)` if `path` looks like a broken env, `None` if
 /// it looks healthy from an *orphan-classifier* point of view. Stale
 /// detection lives in `scan_stale_envs` — keeping the two separate
-/// (per Codex STOP-1 on the v2 plan) means the orphan-side TOCTOU
+/// means the orphan-side TOCTOU
 /// guard can't accidentally reclassify a stale-but-healthy env as
 /// "not really stale" and skip removing it.
 pub(super) fn classify(path: &Path) -> Option<EnvGcReason> {

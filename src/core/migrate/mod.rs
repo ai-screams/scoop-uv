@@ -11,6 +11,6 @@ mod venvwrapper;
 pub use conda::CondaDiscovery;
 pub use discovery::PyenvDiscovery;
 pub use extractor::{ExtractionResult, PackageExtractor, PackageSpec};
-pub use migrator::{MigrateOptions, MigrationResult, Migrator, PythonAvailability};
+pub use migrator::{MigrateOptions, MigrationResult, Migrator};
 pub use source::{EnvironmentSource, EnvironmentStatus, SourceEnvironment, SourceType};
 pub use venvwrapper::VenvWrapperDiscovery;

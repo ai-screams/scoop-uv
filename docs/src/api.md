@@ -177,7 +177,7 @@ pub trait Check: Send + Sync {
     fn run(&self) -> Vec<CheckResult>;  // Returns Vec - a check can produce multiple results
 
     // Optional auto-fix for a failing result; the default offers none.
-    // Used by `Doctor::run_and_fix`.
+    // Used by `scuv doctor --fix`.
     fn fix(&self, _result: &CheckResult, _output: &crate::output::Output) -> Option<CheckResult> {
         None
     }
@@ -288,9 +288,6 @@ impl Doctor {
 
     /// Runs all checks without fixing
     pub fn run_all(&self) -> Vec<CheckResult>
-
-    /// Runs checks and attempts to fix issues
-    pub fn run_and_fix(&self, output: &crate::output::Output) -> Vec<CheckResult>
 }
 
 impl Default for Doctor {
@@ -313,12 +310,10 @@ for result in results {
         CheckStatus::Ok => println!("✅ {}", result.name),
     }
 }
-
-// Auto-fix issues (requires Output for progress display)
-use scoop_uv::output::{Colors, Output};
-let output = Output::new(0, false, Colors::NONE, false);
-let fixed_results = doctor.run_and_fix(&output);
 ```
+
+Fixing is a CLI feature (`scuv doctor --fix`); the library exposes the
+diagnosis only.
 
 ---
 
@@ -399,8 +394,9 @@ impl ScoopError {
     /// parallel tests that must not depend on the global locale.
     pub fn suggestion_in(&self, locale: &str) -> Option<String>
 
-    /// Returns migration-specific exit code
-    pub fn migration_exit_code(&self) -> MigrationExitCode
+    /// Process exit code for this error (1 general, 2 migration failure,
+    /// 3 migration source problem)
+    pub fn exit_code(&self) -> u8
 }
 ```
 

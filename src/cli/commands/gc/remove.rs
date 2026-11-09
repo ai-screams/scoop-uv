@@ -44,8 +44,7 @@ pub(super) fn remove_candidates(
 
 /// The per-reason TOCTOU guard: `Some(outcome)` when the env must be kept.
 ///
-/// Codex STOP-1 on the v2 plan caught the trap of running one guard for
-/// both kinds: orphans need re-classify (was-orphan → now-healthy means
+/// One guard for both kinds would be wrong: orphans need re-classify (was-orphan → now-healthy means
 /// skip), but stale envs need an age recheck — running classify() on a
 /// stale-but-healthy env would falsely skip removal.
 fn recheck_before_removal(
@@ -93,7 +92,7 @@ fn remove_env(output: &Output, env: &GcCandidate, record: &mut EnvRecord) {
             record.outcome = EnvOutcome::Removed;
         }
         // Treat "already gone" as success-equivalent rather than surfacing
-        // it as Failed. Codex MEDIUM-1: two `gc --yes` racing on the same
+        // it as Failed: two `gc --yes` racing on the same
         // candidate would otherwise return success once and a noisy "no
         // such file" Failed for the second runner, which scripts can't
         // distinguish from a real IO failure. The on-disk goal is met.

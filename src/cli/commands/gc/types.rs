@@ -14,8 +14,7 @@ use serde::Serialize;
 /// we'd used `#[serde(tag = "kind")]`. The Stale-specific `age_days`
 /// rides next to `reason` in the record, not inside it (see [`EnvRecord`]).
 ///
-/// Codex review on the v2 plan flagged this separation as STOP-1: a
-/// single flat enum would have let the orphan-side TOCTOU guard
+/// The separation matters: a single flat enum would have let the orphan-side TOCTOU guard
 /// reclassify stale-but-healthy envs as "fine" and skip removing them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]

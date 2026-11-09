@@ -37,8 +37,6 @@ pub struct ExtractionResult {
     pub packages: Vec<PackageSpec>,
     /// Packages that failed to parse
     pub failed: Vec<String>,
-    /// Total count of lines processed
-    pub total_found: usize,
 }
 
 impl ExtractionResult {
@@ -111,15 +109,12 @@ impl PackageExtractor {
     fn parse_freeze_output(&self, output: &str) -> Result<ExtractionResult> {
         let mut packages = Vec::new();
         let mut failed = Vec::new();
-        let mut total_found = 0;
 
         for line in output.lines() {
             let line = line.trim();
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
-
-            total_found += 1;
 
             match self.parse_line(line) {
                 Some(spec) => {
@@ -135,11 +130,7 @@ impl PackageExtractor {
             }
         }
 
-        Ok(ExtractionResult {
-            packages,
-            failed,
-            total_found,
-        })
+        Ok(ExtractionResult { packages, failed })
     }
 
     /// Parses a single line from pip freeze output.
@@ -262,7 +253,6 @@ mod tests {
         let result = ExtractionResult {
             packages: vec![spec("requests", false), spec("mylib", true)],
             failed: Vec::new(),
-            total_found: 2,
         };
 
         let regular: Vec<_> = result.regular_packages().iter().map(|p| &p.name).collect();
@@ -326,7 +316,6 @@ mod tests {
         let result = extractor.parse_freeze_output(output).unwrap();
 
         assert_eq!(result.packages.len(), 3);
-        assert_eq!(result.total_found, 3);
         assert!(result.failed.is_empty());
     }
 
@@ -362,7 +351,8 @@ mod tests {
         let result = extractor.parse_freeze_output(output).unwrap();
 
         assert_eq!(result.packages.len(), 1);
-        assert_eq!(result.total_found, 1);
+        // Comments and blank lines are skipped, not reported as failures.
+        assert!(result.failed.is_empty());
     }
 
     #[test]

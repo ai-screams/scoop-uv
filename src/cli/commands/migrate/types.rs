@@ -134,11 +134,9 @@ impl MigrateExecuteOptions {
             dry_run: self.dry_run,
             force,
             allow_eol: self.allow_eol,
-            skip_packages: false,
             rename_to,
             strict: self.strict,
             delete_source: self.delete_source,
-            auto_install_python: false,
         }
     }
 }
@@ -190,7 +188,6 @@ mod tests {
         let core = opts.migrate_options(true, Some("renamed".to_string()));
         assert!(core.dry_run && core.force && core.allow_eol && core.strict && core.delete_source);
         assert_eq!(core.rename_to.as_deref(), Some("renamed"));
-        assert!(!core.skip_packages && !core.auto_install_python);
 
         // `--allow-eol` never turns into overwrite permission.
         let eol_only = opts.migrate_options(false, None);
@@ -226,7 +223,7 @@ mod tests {
 
     #[test]
     fn migrate_failure_serializable_with_new_fields() {
-        // Inc 4: source_type + error_code are additive (Codex MUST FIX #4).
+        // source_type + error_code are additive fields of the failure record.
         let failure = MigrateFailure {
             name: "failedenv".to_string(),
             source_type: SourceType::Pyenv,

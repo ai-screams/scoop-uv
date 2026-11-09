@@ -23,9 +23,8 @@ use crate::error::{Result, ScoopError};
 /// (~262k years). Picking the cap on *days* (not the unit-prefixed
 /// value) means `200y`, `~10400w`, and `73000d` all hit the same
 /// ceiling — no funny "1000000d slipped through because the multiplier
-/// was 1" surprises. Codex review on the previous commit caught a
-/// pre-cap `MAX_VALUE = 1_000_000` that would have let `1000000y`
-/// panic on the eventual `Utc::now() - duration` in Step 5.
+/// was 1" surprises. A cap on the raw value (`1_000_000`) would let
+/// `1000000y` through to panic on the later `Utc::now() - duration`.
 const MAX_DAYS: i64 = 365 * 200;
 
 /// Parse an age string like `"30d"` / `"2w"` / `"1y"` into a
@@ -61,7 +60,7 @@ const MAX_DAYS: i64 = 365 * 200;
 /// # Examples
 ///
 /// See unit tests below for the full matrix; the parser is `pub(crate)`
-/// because Step 5 (`gc --older-than`) is the only consumer.
+/// because `gc --older-than` is the only consumer.
 pub(crate) fn parse_duration(s: &str) -> Result<Duration> {
     if s.is_empty() {
         return Err(invalid("duration cannot be empty"));
@@ -70,8 +69,7 @@ pub(crate) fn parse_duration(s: &str) -> Result<Duration> {
     let days_per_unit = days_per_unit(suffix)?;
 
     // Multiply in u64 to avoid the `(u64 as i64)` silent-truncation
-    // trap Codex flagged on the previous commit: `18446744073709551615d`
-    // would have cast to `-1`, producing a "tomorrow" cutoff that
+    // trap: `18446744073709551615d` would cast to `-1`, producing a "tomorrow" cutoff that
     // matched every env. Stay in u64 until we've capped the day count;
     // only then convert to the i64 chrono needs.
     let total_days_u64 = value
@@ -271,8 +269,8 @@ mod tests {
     fn rejects_value_past_max_days_in_each_unit() {
         // Cap is on the *day count*, so passing the limit in any unit
         // must reject. Pinning all three keeps a future "raise the cap
-        // for years only" tweak from re-introducing the panic surface
-        // Codex flagged on the previous commit.
+        // for years only" tweak from re-introducing the
+        // `Utc::now() - duration` panic.
         let past_in_days = format!("{}d", MAX_DAYS + 1);
         let past_in_weeks = format!("{}w", (MAX_DAYS / 7) + 1);
         let past_in_years = format!("{}y", (MAX_DAYS / 365) + 1);
@@ -334,9 +332,8 @@ mod tests {
 
     #[test]
     fn rejects_month_variants_with_specific_hint() {
-        // Codex MEDIUM-2 on this commit's predecessor: `1mo` used to
-        // parse as num="1m" + suffix="o" and surface "could not parse"
-        // instead of the month-ambiguity hint. Walk every variant to
+        // `1mo` once parsed as num="1m" + suffix="o" and surfaced
+        // "could not parse" instead of the month-ambiguity hint. Walk every variant to
         // make sure all month-shaped inputs hit the dedicated arm.
         for s in ["6m", "6mo", "6mon", "6month", "6months"] {
             let err = parse_duration(s).unwrap_err();

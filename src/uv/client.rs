@@ -116,14 +116,16 @@ impl UvClient {
         Ok(())
     }
 
-    /// List all Python versions known to uv (installed and downloadable).
-    pub fn list_pythons(&self) -> Result<Vec<PythonInfo>> {
-        self.run_python_list(false)
-    }
-
-    /// List only the Python versions installed on this machine.
+    /// List only the Python versions installed on this machine, from
+    /// `uv python list --only-installed --output-format=json`.
+    ///
+    /// uv added `--output-format` in 0.5.19 (our [`MIN_VERSION`] floor), so we
+    /// rely on the structured schema instead of scraping the human-readable
+    /// table, which changes format between releases.
+    ///
+    /// [`MIN_VERSION`]: crate::uv::version::MIN_VERSION
     pub fn list_installed_pythons(&self) -> Result<Vec<PythonInfo>> {
-        self.run_python_list(true)
+        self.query_python_list(&["--only-installed"])
     }
 
     /// List only the installed Pythons uv itself manages — the ones
@@ -151,21 +153,6 @@ impl UvClient {
             message,
         })?;
         Ok(PathBuf::from(String::from_utf8_lossy(&stdout).trim()))
-    }
-
-    /// Run `uv python list --output-format=json` and parse the result.
-    ///
-    /// uv added this flag in 0.5.19 (our [`MIN_VERSION`] floor), so we rely on
-    /// the structured schema instead of scraping the human-readable table,
-    /// which changes format between releases.
-    ///
-    /// [`MIN_VERSION`]: crate::uv::version::MIN_VERSION
-    fn run_python_list(&self, only_installed: bool) -> Result<Vec<PythonInfo>> {
-        if only_installed {
-            self.query_python_list(&["--only-installed"])
-        } else {
-            self.query_python_list(&[])
-        }
     }
 
     /// Runs `uv python list <filters> --output-format=json`, passes on its
@@ -396,22 +383,22 @@ mod tests {
         assert!(warning_lines(b"").is_empty());
     }
 
-    /// `list_pythons` returns what `uv python list` reports, and asks for
-    /// every Python (no `--only-installed`). A fake uv reports one; fails if
-    /// the list comes back empty or made up.
+    /// `list_installed_pythons` returns what `uv python list` reports, and
+    /// asks for installed Pythons only. A fake uv reports one; fails if the
+    /// list comes back empty or made up, or the filter is dropped.
     #[cfg(unix)]
     #[test]
     #[serial_test::serial]
-    fn list_pythons_returns_what_uv_reports() {
+    fn list_installed_pythons_returns_what_uv_reports() {
         let uv = crate::test_utils::FakeUv::new(&["3.12.14"]);
         let path = uv.path_var();
         let _env = crate::test_utils::env_guard(&[("PATH", Some(path.as_str()))]);
-        let pythons = UvClient::new().unwrap().list_pythons().unwrap();
+        let pythons = UvClient::new().unwrap().list_installed_pythons().unwrap();
         let versions: Vec<_> = pythons.iter().map(|p| p.version.as_str()).collect();
         assert_eq!(versions, ["3.12.14"]);
         assert_eq!(uv.list_calls().len(), 1);
         assert!(
-            !uv.list_calls()[0].contains("--only-installed"),
+            uv.list_calls()[0].contains("--only-installed"),
             "{:?}",
             uv.list_calls()
         );

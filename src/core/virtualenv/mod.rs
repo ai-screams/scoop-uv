@@ -15,9 +15,8 @@ use crate::validate;
 
 /// Information about a virtual environment.
 ///
-/// `#[non_exhaustive]` so future field additions (the v2 plan calls
-/// for at least one more metadata-derived field down the line) aren't
-/// a breaking change for external `scoop-uv` library consumers. All
+/// `#[non_exhaustive]` so future field additions (more metadata-derived
+/// fields are likely) aren't a breaking change for external `scoop-uv` library consumers. All
 /// in-tree construction sites use struct-literal syntax and live in
 /// `cfg(test)` or this crate's command handlers, so the attribute
 /// only affects downstream consumers — which currently must build
@@ -333,7 +332,7 @@ impl VirtualenvService {
     /// timestamp reflects whichever process committed the rename last,
     /// not necessarily the most recent wall-clock instant. Acceptable for
     /// display ("Last used: 2 hours ago") and gc heuristics at the
-    /// day/week granularity Step 5 will offer; not acceptable for
+    /// day/week granularity `gc --older-than` offers; not acceptable for
     /// anything that needs strict ordering.
     ///
     /// Never returns an error: activation must not be blocked by metadata
