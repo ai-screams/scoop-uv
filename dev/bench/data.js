@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794236741043,
+  "lastUpdate": 1794236742910,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -15553,6 +15553,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 469,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "21306be1372091499896ae29e187af111987dbb8",
+          "message": "Merge pull request #273 from ai-screams/fix/gc-fail-closed\n\nfix(gc): [#273] keep what gc cannot inspect instead of treating it as missing",
+          "timestamp": "2026-11-10T00:01:26+09:00",
+          "tree_id": "9e7a266cb77e52fcb4aa392152fbea6f8a44a73b",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/21306be1372091499896ae29e187af111987dbb8"
+        },
+        "date": 1794236742810,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 637,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 467,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
