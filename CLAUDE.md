@@ -86,6 +86,7 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 - Tests that need `uv` use `FakeUv` (src/test_utils.rs; see `with_fake_uv_home` in gc/tests.rs), which puts a fake `uv` script in front of `PATH`. Keep its script to shell builtins (`printf`/`echo`): if `uv python list` fails, gc falls back to "no Pythons" and a fail-closed test passes vacuously — so also assert the fake's listing is non-empty.
 - To make a directory read fail, put a regular file where the directory should be; `chmod 000` does not stop root, and the test then proves nothing in root CI.
 - `codecov/patch` = base coverage − 5% (codecov.yml); a split/move refactor counts relocated lines as new, and every continuation line of a multi-line `assert!` message is an uncovered line (it runs only on failure), so keep assert messages on one line. Per-file patch misses: `curl -s "https://api.codecov.io/api/v2/github/ai-screams/repos/scoop-uv/compare/?pullid=<n>"` → `.files[].totals.patch`.
+- cargo-llvm-cov leaves files named `tests.rs` (and `*_tests.rs`) out of the report by default, so moving an inline test module into `foo/tests.rs` drops its lines from coverage: moving five such modules out took the local line total from 87.54% to 86.21%. The CI floor (`coverage.yml`, 80%) still holds; a file named otherwise (`proptests.rs`) stays counted.
 
 ## Dependabot & Release Automation
 

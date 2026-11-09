@@ -120,7 +120,7 @@ exclude_re = [
     # cross-platform path helpers (added in 744d109) emit Scripts/* paths
     # and don't compile on Linux CI runners, so cargo-mutants reports
     # their return-value mutations as MISSED. The Unix variants ARE
-    # exercised by cross_platform_unix tests in paths.rs::tests, and the
+    # exercised by cross_platform_unix tests in src/paths/tests.rs, and the
     # Windows variants have their own assertions under
     # cross_platform_windows (which only run when CI eventually adds
     # a Windows job — backlog).

@@ -23,8 +23,8 @@ tests/
 
 src/
 ├── error/                    # Unit tests for error types
-├── validate.rs               # Unit tests for validation
-├── paths.rs                  # Unit tests for path utilities
+├── validate/                 # Unit + property tests for validate.rs (tests.rs, proptests.rs)
+├── paths/tests.rs            # Unit tests for paths.rs
 ├── output/
 │   └── json/tests.rs         # Unit tests for JSON output
 ├── core/
@@ -36,8 +36,15 @@ src/
 │   ├── bash.rs               # Shell script tests
 │   └── zsh.rs                # Shell script tests
 └── uv/
-    └── client.rs             # Unit tests for uv client
+    ├── client.rs             # Unit tests for uv client
+    └── install/tests.rs      # Unit tests for install.rs
 ```
+
+Small test modules stay inline (`#[cfg(test)] mod tests { ... }`). Once one
+passes roughly 450 lines it moves to a child file beside its source:
+`src/paths.rs` declares `#[cfg(test)] mod tests;`, which loads
+`src/paths/tests.rs`. The production file stays where it is, and the test
+paths (`paths::tests::...`) do not change.
 
 ## Running Tests
 
@@ -218,7 +225,7 @@ proptest! {
 }
 ```
 
-Located in `src/validate.rs` and `src/core/manifest.rs`.
+Located in `src/validate/proptests.rs`.
 
 ### Parameterized Tests
 

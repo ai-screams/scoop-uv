@@ -2,7 +2,7 @@
 //! at a terminal must leave the machine alone.
 //!
 //! The tests run without a terminal, so the real prompt is out of reach; the
-//! prompted path is covered in `src/uv/install.rs` by injecting the answer.
+//! prompted path is covered in `src/uv/install/tests.rs` by injecting the answer.
 
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
