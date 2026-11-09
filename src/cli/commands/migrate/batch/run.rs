@@ -173,6 +173,12 @@ fn report_success(
                 result.packages_failed.len()
             ));
         }
+        if opts.kept_source(result) {
+            pb.println(format!(
+                "  ⚠ {}",
+                t!("migrate.source_kept", name = &result.name)
+            ));
+        }
         return;
     }
     if opts.json {
@@ -187,12 +193,15 @@ fn report_success(
     } else {
         output.success(&t!("migrate.batch_item_success", name = &result.name));
         output.info(&t!("migrate.packages", count = result.packages_migrated));
-        if !result.packages_failed.is_empty() {
-            output.warn(&t!(
-                "migrate.failed_packages",
-                count = result.packages_failed.len()
-            ));
-        }
+    }
+    if !result.packages_failed.is_empty() {
+        output.warn(&t!(
+            "migrate.failed_packages",
+            count = result.packages_failed.len()
+        ));
+    }
+    if opts.kept_source(result) {
+        output.warn(&t!("migrate.source_kept", name = &result.name));
     }
 }
 

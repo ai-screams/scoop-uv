@@ -45,7 +45,7 @@ pub struct MigrateOptions {
     pub rename_to: Option<String>,
     /// Fail on first package error (strict mode)
     pub strict: bool,
-    /// Delete original environment after successful migration
+    /// Delete the original environment once every package has migrated
     pub delete_source: bool,
     /// Automatically install Python if missing
     pub auto_install_python: bool,
@@ -60,7 +60,8 @@ pub struct MigrationResult {
     pub python_version: String,
     /// Number of packages migrated
     pub packages_migrated: usize,
-    /// Packages that failed to install
+    /// Packages that failed to install, and `pip freeze` lines that did
+    /// not parse (those were never installed either)
     pub packages_failed: Vec<String>,
     /// Whether this was a dry run
     pub dry_run: bool,
@@ -68,7 +69,8 @@ pub struct MigrationResult {
     pub path: PathBuf,
     /// Whether the source environment was deleted
     pub source_deleted: bool,
-    /// Actual Python version used (may differ from requested if compatible version used)
+    /// The version the new env's pyvenv.cfg records (`3.12` for uv's minor
+    /// links); the source's version for a dry run or when pyvenv.cfg has none
     pub actual_python_version: String,
 }
 
@@ -76,7 +78,7 @@ impl MigrationResult {
     /// Returns the exit code based on migration result.
     ///
     /// Returns `Success` if all packages were migrated successfully,
-    /// `PartialSuccess` if some packages failed to install.
+    /// `PartialSuccess` if some failed to install or to parse.
     pub fn exit_code(&self) -> MigrationExitCode {
         if self.packages_failed.is_empty() {
             MigrationExitCode::Success
@@ -151,7 +153,7 @@ impl Migrator {
             EnvironmentStatus::NameConflict { existing } => {
                 // The conflict is with the source's own name; under a new
                 // name (--rename / --auto-rename) it no longer applies, and
-                // create_target_env checks the new name itself. The status
+                // target_path checks the new name itself. The status
                 // records the conflict ahead of an EOL Python, so a renamed
                 // env still answers to the EOL guard here.
                 let renamed = options
@@ -191,8 +193,10 @@ impl Migrator {
         self.extractor.extract(&source.path)
     }
 
-    /// Creates the target scuv environment.
-    fn create_target_env(&self, name: &str, python_version: &str, force: bool) -> Result<PathBuf> {
+    /// Resolves the target env path, refusing what `create_target_env`
+    /// would refuse: an invalid name, or an existing env without `force`.
+    /// Touches nothing, so the dry run checks the same things.
+    fn target_path(&self, name: &str, force: bool) -> Result<PathBuf> {
         // Validate at the trust boundary: for `--rename` / `--auto-rename` the
         // target name comes straight from CLI args and would otherwise reach
         // the filesystem unchecked, allowing path traversal (e.g. `../../x`).
@@ -200,15 +204,19 @@ impl Migrator {
         crate::validate::validate_env_name(name)?;
 
         let target_path = paths::virtualenv_path(name)?;
+        if target_path.exists() && !force {
+            return Err(ScoopError::VirtualenvExists {
+                name: name.to_string(),
+            });
+        }
+        Ok(target_path)
+    }
 
+    /// Creates the target scuv environment at a path from `target_path`,
+    /// replacing an existing one (`target_path` allowed it only with `force`).
+    fn create_target_env(&self, target_path: &Path, python_version: &str) -> Result<()> {
         if target_path.exists() {
-            if force {
-                fs::remove_dir_all(&target_path)?;
-            } else {
-                return Err(ScoopError::VirtualenvExists {
-                    name: name.to_string(),
-                });
-            }
+            fs::remove_dir_all(target_path)?;
         }
 
         // Ensure parent directory exists
@@ -217,9 +225,7 @@ impl Migrator {
         }
 
         // Create the virtual environment
-        self.uv.create_venv(&target_path, python_version)?;
-
-        Ok(target_path)
+        self.uv.create_venv(target_path, python_version)
     }
 
     /// Installs packages into the target environment.
@@ -327,24 +333,10 @@ impl Migrator {
         // Determine target name
         let target_name = options.rename_to.as_ref().unwrap_or(&source.name).clone();
 
-        // Dry run - just report what would happen
-        if options.dry_run {
-            let packages = self.extract_packages(source)?;
-            let target_path = paths::virtualenv_path(&target_name)?;
-            return Ok(MigrationResult {
-                name: target_name,
-                python_version: source.python_version.clone(),
-                packages_migrated: packages.packages.len(),
-                packages_failed: packages.failed.clone(),
-                dry_run: true,
-                path: target_path,
-                source_deleted: false,
-                actual_python_version: source.python_version.clone(),
-            });
-        }
-
-        // Validate source
+        // The dry run checks what the real run checks, so a preview never
+        // reports success for a migration the real run refuses.
         self.validate_source(source, options)?;
+        let target_path = self.target_path(&target_name, options.force)?;
 
         // Extract packages from source
         let packages = if options.skip_packages {
@@ -357,19 +349,34 @@ impl Migrator {
             self.extract_packages(source)?
         };
 
+        if options.dry_run {
+            return Ok(MigrationResult {
+                name: target_name,
+                python_version: source.python_version.clone(),
+                packages_migrated: packages.packages.len(),
+                packages_failed: packages.failed,
+                dry_run: true,
+                path: target_path,
+                source_deleted: false,
+                actual_python_version: source.python_version.clone(),
+            });
+        }
+
         // Create target environment
-        let target_path =
-            self.create_target_env(&target_name, &source.python_version, options.force)?;
+        self.create_target_env(&target_path, &source.python_version)?;
 
         // Set up rollback guard
         let mut rollback = RollbackGuard::new(target_path.clone());
 
         // Install packages
-        let failed = if options.skip_packages {
+        let mut failed = if options.skip_packages {
             Vec::new()
         } else {
             self.install_packages(&target_path, &packages, options.strict)?
         };
+        let packages_migrated = packages.packages.len() - failed.len();
+        // Freeze lines that did not parse were never installed either.
+        failed.extend(packages.failed);
 
         // Write metadata
         self.write_metadata(&target_path, &target_name, &source.python_version)?;
@@ -377,15 +384,19 @@ impl Migrator {
         // Success - disarm rollback
         rollback.disarm();
 
-        // Delete source if requested
-        let source_deleted = if options.delete_source {
+        // `--delete-source` removes only a source whose packages all moved:
+        // anything in `failed` exists nowhere else.
+        let source_deleted = if options.delete_source && failed.is_empty() {
             self.delete_source(source)?;
             true
         } else {
             false
         };
 
-        let packages_migrated = packages.packages.len() - failed.len();
+        // What the new env links to, as its pyvenv.cfg records it: current
+        // uv writes `3.12` for its minor links and the full version otherwise.
+        let actual_python_version = crate::core::parse_pyvenv_version(&target_path)
+            .unwrap_or_else(|| source.python_version.clone());
 
         Ok(MigrationResult {
             name: target_name,
@@ -395,7 +406,7 @@ impl Migrator {
             dry_run: false,
             path: target_path,
             source_deleted,
-            actual_python_version: source.python_version.clone(),
+            actual_python_version,
         })
     }
 }
@@ -520,7 +531,7 @@ mod tests {
     }
 
     #[test]
-    fn create_target_env_rejects_path_traversal_name() {
+    fn target_path_rejects_path_traversal_name() {
         let migrator = Migrator {
             uv: UvClient::with_path(PathBuf::from("/mock/uv")),
             extractor: PackageExtractor::new(),
@@ -528,7 +539,7 @@ mod tests {
         // Names that escape the virtualenvs dir must be rejected before any
         // filesystem access (validation runs before uv is invoked).
         for evil in ["../../etc/evil", "..", "foo/bar", "/abs", ".hidden"] {
-            let result = migrator.create_target_env(evil, "3.12", false);
+            let result = migrator.target_path(evil, false);
             assert!(
                 matches!(result, Err(ScoopError::InvalidEnvName { .. })),
                 "name {evil:?} should be rejected as invalid"
@@ -696,5 +707,222 @@ mod tests {
         let options = MigrateOptions::default();
 
         assert!(migrator.validate_source(&source, &options).is_err());
+    }
+
+    /// `migrate()` against the fake uv: `SCUV_HOME` is a fresh directory,
+    /// the source is a directory whose `bin/pip` prints `freeze`, and the
+    /// migrator calls the fake by path.
+    #[cfg(unix)]
+    mod with_fake_uv {
+        use super::*;
+        use crate::test_utils::{FakeUv, env_guard};
+        use serial_test::serial;
+
+        struct Fixture {
+            uv: FakeUv,
+            home: tempfile::TempDir,
+            source: SourceEnvironment,
+        }
+
+        impl Fixture {
+            fn migrator(&self) -> Migrator {
+                Migrator::with_uv(UvClient::with_path(self.uv.exe()))
+            }
+            fn target(&self, name: &str) -> PathBuf {
+                self.home.path().join("virtualenvs").join(name)
+            }
+        }
+
+        fn run(
+            freeze: &str,
+            status: EnvironmentStatus,
+            extra: &[(&'static str, Option<&str>)],
+            f: impl FnOnce(&Fixture),
+        ) {
+            use std::os::unix::fs::PermissionsExt;
+            let uv = FakeUv::new(&[]);
+            let home = tempfile::TempDir::new().unwrap();
+            let src = home.path().join("pyenv-web");
+            fs::create_dir_all(src.join("bin")).unwrap();
+            let pip = src.join("bin").join("pip");
+            fs::write(&pip, format!("#!/bin/sh\nprintf '{freeze}'\n")).unwrap();
+            fs::set_permissions(&pip, fs::Permissions::from_mode(0o755)).unwrap();
+            let home_str = home.path().display().to_string();
+            let mut vars: Vec<(&'static str, Option<&str>)> =
+                vec![("SCUV_HOME", Some(home_str.as_str()))];
+            vars.extend_from_slice(extra);
+            let _env = env_guard(&vars);
+            let source = SourceEnvironment {
+                name: "web".to_string(),
+                python_version: "3.12.0".to_string(),
+                path: src,
+                source_type: SourceType::Pyenv,
+                size_bytes: None,
+                status,
+            };
+            f(&Fixture { uv, home, source });
+        }
+
+        fn dry_run() -> MigrateOptions {
+            MigrateOptions {
+                dry_run: true,
+                ..Default::default()
+            }
+        }
+
+        /// The dry run refuses what the real run refuses.
+        #[test]
+        #[serial]
+        fn dry_run_refuses_a_corrupted_source() {
+            let status = EnvironmentStatus::Corrupted {
+                reason: "broken".to_string(),
+            };
+            run("six==1.16.0\n", status, &[], |fx| {
+                let err = fx.migrator().migrate(&fx.source, &dry_run()).unwrap_err();
+                assert!(
+                    matches!(err, ScoopError::CorruptedEnvironment { .. }),
+                    "{err}"
+                );
+            });
+        }
+
+        #[test]
+        #[serial]
+        fn dry_run_refuses_an_eol_python_without_allow_eol() {
+            let status = EnvironmentStatus::PythonEol {
+                version: "3.8.0".to_string(),
+            };
+            run("six==1.16.0\n", status, &[], |fx| {
+                let err = fx.migrator().migrate(&fx.source, &dry_run()).unwrap_err();
+                assert!(matches!(err, ScoopError::MigrationFailed { .. }), "{err}");
+            });
+        }
+
+        #[test]
+        #[serial]
+        fn dry_run_refuses_an_existing_target() {
+            run("six==1.16.0\n", EnvironmentStatus::Ready, &[], |fx| {
+                fs::create_dir_all(fx.target("web")).unwrap();
+                let err = fx.migrator().migrate(&fx.source, &dry_run()).unwrap_err();
+                assert!(matches!(err, ScoopError::VirtualenvExists { .. }), "{err}");
+            });
+        }
+
+        #[test]
+        #[serial]
+        fn dry_run_refuses_an_invalid_new_name() {
+            run("six==1.16.0\n", EnvironmentStatus::Ready, &[], |fx| {
+                let options = MigrateOptions {
+                    rename_to: Some("../x".to_string()),
+                    ..dry_run()
+                };
+                let err = fx.migrator().migrate(&fx.source, &options).unwrap_err();
+                assert!(matches!(err, ScoopError::InvalidEnvName { .. }), "{err}");
+            });
+        }
+
+        /// A freeze line that does not parse is reported by the real run as
+        /// it is by the dry run, without counting against migrated packages.
+        #[test]
+        #[serial]
+        fn real_run_reports_unparsed_freeze_lines() {
+            run(
+                "six==1.16.0\\nnot-a-pin\\n",
+                EnvironmentStatus::Ready,
+                &[],
+                |fx| {
+                    let preview = fx.migrator().migrate(&fx.source, &dry_run()).unwrap();
+                    let result = fx
+                        .migrator()
+                        .migrate(&fx.source, &MigrateOptions::default())
+                        .unwrap();
+                    assert_eq!(result.packages_failed, ["not-a-pin"]);
+                    assert_eq!(result.packages_failed, preview.packages_failed);
+                    assert_eq!(result.packages_migrated, 1);
+                },
+            );
+        }
+
+        fn delete_source() -> MigrateOptions {
+            MigrateOptions {
+                delete_source: true,
+                ..Default::default()
+            }
+        }
+
+        #[test]
+        #[serial]
+        fn delete_source_removes_a_fully_migrated_source() {
+            run("six==1.16.0\\n", EnvironmentStatus::Ready, &[], |fx| {
+                let result = fx.migrator().migrate(&fx.source, &delete_source()).unwrap();
+                assert!(result.source_deleted);
+                assert!(!fx.source.path.exists());
+            });
+        }
+
+        /// `--delete-source` keeps a source whose packages did not all move:
+        /// an unparsed freeze line, or a package that failed to install.
+        #[test]
+        #[serial]
+        fn delete_source_keeps_a_source_with_an_unparsed_line() {
+            run(
+                "six==1.16.0\\nnot-a-pin\\n",
+                EnvironmentStatus::Ready,
+                &[],
+                |fx| {
+                    let result = fx.migrator().migrate(&fx.source, &delete_source()).unwrap();
+                    assert!(!result.source_deleted);
+                    assert!(fx.source.path.exists());
+                },
+            );
+        }
+
+        #[test]
+        #[serial]
+        fn delete_source_keeps_a_source_with_a_failed_install() {
+            let fails = [("FAKE_UV_PIP_INSTALL_FAILS", Some("bad==1.0"))];
+            run(
+                "six==1.16.0\\nbad==1.0\\n",
+                EnvironmentStatus::Ready,
+                &fails,
+                |fx| {
+                    let result = fx.migrator().migrate(&fx.source, &delete_source()).unwrap();
+                    assert_eq!(result.packages_failed, ["bad==1.0"]);
+                    // Two found, one failed: `-` here, not `+`.
+                    assert_eq!(result.packages_migrated, 1);
+                    assert!(!result.source_deleted);
+                    assert!(fx.source.path.exists());
+                },
+            );
+        }
+
+        /// `actual_python_version` is what the created env's pyvenv.cfg
+        /// records (current uv writes the minor for its minor links), and
+        /// the source's version when the file has none.
+        #[test]
+        #[serial]
+        fn actual_python_version_comes_from_the_target_pyvenv_cfg() {
+            let minor = [("FAKE_UV_VENV_VERSION_INFO", Some("3.12"))];
+            run("six==1.16.0\\n", EnvironmentStatus::Ready, &minor, |fx| {
+                let result = fx
+                    .migrator()
+                    .migrate(&fx.source, &MigrateOptions::default())
+                    .unwrap();
+                assert_eq!(result.python_version, "3.12.0");
+                assert_eq!(result.actual_python_version, "3.12");
+            });
+        }
+
+        #[test]
+        #[serial]
+        fn actual_python_version_falls_back_to_the_source() {
+            run("six==1.16.0\\n", EnvironmentStatus::Ready, &[], |fx| {
+                let result = fx
+                    .migrator()
+                    .migrate(&fx.source, &MigrateOptions::default())
+                    .unwrap();
+                assert_eq!(result.actual_python_version, "3.12.0");
+            });
+        }
     }
 }

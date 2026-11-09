@@ -104,7 +104,7 @@ pub struct MigrateExecuteOptions {
     pub json: bool,
     /// Fail on first package error
     pub strict: bool,
-    /// Delete original environment after successful migration
+    /// Delete the original environment once every package has migrated
     pub delete_source: bool,
     /// Migrate with a different name
     pub rename: Option<String>,
@@ -119,6 +119,12 @@ impl MigrateExecuteOptions {
     /// `--force`, which allowed it before `--allow-eol` existed.
     pub fn allows_eol(&self) -> bool {
         self.force || self.allow_eol
+    }
+
+    /// Whether `--delete-source` was asked for but the source was kept: a
+    /// real run that did not move every package leaves the source in place.
+    pub fn kept_source(&self, result: &MigrationResult) -> bool {
+        self.delete_source && !result.dry_run && !result.source_deleted
     }
 
     /// The core migrator's options for one environment: `force` and
@@ -147,6 +153,31 @@ mod tests {
     /// The flags reach the core migrator. Fails if `migrate_options` drops
     /// `allow_eol` (an EOL env would then pass the CLI check and still be
     /// refused by the migrator) or any other flag.
+    /// The source-kept warning fires only for a real `--delete-source` run
+    /// that kept the source: not for a dry run (which never deletes), not
+    /// when deletion happened, not without the flag.
+    #[test]
+    fn kept_source_needs_the_flag_a_real_run_and_a_kept_source() {
+        let result = |dry_run, source_deleted| MigrationResult {
+            name: "web".to_string(),
+            python_version: "3.12".to_string(),
+            packages_migrated: 0,
+            packages_failed: vec!["not-a-pin".to_string()],
+            dry_run,
+            path: PathBuf::from("/x"),
+            source_deleted,
+            actual_python_version: "3.12".to_string(),
+        };
+        let delete = MigrateExecuteOptions {
+            delete_source: true,
+            ..Default::default()
+        };
+        assert!(delete.kept_source(&result(false, false)));
+        assert!(!delete.kept_source(&result(true, false)));
+        assert!(!delete.kept_source(&result(false, true)));
+        assert!(!MigrateExecuteOptions::default().kept_source(&result(false, false)));
+    }
+
     #[test]
     fn migrate_options_carries_the_flags() {
         let opts = MigrateExecuteOptions {
