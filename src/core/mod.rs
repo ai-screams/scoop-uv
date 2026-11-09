@@ -13,7 +13,8 @@ pub use manifest::ScoopManifest;
 pub use metadata::Metadata;
 pub use version::{VersionService, VersionSource};
 pub(crate) use virtualenv::{
-    MetadataState, create_venv_dir, env_dirs, inspect_env, write_metadata_file,
+    MetadataState, create_venv_dir, env_dirs, env_dirs_complete, inspect_env, read_metadata_file,
+    write_metadata_file,
 };
 pub use virtualenv::{VirtualenvInfo, VirtualenvService};
 

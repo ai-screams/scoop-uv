@@ -83,10 +83,11 @@ pub(super) enum EnvOutcome {
     /// recheck against the original cutoff now passes); destructive
     /// action skipped on purpose (TOCTOU guard fired for `Stale`).
     SkippedRecentlyUsed,
-    /// `--yes`: stale env's metadata became unreadable between scan
-    /// and remove. Refusing to delete an env we can no longer reason
-    /// about is the conservative move — surfaces the situation
-    /// instead of guessing.
+    /// `--yes`: the env could not be checked again right before removal
+    /// (a stale env's metadata became unreadable, or an orphan's files
+    /// could not be inspected). Refusing to delete an env we can no
+    /// longer reason about is the conservative move — surfaces the
+    /// situation instead of guessing.
     SkippedNoData,
     /// `--yes`: removal returned an IO error. See `error` for details.
     Failed,

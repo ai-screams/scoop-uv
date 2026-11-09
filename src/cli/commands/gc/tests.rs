@@ -6,8 +6,8 @@ use super::remove::remove_candidates;
 #[cfg(unix)]
 use super::remove::uninstall_pythons;
 use super::scan::{
-    recheck_stale, referenced_versions, scan_orphan_envs, scan_stale_envs, scan_unused_pythons,
-    version_covers,
+    Health, classify, recheck_stale, referenced_versions, scan_orphan_envs, scan_stale_envs,
+    scan_unused_pythons, version_covers,
 };
 use super::types::{
     EnvGcReason, EnvOutcome, EnvRecord, GcCandidate, PythonOutcome, PythonRecord, PythonSkip,
@@ -954,4 +954,260 @@ fn kept_candidate_keeps_its_python() {
         );
         assert_eq!(py_records[0].outcome, PythonOutcome::SkippedInUse);
     });
+}
+
+// ==========================================================================
+// Fail closed: what gc cannot inspect, it does not delete. Inspection
+// errors are made deterministically and for any user (root included): a
+// regular file where SCUV_HOME should be makes every path under it ENOTDIR,
+// and a symlink to itself makes any lookup through it ELOOP.
+// ==========================================================================
+
+/// SCUV_HOME as a regular file: `virtualenvs/` under it cannot be checked.
+#[cfg(unix)]
+fn home_that_cannot_be_inspected(home: &Path) -> std::path::PathBuf {
+    let file = home.join("not-a-dir");
+    fs::write(&file, "").unwrap();
+    let probe = file.join("virtualenvs");
+    assert!(probe.try_exists().is_err(), "fixture must be uninspectable");
+    file
+}
+
+/// An env whose metadata is a symlink to itself.
+#[cfg(unix)]
+fn env_with_looping_metadata(dir: &Path, name: &str) -> std::path::PathBuf {
+    make_env(dir, name, false, true);
+    let meta = dir.join(name).join(".scoop-metadata.json");
+    std::os::unix::fs::symlink(&meta, &meta).unwrap();
+    assert!(meta.try_exists().is_err(), "fixture must be uninspectable");
+    dir.join(name)
+}
+
+/// A fake uv on PATH (listing `versions`) and SCUV_HOME pointing at a
+/// regular file, set in one `env_guard` (nesting two would deadlock on
+/// ENV_LOCK).
+#[cfg(unix)]
+fn with_fake_uv_and_uninspectable_home<T>(versions: &[&str], f: impl FnOnce(&FakeUv) -> T) -> T {
+    let home = tempfile::tempdir().unwrap();
+    let file = home_that_cannot_be_inspected(home.path());
+    let uv = FakeUv::new(versions);
+    let path = uv.path_var();
+    let _env = env_guard(&[
+        (paths::SCUV_HOME_ENV, Some(file.to_str().unwrap())),
+        ("PATH", Some(path.as_str())),
+    ]);
+    f(&uv)
+}
+
+/// Used to read as "no envs", so every Python looked unused. What fails
+/// this: `exists()` instead of `try_exists()?` in the walk.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn referenced_versions_fails_closed_when_home_cannot_be_inspected() {
+    with_fake_uv_and_uninspectable_home(&["3.12.1"], |_| {
+        assert_eq!(
+            referenced_versions(&[]),
+            Err(PythonSkip::EnvListUnavailable)
+        );
+    });
+}
+
+/// The re-scan right before uninstalling, with the same uninspectable home:
+/// nothing is uninstalled.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn uninstall_pythons_skips_all_when_home_cannot_be_inspected() {
+    with_fake_uv_and_uninspectable_home(&["3.12.1"], |uv| {
+        let (py, record) = pending_python("3.12.1");
+        let mut records = [record];
+        let out = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
+        uninstall_pythons(&out, std::slice::from_ref(&py), &mut records);
+        assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
+        assert_eq!(records[0].outcome, PythonOutcome::SkippedInUse);
+    });
+}
+
+/// The whole command: `gc --aggressive --yes` stops with an error and
+/// uninstalls nothing.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn aggressive_gc_fails_when_home_cannot_be_inspected() {
+    with_fake_uv_and_uninspectable_home(&["3.12.1"], |uv| {
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        assert!(execute(&out, true, true, None).is_err());
+        assert!(uv.uninstalled().is_empty(), "nothing may be uninstalled");
+    });
+}
+
+/// An env directory whose name is not UTF-8 cannot be accounted for, so
+/// no Python counts as unused; the orphan scan still runs past it. What
+/// fails this: the strict walk skipping undecodable names.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn referenced_versions_fails_closed_on_a_non_utf8_env_name() {
+    use std::os::unix::ffi::OsStrExt;
+    with_fake_uv_home(&["3.12.1"], |home, _| {
+        let dir = home.join("virtualenvs");
+        let odd = dir.join(std::ffi::OsStr::from_bytes(b"env\xff"));
+        if fs::create_dir_all(&odd).is_err() {
+            // Some filesystems (e.g. APFS) refuse non-UTF-8 names; nothing
+            // to test there.
+            return;
+        }
+        assert_eq!(
+            referenced_versions(&[]),
+            Err(PythonSkip::EnvListUnavailable)
+        );
+        assert!(scan_orphan_envs().is_ok());
+    });
+}
+
+/// A confirmed missing file is an orphan; a file that cannot be checked is
+/// neither healthy nor an orphan. What fails this: `exists()` in `classify`.
+#[cfg(unix)]
+#[test]
+fn classify_tells_missing_from_uninspectable() {
+    let tmp = tempfile::tempdir().unwrap();
+    let dir = tmp.path();
+
+    make_env(dir, "healthy", true, true);
+    assert_eq!(classify(&dir.join("healthy")), Health::Healthy);
+
+    make_env(dir, "nometa", false, true);
+    assert_eq!(
+        classify(&dir.join("nometa")),
+        Health::Orphan(EnvGcReason::OrphanMissingMetadata)
+    );
+
+    // A dangling interpreter link is a confirmed broken Python.
+    make_env(dir, "dangling", true, false);
+    fs::create_dir_all(dir.join("dangling").join("bin")).unwrap();
+    std::os::unix::fs::symlink("/nonexistent/python", dir.join("dangling/bin/python")).unwrap();
+    assert_eq!(
+        classify(&dir.join("dangling")),
+        Health::Orphan(EnvGcReason::OrphanBrokenPython)
+    );
+
+    let looping_meta = env_with_looping_metadata(dir, "loopmeta");
+    assert_eq!(classify(&looping_meta), Health::Unknown);
+
+    make_env(dir, "looppy", true, false);
+    fs::create_dir_all(dir.join("looppy").join("bin")).unwrap();
+    let py = dir.join("looppy/bin/python");
+    std::os::unix::fs::symlink(&py, &py).unwrap();
+    assert_eq!(classify(&dir.join("looppy")), Health::Unknown);
+}
+
+/// An env gc cannot inspect is not an orphan candidate, so `gc --yes`
+/// keeps it; a real orphan beside it is still removed.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn gc_yes_keeps_an_env_it_cannot_inspect() {
+    with_temp_scoop_home(|_| {
+        let dir = paths::virtualenvs_dir().unwrap();
+        fs::create_dir_all(&dir).unwrap();
+        let kept = env_with_looping_metadata(&dir, "uncertain");
+        make_env(&dir, "orphan", false, false);
+
+        let names: Vec<_> = scan_orphan_envs()
+            .unwrap()
+            .into_iter()
+            .map(|c| c.name)
+            .collect();
+        assert_eq!(names, ["orphan"]);
+
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        execute(&out, true, false, None).unwrap();
+        assert!(kept.exists(), "an env gc cannot inspect must survive");
+        assert!(!dir.join("orphan").exists());
+    });
+}
+
+/// An orphan that becomes uninspectable between scan and removal is kept,
+/// as `SkippedNoData`. What fails this: the removal-time recheck treating
+/// `Unknown` as still an orphan.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn remove_keeps_an_orphan_that_became_uninspectable() {
+    with_temp_scoop_home(|_| {
+        let dir = paths::virtualenvs_dir().unwrap();
+        fs::create_dir_all(&dir).unwrap();
+        make_env(&dir, "turned", false, true);
+        let candidates = scan_orphan_envs().unwrap();
+        assert_eq!(candidates.len(), 1);
+
+        // After the scan: its metadata path becomes a looping symlink.
+        let meta = dir.join("turned").join(".scoop-metadata.json");
+        std::os::unix::fs::symlink(&meta, &meta).unwrap();
+
+        let mut records: Vec<EnvRecord> = candidates
+            .iter()
+            .map(|c| EnvRecord {
+                name: c.name.clone(),
+                path: c.path.clone(),
+                reason: c.reason,
+                age_days: None,
+                outcome: EnvOutcome::Pending,
+                error: None,
+            })
+            .collect();
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        remove_candidates(&out, &candidates, &[], &mut records, &mut Vec::new(), None);
+
+        assert_eq!(records[0].outcome, EnvOutcome::SkippedNoData);
+        assert!(dir.join("turned").exists());
+    });
+}
+
+/// `gc --older-than` needs no uv: the scan and the recheck read metadata
+/// directly. It used to report no stale envs at all without uv on PATH.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn stale_envs_are_found_and_removed_without_uv() {
+    let home = tempfile::tempdir().unwrap();
+    let empty = tempfile::tempdir().unwrap();
+    let _env = env_guard(&[
+        (paths::SCUV_HOME_ENV, Some(home.path().to_str().unwrap())),
+        ("PATH", Some(empty.path().to_str().unwrap())),
+    ]);
+    assert!(
+        crate::uv::UvClient::new().is_err(),
+        "uv must be unreachable"
+    );
+    let dir = paths::virtualenvs_dir().unwrap();
+    fs::create_dir_all(&dir).unwrap();
+    let now = Utc::now();
+    make_env_with_last_used(&dir, "old", Some(now - chrono::Duration::days(60)));
+
+    let cutoff = now - chrono::Duration::days(30);
+    let names: Vec<_> = scan_stale_envs(cutoff)
+        .unwrap()
+        .into_iter()
+        .map(|c| c.name)
+        .collect();
+    assert_eq!(names, ["old"]);
+    assert_eq!(recheck_stale("old", cutoff), None);
+
+    let out = Output::new(0, true, crate::output::Colors::NONE, false);
+    execute(&out, true, false, Some("30d")).unwrap();
+    assert!(!dir.join("old").exists());
+}
+
+/// A walk that cannot start fails `--older-than` instead of reporting
+/// nothing stale.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn stale_scan_fails_when_home_cannot_be_inspected() {
+    let home = tempfile::tempdir().unwrap();
+    let file = home_that_cannot_be_inspected(home.path());
+    let _env = env_guard(&[(paths::SCUV_HOME_ENV, Some(file.to_str().unwrap()))]);
+    assert!(scan_stale_envs(Utc::now()).is_err());
 }
