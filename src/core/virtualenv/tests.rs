@@ -651,3 +651,44 @@ fn env_dirs_is_empty_without_a_virtualenvs_dir() {
         assert_eq!(env_dirs().unwrap().count(), 0);
     });
 }
+
+/// The metadata lands whole, and nothing else is left in the env dir. A
+/// directory that does not exist is an error, not a silent skip.
+#[test]
+fn write_metadata_file_writes_and_leaves_no_tempfile() {
+    let tmp = tempfile::tempdir().unwrap();
+    let meta = Metadata::new("e".to_string(), "3.12.1".to_string(), None);
+    write_metadata_file(tmp.path(), &meta).unwrap();
+
+    let names: Vec<_> = fs::read_dir(tmp.path())
+        .unwrap()
+        .map(|e| e.unwrap().file_name().into_string().unwrap())
+        .collect();
+    assert_eq!(names, [Metadata::FILE_NAME]);
+    let back: Metadata =
+        serde_json::from_str(&fs::read_to_string(tmp.path().join(Metadata::FILE_NAME)).unwrap())
+            .unwrap();
+    assert_eq!(back.python_version, "3.12.1");
+
+    assert!(write_metadata_file(&tmp.path().join("missing"), &meta).is_err());
+}
+
+/// The env is made at the path, nested directories included, and a path
+/// under a regular file is an error. (The fake uv creates parents itself,
+/// so this cannot tell the parent step from uv's own.)
+#[cfg(unix)]
+#[test]
+#[serial]
+fn create_venv_dir_makes_the_env_or_fails() {
+    let uv = crate::test_utils::FakeUv::new(&[]);
+    let client = crate::uv::UvClient::with_path(uv.exe());
+    let tmp = tempfile::tempdir().unwrap();
+
+    let path = tmp.path().join("nested").join("env");
+    create_venv_dir(&client, &path, "3.12").unwrap();
+    assert!(path.join("pyvenv.cfg").exists());
+
+    let blocked = tmp.path().join("file");
+    fs::write(&blocked, "").unwrap();
+    assert!(create_venv_dir(&client, &blocked.join("env"), "3.12").is_err());
+}

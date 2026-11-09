@@ -47,8 +47,11 @@ conflict, without `--allow-eol` or `--force`:
 Other states come first. A name conflict is reported as a conflict (and fails
 `migrate all` with exit `2`), and a corrupted source is reported as corrupted
 (`migrate @env` exits `3`, `migrate all` skips it). Choosing Overwrite at the
-interactive conflict prompt acts like `--force`, so it migrates an EOL env too.
-`--rename` does not skip the EOL check of a conflicting env.
+interactive conflict prompt only replaces the existing env: an EOL source then
+still fails with `MigrationFailed` (exit `2`) before anything is replaced,
+unless `--allow-eol` or `--force` was given. Up to scuv 0.20 Overwrite acted
+like `--force` and let an EOL env through. `--rename` does not skip the EOL
+check of a conflicting env either.
 `--dry-run` runs the same checks as a real run (source status, the target
 name, an existing target), so a preview that succeeds is one the real run
 accepts.

@@ -189,11 +189,18 @@ fn validate_source_lets_a_renamed_conflict_through() {
             .validate_source(&eol, &renamed("test-pyenv"))
             .is_err()
     );
-    let forced = MigrateOptions {
-        force: true,
+    // Overwrite permission is not EOL permission (it used to be, through
+    // the single `force` flag); `allow_eol` is.
+    let overwrite = MigrateOptions {
+        overwrite: true,
         ..renamed("test-pyenv")
     };
-    assert!(migrator.validate_source(&eol, &forced).is_ok());
+    assert!(migrator.validate_source(&eol, &overwrite).is_err());
+    let allowed = MigrateOptions {
+        allow_eol: true,
+        ..renamed("test-pyenv")
+    };
+    assert!(migrator.validate_source(&eol, &allowed).is_ok());
     let mut supported = source.clone();
     supported.python_version = "3.11.0".to_string();
     assert!(
@@ -272,11 +279,52 @@ fn test_validate_source_name_conflict_with_force() {
         },
     );
     let options = MigrateOptions {
-        force: true,
+        overwrite: true,
         ..Default::default()
     };
 
     assert!(migrator.validate_source(&source, &options).is_ok());
+}
+
+/// Q5: overwriting a conflicting env does not let an end-of-life Python
+/// through, unrenamed either; `allow_eol` does. What fails this: the
+/// overwrite branch returning `Ok` before the EOL guard.
+#[test]
+fn validate_source_overwrite_still_refuses_an_eol_python() {
+    let migrator = Migrator {
+        uv: UvClient::with_path(PathBuf::from("/mock/uv")),
+        extractor: PackageExtractor::new(),
+    };
+    let mut source = mock_source(
+        "test",
+        EnvironmentStatus::NameConflict {
+            existing: PathBuf::from("/existing"),
+        },
+    );
+    source.python_version = "3.10.14".to_string();
+    let overwrite = MigrateOptions {
+        overwrite: true,
+        ..Default::default()
+    };
+    assert!(matches!(
+        migrator.validate_source(&source, &overwrite),
+        Err(ScoopError::MigrationFailed { ref reason }) if reason.contains("end-of-life")
+    ));
+    let both = MigrateOptions {
+        overwrite: true,
+        allow_eol: true,
+        ..Default::default()
+    };
+    assert!(migrator.validate_source(&source, &both).is_ok());
+
+    // An EOL source without a conflict needs `allow_eol` too, not overwrite.
+    let eol = mock_source(
+        "test",
+        EnvironmentStatus::PythonEol {
+            version: "3.10.14".to_string(),
+        },
+    );
+    assert!(migrator.validate_source(&eol, &overwrite).is_err());
 }
 
 #[test]

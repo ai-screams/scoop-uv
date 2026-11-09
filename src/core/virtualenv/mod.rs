@@ -47,6 +47,32 @@ pub struct VirtualenvService {
     uv: UvClient,
 }
 
+/// Runs `uv venv` at `path`, creating its parent first. The step every way
+/// of making an env shares (create, clone, import, sync, migrate); checking
+/// for and replacing an existing env is the caller's.
+pub(crate) fn create_venv_dir(uv: &UvClient, path: &Path, python: &str) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    uv.create_venv(path, python)
+}
+
+/// Writes `metadata` into the env at `path` atomically: a sibling tempfile
+/// renamed over the target, so a reader never sees half a file (see
+/// [`VirtualenvService::write_metadata_atomic`] for what this does not
+/// promise).
+pub(crate) fn write_metadata_file(path: &Path, metadata: &Metadata) -> Result<()> {
+    let metadata_path = path.join(Metadata::FILE_NAME);
+    let content = serde_json::to_string_pretty(metadata)?;
+    // The tempfile goes in the env directory, beside the target, so the
+    // rename stays on one filesystem.
+    let mut tmp = tempfile::NamedTempFile::new_in(path)?;
+    tmp.write_all(content.as_bytes())?;
+    tmp.persist(&metadata_path)
+        .map_err(|e| ScoopError::Io(e.error))?;
+    Ok(())
+}
+
 /// [`VirtualenvService::read_metadata_result`] without a service, for
 /// callers that must not need uv (doctor's checks).
 fn read_metadata_file(path: &Path) -> Result<Option<Metadata>> {
@@ -177,13 +203,7 @@ impl VirtualenvService {
             });
         }
 
-        // Ensure parent directory exists
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-
-        // Create the virtual environment
-        self.uv.create_venv(&path, uv_python_arg)?;
+        create_venv_dir(&self.uv, &path, uv_python_arg)?;
 
         // Write metadata
         let uv_version = self.uv.version().ok();
@@ -311,20 +331,7 @@ impl VirtualenvService {
     /// power loss hits between the rename and the cache flush, the
     /// metadata may roll back to its previous state. We accept that.
     pub fn write_metadata_atomic(&self, path: &Path, metadata: &Metadata) -> Result<()> {
-        let metadata_path = path.join(Metadata::FILE_NAME);
-        let dir = metadata_path.parent().ok_or_else(|| {
-            ScoopError::Io(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                "metadata path has no parent",
-            ))
-        })?;
-
-        let content = serde_json::to_string_pretty(metadata)?;
-        let mut tmp = tempfile::NamedTempFile::new_in(dir)?;
-        tmp.write_all(content.as_bytes())?;
-        tmp.persist(&metadata_path)
-            .map_err(|e| ScoopError::Io(e.error))?;
-        Ok(())
+        write_metadata_file(path, metadata)
     }
 
     /// Touch an env's `last_used` to *now* (wall clock at write time),

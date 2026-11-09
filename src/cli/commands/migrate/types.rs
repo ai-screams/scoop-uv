@@ -127,13 +127,17 @@ impl MigrateExecuteOptions {
         self.delete_source && !result.dry_run && !result.source_deleted
     }
 
-    /// The core migrator's options for one environment: `force` and
+    /// The core migrator's options for one environment: `overwrite` and
     /// `rename_to` are decided per environment, the rest come from the flags.
-    pub fn migrate_options(&self, force: bool, rename_to: Option<String>) -> MigrateOptions {
+    /// `overwrite` is whether this
+    /// target may replace an existing env (`--force`, or the user's choice
+    /// at the conflict prompt); EOL permission comes from the flags alone
+    /// (`--allow-eol`, or `--force`, which documents both).
+    pub fn migrate_options(&self, overwrite: bool, rename_to: Option<String>) -> MigrateOptions {
         MigrateOptions {
             dry_run: self.dry_run,
-            force,
-            allow_eol: self.allow_eol,
+            overwrite,
+            allow_eol: self.allows_eol(),
             rename_to,
             strict: self.strict,
             delete_source: self.delete_source,
@@ -186,15 +190,17 @@ mod tests {
             ..Default::default()
         };
         let core = opts.migrate_options(true, Some("renamed".to_string()));
-        assert!(core.dry_run && core.force && core.allow_eol && core.strict && core.delete_source);
+        assert!(
+            core.dry_run && core.overwrite && core.allow_eol && core.strict && core.delete_source
+        );
         assert_eq!(core.rename_to.as_deref(), Some("renamed"));
 
         // `--allow-eol` never turns into overwrite permission.
         let eol_only = opts.migrate_options(false, None);
-        assert!(eol_only.allow_eol && !eol_only.force);
+        assert!(eol_only.allow_eol && !eol_only.overwrite);
 
         let plain = MigrateExecuteOptions::default().migrate_options(false, None);
-        assert!(!plain.dry_run && !plain.force && !plain.allow_eol && !plain.strict);
+        assert!(!plain.dry_run && !plain.overwrite && !plain.allow_eol && !plain.strict);
         assert!(!plain.delete_source && plain.rename_to.is_none());
     }
 
