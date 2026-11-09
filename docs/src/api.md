@@ -173,7 +173,7 @@ Interface for health checks.
 ```rust
 pub trait Check: Send + Sync {
     fn id(&self) -> &'static str;
-    fn name(&self) -> &'static str;
+    fn name(&self) -> Cow<'static, str>;  // display name, in the display language
     fn run(&self) -> Vec<CheckResult>;  // Returns Vec - a check can produce multiple results
 
     // Optional auto-fix for a failing result; the default offers none.
@@ -216,8 +216,8 @@ Detailed result from a health check.
 
 ```rust
 pub struct CheckResult {
-    pub id: &'static str,
-    pub name: &'static str,
+    pub id: &'static str,              // stable; a category, can repeat
+    pub name: Cow<'static, str>,       // display name, in the display language
     pub status: CheckStatus,
     pub suggestion: Option<String>,
     pub details: Option<String>,
@@ -227,13 +227,13 @@ pub struct CheckResult {
 
 impl CheckResult {
     /// Creates an OK result
-    pub fn ok(id: &'static str, name: &'static str) -> Self
+    pub fn ok(id: &'static str, name: impl Into<Cow<'static, str>>) -> Self
 
     /// Creates a warning result
-    pub fn warn(id: &'static str, name: &'static str, message: impl Into<String>) -> Self
+    pub fn warn(id: &'static str, name: impl Into<Cow<'static, str>>, message: impl Into<String>) -> Self
 
     /// Creates an error result
-    pub fn error(id: &'static str, name: &'static str, message: impl Into<String>) -> Self
+    pub fn error(id: &'static str, name: impl Into<Cow<'static, str>>, message: impl Into<String>) -> Self
 
     /// Adds a suggestion for fixing the issue
     pub fn with_suggestion(mut self, suggestion: impl Into<String>) -> Self
@@ -260,8 +260,8 @@ impl Check for MyCustomCheck {
         "my_check"
     }
 
-    fn name(&self) -> &'static str {
-        "My Custom Check"
+    fn name(&self) -> Cow<'static, str> {
+        "My Custom Check".into()
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -658,8 +658,8 @@ impl Check for MyCheck {
         "my_check"
     }
 
-    fn name(&self) -> &'static str {
-        "My Custom Check"
+    fn name(&self) -> Cow<'static, str> {
+        "My Custom Check".into()
     }
 
     fn run(&self) -> Vec<CheckResult> {

@@ -1,5 +1,9 @@
 //! Check for SCUV_HOME directory.
 
+use std::borrow::Cow;
+
+use rust_i18n::t;
+
 use crate::paths;
 
 use super::super::types::{Check, CheckResult, CheckStatus};
@@ -12,8 +16,8 @@ impl Check for HomeCheck {
         "home"
     }
 
-    fn name(&self) -> &'static str {
-        "SCUV_HOME directory"
+    fn name(&self) -> Cow<'static, str> {
+        t!("doctor.name.home")
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -29,27 +33,27 @@ impl Check for HomeCheck {
                     }
                     _ => {
                         vec![
-                            CheckResult::error(self.id(), self.name(), "directory not writable")
-                                .with_suggestion(format!("chmod 755 {}", path.display())),
+                            CheckResult::error(
+                                self.id(),
+                                self.name(),
+                                t!("doctor.home.not_writable"),
+                            )
+                            .with_suggestion(format!("chmod 755 {}", path.display())),
                         ]
                     }
                 }
             }
             Ok(path) => {
                 vec![
-                    CheckResult::error(self.id(), self.name(), "directory not found")
+                    CheckResult::error(self.id(), self.name(), t!("doctor.home.not_found"))
                         .with_suggestion(format!("mkdir -p {}", path.display()))
                         .with_target(path.display().to_string()),
                 ]
             }
             Err(_) => {
                 vec![
-                    CheckResult::error(
-                        self.id(),
-                        self.name(),
-                        "could not determine home directory",
-                    )
-                    .with_suggestion("Set SCUV_HOME environment variable"),
+                    CheckResult::error(self.id(), self.name(), t!("doctor.no_home"))
+                        .with_suggestion(t!("doctor.home.set_env")),
                 ]
             }
         }
@@ -61,25 +65,28 @@ impl Check for HomeCheck {
         if matches!(result.status, CheckStatus::Error(_)) && result.target.is_some() {
             // Create the directory
             if let Ok(home) = paths::scoop_home() {
-                output.info(&format!("Creating {}...", home.display()));
+                output.info(&t!(
+                    "doctor.home.creating",
+                    path = home.display().to_string()
+                ));
 
                 // The home and its virtualenvs subdirectory: report
                 // "created" only when both exist.
                 match std::fs::create_dir_all(home.join("virtualenvs")) {
                     Ok(_) => {
-                        return Some(
-                            CheckResult::ok("home", "SCUV_HOME directory")
-                                .with_details(format!("created {}", home.display())),
-                        );
+                        return Some(CheckResult::ok(self.id(), self.name()).with_details(t!(
+                            "doctor.home.created",
+                            path = home.display().to_string()
+                        )));
                     }
                     Err(e) => {
                         return Some(
                             CheckResult::error(
-                                "home",
-                                "SCUV_HOME directory",
-                                format!("failed to create: {}", e),
+                                self.id(),
+                                self.name(),
+                                t!("doctor.home.create_failed", error = e.to_string()),
                             )
-                            .with_suggestion("Check permissions"),
+                            .with_suggestion(t!("doctor.check_permissions")),
                         );
                     }
                 }

@@ -1862,3 +1862,556 @@ doctor.uv_install.stage_verify:
   pt-BR: "verificar o uv instalado"
   ja: "インストールされた uv の確認"
   es: "comprobar el uv instalado"
+
+doctor.report.header:
+  en: "Checking installation..."
+  ko: "설치 상태를 확인하는 중..."
+  pt-BR: "Verificando a instalação..."
+  ja: "インストールを確認しています..."
+  es: "Comprobando la instalación..."
+
+doctor.report.all_passed:
+  en: "All checks passed!"
+  ko: "모든 검사를 통과했어요!"
+  pt-BR: "Todas as verificações passaram!"
+  ja: "すべてのチェックに合格しました!"
+  es: "¡Todas las comprobaciones pasaron!"
+
+doctor.report.found_both:
+  en: "Found %{errors} error(s) and %{warnings} warning(s)."
+  ko: "오류 %{errors}개, 경고 %{warnings}개를 찾았어요."
+  pt-BR: "Erros encontrados: %{errors}, avisos: %{warnings}."
+  ja: "エラー %{errors} 件、警告 %{warnings} 件が見つかりました。"
+  es: "Errores encontrados: %{errors}, advertencias: %{warnings}."
+
+doctor.report.found_errors:
+  en: "Found %{errors} error(s)."
+  ko: "오류 %{errors}개를 찾았어요."
+  pt-BR: "Erros encontrados: %{errors}."
+  ja: "エラー %{errors} 件が見つかりました。"
+  es: "Errores encontrados: %{errors}."
+
+doctor.report.found_warnings:
+  en: "Found %{warnings} warning(s)."
+  ko: "경고 %{warnings}개를 찾았어요."
+  pt-BR: "Avisos encontrados: %{warnings}."
+  ja: "警告 %{warnings} 件が見つかりました。"
+  es: "Advertencias encontradas: %{warnings}."
+
+doctor.name.uv:
+  en: "uv installation"
+  ko: "uv 설치"
+  pt-BR: "instalação do uv"
+  ja: "uv のインストール"
+  es: "instalación de uv"
+
+doctor.name.home:
+  en: "SCUV_HOME directory"
+  ko: "SCUV_HOME 디렉터리"
+  pt-BR: "diretório SCUV_HOME"
+  ja: "SCUV_HOME ディレクトリ"
+  es: "directorio SCUV_HOME"
+
+doctor.name.venv:
+  en: "virtual environments"
+  ko: "가상 환경"
+  pt-BR: "ambientes virtuais"
+  ja: "仮想環境"
+  es: "entornos virtuales"
+
+doctor.name.broken_venv:
+  en: "broken virtualenv"
+  ko: "깨진 가상 환경"
+  pt-BR: "ambiente virtual quebrado"
+  ja: "壊れた仮想環境"
+  es: "entorno virtual dañado"
+
+doctor.name.venv_metadata:
+  en: "virtualenv metadata"
+  ko: "가상 환경 메타데이터"
+  pt-BR: "metadados do ambiente virtual"
+  ja: "仮想環境のメタデータ"
+  es: "metadatos del entorno virtual"
+
+doctor.name.symlink:
+  en: "symbolic links"
+  ko: "심볼릭 링크"
+  pt-BR: "links simbólicos"
+  ja: "シンボリックリンク"
+  es: "enlaces simbólicos"
+
+doctor.name.broken_symlink:
+  en: "broken symlink"
+  ko: "깨진 심볼릭 링크"
+  pt-BR: "link simbólico quebrado"
+  ja: "壊れたシンボリックリンク"
+  es: "enlace simbólico roto"
+
+doctor.name.shell:
+  en: "shell configuration"
+  ko: "셸 설정"
+  pt-BR: "configuração do shell"
+  ja: "シェルの設定"
+  es: "configuración del shell"
+
+doctor.name.version:
+  en: "version files"
+  ko: "버전 파일"
+  pt-BR: "arquivos de versão"
+  ja: "バージョンファイル"
+  es: "archivos de versión"
+
+doctor.name.global_version:
+  en: "global version"
+  ko: "전역 버전"
+  pt-BR: "versão global"
+  ja: "グローバルバージョン"
+  es: "versión global"
+
+doctor.name.local_version:
+  en: "local version"
+  ko: "로컬 버전"
+  pt-BR: "versão local"
+  ja: "ローカルバージョン"
+  es: "versión local"
+
+doctor.name.venv_link:
+  en: "project .venv link"
+  ko: "프로젝트 .venv 링크"
+  pt-BR: "link .venv do projeto"
+  ja: "プロジェクトの .venv リンク"
+  es: "enlace .venv del proyecto"
+
+doctor.name.legacy:
+  en: "legacy scoop remnants"
+  ko: "레거시 scoop 흔적"
+  pt-BR: "resquícios do scoop legado"
+  ja: "レガシーな scoop の残り"
+  es: "restos del scoop heredado"
+
+doctor.no_home:
+  en: "could not determine home directory"
+  ko: "홈 디렉터리를 알 수 없어요"
+  pt-BR: "não foi possível determinar o diretório home"
+  ja: "ホームディレクトリを特定できません"
+  es: "no se pudo determinar el directorio personal"
+
+doctor.run:
+  en: "Run: %{command}"
+  ko: "실행: %{command}"
+  pt-BR: "Execute: %{command}"
+  ja: "実行: %{command}"
+  es: "Ejecuta: %{command}"
+
+doctor.check_permissions:
+  en: "Check permissions"
+  ko: "권한을 확인해주세요"
+  pt-BR: "Verifique as permissões"
+  ja: "権限を確認してください"
+  es: "Revisa los permisos"
+
+doctor.check_file_permissions:
+  en: "Check file permissions"
+  ko: "파일 권한을 확인해주세요"
+  pt-BR: "Verifique as permissões do arquivo"
+  ja: "ファイルの権限を確認してください"
+  es: "Revisa los permisos del archivo"
+
+doctor.home.not_writable:
+  en: "directory not writable"
+  ko: "디렉터리에 쓸 수 없어요"
+  pt-BR: "o diretório não é gravável"
+  ja: "ディレクトリに書き込めません"
+  es: "no se puede escribir en el directorio"
+
+doctor.home.not_found:
+  en: "directory not found"
+  ko: "디렉터리가 없어요"
+  pt-BR: "diretório não encontrado"
+  ja: "ディレクトリが見つかりません"
+  es: "directorio no encontrado"
+
+doctor.home.set_env:
+  en: "Set SCUV_HOME environment variable"
+  ko: "SCUV_HOME 환경 변수를 설정해주세요"
+  pt-BR: "Defina a variável de ambiente SCUV_HOME"
+  ja: "SCUV_HOME 環境変数を設定してください"
+  es: "Define la variable de entorno SCUV_HOME"
+
+doctor.home.creating:
+  en: "Creating %{path}..."
+  ko: "%{path} 만드는 중..."
+  pt-BR: "Criando %{path}..."
+  ja: "%{path} を作成しています..."
+  es: "Creando %{path}..."
+
+doctor.home.created:
+  en: "created %{path}"
+  ko: "%{path} 생성됨"
+  pt-BR: "%{path} criado"
+  ja: "%{path} を作成しました"
+  es: "%{path} creado"
+
+doctor.home.create_failed:
+  en: "failed to create: %{error}"
+  ko: "만들지 못했어요: %{error}"
+  pt-BR: "falha ao criar: %{error}"
+  ja: "作成に失敗しました: %{error}"
+  es: "no se pudo crear: %{error}"
+
+doctor.shell.unsupported:
+  en: "unsupported shell: %{shell}"
+  ko: "지원하지 않는 셸: %{shell}"
+  pt-BR: "shell não suportado: %{shell}"
+  ja: "サポートされていないシェル: %{shell}"
+  es: "shell no compatible: %{shell}"
+
+doctor.shell.supported:
+  en: "Supported shells: bash, zsh"
+  ko: "지원하는 셸: bash, zsh"
+  pt-BR: "Shells suportados: bash, zsh"
+  ja: "サポートされているシェル: bash, zsh"
+  es: "Shells compatibles: bash, zsh"
+
+doctor.shell.manual:
+  en: "Manual setup may be required"
+  ko: "직접 설정해야 할 수 있어요"
+  pt-BR: "Pode ser necessária configuração manual"
+  ja: "手動での設定が必要な場合があります"
+  es: "Puede requerir configuración manual"
+
+doctor.shell.init_missing:
+  en: "scuv init not found in shell config"
+  ko: "셸 설정에서 scuv init 줄을 찾을 수 없어요"
+  pt-BR: "scuv init não encontrado na configuração do shell"
+  ja: "シェル設定に scuv init が見つかりません"
+  es: "scuv init no se encontró en la configuración del shell"
+
+doctor.shell.add_to:
+  en: "Add to %{file}: %{command}"
+  ko: "%{file}에 추가해주세요: %{command}"
+  pt-BR: "Adicione a %{file}: %{command}"
+  ja: "%{file} に追加してください: %{command}"
+  es: "Agrega a %{file}: %{command}"
+
+doctor.shell.unreadable:
+  en: "could not read %{file}"
+  ko: "%{file} 파일을 읽을 수 없어요"
+  pt-BR: "não foi possível ler %{file}"
+  ja: "%{file} を読み取れません"
+  es: "no se pudo leer %{file}"
+
+doctor.shell.found_in:
+  en: "found in %{file}"
+  ko: "%{file}에서 찾음"
+  pt-BR: "encontrado em %{file}"
+  ja: "%{file} で見つかりました"
+  es: "encontrado en %{file}"
+
+doctor.shell.stale_scoop:
+  en: "shell config still references the removed `scoop` command (init line fails at startup)"
+  ko: "셸 설정이 아직 제거된 `scoop` 명령을 가리켜요(시작할 때 init 줄이 실패해요)"
+  pt-BR: "a configuração do shell ainda referencia o comando `scoop` removido (a linha de init falha ao iniciar)"
+  ja: "シェル設定が削除済みの `scoop` コマンドをまだ参照しています (起動時に init 行が失敗します)"
+  es: "la configuración del shell aún hace referencia al comando `scoop` eliminado (la línea de init falla al iniciar)"
+
+doctor.shell.replace_with:
+  en: "Replace with: %{command}"
+  ko: "다음으로 바꿔주세요: %{command}"
+  pt-BR: "Substitua por: %{command}"
+  ja: "次に置き換えてください: %{command}"
+  es: "Reemplaza por: %{command}"
+
+doctor.symlink.broken:
+  en: "Python symlink in '%{name}' is broken"
+  ko: "'%{name}'의 Python 심볼릭 링크가 깨졌어요"
+  pt-BR: "O link simbólico do Python em '%{name}' está quebrado"
+  ja: "'%{name}' の Python シンボリックリンクが壊れています"
+  es: "El enlace simbólico de Python en '%{name}' está roto"
+
+doctor.symlink.valid:
+  en: "%{count} symlinks valid"
+  ko: "심볼릭 링크 %{count}개 정상"
+  pt-BR: "Links simbólicos válidos: %{count}"
+  ja: "%{count} 件のシンボリックリンクが正常です"
+  es: "Enlaces simbólicos válidos: %{count}"
+
+doctor.symlink.fixing:
+  en: "Attempting to fix symlink for '%{name}'..."
+  ko: "'%{name}'의 심볼릭 링크를 고치는 중..."
+  pt-BR: "Tentando corrigir o link simbólico de '%{name}'..."
+  ja: "'%{name}' のシンボリックリンクを修復しています..."
+  es: "Intentando reparar el enlace simbólico de '%{name}'..."
+
+doctor.symlink.fixed:
+  en: "Fixed symlink for '%{name}'"
+  ko: "'%{name}'의 심볼릭 링크를 고쳤어요"
+  pt-BR: "Link simbólico de '%{name}' corrigido"
+  ja: "'%{name}' のシンボリックリンクを修復しました"
+  es: "Enlace simbólico de '%{name}' reparado"
+
+doctor.symlink.fixed_details:
+  en: "fixed symlink for '%{name}'"
+  ko: "'%{name}'의 심볼릭 링크를 고침"
+  pt-BR: "link simbólico de '%{name}' corrigido"
+  ja: "'%{name}' のシンボリックリンクを修復済み"
+  es: "enlace simbólico de '%{name}' reparado"
+
+doctor.symlink.env_not_found:
+  en: "environment '%{name}' not found"
+  ko: "환경 '%{name}'을(를) 찾을 수 없어요"
+  pt-BR: "ambiente '%{name}' não encontrado"
+  ja: "環境 '%{name}' が見つかりません"
+  es: "entorno '%{name}' no encontrado"
+
+doctor.symlink.version_unknown:
+  en: "could not determine Python version for '%{name}'"
+  ko: "'%{name}'의 Python 버전을 알 수 없어요"
+  pt-BR: "não foi possível determinar a versão do Python de '%{name}'"
+  ja: "'%{name}' の Python バージョンを特定できません"
+  es: "no se pudo determinar la versión de Python de '%{name}'"
+
+doctor.symlink.found_version:
+  en: "Found Python version: %{version}"
+  ko: "Python 버전을 찾았어요: %{version}"
+  pt-BR: "Versão do Python encontrada: %{version}"
+  ja: "Python バージョンが見つかりました: %{version}"
+  es: "Versión de Python encontrada: %{version}"
+
+doctor.symlink.uv_unavailable:
+  en: "uv not available"
+  ko: "uv를 쓸 수 없어요"
+  pt-BR: "uv indisponível"
+  ja: "uv を利用できません"
+  es: "uv no disponible"
+
+doctor.symlink.install_uv:
+  en: "Install uv first"
+  ko: "먼저 uv를 설치해주세요"
+  pt-BR: "Instale o uv primeiro"
+  ja: "先に uv をインストールしてください"
+  es: "Instala uv primero"
+
+doctor.symlink.python_path_missing:
+  en: "Python %{version} path not found"
+  ko: "Python %{version} 경로를 찾을 수 없어요"
+  pt-BR: "caminho do Python %{version} não encontrado"
+  ja: "Python %{version} のパスが見つかりません"
+  es: "ruta de Python %{version} no encontrada"
+
+doctor.symlink.python_missing:
+  en: "Python %{version} not installed"
+  ko: "Python %{version}이(가) 설치되어 있지 않아요"
+  pt-BR: "Python %{version} não instalado"
+  ja: "Python %{version} はインストールされていません"
+  es: "Python %{version} no instalado"
+
+doctor.symlink.find_failed:
+  en: "failed to find Python installation"
+  ko: "Python 설치를 찾지 못했어요"
+  pt-BR: "falha ao localizar a instalação do Python"
+  ja: "Python のインストールを見つけられませんでした"
+  es: "no se pudo encontrar la instalación de Python"
+
+doctor.symlink.remove_failed:
+  en: "failed to remove old symlink: %{error}"
+  ko: "기존 심볼릭 링크를 지우지 못했어요: %{error}"
+  pt-BR: "falha ao remover o link simbólico antigo: %{error}"
+  ja: "古いシンボリックリンクを削除できませんでした: %{error}"
+  es: "no se pudo eliminar el enlace simbólico antiguo: %{error}"
+
+doctor.symlink.create_failed:
+  en: "failed to create symlink: %{error}"
+  ko: "심볼릭 링크를 만들지 못했어요: %{error}"
+  pt-BR: "falha ao criar o link simbólico: %{error}"
+  ja: "シンボリックリンクを作成できませんでした: %{error}"
+  es: "no se pudo crear el enlace simbólico: %{error}"
+
+doctor.symlink.unsupported:
+  en: "symlink fix not supported on this platform"
+  ko: "이 플랫폼에서는 심볼릭 링크를 고칠 수 없어요"
+  pt-BR: "a correção de links simbólicos não é suportada nesta plataforma"
+  ja: "このプラットフォームではシンボリックリンクの修復に対応していません"
+  es: "la reparación de enlaces simbólicos no es compatible con esta plataforma"
+
+doctor.symlink.manual:
+  en: "Manually recreate the symlink"
+  ko: "심볼릭 링크를 직접 다시 만들어주세요"
+  pt-BR: "Recrie o link simbólico manualmente"
+  ja: "シンボリックリンクを手動で作り直してください"
+  es: "Vuelve a crear el enlace simbólico manualmente"
+
+doctor.uv.too_old:
+  en: "uv %{version} is older than the supported minimum (%{min})"
+  ko: "uv %{version}은(는) 지원하는 최소 버전(%{min})보다 오래됐어요"
+  pt-BR: "uv %{version} é mais antigo que o mínimo suportado (%{min})"
+  ja: "uv %{version} はサポートされる最小バージョン (%{min}) より古いです"
+  es: "uv %{version} es anterior al mínimo compatible (%{min})"
+
+doctor.uv.upgrade:
+  en: "Upgrade uv: %{command}"
+  ko: "uv를 업그레이드해주세요: %{command}"
+  pt-BR: "Atualize o uv: %{command}"
+  ja: "uv をアップグレードしてください: %{command}"
+  es: "Actualiza uv: %{command}"
+
+doctor.uv.install:
+  en: "Install uv: %{command}"
+  ko: "uv를 설치해주세요: %{command}"
+  pt-BR: "Instale o uv: %{command}"
+  ja: "uv をインストールしてください: %{command}"
+  es: "Instala uv: %{command}"
+
+doctor.uv.or:
+  en: "OR"
+  ko: "또는"
+  pt-BR: "OU"
+  ja: "または"
+  es: "O"
+
+doctor.uv.not_found:
+  en: "uv not found in PATH"
+  ko: "PATH에서 uv를 찾을 수 없어요"
+  pt-BR: "uv não encontrado no PATH"
+  ja: "PATH に uv が見つかりません"
+  es: "uv no se encontró en PATH"
+
+doctor.uv.required:
+  en: "scuv requires uv to manage Python environments"
+  ko: "scuv는 Python 환경을 관리하려면 uv가 필요해요"
+  pt-BR: "O scuv precisa do uv para gerenciar ambientes Python"
+  ja: "scuv は Python 環境の管理に uv を必要とします"
+  es: "scuv necesita uv para gestionar entornos de Python"
+
+doctor.venv_link.missing:
+  en: ".venv points to missing '%{path}'"
+  ko: ".venv가 없는 경로 '%{path}'를 가리켜요"
+  pt-BR: ".venv aponta para '%{path}', que não existe"
+  ja: ".venv が存在しない '%{path}' を指しています"
+  es: ".venv apunta a '%{path}', que no existe"
+
+doctor.venv_link.fix_or_relink:
+  en: "Run: %{fix}, or %{relink}"
+  ko: "실행: %{fix} 또는 %{relink}"
+  pt-BR: "Execute: %{fix} ou %{relink}"
+  ja: "実行: %{fix} または %{relink}"
+  es: "Ejecuta: %{fix} o %{relink}"
+
+doctor.venv_link.removed:
+  en: "Removed dangling .venv link"
+  ko: "끊어진 .venv 링크를 지웠어요"
+  pt-BR: "Link .venv quebrado removido"
+  ja: "壊れた .venv リンクを削除しました"
+  es: "Enlace .venv roto eliminado"
+
+doctor.venv_link.removed_details:
+  en: "removed dangling .venv link"
+  ko: "끊어진 .venv 링크를 지움"
+  pt-BR: "link .venv quebrado removido"
+  ja: "壊れた .venv リンクを削除済み"
+  es: "enlace .venv roto eliminado"
+
+doctor.venv_link.remove_failed:
+  en: "failed to remove .venv link: %{error}"
+  ko: ".venv 링크를 지우지 못했어요: %{error}"
+  pt-BR: "falha ao remover o link .venv: %{error}"
+  ja: ".venv リンクを削除できませんでした: %{error}"
+  es: "no se pudo eliminar el enlace .venv: %{error}"
+
+doctor.version.system:
+  en: "system Python (no virtualenv)"
+  ko: "시스템 Python (가상 환경 없음)"
+  pt-BR: "Python do sistema (sem ambiente virtual)"
+  ja: "システムの Python (仮想環境なし)"
+  es: "Python del sistema (sin entorno virtual)"
+
+doctor.version.set_to:
+  en: "set to '%{name}'"
+  ko: "설정값: '%{name}'"
+  pt-BR: "definido como '%{name}'"
+  ja: "'%{name}' に設定されています"
+  es: "establecido en '%{name}'"
+
+doctor.version.missing_env:
+  en: "references non-existent env '%{name}'"
+  ko: "없는 환경 '%{name}'을(를) 가리켜요"
+  pt-BR: "referencia o ambiente inexistente '%{name}'"
+  ja: "存在しない環境 '%{name}' を参照しています"
+  es: "hace referencia al entorno inexistente '%{name}'"
+
+doctor.version.global_unreadable:
+  en: "could not read global version file"
+  ko: "전역 버전 파일을 읽을 수 없어요"
+  pt-BR: "não foi possível ler o arquivo de versão global"
+  ja: "グローバルバージョンファイルを読み取れません"
+  es: "no se pudo leer el archivo de versión global"
+
+doctor.version.local_unreadable:
+  en: "could not read local version file"
+  ko: "로컬 버전 파일을 읽을 수 없어요"
+  pt-BR: "não foi possível ler o arquivo de versão local"
+  ja: "ローカルバージョンファイルを読み取れません"
+  es: "no se pudo leer el archivo de versión local"
+
+doctor.version.check_file:
+  en: "Check file: %{path}"
+  ko: "파일을 확인해주세요: %{path}"
+  pt-BR: "Verifique o arquivo: %{path}"
+  ja: "ファイルを確認してください: %{path}"
+  es: "Revisa el archivo: %{path}"
+
+doctor.version.none:
+  en: "no version files configured"
+  ko: "설정된 버전 파일 없음"
+  pt-BR: "nenhum arquivo de versão configurado"
+  ja: "バージョンファイルは設定されていません"
+  es: "no hay archivos de versión configurados"
+
+doctor.venv.dir_not_found:
+  en: "virtualenvs directory not found"
+  ko: "virtualenvs 디렉터리를 찾을 수 없어요"
+  pt-BR: "diretório virtualenvs não encontrado"
+  ja: "virtualenvs ディレクトリが見つかりません"
+  es: "directorio virtualenvs no encontrado"
+
+doctor.venv.none_yet:
+  en: "no environments yet"
+  ko: "아직 환경 없음"
+  pt-BR: "ainda não há ambientes"
+  ja: "まだ環境がありません"
+  es: "aún no hay entornos"
+
+doctor.venv.unreadable_dir:
+  en: "cannot read virtualenvs directory: %{error}"
+  ko: "virtualenvs 디렉터리를 읽을 수 없어요: %{error}"
+  pt-BR: "não é possível ler o diretório virtualenvs: %{error}"
+  ja: "virtualenvs ディレクトリを読み取れません: %{error}"
+  es: "no se puede leer el directorio virtualenvs: %{error}"
+
+doctor.venv.corrupted:
+  en: "'%{name}' is corrupted"
+  ko: "'%{name}' 환경이 손상됐어요"
+  pt-BR: "'%{name}' está corrompido"
+  ja: "'%{name}' は破損しています"
+  es: "'%{name}' está dañado"
+
+doctor.venv.no_metadata:
+  en: "'%{name}' has no scuv metadata"
+  ko: "'%{name}'에 scuv 메타데이터가 없어요"
+  pt-BR: "'%{name}' não tem metadados do scuv"
+  ja: "'%{name}' に scuv のメタデータがありません"
+  es: "'%{name}' no tiene metadatos de scuv"
+
+doctor.venv.unreadable_metadata:
+  en: "'%{name}' has unreadable scuv metadata"
+  ko: "'%{name}'의 scuv 메타데이터를 읽을 수 없어요"
+  pt-BR: "os metadados do scuv de '%{name}' não podem ser lidos"
+  ja: "'%{name}' の scuv メタデータを読み取れません"
+  es: "los metadatos de scuv de '%{name}' no se pueden leer"
+
+doctor.venv.all_healthy:
+  en: "%{count} environments, all healthy"
+  ko: "환경 %{count}개, 모두 정상"
+  pt-BR: "Ambientes: %{count}, todos saudáveis"
+  ja: "%{count} 件の環境、すべて正常です"
+  es: "Entornos: %{count}, todos en buen estado"

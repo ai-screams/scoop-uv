@@ -1,6 +1,9 @@
 //! Check for shell configuration (scuv init).
 
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
+
+use rust_i18n::t;
 
 use super::super::types::{Check, CheckResult};
 
@@ -12,8 +15,8 @@ impl Check for ShellCheck {
         "shell"
     }
 
-    fn name(&self) -> &'static str {
-        "shell configuration"
+    fn name(&self) -> Cow<'static, str> {
+        t!("doctor.name.shell")
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -21,7 +24,7 @@ impl Check for ShellCheck {
             return vec![CheckResult::error(
                 self.id(),
                 self.name(),
-                "could not determine home directory",
+                t!("doctor.no_home"),
             )];
         };
 
@@ -31,10 +34,10 @@ impl Check for ShellCheck {
                 CheckResult::warn(
                     self.id(),
                     self.name(),
-                    format!("unsupported shell: {}", shell_name),
+                    t!("doctor.shell.unsupported", shell = shell_name),
                 )
-                .with_details("Supported shells: bash, zsh")
-                .with_suggestion("Manual setup may be required"),
+                .with_details(t!("doctor.shell.supported"))
+                .with_suggestion(t!("doctor.shell.manual")),
             ];
         };
         let shell_type = if shell_name == "zsh" { "zsh" } else { "bash" };
@@ -47,16 +50,12 @@ impl Check for ShellCheck {
         }
 
         vec![
-            CheckResult::error(
-                self.id(),
-                self.name(),
-                "scuv init not found in shell config",
-            )
-            .with_suggestion(format!(
-                "Add to {}: eval \"$(scuv init {})\"",
-                default_rc_file(&shell_name),
-                shell_type
-            )),
+            CheckResult::error(self.id(), self.name(), t!("doctor.shell.init_missing"))
+                .with_suggestion(t!(
+                    "doctor.shell.add_to",
+                    file = default_rc_file(&shell_name),
+                    command = init_line(shell_type)
+                )),
         ]
     }
 }
@@ -79,31 +78,32 @@ impl ShellCheck {
             return Some(CheckResult::warn(
                 self.id(),
                 self.name(),
-                format!("could not read {}", rc.display()),
+                t!("doctor.shell.unreadable", file = rc.display().to_string()),
             ));
         };
         if content.contains("scuv init") {
             return Some(
                 CheckResult::ok(self.id(), self.name())
-                    .with_details(format!("found in {}", rc.display())),
+                    .with_details(t!("doctor.shell.found_in", file = rc.display().to_string())),
             );
         }
         if content.contains("scoop init") {
             return Some(
-                CheckResult::warn(
-                    self.id(),
-                    self.name(),
-                    "shell config still references the removed `scoop` command (init line fails at startup)",
-                )
-                .with_details(format!("found in {}", rc.display()))
-                .with_suggestion(format!(
-                    "Replace with: eval \"$(scuv init {})\"",
-                    shell_type
-                )),
+                CheckResult::warn(self.id(), self.name(), t!("doctor.shell.stale_scoop"))
+                    .with_details(t!("doctor.shell.found_in", file = rc.display().to_string()))
+                    .with_suggestion(t!(
+                        "doctor.shell.replace_with",
+                        command = init_line(shell_type)
+                    )),
             );
         }
         None
     }
+}
+
+/// The line that loads scuv into the shell; a command, so never translated.
+fn init_line(shell_type: &str) -> String {
+    format!("eval \"$(scuv init {})\"", shell_type)
 }
 
 /// The current shell's name from `$SHELL` (`/bin/zsh` → `zsh`), lowercased.

@@ -1,5 +1,9 @@
 //! Check for version file validity.
 
+use std::borrow::Cow;
+
+use rust_i18n::t;
+
 use crate::paths;
 
 use super::super::types::{Check, CheckResult};
@@ -16,21 +20,24 @@ use super::super::types::{Check, CheckResult};
 /// match on the writer side, so we mirror that contract here.
 fn classify_version_entry(
     id: &'static str,
-    name: &'static str,
+    name: Cow<'static, str>,
     entry: &str,
     venvs_dir: Option<&std::path::Path>,
 ) -> CheckResult {
     if entry.eq_ignore_ascii_case("system") {
-        return CheckResult::ok(id, name).with_details("system Python (no virtualenv)");
+        return CheckResult::ok(id, name).with_details(t!("doctor.version.system"));
     }
     let env_exists = venvs_dir
         .map(|dir| dir.join(entry).exists())
         .unwrap_or(false);
     if env_exists {
-        CheckResult::ok(id, name).with_details(format!("set to '{}'", entry))
+        CheckResult::ok(id, name).with_details(t!("doctor.version.set_to", name = entry))
     } else {
-        CheckResult::error(id, name, format!("references non-existent env '{}'", entry))
-            .with_suggestion(format!("Run: scuv create {} <python-version>", entry))
+        CheckResult::error(id, name, t!("doctor.version.missing_env", name = entry))
+            .with_suggestion(t!(
+                "doctor.run",
+                command = format!("scuv create {} <python-version>", entry)
+            ))
     }
 }
 
@@ -42,8 +49,8 @@ impl Check for VersionCheck {
         "version"
     }
 
-    fn name(&self) -> &'static str {
-        "version files"
+    fn name(&self) -> Cow<'static, str> {
+        t!("doctor.name.version")
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -60,7 +67,7 @@ impl Check for VersionCheck {
                     if !env_name.is_empty() {
                         results.push(classify_version_entry(
                             "version:global",
-                            "global version",
+                            t!("doctor.name.global_version"),
                             env_name,
                             venvs_dir.as_deref(),
                         ));
@@ -70,10 +77,13 @@ impl Check for VersionCheck {
                     results.push(
                         CheckResult::warn(
                             "version:global",
-                            "global version",
-                            "could not read global version file",
+                            t!("doctor.name.global_version"),
+                            t!("doctor.version.global_unreadable"),
                         )
-                        .with_suggestion(format!("Check file: {}", global_file.display())),
+                        .with_suggestion(t!(
+                            "doctor.version.check_file",
+                            path = global_file.display().to_string()
+                        )),
                     );
                 }
             }
@@ -92,7 +102,7 @@ impl Check for VersionCheck {
                     if !env_name.is_empty() {
                         results.push(classify_version_entry(
                             "version:local",
-                            "local version",
+                            t!("doctor.name.local_version"),
                             env_name,
                             venvs_dir.as_deref(),
                         ));
@@ -102,10 +112,13 @@ impl Check for VersionCheck {
                     results.push(
                         CheckResult::warn(
                             "version:local",
-                            "local version",
-                            "could not read local version file",
+                            t!("doctor.name.local_version"),
+                            t!("doctor.version.local_unreadable"),
                         )
-                        .with_suggestion(format!("Check file: {}", local_file.display())),
+                        .with_suggestion(t!(
+                            "doctor.version.check_file",
+                            path = local_file.display().to_string()
+                        )),
                     );
                 }
             }
@@ -114,7 +127,7 @@ impl Check for VersionCheck {
         // If no version files found, that's fine
         if results.is_empty() {
             results.push(
-                CheckResult::ok(self.id(), self.name()).with_details("no version files configured"),
+                CheckResult::ok(self.id(), self.name()).with_details(t!("doctor.version.none")),
             );
         }
 
@@ -143,7 +156,7 @@ mod tests {
 
     #[test]
     fn classify_treats_system_as_valid_sentinel() {
-        let result = classify_version_entry("version:test", "test version", "system", None);
+        let result = classify_version_entry("version:test", "test version".into(), "system", None);
         assert!(
             result.is_ok(),
             "system must classify as Ok, got {result:#?}"
@@ -165,7 +178,8 @@ mod tests {
         // round-trip cleanly even though `scuv use system` always writes
         // the lowercase form.
         for variant in ["SYSTEM", "System", "sYsTeM"] {
-            let result = classify_version_entry("version:test", "test version", variant, None);
+            let result =
+                classify_version_entry("version:test", "test version".into(), variant, None);
             assert!(
                 result.is_ok(),
                 "case-variant '{variant}' must classify as Ok"
@@ -177,8 +191,12 @@ mod tests {
     fn classify_existing_env_is_ok() {
         let tmp = tempfile::tempdir().unwrap();
         std::fs::create_dir_all(tmp.path().join("myenv")).unwrap();
-        let result =
-            classify_version_entry("version:test", "test version", "myenv", Some(tmp.path()));
+        let result = classify_version_entry(
+            "version:test",
+            "test version".into(),
+            "myenv",
+            Some(tmp.path()),
+        );
         assert!(result.is_ok());
         assert!(
             result
@@ -194,7 +212,7 @@ mod tests {
         // venvs dir exists but env doesn't — should error with suggestion.
         let result = classify_version_entry(
             "version:test",
-            "test version",
+            "test version".into(),
             "missingenv",
             Some(tmp.path()),
         );

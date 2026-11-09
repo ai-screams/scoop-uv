@@ -182,7 +182,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 258 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 337 keys
 ```
 
 ### Design Principles
@@ -449,7 +449,7 @@ impl VersionService {
 ```rust
 pub trait Check: Send + Sync {
     fn id(&self) -> &'static str;
-    fn name(&self) -> &'static str;
+    fn name(&self) -> Cow<'static, str>;  // in the display language
     fn run(&self) -> Vec<CheckResult>;
 }
 

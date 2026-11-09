@@ -6,6 +6,7 @@
 //! printed, so the tests can read what would be printed.
 
 use owo_colors::OwoColorize;
+use rust_i18n::t;
 
 use crate::core::doctor::{CheckResult, CheckStatus};
 use crate::output::Output;
@@ -16,7 +17,7 @@ pub(super) fn header(output: &Output) {
         return;
     }
     eprintln!();
-    eprintln!("Checking installation...");
+    eprintln!("{}", t!("doctor.report.header"));
     eprintln!();
 }
 
@@ -91,7 +92,7 @@ fn summary_line(results: &[CheckResult], color: bool) -> String {
     let warnings = results.iter().filter(|r| r.is_warning()).count();
 
     if errors == 0 && warnings == 0 {
-        let line = "All checks passed!";
+        let line = t!("doctor.report.all_passed");
         return if color {
             line.green().to_string()
         } else {
@@ -99,14 +100,17 @@ fn summary_line(results: &[CheckResult], color: bool) -> String {
         };
     }
 
-    let mut parts = Vec::new();
-    if errors > 0 {
-        parts.push(format!("{} error(s)", errors));
+    // One sentence per case, so each language keeps its own word order.
+    let line = match (errors, warnings) {
+        (_, 0) => t!("doctor.report.found_errors", errors = errors),
+        (0, _) => t!("doctor.report.found_warnings", warnings = warnings),
+        _ => t!(
+            "doctor.report.found_both",
+            errors = errors,
+            warnings = warnings
+        ),
     }
-    if warnings > 0 {
-        parts.push(format!("{} warning(s)", warnings));
-    }
-    let line = format!("Found {}.", parts.join(" and "));
+    .to_string();
     if color {
         line.yellow().to_string()
     } else {

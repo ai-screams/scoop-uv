@@ -1851,18 +1851,18 @@ msgstr "환경 정리 없이 Python을 제거한 경우:"
 msgid "# Detect broken environments\n"
 msgstr "# 깨진 환경 감지\n"
 
-#: src/python-management.md:296 src/commands/doctor.md:89
+#: src/python-management.md:296 src/commands/doctor.md:95
 msgid "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 msgstr "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 
 #: src/python-management.md:299 src/commands/uninstall.md:124
 #: src/commands/uninstall.md:214 src/commands/uninstall.md:216
-#: src/commands/doctor.md:94 src/commands/migrate.md:187
+#: src/commands/doctor.md:100 src/commands/migrate.md:187
 msgid "'myproject'"
 msgstr "'myproject'"
 
 #: src/python-management.md:299 src/commands/uninstall.md:214
-#: src/commands/uninstall.md:216 src/commands/doctor.md:94
+#: src/commands/uninstall.md:216 src/commands/doctor.md:100
 msgid "#   → scuv remove myproject && scuv create myproject <python-version>\n"
 msgstr ""
 "#   → scuv remove myproject && scuv create myproject <python-version>\n"
@@ -2737,7 +2737,7 @@ msgstr ""
 msgid "# • Scanning all sources for environments...\n"
 msgstr "# • Scanning all sources for environments...\n"
 
-#: src/faq.md:344 src/commands/doctor.md:102
+#: src/faq.md:344 src/commands/doctor.md:108
 #: src/development/docs-translation.md:98
 #: src/development/docs-translation.md:104
 msgid "#\n"
@@ -3453,7 +3453,7 @@ msgid ""
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
 #: src/commands/list.md:132 src/commands/uninstall.md:165
-#: src/commands/doctor.md:81 src/commands/doctor.md:109
+#: src/commands/doctor.md:87 src/commands/doctor.md:115
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
@@ -4818,14 +4818,29 @@ msgid "# JSON output for scripting\n"
 msgstr "# 스크립팅을 위한 JSON 출력\n"
 
 #: src/commands/doctor.md:67
+msgid ""
+"The report is in the display language (`scuv lang`, `SCUV_LANG`), and so are "
+"the `name`, `message`, `suggestion` and `details` fields of `--json`. "
+"Scripts should match on `id` and `status`, which do not change with the "
+"language. An `id` names a check, not a finding: one check can report several "
+"results with the same `id` (one per broken environment, for example). The "
+"examples on this page show English output."
+msgstr ""
+"보고서는 표시 언어(`scuv lang`, `SCUV_LANG`)로 나오고, `--json`의 `name`, "
+"`message`, `suggestion`, `details` 필드도 그렇습니다. 스크립트는 언어에 따라 "
+"바뀌지 않는 `id`와 `status`로 판단해야 합니다. `id`는 발견 하나가 아니라 검"
+"사 하나를 가리킵니다. 한 검사가 같은 `id`로 결과를 여러 개 낼 수 있습니다"
+"(예: 깨진 환경마다 하나씩). 이 페이지의 예시는 영어 출력입니다."
+
+#: src/commands/doctor.md:73
 msgid "Environment Integrity"
 msgstr "환경 무결성"
 
-#: src/commands/doctor.md:69
+#: src/commands/doctor.md:75
 msgid "The doctor checks each virtual environment for:"
 msgstr "doctor 명령은 각 가상 환경에 대해 다음 항목을 검사합니다:"
 
-#: src/commands/doctor.md:71
+#: src/commands/doctor.md:77
 msgid ""
 "**Python symlink** — Does the `python` binary in the environment point to a "
 "valid Python installation?"
@@ -4833,13 +4848,13 @@ msgstr ""
 "**Python 심볼릭 링크** — 환경 내 `python` 바이너리가 유효한 Python 설치를 가"
 "리키고 있습니까?"
 
-#: src/commands/doctor.md:72
+#: src/commands/doctor.md:78
 msgid ""
 "**pyvenv.cfg** — Does the environment's configuration file exist (and its "
 "Python binary)?"
 msgstr "**pyvenv.cfg** — 환경의 설정 파일(과 Python 바이너리)이 존재합니까?"
 
-#: src/commands/doctor.md:73
+#: src/commands/doctor.md:79
 msgid ""
 "**scuv metadata** — Does `.scoop-metadata.json` exist and parse? Without it "
 "the env still works, so doctor only warns; `scuv verify` counts it as a "
@@ -4849,7 +4864,7 @@ msgstr ""
 "동작하므로 doctor는 경고만 하고, `scuv verify`는 실패로 셉니다. `--fix`는 "
 "metadata를 다시 만들지 않습니다."
 
-#: src/commands/doctor.md:75
+#: src/commands/doctor.md:81
 msgid ""
 "doctor looks at the same directories `scuv list` shows: a symlink placed "
 "inside `~/.scuv/virtualenvs/` is not an environment and is not checked. The "
@@ -4861,7 +4876,7 @@ msgstr ""
 "activate 스크립트, 인터프리터 실행, `.scuv.toml`과의 차이는 `scuv verify`만 "
 "검사합니다."
 
-#: src/commands/doctor.md:77
+#: src/commands/doctor.md:83
 msgid ""
 "Environments can become broken when their underlying Python version is "
 "uninstalled. Use `scuv doctor` to detect these issues:"
@@ -4869,76 +4884,76 @@ msgstr ""
 "기반 Python 버전이 제거되면 환경이 손상될 수 있습니다. `scuv doctor`를 사용하"
 "여 이러한 문제를 감지하세요:"
 
-#: src/commands/doctor.md:80
+#: src/commands/doctor.md:86
 msgid "# After accidentally uninstalling Python 3.12:\n"
 msgstr "# Python 3.12를 실수로 제거한 후:\n"
 
-#: src/commands/doctor.md:83
+#: src/commands/doctor.md:89
 msgid "# Checking installation...\n"
 msgstr "# Checking installation...\n"
 
-#: src/commands/doctor.md:85 src/commands/doctor.md:117
+#: src/commands/doctor.md:91 src/commands/doctor.md:123
 msgid "# ✓ uv installation\n"
 msgstr "# ✓ uv installation\n"
 
-#: src/commands/doctor.md:87
+#: src/commands/doctor.md:93
 msgid "# ✓ SCUV_HOME directory\n"
 msgstr "# ✓ SCUV_HOME directory\n"
 
-#: src/commands/doctor.md:92 src/commands/doctor.md:96
-#: src/commands/doctor.md:115 src/commands/doctor.md:117
+#: src/commands/doctor.md:98 src/commands/doctor.md:102
+#: src/commands/doctor.md:121 src/commands/doctor.md:123
 msgid "'webapp'"
 msgstr "'webapp'"
 
-#: src/commands/doctor.md:92 src/commands/doctor.md:96
+#: src/commands/doctor.md:98 src/commands/doctor.md:102
 msgid "#   → scuv remove webapp && scuv create webapp <python-version>\n"
 msgstr "#   → scuv remove webapp && scuv create webapp <python-version>\n"
 
-#: src/commands/doctor.md:98
+#: src/commands/doctor.md:104
 msgid "#   found in ~/.zshrc\n"
 msgstr "#   found in ~/.zshrc\n"
 
-#: src/commands/doctor.md:100
+#: src/commands/doctor.md:106
 msgid "#   no version files configured\n"
 msgstr "#   no version files configured\n"
 
-#: src/commands/doctor.md:104
+#: src/commands/doctor.md:110
 msgid "# Found 4 error(s).\n"
 msgstr "# Found 4 error(s).\n"
 
-#: src/commands/doctor.md:106
+#: src/commands/doctor.md:112
 msgid "# Auto-fix by recreating symlinks (requires Python to be reinstalled)\n"
 msgstr "# 심볼릭 링크 재생성으로 자동 수정 (Python 재설치 필요)\n"
 
-#: src/commands/doctor.md:111
+#: src/commands/doctor.md:117
 msgid "# • Attempting to fix symlink for 'myproject'...\n"
 msgstr "# • Attempting to fix symlink for 'myproject'...\n"
 
-#: src/commands/doctor.md:113
+#: src/commands/doctor.md:119
 msgid "# ✓ Fixed symlink for 'myproject'\n"
 msgstr "# ✓ Fixed symlink for 'myproject'\n"
 
-#: src/commands/doctor.md:115
+#: src/commands/doctor.md:121
 msgid "# • Found Python version: 3.12\n"
 msgstr "# • Found Python version: 3.12\n"
 
-#: src/commands/doctor.md:119
+#: src/commands/doctor.md:125
 msgid "# ✓ virtual environments\n"
 msgstr "# ✓ virtual environments\n"
 
-#: src/commands/doctor.md:121
+#: src/commands/doctor.md:127
 msgid "# ✓ broken symlink\n"
 msgstr "# ✓ broken symlink\n"
 
-#: src/commands/doctor.md:123
+#: src/commands/doctor.md:129
 msgid "# ✓ version files\n"
 msgstr "# ✓ version files\n"
 
-#: src/commands/doctor.md:125
+#: src/commands/doctor.md:131
 msgid "# ──────────────────────────────────\n"
 msgstr "# ──────────────────────────────────\n"
 
-#: src/commands/doctor.md:130
+#: src/commands/doctor.md:136
 msgid ""
 "`✓` marks a passing check, `⚠` a warning and `✗` an error; `→` lines suggest "
 "a fix. The report goes to stderr. `doctor` exits `2` when any check errors, "
@@ -4950,7 +4965,7 @@ msgstr ""
 "있으면 `2`, 가장 심각한 결과가 경고이면 `1`, 모든 검사를 통과하면 `0`(`All "
 "checks passed!`)으로 종료합니다."
 
-#: src/commands/doctor.md:135
+#: src/commands/doctor.md:141
 msgid ""
 "`--fix` attempts its fixes first and then prints the report. A fix can clear "
 "an error another check found — relinking an env's interpreter also mends its "
@@ -4969,7 +4984,7 @@ msgstr ""
 "걸지 못했으면 그 이유(`Python 3.7 not installed` → `scuv install 3.7`)가 나옵"
 "니다."
 
-#: src/commands/doctor.md:143
+#: src/commands/doctor.md:149
 msgid ""
 "**Tip:** Run `scuv doctor` periodically or after uninstalling Python "
 "versions to catch broken environments early. See [uninstall command]"
@@ -9697,8 +9712,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:39
-msgid "Add translations to all 258 keys"
-msgstr "모든 258개 키에 번역을 추가합니다"
+msgid "Add translations to all 337 keys"
+msgstr "모든 337개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:40
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -9903,8 +9918,8 @@ msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
 #: src/development/translation.md:120
-msgid "`locales/app.yml` - All 258 keys translated"
-msgstr "`locales/app.yml` - 258개 키 모두 번역"
+msgid "`locales/app.yml` - All 337 keys translated"
+msgstr "`locales/app.yml` - 337개 키 모두 번역"
 
 #: src/development/translation.md:121
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
@@ -10576,8 +10591,8 @@ msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
 #: src/development/translation.md:345
-msgid "All 258 keys translated"
-msgstr "258개 키 전체 번역 완료"
+msgid "All 337 keys translated"
+msgstr "337개 키 전체 번역 완료"
 
 #: src/development/translation.md:346
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
@@ -10632,11 +10647,11 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the 258 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 337 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 258개 키) 번역에 대"
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 337개 키) 번역에 대"
 "해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
 "역만 다룹니다."
 
@@ -11823,6 +11838,10 @@ msgstr "`Check` 트레이트"
 msgid "Interface for health checks."
 msgstr "상태 점검을 위한 인터페이스입니다."
 
+#: src/api.md:176 src/api.md:220
+msgid "// display name, in the display language\n"
+msgstr "// 표시용 이름, 표시 언어를 따름\n"
+
 #: src/api.md:177
 msgid "// Returns Vec - a check can produce multiple results\n"
 msgstr "// Vec를 반환 - 하나의 점검이 여러 결과를 생성할 수 있음\n"
@@ -11909,6 +11928,10 @@ msgstr "`CheckResult`"
 #: src/api.md:215
 msgid "Detailed result from a health check."
 msgstr "상태 점검의 상세 결과입니다."
+
+#: src/api.md:219
+msgid "// stable; a category, can repeat\n"
+msgstr "// 고정값. 검사 종류이므로 반복될 수 있음\n"
 
 #: src/api.md:224
 msgid "/// What `Check::fix` acts on; set only on findings it can repair\n"

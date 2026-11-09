@@ -3,8 +3,9 @@
 //! 1. Every translation key in `locales/app.yml` must exist in every supported
 //!    locale in `LOCALES`.
 //! 2. Every `t!("...")` key used in `src/` must have a translation.
+//! 3. Every translation uses the same `%{placeholder}`s as the English one.
 //!
-//! Both are pure file reads — no process-global locale is touched, so they run
+//! All are pure file reads — no process-global locale is touched, so they run
 //! in parallel and need no `#[serial]`.
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -29,8 +30,8 @@ enum AppEntry {
     Version(#[allow(dead_code)] u64),
 }
 
-/// Parse `app.yml` into `key -> set of locales that define it`.
-fn translation_keys() -> BTreeMap<String, BTreeSet<String>> {
+/// Parse `app.yml` into `key -> locale -> text`.
+fn translations() -> BTreeMap<String, BTreeMap<String, String>> {
     let path = manifest_dir().join("locales/app.yml");
     let raw = std::fs::read_to_string(&path).expect("read locales/app.yml");
     let doc: BTreeMap<String, AppEntry> =
@@ -47,9 +48,50 @@ fn translation_keys() -> BTreeMap<String, BTreeSet<String>> {
         let AppEntry::Translations(translations) = entry else {
             panic!("translation key {key} is not a locale mapping");
         };
-        keys.insert(key, translations.into_keys().collect::<BTreeSet<String>>());
+        keys.insert(key, translations);
     }
     keys
+}
+
+/// Parse `app.yml` into `key -> set of locales that define it`.
+fn translation_keys() -> BTreeMap<String, BTreeSet<String>> {
+    translations()
+        .into_iter()
+        .map(|(key, t)| (key, t.into_keys().collect()))
+        .collect()
+}
+
+/// The `%{name}` placeholders in a translation.
+fn placeholders(text: &str) -> BTreeSet<&str> {
+    text.match_indices("%{")
+        .filter_map(|(i, _)| {
+            let rest = &text[i + 2..];
+            rest.find('}').map(|end| &rest[..end])
+        })
+        .collect()
+}
+
+/// A translation that drops or renames a placeholder loses the value it
+/// stood for (an env name, a path) in that language only. What fails this:
+/// a locale whose text spells `%{name}` differently from English.
+#[test]
+fn every_translation_keeps_the_english_placeholders() {
+    let mut wrong = Vec::new();
+    for (key, texts) in translations() {
+        let Some(en) = texts.get("en") else { continue };
+        let expected = placeholders(en);
+        for (loc, text) in &texts {
+            if placeholders(text) != expected {
+                wrong.push(format!("  {key} -> [{loc}]"));
+            }
+        }
+    }
+    assert!(
+        wrong.is_empty(),
+        "Placeholders differ from English:\n{}",
+        wrong.join("\n")
+    );
+    assert_eq!(placeholders("a %{x} b %{y}"), BTreeSet::from(["x", "y"]));
 }
 
 #[test]

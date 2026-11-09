@@ -93,8 +93,8 @@ mod tests {
         fn id(&self) -> &'static str {
             "fixable"
         }
-        fn name(&self) -> &'static str {
-            "fixable check"
+        fn name(&self) -> std::borrow::Cow<'static, str> {
+            "fixable check".into()
         }
         fn run(&self) -> Vec<CheckResult> {
             vec![CheckResult::error("fixable", "fixable check", "boom")]
@@ -119,8 +119,8 @@ mod tests {
         fn id(&self) -> &'static str {
             "unfixable"
         }
-        fn name(&self) -> &'static str {
-            "unfixable check"
+        fn name(&self) -> std::borrow::Cow<'static, str> {
+            "unfixable check".into()
         }
         fn run(&self) -> Vec<CheckResult> {
             vec![CheckResult::error(
@@ -137,8 +137,8 @@ mod tests {
         fn id(&self) -> &'static str {
             "dependent"
         }
-        fn name(&self) -> &'static str {
-            "dependent check"
+        fn name(&self) -> std::borrow::Cow<'static, str> {
+            "dependent check".into()
         }
         fn run(&self) -> Vec<CheckResult> {
             if self.0.load(std::sync::atomic::Ordering::SeqCst) {
@@ -155,8 +155,8 @@ mod tests {
         fn id(&self) -> &'static str {
             "repairing"
         }
-        fn name(&self) -> &'static str {
-            "repairing check"
+        fn name(&self) -> std::borrow::Cow<'static, str> {
+            "repairing check".into()
         }
         fn run(&self) -> Vec<CheckResult> {
             DependentCheck(self.0.clone()).run()
@@ -203,8 +203,8 @@ mod tests {
         fn id(&self) -> &'static str {
             "failing-fix"
         }
-        fn name(&self) -> &'static str {
-            "failing-fix check"
+        fn name(&self) -> std::borrow::Cow<'static, str> {
+            "failing-fix check".into()
         }
         fn run(&self) -> Vec<CheckResult> {
             vec![CheckResult::error(
