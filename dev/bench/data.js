@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794202413154,
+  "lastUpdate": 1794202414592,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -14593,6 +14593,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 937,
             "range": "± 12",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "feb6ce2a65608fb2a82b2227f46e557e1b343340",
+          "message": "Merge pull request #265 from ai-screams/refactor/remove-unused-code\n\nrefactor!: [#265] remove unused library items",
+          "timestamp": "2026-11-09T14:28:02+09:00",
+          "tree_id": "e958609547900a2aebe6aac8920254212f72d22f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/feb6ce2a65608fb2a82b2227f46e557e1b343340"
+        },
+        "date": 1794202414501,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1335,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 918,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
