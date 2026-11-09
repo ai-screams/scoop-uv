@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794237535746,
+  "lastUpdate": 1794237537576,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -15673,6 +15673,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 467,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "593be8f0889801d7c4277a937c3353e970713891",
+          "message": "Merge pull request #274 from ai-screams/refactor/migrate-source-list\n\nrefactor(migrate): [#274] find the source tools through one list",
+          "timestamp": "2026-11-10T00:15:03+09:00",
+          "tree_id": "18efd982357d79c259fb136e8937e2d32fadc8dd",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/593be8f0889801d7c4277a937c3353e970713891"
+        },
+        "date": 1794237537483,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1323,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 933,
+            "range": "± 6",
             "unit": "ns/iter"
           }
         ]
