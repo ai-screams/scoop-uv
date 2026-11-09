@@ -222,7 +222,7 @@ mod tests {
     fn make_result(status: CheckStatus) -> CheckResult {
         CheckResult {
             id: "test",
-            name: "Test Check",
+            name: "Test Check".into(),
             status,
             suggestion: None,
             details: None,

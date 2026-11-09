@@ -145,3 +145,48 @@ fn ordinary_commands_point_at_doctor_fix_and_install_nothing() {
         .stderr(predicate::str::contains("scuv doctor --fix"));
     env.assert_untouched();
 }
+
+/// The report follows the display language, in text and in `--json`, while
+/// the ids scripts key on stay the same and commands stay literal. What
+/// fails this: a check name, message or summary left in English, or an id
+/// that gets translated.
+#[test]
+fn report_follows_the_display_language_and_ids_stay_stable() {
+    let env = NoUv::new();
+    let broken = env.fixture.scoop_home.join("virtualenvs").join("broken");
+    std::fs::create_dir_all(&broken).unwrap();
+
+    env.doctor(&[])
+        .env("SCUV_LANG", "ko")
+        .assert()
+        .code(2)
+        .stderr(
+            predicate::str::contains("설치 상태를 확인하는 중...")
+                .and(predicate::str::contains(
+                    "✗ 깨진 가상 환경: 'broken' 환경이 손상됐어요",
+                ))
+                .and(predicate::str::contains(
+                    "→ scuv remove broken && scuv create broken <python-version>",
+                ))
+                .and(predicate::str::contains("PATH에서 uv를 찾을 수 없어요"))
+                .and(predicate::str::contains("찾았어요."))
+                .and(predicate::str::contains("Checking installation").not())
+                .and(predicate::str::contains("broken virtualenv").not()),
+        );
+
+    let out = env
+        .doctor(&["--json"])
+        .env("SCUV_LANG", "ko")
+        .output()
+        .unwrap();
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let checks = json["checks"].as_array().unwrap();
+    let uv = checks.iter().find(|c| c["id"] == "uv").unwrap();
+    assert_eq!(uv["name"], "uv 설치", "{json}");
+    assert_eq!(uv["message"], "PATH에서 uv를 찾을 수 없어요", "{json}");
+    let venv = checks
+        .iter()
+        .find(|c| c["id"] == "venv" && c["status"] == "error")
+        .unwrap();
+    assert_eq!(venv["name"], "깨진 가상 환경", "{json}");
+}

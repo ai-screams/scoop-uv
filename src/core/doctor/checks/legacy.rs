@@ -6,6 +6,8 @@
 //! who skipped `mv ~/.scoop ~/.scuv` sees an empty `scuv list` and a doctor
 //! that reports everything healthy.
 
+use std::borrow::Cow;
+
 use super::super::types::{Check, CheckResult};
 
 /// Check for leftover legacy `scoop` state: env vars, `~/.scoop` without a
@@ -44,11 +46,11 @@ fn check_legacy_remnants() -> CheckResult {
     }
 
     if found.is_empty() {
-        CheckResult::ok("legacy", "legacy scoop remnants")
+        CheckResult::ok("legacy", rust_i18n::t!("doctor.name.legacy"))
     } else {
         CheckResult::warn(
             "legacy",
-            "legacy scoop remnants",
+            rust_i18n::t!("doctor.name.legacy"),
             rust_i18n::t!("doctor.legacy_found", items = found.join(", ")),
         )
         .with_suggestion(rust_i18n::t!("doctor.legacy_suggestion"))
@@ -64,8 +66,8 @@ impl Check for LegacyCheck {
         "legacy"
     }
 
-    fn name(&self) -> &'static str {
-        "legacy scoop remnants"
+    fn name(&self) -> Cow<'static, str> {
+        rust_i18n::t!("doctor.name.legacy")
     }
 
     fn run(&self) -> Vec<CheckResult> {

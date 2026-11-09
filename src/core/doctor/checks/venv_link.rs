@@ -4,14 +4,20 @@
 //! another directory leaves the link dangling, and uv then fails in that
 //! project with `File exists (os error 17)` (#202).
 
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
+
+use rust_i18n::t;
 
 use crate::paths;
 
 use super::super::types::{Check, CheckResult};
 
 const ID: &str = "venv_link";
-const NAME: &str = "project .venv link";
+
+fn name() -> Cow<'static, str> {
+    t!("doctor.name.venv_link")
+}
 
 /// Check for a dangling `.venv` symlink in the current directory.
 pub(super) struct VenvLinkCheck;
@@ -45,15 +51,22 @@ fn is_in_venvs_dir(dest: &Path, venvs_dir: &Path) -> bool {
 fn classify(link: &Path, venvs_dir: Option<&Path>) -> Option<CheckResult> {
     let dest = link_target(link)?;
     if link.exists() {
-        return Some(CheckResult::ok(ID, NAME).with_details(format!("-> {}", dest.display())));
+        return Some(CheckResult::ok(ID, name()).with_details(format!("-> {}", dest.display())));
     }
-    let message = format!(".venv points to missing '{}'", dest.display());
+    let message = t!(
+        "doctor.venv_link.missing",
+        path = dest.display().to_string()
+    );
     Some(
         if venvs_dir.is_some_and(|dir| is_in_venvs_dir(&dest, dir)) {
-            CheckResult::error(ID, NAME, message)
-                .with_suggestion("Run: scuv doctor --fix, or scuv use <env> --link")
+            CheckResult::error(ID, name(), message).with_suggestion(t!(
+                "doctor.venv_link.fix_or_relink",
+                fix = "scuv doctor --fix",
+                relink = "scuv use <env> --link"
+            ))
         } else {
-            CheckResult::warn(ID, NAME, message).with_suggestion("Run: rm .venv")
+            CheckResult::warn(ID, name(), message)
+                .with_suggestion(t!("doctor.run", command = "rm .venv"))
         },
     )
 }
@@ -68,11 +81,17 @@ fn remove_if_dangling_into(link: &Path, venvs_dir: &Path) -> Option<CheckResult>
     }
     Some(
         match crate::paths::remove_symlink_if_unchanged(link, &raw) {
-            Ok(true) => CheckResult::ok(ID, NAME).with_details("removed dangling .venv link"),
+            Ok(true) => {
+                CheckResult::ok(ID, name()).with_details(t!("doctor.venv_link.removed_details"))
+            }
             // Replaced since it was judged: no longer ours to remove.
             Ok(false) => return None,
-            Err(e) => CheckResult::error(ID, NAME, format!("failed to remove .venv link: {e}"))
-                .with_suggestion("Check file permissions"),
+            Err(e) => CheckResult::error(
+                ID,
+                name(),
+                t!("doctor.venv_link.remove_failed", error = e.to_string()),
+            )
+            .with_suggestion(t!("doctor.check_file_permissions")),
         },
     )
 }
@@ -82,8 +101,8 @@ impl Check for VenvLinkCheck {
         ID
     }
 
-    fn name(&self) -> &'static str {
-        NAME
+    fn name(&self) -> Cow<'static, str> {
+        name()
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -102,7 +121,7 @@ impl Check for VenvLinkCheck {
         let venvs_dir = paths::virtualenvs_dir().ok()?;
         let fixed = remove_if_dangling_into(&link, &venvs_dir)?;
         if fixed.is_ok() {
-            output.success("Removed dangling .venv link");
+            output.success(&t!("doctor.venv_link.removed"));
         }
         Some(fixed)
     }

@@ -1,6 +1,9 @@
 //! Check for symbolic link validity.
 
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
+
+use rust_i18n::t;
 
 use crate::core::metadata::Metadata;
 use crate::paths;
@@ -16,8 +19,8 @@ impl Check for SymlinkCheck {
         "symlink"
     }
 
-    fn name(&self) -> &'static str {
-        "symbolic links"
+    fn name(&self) -> Cow<'static, str> {
+        t!("doctor.name.symlink")
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -46,8 +49,8 @@ impl Check for SymlinkCheck {
             results.push(
                 CheckResult::error(
                     "symlink",
-                    "broken symlink",
-                    format!("Python symlink in '{}' is broken", name),
+                    t!("doctor.name.broken_symlink"),
+                    t!("doctor.symlink.broken", name = name),
                 )
                 .with_suggestion(format!(
                     "scuv remove {} && scuv create {} <python-version>",
@@ -61,7 +64,7 @@ impl Check for SymlinkCheck {
         if broken_names.is_empty() && valid > 0 {
             results.push(
                 CheckResult::ok(self.id(), self.name())
-                    .with_details(format!("{} symlinks valid", valid)),
+                    .with_details(t!("doctor.symlink.valid", count = valid)),
             );
         }
 
@@ -75,14 +78,14 @@ impl Check for SymlinkCheck {
         }
         let venv_name = result.target.clone()?;
 
-        output.info(&format!("Attempting to fix symlink for '{}'...", venv_name));
+        output.info(&t!("doctor.symlink.fixing", name = venv_name));
 
         let venv_path = paths::virtualenvs_dir().ok()?.join(&venv_name);
         Some(match relink(output, &venv_path, &venv_name) {
             Ok(()) => {
-                output.success(&format!("Fixed symlink for '{}'", venv_name));
-                CheckResult::ok("symlink", "broken symlink")
-                    .with_details(format!("fixed symlink for '{}'", venv_name))
+                output.success(&t!("doctor.symlink.fixed", name = venv_name));
+                CheckResult::ok("symlink", t!("doctor.name.broken_symlink"))
+                    .with_details(t!("doctor.symlink.fixed_details", name = venv_name))
             }
             Err(failed) => *failed,
         })
@@ -94,7 +97,10 @@ impl Check for SymlinkCheck {
 type Failed = Box<CheckResult>;
 
 fn failure(message: impl Into<String>, suggestion: impl Into<String>) -> Failed {
-    Box::new(CheckResult::error("symlink", "broken symlink", message).with_suggestion(suggestion))
+    Box::new(
+        CheckResult::error("symlink", t!("doctor.name.broken_symlink"), message)
+            .with_suggestion(suggestion),
+    )
 }
 
 /// Points the env's `python` at its installed interpreter again: find the
@@ -102,7 +108,7 @@ fn failure(message: impl Into<String>, suggestion: impl Into<String>) -> Failed 
 fn relink(output: &crate::output::Output, venv_path: &Path, venv_name: &str) -> Result<(), Failed> {
     if !venv_path.exists() {
         return Err(failure(
-            format!("environment '{}' not found", venv_name),
+            t!("doctor.symlink.env_not_found", name = venv_name),
             format!("scuv create {} <python-version>", venv_name),
         ));
     }
@@ -110,14 +116,17 @@ fn relink(output: &crate::output::Output, venv_path: &Path, venv_name: &str) -> 
     // Read the venv's Python version (scuv metadata, then pyvenv.cfg fallback).
     let python_version = read_python_version(venv_path).ok_or_else(|| {
         failure(
-            format!("could not determine Python version for '{}'", venv_name),
+            t!("doctor.symlink.version_unknown", name = venv_name),
             format!(
                 "scuv remove {} && scuv create {} <python-version>",
                 venv_name, venv_name
             ),
         )
     })?;
-    output.info(&format!("Found Python version: {}", python_version));
+    output.info(&t!(
+        "doctor.symlink.found_version",
+        version = python_version
+    ));
 
     let python_path = installed_python_path(&python_version)?;
     replace_symlink(
@@ -129,16 +138,24 @@ fn relink(output: &crate::output::Output, venv_path: &Path, venv_name: &str) -> 
 /// The interpreter uv has installed for `version`.
 fn installed_python_path(version: &str) -> Result<PathBuf, Failed> {
     let install_hint = format!("scuv install {}", version);
-    let uv = UvClient::new().map_err(|_| failure("uv not available", "Install uv first"))?;
+    let uv = UvClient::new().map_err(|_| {
+        failure(
+            t!("doctor.symlink.uv_unavailable"),
+            t!("doctor.symlink.install_uv"),
+        )
+    })?;
     match uv.find_python(version) {
-        Ok(Some(info)) => info
-            .path
-            .ok_or_else(|| failure(format!("Python {} path not found", version), install_hint)),
+        Ok(Some(info)) => info.path.ok_or_else(|| {
+            failure(
+                t!("doctor.symlink.python_path_missing", version = version),
+                install_hint,
+            )
+        }),
         Ok(None) => Err(failure(
-            format!("Python {} not installed", version),
+            t!("doctor.symlink.python_missing", version = version),
             install_hint,
         )),
-        Err(_) => Err(failure("failed to find Python installation", install_hint)),
+        Err(_) => Err(failure(t!("doctor.symlink.find_failed"), install_hint)),
     }
 }
 
@@ -148,8 +165,8 @@ fn replace_symlink(target: &Path, link: &Path) -> Result<(), Failed> {
         && let Err(e) = std::fs::remove_file(link)
     {
         return Err(failure(
-            format!("failed to remove old symlink: {}", e),
-            "Check file permissions",
+            t!("doctor.symlink.remove_failed", error = e.to_string()),
+            t!("doctor.check_file_permissions"),
         ));
     }
 
@@ -157,8 +174,8 @@ fn replace_symlink(target: &Path, link: &Path) -> Result<(), Failed> {
     {
         std::os::unix::fs::symlink(target, link).map_err(|e| {
             failure(
-                format!("failed to create symlink: {}", e),
-                "Check file permissions",
+                t!("doctor.symlink.create_failed", error = e.to_string()),
+                t!("doctor.check_file_permissions"),
             )
         })
     }
@@ -169,10 +186,10 @@ fn replace_symlink(target: &Path, link: &Path) -> Result<(), Failed> {
         Err(Box::new(
             CheckResult::warn(
                 "symlink",
-                "broken symlink",
-                "symlink fix not supported on this platform",
+                t!("doctor.name.broken_symlink"),
+                t!("doctor.symlink.unsupported"),
             )
-            .with_suggestion("Manually recreate the symlink"),
+            .with_suggestion(t!("doctor.symlink.manual")),
         ))
     }
 }

@@ -64,6 +64,12 @@ scuv doctor --fix               # Fix what can be fixed
 scuv doctor --json              # JSON output for scripting
 ```
 
+The report is in the display language (`scuv lang`, `SCUV_LANG`), and so are the `name`,
+`message`, `suggestion` and `details` fields of `--json`. Scripts should match on `id` and
+`status`, which do not change with the language. An `id` names a check, not a finding: one
+check can report several results with the same `id` (one per broken environment, for example).
+The examples on this page show English output.
+
 ## Environment Integrity
 
 The doctor checks each virtual environment for:

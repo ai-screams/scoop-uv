@@ -1,6 +1,8 @@
 //! Shared types for the doctor module: check status, check results, and the
 //! `Check` trait that individual checks implement.
 
+use std::borrow::Cow;
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -19,10 +21,12 @@ pub enum CheckStatus {
 /// Result of a single check.
 #[derive(Debug)]
 pub struct CheckResult {
-    /// Check identifier (e.g., "uv", "home", "venv:myenv").
+    /// Check identifier (e.g., "uv", "home", "version:local"). Stable across
+    /// languages, but a category rather than a finding: one check can return
+    /// several results with the same id.
     pub id: &'static str,
-    /// Check name for display.
-    pub name: &'static str,
+    /// Check name for display, in the display language.
+    pub name: Cow<'static, str>,
     /// Check status.
     pub status: CheckStatus,
     /// Suggested fix (when check fails).
@@ -38,10 +42,10 @@ pub struct CheckResult {
 
 impl CheckResult {
     /// Creates a successful check result.
-    pub fn ok(id: &'static str, name: &'static str) -> Self {
+    pub fn ok(id: &'static str, name: impl Into<Cow<'static, str>>) -> Self {
         Self {
             id,
-            name,
+            name: name.into(),
             status: CheckStatus::Ok,
             suggestion: None,
             details: None,
@@ -50,10 +54,14 @@ impl CheckResult {
     }
 
     /// Creates a warning check result.
-    pub fn warn(id: &'static str, name: &'static str, message: impl Into<String>) -> Self {
+    pub fn warn(
+        id: &'static str,
+        name: impl Into<Cow<'static, str>>,
+        message: impl Into<String>,
+    ) -> Self {
         Self {
             id,
-            name,
+            name: name.into(),
             status: CheckStatus::Warning(message.into()),
             suggestion: None,
             details: None,
@@ -62,10 +70,14 @@ impl CheckResult {
     }
 
     /// Creates an error check result.
-    pub fn error(id: &'static str, name: &'static str, message: impl Into<String>) -> Self {
+    pub fn error(
+        id: &'static str,
+        name: impl Into<Cow<'static, str>>,
+        message: impl Into<String>,
+    ) -> Self {
         Self {
             id,
-            name,
+            name: name.into(),
             status: CheckStatus::Error(message.into()),
             suggestion: None,
             details: None,
@@ -119,8 +131,8 @@ pub trait Check: Send + Sync {
     /// Returns the check identifier.
     fn id(&self) -> &'static str;
 
-    /// Returns the check name for display.
-    fn name(&self) -> &'static str;
+    /// Returns the check name for display, in the display language.
+    fn name(&self) -> Cow<'static, str>;
 
     /// Runs the check and returns results.
     ///

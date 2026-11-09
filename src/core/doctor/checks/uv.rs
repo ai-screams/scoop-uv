@@ -1,5 +1,6 @@
 //! Check for uv installation.
 
+use std::borrow::Cow;
 use std::io;
 use std::process::{Command, Output};
 
@@ -13,13 +14,19 @@ pub(super) struct UvCheck;
 
 impl UvCheck {
     /// Platform-appropriate install or upgrade command for uv.
-    fn install_hint() -> &'static str {
+    fn install_hint() -> Cow<'static, str> {
         if cfg!(target_os = "macos") {
-            "brew install uv  OR  curl -LsSf https://astral.sh/uv/install.sh | sh"
+            // Two commands; only the word between them is prose.
+            format!(
+                "brew install uv  {}  curl -LsSf https://astral.sh/uv/install.sh | sh",
+                rust_i18n::t!("doctor.uv.or")
+            )
+            .into()
         } else if cfg!(target_os = "windows") {
             "powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\""
+                .into()
         } else {
-            "curl -LsSf https://astral.sh/uv/install.sh | sh"
+            "curl -LsSf https://astral.sh/uv/install.sh | sh".into()
         }
     }
 }
@@ -29,8 +36,8 @@ impl Check for UvCheck {
         "uv"
     }
 
-    fn name(&self) -> &'static str {
-        "uv installation"
+    fn name(&self) -> Cow<'static, str> {
+        rust_i18n::t!("doctor.name.uv")
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -68,14 +75,17 @@ impl UvCheck {
                         CheckResult::error(
                             self.id(),
                             self.name(),
-                            format!(
-                                "uv {} is older than the supported minimum ({})",
-                                uv_version::format_version(version),
-                                uv_version::format_version(uv_version::MIN_VERSION),
+                            rust_i18n::t!(
+                                "doctor.uv.too_old",
+                                version = uv_version::format_version(version),
+                                min = uv_version::format_version(uv_version::MIN_VERSION)
                             ),
                         )
                         .with_details(raw.to_string())
-                        .with_suggestion(format!("Upgrade uv: {}", Self::install_hint())),
+                        .with_suggestion(rust_i18n::t!(
+                            "doctor.uv.upgrade",
+                            command = Self::install_hint()
+                        )),
                     ];
                 }
 
@@ -85,12 +95,16 @@ impl UvCheck {
                 let suggestion = if can_install {
                     rust_i18n::t!("doctor.uv_install.suggestion", url = MANUAL_URL).to_string()
                 } else {
-                    format!("Install uv: {}", Self::install_hint())
+                    rust_i18n::t!("doctor.uv.install", command = Self::install_hint()).to_string()
                 };
                 vec![
-                    CheckResult::error(self.id(), self.name(), "uv not found in PATH")
-                        .with_details("scuv requires uv to manage Python environments")
-                        .with_suggestion(suggestion),
+                    CheckResult::error(
+                        self.id(),
+                        self.name(),
+                        rust_i18n::t!("doctor.uv.not_found"),
+                    )
+                    .with_details(rust_i18n::t!("doctor.uv.required"))
+                    .with_suggestion(suggestion),
                 ]
             }
             // Present but unusable. `doctor --fix` will not install over it,
@@ -245,7 +259,10 @@ mod tests {
         assert!(result.is_error());
         let suggestion = result.suggestion.unwrap();
         assert!(!suggestion.contains("doctor --fix"), "{suggestion}");
-        assert!(suggestion.contains(UvCheck::install_hint()), "{suggestion}");
+        assert!(
+            suggestion.contains(UvCheck::install_hint().as_ref()),
+            "{suggestion}"
+        );
     }
 
     #[test]

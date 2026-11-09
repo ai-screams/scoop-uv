@@ -1,5 +1,9 @@
 //! Check for virtualenv integrity.
 
+use std::borrow::Cow;
+
+use rust_i18n::t;
+
 use crate::core::MetadataState;
 use crate::paths;
 
@@ -13,8 +17,8 @@ impl Check for VirtualenvCheck {
         "venv"
     }
 
-    fn name(&self) -> &'static str {
-        "virtual environments"
+    fn name(&self) -> Cow<'static, str> {
+        t!("doctor.name.venv")
     }
 
     fn run(&self) -> Vec<CheckResult> {
@@ -24,14 +28,14 @@ impl Check for VirtualenvCheck {
                 return vec![CheckResult::error(
                     self.id(),
                     self.name(),
-                    "virtualenvs directory not found",
+                    t!("doctor.venv.dir_not_found"),
                 )];
             }
         };
 
         if !venvs_dir.exists() {
             return vec![
-                CheckResult::ok(self.id(), self.name()).with_details("no environments yet"),
+                CheckResult::ok(self.id(), self.name()).with_details(t!("doctor.venv.none_yet")),
             ];
         }
 
@@ -43,7 +47,7 @@ impl Check for VirtualenvCheck {
                 return vec![CheckResult::error(
                     self.id(),
                     self.name(),
-                    format!("cannot read virtualenvs directory: {e}"),
+                    t!("doctor.venv.unreadable_dir", error = e.to_string()),
                 )];
             }
         };
@@ -59,8 +63,8 @@ impl Check for VirtualenvCheck {
                 broken.push(
                     CheckResult::error(
                         "venv",
-                        "broken virtualenv",
-                        format!("'{}' is corrupted", name),
+                        t!("doctor.name.broken_venv"),
+                        t!("doctor.venv.corrupted", name = name),
                     )
                     .with_suggestion(format!(
                         "scuv remove {} && scuv create {} <python-version>",
@@ -76,11 +80,11 @@ impl Check for VirtualenvCheck {
                     healthy += 1;
                     continue;
                 }
-                MetadataState::Missing => format!("'{}' has no scuv metadata", name),
-                MetadataState::Unreadable => format!("'{}' has unreadable scuv metadata", name),
+                MetadataState::Missing => t!("doctor.venv.no_metadata", name = name),
+                MetadataState::Unreadable => t!("doctor.venv.unreadable_metadata", name = name),
             };
             warnings.push(
-                CheckResult::warn("venv", "virtualenv metadata", problem)
+                CheckResult::warn("venv", t!("doctor.name.venv_metadata"), problem)
                     .with_suggestion(format!("scuv verify {}", name)),
             );
         }
@@ -95,11 +99,12 @@ impl Check for VirtualenvCheck {
             if healthy > 0 {
                 results.push(
                     CheckResult::ok(self.id(), self.name())
-                        .with_details(format!("{} environments, all healthy", healthy)),
+                        .with_details(t!("doctor.venv.all_healthy", count = healthy)),
                 );
             } else {
                 results.push(
-                    CheckResult::ok(self.id(), self.name()).with_details("no environments yet"),
+                    CheckResult::ok(self.id(), self.name())
+                        .with_details(t!("doctor.venv.none_yet")),
                 );
             }
         }
@@ -293,8 +298,8 @@ mod tests {
         fn id(&self) -> &'static str {
             "symlink"
         }
-        fn name(&self) -> &'static str {
-            "symbolic links"
+        fn name(&self) -> std::borrow::Cow<'static, str> {
+            "symbolic links".into()
         }
         fn run(&self) -> Vec<CheckResult> {
             vec![CheckResult::error("symlink", "broken symlink", "broken")]
