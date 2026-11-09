@@ -692,3 +692,29 @@ fn create_venv_dir_makes_the_env_or_fails() {
     fs::write(&blocked, "").unwrap();
     assert!(create_venv_dir(&client, &blocked.join("env"), "3.12").is_err());
 }
+
+/// The strict walk filters like `env_dirs` (directories only, no files or
+/// symlinks). What fails this: `||` becoming `&&` in its filter, which lets
+/// a regular file through as an env.
+#[cfg(unix)]
+#[test]
+#[serial]
+fn env_dirs_complete_yields_only_real_directories() {
+    with_temp_scoop_home(|temp_dir| {
+        let venvs_dir = temp_dir.path().join("virtualenvs");
+        fs::create_dir_all(venvs_dir.join("real")).unwrap();
+        fs::write(venvs_dir.join("file"), "").unwrap();
+        let other = tempfile::TempDir::new().unwrap();
+        std::os::unix::fs::symlink(other.path(), venvs_dir.join("symlinked")).unwrap();
+
+        let names: Vec<String> = env_dirs_complete()
+            .unwrap()
+            .into_iter()
+            .map(|(name, _)| name)
+            .collect();
+        assert_eq!(names, ["real"]);
+
+        let _ = fs::remove_dir_all(&venvs_dir);
+        assert!(env_dirs_complete().unwrap().is_empty());
+    });
+}

@@ -1332,11 +1332,11 @@ prune.success:
 # Gc command (orphan virtualenv cleanup)
 # ============================================================================
 gc.nothing_to_remove:
-  en: "Nothing to clean up — all environments look healthy"
-  ko: "정리할 게 없어요 — 모든 환경이 정상이에요"
-  pt-BR: "Nada para limpar — todos os ambientes estão saudáveis"
-  ja: "片付けるものはありません — すべての環境は正常です"
-  es: "Nada que limpiar — todos los entornos están en buen estado"
+  en: "Nothing to clean up — no cleanup candidates found"
+  ko: "정리할 게 없어요 — 정리 대상을 찾지 못했어요"
+  pt-BR: "Nada para limpar — nenhum candidato à limpeza encontrado"
+  ja: "片付けるものはありません — 片付けの対象は見つかりませんでした"
+  es: "Nada que limpiar — no se encontraron candidatos para limpiar"
 
 gc.envs_header:
   en: "Orphan virtualenvs (%{count}):"
@@ -1674,11 +1674,11 @@ gc.skipped_recently_used:
   es: "Entorno '%{name}' omitido — se usó entre el escaneo y la eliminación (ya no supera el límite de --older-than)"
 
 gc.skipped_no_data:
-  en: "Skipped env '%{name}' — metadata became unreadable between scan and remove; refusing to delete blindly"
-  ko: "환경 '%{name}' 건너뜀 — 스캔과 삭제 사이에 메타데이터가 읽을 수 없게 되어 안전을 위해 삭제하지 않을게요"
-  pt-BR: "Ambiente '%{name}' pulado — metadados ficaram ilegíveis entre escaneamento e remoção; não deletando às cegas"
-  ja: "環境 '%{name}' をスキップ — スキャンと削除の間にメタデータが読み込めなくなったため、安全のため削除しません"
-  es: "Entorno '%{name}' omitido — los metadatos dejaron de poder leerse entre el escaneo y la eliminación; no se elimina a ciegas"
+  en: "Skipped env '%{name}' — could not check its files between scan and remove; refusing to delete blindly"
+  ko: "환경 '%{name}' 건너뜀 — 스캔과 삭제 사이에 파일을 확인할 수 없어 안전을 위해 삭제하지 않을게요"
+  pt-BR: "Ambiente '%{name}' pulado — não foi possível verificar seus arquivos entre escaneamento e remoção; não deletando às cegas"
+  ja: "環境 '%{name}' をスキップ — スキャンと削除の間にファイルを確認できなかったため、安全のため削除しません"
+  es: "Entorno '%{name}' omitido — no se pudieron comprobar sus archivos entre el escaneo y la eliminación; no se elimina a ciegas"
 
 gc.unreadable_metadata_warn:
   en: "%{count} env(s) have unreadable metadata; skipping Python cleanup to be safe"

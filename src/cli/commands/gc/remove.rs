@@ -8,7 +8,7 @@ use rust_i18n::t;
 use crate::output::Output;
 use crate::uv::UvClient;
 
-use super::scan::{classify, recheck_stale, scan_unused_pythons};
+use super::scan::{Health, classify, recheck_stale, scan_unused_pythons};
 use super::types::{
     EnvGcReason, EnvOutcome, EnvRecord, GcCandidate, PythonOutcome, PythonRecord, UnusedPython,
 };
@@ -54,9 +54,17 @@ fn recheck_before_removal(
 ) -> Option<EnvOutcome> {
     match env.reason {
         EnvGcReason::OrphanMissingMetadata | EnvGcReason::OrphanBrokenPython => {
-            if classify(&PathBuf::from(&env.path)).is_none() {
-                output.warn(&t!("gc.skipped_now_healthy", name = &env.name));
-                return Some(EnvOutcome::SkippedHealthy);
+            match classify(&PathBuf::from(&env.path)) {
+                Health::Orphan(_) => {}
+                Health::Healthy => {
+                    output.warn(&t!("gc.skipped_now_healthy", name = &env.name));
+                    return Some(EnvOutcome::SkippedHealthy);
+                }
+                // Could not tell: keep it rather than delete blindly.
+                Health::Unknown => {
+                    output.warn(&t!("gc.skipped_no_data", name = &env.name));
+                    return Some(EnvOutcome::SkippedNoData);
+                }
             }
             None
         }

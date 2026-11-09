@@ -74,8 +74,8 @@ pub(crate) fn write_metadata_file(path: &Path, metadata: &Metadata) -> Result<()
 }
 
 /// [`VirtualenvService::read_metadata_result`] without a service, for
-/// callers that must not need uv (doctor's checks).
-fn read_metadata_file(path: &Path) -> Result<Option<Metadata>> {
+/// callers that must not need uv (doctor's checks, gc's stale scan).
+pub(crate) fn read_metadata_file(path: &Path) -> Result<Option<Metadata>> {
     let metadata_path = path.join(Metadata::FILE_NAME);
     let content = match fs::read_to_string(&metadata_path) {
         Ok(c) => c,
@@ -101,10 +101,12 @@ fn read_metadata_file(path: &Path) -> Result<Option<Metadata>> {
 ///
 /// # Errors
 ///
-/// Resolving `virtualenvs/` or opening it fails here, before any entry.
+/// Resolving `virtualenvs/`, telling whether it exists, or opening it fails
+/// here, before any entry. A `virtualenvs/` that cannot be inspected (an
+/// unreadable or non-directory ancestor) is an error, not "no envs".
 pub(crate) fn env_dirs() -> Result<impl Iterator<Item = (String, PathBuf)>> {
     let dir = paths::virtualenvs_dir()?;
-    let entries = if dir.exists() {
+    let entries = if dir.try_exists()? {
         Some(fs::read_dir(&dir)?)
     } else {
         None
@@ -119,6 +121,39 @@ pub(crate) fn env_dirs() -> Result<impl Iterator<Item = (String, PathBuf)>> {
         let name = path.file_name()?.to_str()?.to_string();
         Some((name, path))
     }))
+}
+
+/// Every env directory under `virtualenvs/`, for a caller that must not
+/// miss one: deciding that nothing uses a Python. The same filter as
+/// [`env_dirs`] (directories only, no symlinks), but an entry that cannot
+/// be read, typed or named is an error instead of being skipped, since a
+/// skipped env would stop protecting its Python.
+///
+/// # Errors
+///
+/// As [`env_dirs`], plus any entry, file type or non-UTF-8 name.
+pub(crate) fn env_dirs_complete() -> Result<Vec<(String, PathBuf)>> {
+    let dir = paths::virtualenvs_dir()?;
+    if !dir.try_exists()? {
+        return Ok(Vec::new());
+    }
+    let mut envs = Vec::new();
+    for entry in fs::read_dir(&dir)? {
+        let entry = entry?;
+        let ft = entry.file_type()?;
+        if !ft.is_dir() || ft.is_symlink() {
+            continue;
+        }
+        let path = entry.path();
+        let name = entry.file_name().into_string().map_err(|raw| {
+            ScoopError::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("env directory name is not UTF-8: {}", raw.to_string_lossy()),
+            ))
+        })?;
+        envs.push((name, path));
+    }
+    Ok(envs)
 }
 
 impl VirtualenvService {

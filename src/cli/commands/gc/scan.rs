@@ -6,7 +6,7 @@ use std::path::Path;
 
 use chrono::{DateTime, Utc};
 
-use crate::core::{Metadata, VirtualenvService};
+use crate::core::Metadata;
 use crate::error::Result;
 use crate::paths;
 use crate::uv::UvClient;
@@ -45,7 +45,9 @@ pub(super) fn scan_orphan_envs() -> Result<Vec<GcCandidate>> {
             continue;
         }
 
-        if let Some(reason) = classify(&path) {
+        // An env whose files cannot be inspected is not a candidate: it is
+        // kept, as a healthy one is.
+        if let Health::Orphan(reason) = classify(&path) {
             orphans.push(GcCandidate {
                 name,
                 path: path.display().to_string(),
@@ -72,33 +74,32 @@ pub(super) fn scan_orphan_envs() -> Result<Vec<GcCandidate>> {
 ///   way we have no positive evidence the env is unused, so we refuse
 ///   to flag it. Users who really want to nuke un-activated envs can
 ///   `scuv verify` + manual removal.
-/// * **Corrupt metadata never matches.** Same conservative rule via
-///   a different code path: `VirtualenvService::list()` populates
-///   `info.last_used` from the legacy `read_metadata`, which collapses
-///   parse errors to `None`. The same `Some(last_used)` else-guard
-///   that protects "never activated" therefore also skips "unreadable
-///   metadata" — we don't need a separate corrupt branch here.
+/// * **Corrupt metadata never matches.** Unreadable or unparseable
+///   metadata reads as no `last_used`, so the same else-guard that
+///   protects "never activated" skips it too.
+///
+/// # Errors
+///
+/// When the env directories cannot be walked at all.
 pub(super) fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<GcCandidate>> {
-    let service = match VirtualenvService::auto() {
-        Ok(s) => s,
-        Err(_) => return Ok(Vec::new()),
-    };
-    let envs = match service.list() {
-        Ok(v) => v,
-        Err(_) => return Ok(Vec::new()),
-    };
-
+    // Files only: no uv needed. A walk that cannot start is an error, not
+    // "nothing is stale".
     let mut stale = Vec::new();
-    for info in envs {
-        // Skip envs already flagged as orphans (no metadata / broken
-        // python). The orphan path handles them; flagging them as
-        // stale too would double-record.
-        if classify(&info.path).is_some() {
+    for (name, path) in crate::core::env_dirs()? {
+        // Only healthy envs: orphans are handled by the orphan path (and
+        // must not be recorded twice), and an env that cannot be inspected
+        // is kept.
+        if classify(&path) != Health::Healthy {
             continue;
         }
 
-        // last_used = None → no match, full stop. See function doc.
-        let Some(last_used) = info.last_used else {
+        // last_used = None → no match, full stop. See function doc. Corrupt
+        // metadata reads as None too.
+        let last_used = crate::core::read_metadata_file(&path)
+            .ok()
+            .flatten()
+            .and_then(|m| m.last_used);
+        let Some(last_used) = last_used else {
             continue;
         };
 
@@ -108,8 +109,8 @@ pub(super) fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<GcCandidate>>
 
         let age_days = (Utc::now() - last_used).num_days().max(0) as u64;
         stale.push(GcCandidate {
-            name: info.name.clone(),
-            path: info.path.display().to_string(),
+            name,
+            path: path.display().to_string(),
             reason: EnvGcReason::Stale,
             age_days: Some(age_days),
         });
@@ -117,27 +118,44 @@ pub(super) fn scan_stale_envs(cutoff: DateTime<Utc>) -> Result<Vec<GcCandidate>>
     Ok(stale)
 }
 
-/// Return `Some(reason)` if `path` looks like a broken env, `None` if
-/// it looks healthy from an *orphan-classifier* point of view. Stale
-/// detection lives in `scan_stale_envs` — keeping the two separate
-/// means the orphan-side TOCTOU
-/// guard can't accidentally reclassify a stale-but-healthy env as
-/// "not really stale" and skip removing it.
-pub(super) fn classify(path: &Path) -> Option<EnvGcReason> {
+/// What gc can tell about an env directory from its files.
+#[derive(Debug, PartialEq)]
+pub(super) enum Health {
+    /// Metadata and interpreter are both there.
+    Healthy,
+    /// Confirmed broken: one of them is missing.
+    Orphan(EnvGcReason),
+    /// A check failed (an unreadable path, a looping symlink): neither
+    /// healthy nor confirmed broken, so never deleted.
+    Unknown,
+}
+
+/// Classifies `path` from an *orphan-classifier* point of view. Stale
+/// detection lives in `scan_stale_envs` — keeping the two separate means
+/// the orphan-side TOCTOU guard can't accidentally reclassify a
+/// stale-but-healthy env as "not really stale" and skip removing it.
+///
+/// Uses `try_exists`, not `exists`: `exists` reads every error as
+/// "missing", which would turn an env gc cannot inspect into an orphan to
+/// delete.
+pub(super) fn classify(path: &Path) -> Health {
     // `.scoop-metadata.json` is the contract: every env scuv creates has
     // one. Its absence means the directory was made by hand or its metadata
     // was deleted — either way we can't safely interpret it.
-    if !path.join(Metadata::FILE_NAME).exists() {
-        return Some(EnvGcReason::OrphanMissingMetadata);
+    match path.join(Metadata::FILE_NAME).try_exists() {
+        Ok(true) => {}
+        Ok(false) => return Health::Orphan(EnvGcReason::OrphanMissingMetadata),
+        Err(_) => return Health::Unknown,
     }
     // Check that the interpreter the env points at still exists. We avoid
     // re-running uv here — a stat on the python executable is enough to
-    // catch the common "Python uninstalled out from under the env" case.
-    let bin = paths::virtualenv_python_exe(path);
-    if !bin.exists() {
-        return Some(EnvGcReason::OrphanBrokenPython);
+    // catch the common "Python uninstalled out from under the env" case. A
+    // dangling interpreter link is `Ok(false)`, so it is still an orphan.
+    match paths::virtualenv_python_exe(path).try_exists() {
+        Ok(true) => Health::Healthy,
+        Ok(false) => Health::Orphan(EnvGcReason::OrphanBrokenPython),
+        Err(_) => Health::Unknown,
     }
-    None
 }
 
 /// Re-check that an env recorded as `Stale` at scan time *still* qualifies.
@@ -164,13 +182,8 @@ pub(super) fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutc
         Ok(p) => p,
         Err(_) => return Some(EnvOutcome::SkippedNoData),
     };
-    let service = match VirtualenvService::auto() {
-        Ok(s) => s,
-        // Without the service we can't recheck. Refuse to delete
-        // rather than guess.
-        Err(_) => return Some(EnvOutcome::SkippedNoData),
-    };
-    let meta = match service.read_metadata_result(&path) {
+    // Files only, like the scan: no uv needed.
+    let meta = match crate::core::read_metadata_file(&path) {
         Ok(Some(m)) => m,
         // Missing or corrupt — see scan_stale_envs's rationale.
         _ => return Some(EnvOutcome::SkippedNoData),
@@ -265,22 +278,19 @@ fn is_dotted_version(version: &str) -> bool {
 pub(super) fn referenced_versions(
     leaving: &[&str],
 ) -> std::result::Result<HashSet<String>, PythonSkip> {
-    let service = VirtualenvService::auto().map_err(|_| PythonSkip::EnvListUnavailable)?;
-    let envs = service.list().map_err(|_| PythonSkip::EnvListUnavailable)?;
+    // The strict walk: an env it could not see would stop protecting its
+    // Python, so any entry it cannot read makes the answer unknown.
+    let envs = crate::core::env_dirs_complete().map_err(|_| PythonSkip::EnvListUnavailable)?;
 
     let mut used = HashSet::new();
     let mut unreadable = 0usize;
-    for info in envs {
+    for (name, path) in envs {
         // Skip envs that are going away — they shouldn't protect their
         // Pythons from cleanup.
-        if leaving.contains(&info.name.as_str()) {
+        if leaving.contains(&name.as_str()) {
             continue;
         }
-        // Read metadata for the python_version field — info.python_version
-        // is sniffed from the venv layout and can be missing.
-        let meta = paths::virtualenv_path(&info.name)
-            .ok()
-            .and_then(|path| service.read_metadata(&path));
+        let meta = crate::core::read_metadata_file(&path).ok().flatten();
         match meta {
             Some(meta) if is_dotted_version(&meta.python_version) => {
                 used.insert(meta.python_version);

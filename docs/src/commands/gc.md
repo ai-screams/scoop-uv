@@ -20,7 +20,7 @@ An environment directory is considered an orphan if either:
 - It has no `.scoop-metadata.json` (it wasn't created by scuv, or the metadata was deleted), or
 - Its Python interpreter is missing (`bin/python` on Unix / `Scripts/python.exe` on Windows) — typically because the Python version was uninstalled out from under it
 
-Healthy environments are left untouched.
+Healthy environments are left untouched, and so is an environment whose files `gc` cannot check (for example a metadata file that is a symlink to itself): "could not check" never counts as "missing".
 
 ## `--aggressive`
 
@@ -34,7 +34,7 @@ Without `--aggressive`, Python versions are never touched — even ones that loo
 
 `gc` reports a Python as unused only when it can tell which Python every remaining environment uses — every environment it lists that is not itself being cleaned up. When it cannot, it skips Python cleanup instead of guessing:
 
-- **The environment directory cannot be read** — if `~/.scuv/virtualenvs` is unreadable from the start, `gc` stops with an error before touching anything. If it becomes unreadable later, during the Python scan, a warning is printed and no Python is reported.
+- **The environment directory cannot be read** — if `~/.scuv/virtualenvs` cannot be read or even checked from the start (an unreadable or non-directory parent included), `gc` stops with an error before touching anything. If it becomes unreadable later, during the Python scan, or any entry in it cannot be read, a warning is printed and no Python is reported.
 - **A remaining environment has unreadable metadata** — its Python version is unknown, so a warning is printed and no Python is reported. A cleanup candidate with unreadable metadata does not count: it is going away.
 
 If uv cannot list its Pythons when `gc --aggressive` first looks for them (`uv python list` fails), `gc` stops with uv's error before removing anything, environments included; under `--json` that is the error envelope. Up to scuv 0.19.0 it reported no Python and carried on. When uv is not on `PATH` at all, `--aggressive` reports no Python and the environment cleanup goes ahead.
@@ -83,9 +83,11 @@ because it has never been activated.)
 Between the `--older-than` scan and the actual delete, an env may be activated. Each candidate is re-checked just before removal:
 
 - `skipped_recently_used` — the env was touched after the scan; `last_used` is now at-or-newer than the original cutoff, so it is no longer stale.
-- `skipped_no_data` — metadata became unreadable or missing between scan and remove. We refuse to delete envs we can no longer reason about.
+- `skipped_no_data` — metadata became unreadable or missing between scan and remove, or (for an orphan) its files could no longer be checked. We refuse to delete envs we can no longer reason about.
 
-Both surface in the JSON envelope as `outcome` values so scripts can distinguish them from `removed` / `failed`.
+`--older-than` reads each environment's metadata directly, so it works without uv on `PATH`.
+
+Both outcomes surface in the JSON envelope as `outcome` values so scripts can distinguish them from `removed` / `failed`.
 
 ## Options
 
@@ -136,8 +138,7 @@ scuv gc --yes
 
 The `- ` item lines go to stdout; the `• ` header and footer lines go to
 stderr, so `scuv gc 2>/dev/null` prints only the candidates. With nothing
-to remove, `gc` prints `✓ Nothing to clean up — all environments look
-healthy` (stderr).
+to remove, `gc` prints `✓ Nothing to clean up — no cleanup candidates found` (stderr).
 
 ## JSON output
 
