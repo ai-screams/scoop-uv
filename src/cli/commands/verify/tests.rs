@@ -73,7 +73,6 @@ fn healthy_env_passes_all_checks() {
         // (manifest_match skips with no .scuv.toml). Q10: previous
         // version of this test only asserted "no error", which would
         // have passed even if every check silently degraded to Warn.
-        let service = VirtualenvService::auto().unwrap();
         let info = VirtualenvInfo {
             name: "ok".to_string(),
             path,
@@ -81,7 +80,7 @@ fn healthy_env_passes_all_checks() {
             created_at: None,
             last_used: None,
         };
-        let report = verify_one(&service, &info, None);
+        let report = verify_one(&info, None);
         assert!(report.healthy, "report should be healthy: {:?}", report);
         assert!(
             report
@@ -101,7 +100,6 @@ fn missing_metadata_fails_metadata_check() {
         let path = make_env("no-meta", "3.12.0");
         fs::remove_file(path.join(".scoop-metadata.json")).unwrap();
 
-        let service = VirtualenvService::auto().unwrap();
         let info = VirtualenvInfo {
             name: "no-meta".to_string(),
             path: path.clone(),
@@ -109,7 +107,7 @@ fn missing_metadata_fails_metadata_check() {
             created_at: None,
             last_used: None,
         };
-        let report = verify_one(&service, &info, None);
+        let report = verify_one(&info, None);
         assert!(!report.healthy);
         let meta_check = report
             .checks
@@ -128,7 +126,6 @@ fn missing_python_binary_skips_exec_check() {
         let path = make_env("no-py", "3.12.0");
         fs::remove_file(path.join("bin").join("python")).unwrap();
 
-        let service = VirtualenvService::auto().unwrap();
         let info = VirtualenvInfo {
             name: "no-py".to_string(),
             path: path.clone(),
@@ -136,7 +133,7 @@ fn missing_python_binary_skips_exec_check() {
             created_at: None,
             last_used: None,
         };
-        let report = verify_one(&service, &info, None);
+        let report = verify_one(&info, None);
         let py_bin = report
             .checks
             .iter()
@@ -161,7 +158,6 @@ fn missing_pyvenv_cfg_fails() {
         let path = make_env("no-cfg", "3.12.0");
         fs::remove_file(path.join("pyvenv.cfg")).unwrap();
 
-        let service = VirtualenvService::auto().unwrap();
         let info = VirtualenvInfo {
             name: "no-cfg".to_string(),
             path,
@@ -169,7 +165,7 @@ fn missing_pyvenv_cfg_fails() {
             created_at: None,
             last_used: None,
         };
-        let report = verify_one(&service, &info, None);
+        let report = verify_one(&info, None);
         let cfg = report
             .checks
             .iter()
@@ -186,7 +182,6 @@ fn missing_activate_fails() {
         let path = make_env("no-act", "3.12.0");
         fs::remove_file(path.join("bin").join("activate")).unwrap();
 
-        let service = VirtualenvService::auto().unwrap();
         let info = VirtualenvInfo {
             name: "no-act".to_string(),
             path,
@@ -194,7 +189,7 @@ fn missing_activate_fails() {
             created_at: None,
             last_used: None,
         };
-        let report = verify_one(&service, &info, None);
+        let report = verify_one(&info, None);
         let act = report
             .checks
             .iter()
@@ -240,7 +235,6 @@ fn python_executes_check_passes_on_unix() {
     with_temp_scoop_home(|_| {
         let path = make_env("runs", "3.12.0");
 
-        let service = VirtualenvService::auto().unwrap();
         let info = VirtualenvInfo {
             name: "runs".to_string(),
             path,
@@ -248,7 +242,7 @@ fn python_executes_check_passes_on_unix() {
             created_at: None,
             last_used: None,
         };
-        let report = verify_one(&service, &info, None);
+        let report = verify_one(&info, None);
         let exec = report
             .checks
             .iter()
@@ -287,4 +281,60 @@ fn check_kind_serializes_to_stable_ids() {
             "\"manifest_match\"",
         ]
     );
+}
+
+/// The metadata check names the exact problem: a file that does not parse
+/// or a directory in its place is "failed to parse"; nothing there, or a
+/// symlink that loops, is "not found". What fails this: mapping read errors
+/// by error kind instead of by whether something exists at the path.
+#[test]
+#[serial]
+fn metadata_check_message_names_the_problem() {
+    with_temp_scoop_home(|_| {
+        let message = |name: &str| {
+            let info = VirtualenvInfo {
+                name: name.to_string(),
+                path: crate::paths::virtualenv_path(name).unwrap(),
+                python_version: None,
+                created_at: None,
+                last_used: None,
+            };
+            let report = verify_one(&info, None);
+            let check = report
+                .checks
+                .iter()
+                .find(|c| c.name == CheckKind::Metadata)
+                .unwrap();
+            assert!(matches!(check.status, CheckStatus::Fail));
+            check.message.clone().unwrap()
+        };
+        let meta = |name: &str| make_env(name, "3.12.0").join(".scoop-metadata.json");
+
+        let p = meta("malformed");
+        fs::write(&p, "{not json").unwrap();
+        assert_eq!(
+            message("malformed"),
+            ".scoop-metadata.json exists but failed to parse"
+        );
+
+        let p = meta("dir");
+        fs::remove_file(&p).unwrap();
+        fs::create_dir(&p).unwrap();
+        assert_eq!(
+            message("dir"),
+            ".scoop-metadata.json exists but failed to parse"
+        );
+
+        let p = meta("gone");
+        fs::remove_file(&p).unwrap();
+        assert_eq!(message("gone"), ".scoop-metadata.json not found");
+
+        #[cfg(unix)]
+        {
+            let p = meta("looping");
+            fs::remove_file(&p).unwrap();
+            std::os::unix::fs::symlink(&p, &p).unwrap();
+            assert_eq!(message("looping"), ".scoop-metadata.json not found");
+        }
+    });
 }

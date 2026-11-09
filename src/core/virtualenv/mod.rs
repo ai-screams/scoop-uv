@@ -13,6 +13,9 @@ use crate::paths;
 use crate::uv::UvClient;
 use crate::validate;
 
+mod layout;
+pub(crate) use layout::{MetadataState, inspect_env};
+
 /// Information about a virtual environment.
 ///
 /// `#[non_exhaustive]` so future field additions (more metadata-derived
@@ -42,6 +45,19 @@ pub struct VirtualenvInfo {
 /// Service for managing virtual environments
 pub struct VirtualenvService {
     uv: UvClient,
+}
+
+/// [`VirtualenvService::read_metadata_result`] without a service, for
+/// callers that must not need uv (doctor's checks).
+fn read_metadata_file(path: &Path) -> Result<Option<Metadata>> {
+    let metadata_path = path.join(Metadata::FILE_NAME);
+    let content = match fs::read_to_string(&metadata_path) {
+        Ok(c) => c,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(e) => return Err(ScoopError::Io(e)),
+    };
+    let parsed: Metadata = serde_json::from_str(&content)?;
+    Ok(Some(parsed))
 }
 
 /// The directories under `virtualenvs/` that can be envs, as `(name, path)`
@@ -271,14 +287,7 @@ impl VirtualenvService {
     /// only forensic trace of the corruption), while still updating files
     /// that are merely absent.
     pub fn read_metadata_result(&self, path: &Path) -> Result<Option<Metadata>> {
-        let metadata_path = path.join(Metadata::FILE_NAME);
-        let content = match fs::read_to_string(&metadata_path) {
-            Ok(c) => c,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
-            Err(e) => return Err(ScoopError::Io(e)),
-        };
-        let parsed: Metadata = serde_json::from_str(&content)?;
-        Ok(Some(parsed))
+        read_metadata_file(path)
     }
 
     /// Write metadata using an atomic replace: write to a sibling tempfile

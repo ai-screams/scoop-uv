@@ -21,39 +21,22 @@ impl Check for SymlinkCheck {
     }
 
     fn run(&self) -> Vec<CheckResult> {
-        let venvs_dir = match paths::virtualenvs_dir() {
-            Ok(dir) if dir.exists() => dir,
-            _ => return vec![],
-        };
-
         let mut results = Vec::new();
         let mut valid = 0;
         let mut broken_names = Vec::new();
 
-        if let Ok(entries) = std::fs::read_dir(&venvs_dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    let python_path = crate::paths::virtualenv_python_exe(&path);
-
-                    if python_path.is_symlink() {
-                        match std::fs::read_link(&python_path) {
-                            Ok(target) if target.exists() => {
-                                valid += 1;
-                            }
-                            Ok(_) => {
-                                let name = path
-                                    .file_name()
-                                    .and_then(|n| n.to_str())
-                                    .unwrap_or("unknown")
-                                    .to_string();
-                                broken_names.push(name);
-                            }
-                            Err(_) => {
-                                // Not a symlink or error reading
-                            }
-                        }
-                    }
+        // The same walk as `scuv list`: a symlink planted under virtualenvs/
+        // is not an env, so its interpreter is not inspected either. Without
+        // a readable virtualenvs/ there is nothing to report here; the
+        // virtualenvs check reports that.
+        for (name, path) in crate::core::env_dirs().into_iter().flatten() {
+            let python_path = crate::paths::virtualenv_python_exe(&path);
+            if python_path.is_symlink() {
+                match std::fs::read_link(&python_path) {
+                    Ok(target) if target.exists() => valid += 1,
+                    Ok(_) => broken_names.push(name),
+                    // Not a symlink after all, or unreadable.
+                    Err(_) => {}
                 }
             }
         }
@@ -312,6 +295,31 @@ mod tests {
             // `fix` reads the env name from here, not from the message.
             let error = results.iter().find(|r| r.is_error()).unwrap();
             assert_eq!(error.target.as_deref(), Some("brokenlink"));
+        });
+    }
+
+    /// A symlink under virtualenvs/ is not an env, so a dangling interpreter
+    /// inside it is not reported (it is not `scuv list`-ed either). What
+    /// fails this: walking with `path.is_dir()`, which follows the link.
+    #[cfg(unix)]
+    #[test]
+    #[serial]
+    fn symlink_check_ignores_a_symlinked_entry() {
+        with_temp_scoop_home(|temp| {
+            use std::os::unix::fs::symlink;
+
+            let elsewhere = tempfile::tempdir().unwrap();
+            std::fs::create_dir_all(elsewhere.path().join("bin")).unwrap();
+            symlink(
+                "/nonexistent/python",
+                elsewhere.path().join("bin").join("python"),
+            )
+            .unwrap();
+            let venvs = temp.path().join("virtualenvs");
+            std::fs::create_dir_all(&venvs).unwrap();
+            symlink(elsewhere.path(), venvs.join("linked")).unwrap();
+
+            assert!(SymlinkCheck.run().is_empty());
         });
     }
 

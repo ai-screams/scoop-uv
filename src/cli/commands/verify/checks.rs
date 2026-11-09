@@ -7,7 +7,7 @@ use std::process::Command;
 use rust_i18n::t;
 
 use crate::core::manifest::{ScoopManifest, find_manifest_from_cwd};
-use crate::core::{Metadata, VirtualenvInfo, VirtualenvService};
+use crate::core::{MetadataState, VirtualenvInfo, VirtualenvService};
 use crate::error::Result;
 use crate::validate::{self, PythonVersion};
 
@@ -52,31 +52,34 @@ pub(super) fn load_manifest_for_drift_check() -> Option<ScoopManifest> {
     ScoopManifest::load(&path).ok()
 }
 
-pub(super) fn verify_one(
-    service: &VirtualenvService,
-    env: &VirtualenvInfo,
-    manifest: Option<&ScoopManifest>,
-) -> EnvReport {
+pub(super) fn verify_one(env: &VirtualenvInfo, manifest: Option<&ScoopManifest>) -> EnvReport {
     let path = env.path.as_path();
     let mut checks = Vec::with_capacity(6);
 
+    let layout = crate::core::inspect_env(path);
+
     // Check 1: metadata file present + parseable.
-    let metadata = service.read_metadata(path);
-    let recorded_python = metadata.as_ref().map(|m| m.python_version.clone());
-    checks.push(if metadata.is_some() {
-        CheckResult::pass(CheckKind::Metadata)
-    } else if path.join(Metadata::FILE_NAME).exists() {
-        // File exists but failed to deserialize — read_metadata swallows the
-        // error and returns None. From a user's view that's still a failure,
-        // just a different reason. We surface "unreadable" so they can fix it.
-        CheckResult::fail(CheckKind::Metadata, t!("verify.metadata_unreadable"))
-    } else {
-        CheckResult::fail(CheckKind::Metadata, t!("verify.metadata_missing"))
-    });
+    let (metadata_check, recorded_python) = match layout.metadata {
+        MetadataState::Present(m) => (
+            CheckResult::pass(CheckKind::Metadata),
+            Some(m.python_version),
+        ),
+        // A file that is there but does not parse is still a failure, just
+        // a different one: surface "unreadable" so the user can fix it.
+        MetadataState::Unreadable => (
+            CheckResult::fail(CheckKind::Metadata, t!("verify.metadata_unreadable")),
+            None,
+        ),
+        MetadataState::Missing => (
+            CheckResult::fail(CheckKind::Metadata, t!("verify.metadata_missing")),
+            None,
+        ),
+    };
+    checks.push(metadata_check);
 
     // Check 2: interpreter binary on disk.
     let python_bin = crate::paths::virtualenv_python_exe(path);
-    let python_present = python_bin.exists();
+    let python_present = layout.python;
     checks.push(if python_present {
         CheckResult::pass(CheckKind::PythonBinary)
     } else {
@@ -88,24 +91,28 @@ pub(super) fn verify_one(
 
     // Check 3: pyvenv.cfg marker. Without this, virtualenv-aware tools
     // (including `python -m venv`) won't recognise the directory.
-    let pyvenv = path.join("pyvenv.cfg");
-    checks.push(if pyvenv.exists() {
+    checks.push(if layout.pyvenv_cfg {
         CheckResult::pass(CheckKind::PyvenvCfg)
     } else {
         CheckResult::fail(
             CheckKind::PyvenvCfg,
-            t!("verify.file_missing", path = pyvenv.display()),
+            t!(
+                "verify.file_missing",
+                path = path.join("pyvenv.cfg").display()
+            ),
         )
     });
 
     // Check 4: activate script.
-    let activate = crate::paths::virtualenv_activate_script(path);
-    checks.push(if activate.exists() {
+    checks.push(if layout.activate {
         CheckResult::pass(CheckKind::ActivateScript)
     } else {
         CheckResult::fail(
             CheckKind::ActivateScript,
-            t!("verify.file_missing", path = activate.display()),
+            t!(
+                "verify.file_missing",
+                path = crate::paths::virtualenv_activate_script(path).display()
+            ),
         )
     });
 
