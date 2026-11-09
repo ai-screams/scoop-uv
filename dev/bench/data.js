@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794211392204,
+  "lastUpdate": 1794211393727,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -14713,6 +14713,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 918,
             "range": "± 4",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "30e745eebe5a4a7cf8c749651a2f8a0d9c921251",
+          "message": "Merge pull request #266 from ai-screams/fix/name-and-error-gaps\n\nfix: [#266] reserve every command name for new envs and report a migrate miss in all sources",
+          "timestamp": "2026-11-09T16:57:51+09:00",
+          "tree_id": "67336d913e27ee98a4b495d651ad747990f3c699",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/30e745eebe5a4a7cf8c749651a2f8a0d9c921251"
+        },
+        "date": 1794211393615,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1558,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1033,
+            "range": "± 11",
             "unit": "ns/iter"
           }
         ]
