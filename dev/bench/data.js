@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794227627379,
+  "lastUpdate": 1794227628938,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -15192,6 +15192,42 @@ window.BENCHMARK_DATA = {
           {
             "name": "find_executable_in_miss",
             "value": 396,
+            "range": "± 12",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ee742e1ae956108911e46ea7514e6d1709959e3b",
+          "message": "Merge pull request #270 from ai-screams/fix/doctor-env-health\n\nfix(doctor): [#270] judge env files the way verify does and walk the envs list shows",
+          "timestamp": "2026-11-09T21:29:42+09:00",
+          "tree_id": "08ee95b310ae3044591071c1376e25f830381c3f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/ee742e1ae956108911e46ea7514e6d1709959e3b"
+        },
+        "date": 1794227628820,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 627,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 458,
             "range": "± 12",
             "unit": "ns/iter"
           }
