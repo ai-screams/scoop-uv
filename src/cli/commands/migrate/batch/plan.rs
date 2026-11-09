@@ -6,13 +6,17 @@ use std::path::Path;
 
 use crate::core::migrate::{EnvironmentStatus, SourceEnvironment, SourceType};
 
-use super::super::types::{MigrateSkipped, MigrationConflictDetail};
+use super::super::types::{MigrateFailure, MigrateSkipped, MigrationConflictDetail};
 
-/// The three buckets a scan splits into.
+/// The buckets a scan splits into.
 pub(super) struct PartitionedEnvs<'a> {
     pub(super) migratable: Vec<&'a SourceEnvironment>,
     pub(super) conflicts: Vec<MigrationConflictDetail>,
     pub(super) skipped: Vec<MigrateSkipped>,
+    /// Envs that would migrate but whose name a new env may not take (a
+    /// reserved word, say). They fail the batch as the migrator would, but
+    /// before the plan, so the plan never lists them.
+    pub(super) invalid: Vec<MigrateFailure>,
 }
 
 /// Split scanned envs into migratable / conflict / skipped buckets.
@@ -34,6 +38,7 @@ pub(super) fn partition_envs<'a>(
     let mut migratable: Vec<&SourceEnvironment> = Vec::new();
     let mut conflicts: Vec<MigrationConflictDetail> = Vec::new();
     let mut skipped: Vec<MigrateSkipped> = Vec::new();
+    let mut invalid: Vec<MigrateFailure> = Vec::new();
     // Target names already claimed by an earlier entry in this same batch.
     //
     // `EnvironmentStatus::NameConflict` only reports collisions with an
@@ -72,6 +77,15 @@ pub(super) fn partition_envs<'a>(
         };
 
         if eligible {
+            if let Err(e) = crate::validate::validate_env_name(&env.name) {
+                invalid.push(MigrateFailure {
+                    name: env.name.clone(),
+                    source_type: env.source_type,
+                    error_code: e.code(),
+                    error: e.to_string(),
+                });
+                continue;
+            }
             let key = env.name.to_ascii_lowercase();
             if let Some(winner) = claimed.get(&key) {
                 let target = venvs_dir.join(&env.name);
@@ -122,6 +136,7 @@ pub(super) fn partition_envs<'a>(
         migratable,
         conflicts,
         skipped,
+        invalid,
     }
 }
 
@@ -156,6 +171,63 @@ mod tests {
             size_bytes: None,
             status: EnvironmentStatus::Ready,
         }
+    }
+
+    /// A source env whose name a new env may not take fails before the
+    /// plan, with the code the migrator would have given it, and does not
+    /// claim its name. What fails this: dropping the validation in
+    /// `partition_envs` (it lands in `migratable`).
+    #[test]
+    fn partition_fails_a_reserved_name_before_the_plan() {
+        let envs = vec![
+            create_test_env_from("gc", SourceType::Pyenv),
+            create_test_env_from("web", SourceType::Conda),
+        ];
+
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
+
+        assert_eq!(p.migratable.len(), 1);
+        assert_eq!(p.migratable[0].name, "web");
+        assert_eq!(p.invalid.len(), 1);
+        assert_eq!(p.invalid[0].name, "gc");
+        assert_eq!(p.invalid[0].source_type, SourceType::Pyenv);
+        assert_eq!(p.invalid[0].error_code, "ENV_INVALID_NAME");
+        assert!(p.skipped.is_empty() && p.conflicts.is_empty());
+    }
+
+    /// `--force` would replace the scuv env that already has the name;
+    /// the name check runs first, so it never gets there.
+    #[test]
+    fn partition_fails_a_reserved_name_even_with_force() {
+        let envs = vec![create_test_env(
+            "gc",
+            EnvironmentStatus::NameConflict {
+                existing: PathBuf::from("/venvs/gc"),
+            },
+        )];
+
+        let p = partition_envs(&envs, true, false, Path::new("/venvs"));
+
+        assert!(p.migratable.is_empty());
+        assert_eq!(p.invalid.len(), 1);
+    }
+
+    /// Only envs that would migrate are checked: a corrupted one keeps its
+    /// own reason.
+    #[test]
+    fn partition_keeps_the_skip_reason_of_an_ineligible_reserved_name() {
+        let envs = vec![create_test_env(
+            "gc",
+            EnvironmentStatus::Corrupted {
+                reason: "no python".to_string(),
+            },
+        )];
+
+        let p = partition_envs(&envs, false, false, Path::new("/venvs"));
+
+        assert!(p.invalid.is_empty());
+        assert_eq!(p.skipped.len(), 1);
+        assert!(p.skipped[0].reason.contains("corrupted"));
     }
 
     /// Two sources offering the same name must not both be migratable.

@@ -1037,6 +1037,13 @@ error.conda_env_not_found:
   ja: "conda 環境 '%{name}' が見つかりません"
   es: "Entorno conda '%{name}' no encontrado"
 
+error.source_env_not_found:
+  en: "Environment '%{name}' not found in pyenv, virtualenvwrapper or conda"
+  ko: "pyenv, virtualenvwrapper, conda 어디에서도 환경 '%{name}'을(를) 찾을 수 없음"
+  pt-BR: "Ambiente '%{name}' não encontrado no pyenv, virtualenvwrapper ou conda"
+  ja: "環境 '%{name}' が pyenv、virtualenvwrapper、conda のいずれにも見つかりません"
+  es: "Entorno '%{name}' no encontrado en pyenv, virtualenvwrapper ni conda"
+
 error.corrupted_environment:
   en: "'%{name}' is corrupted: %{reason}"
   ko: "'%{name}' 손상됨: %{reason}"

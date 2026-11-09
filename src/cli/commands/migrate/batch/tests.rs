@@ -193,3 +193,109 @@ fn migrate_all_environments_json_emits_failure_envelope() {
         ));
     });
 }
+
+/// A source env named with a reserved word cannot migrate under that name.
+/// It fails the batch before any plan even when it is the only env, and
+/// `--force` does not replace the scuv env that already has the name. What
+/// fails this: the empty-batch branch ignoring the invalid names (the batch
+/// then reports nothing to migrate and succeeds).
+#[test]
+#[serial]
+fn migrate_all_environments_fails_a_reserved_name_without_touching_the_target() {
+    with_full_migrate_env(|scoop, pyenv| {
+        create_mock_pyenv_env(pyenv.path(), "gc", "3.12.0");
+        let existing = scoop.path().join("virtualenvs").join("gc");
+        std::fs::create_dir_all(&existing).unwrap();
+        std::fs::write(existing.join("keep"), "").unwrap();
+
+        let output = Output::new(0, true, Colors::NONE, false);
+        for dry_run in [true, false] {
+            let opts = MigrateExecuteOptions {
+                source_filter: Some(MigrateSource::Pyenv),
+                dry_run,
+                force: true,
+                yes: true,
+                ..Default::default()
+            };
+            let result = migrate_all_environments(&output, &opts);
+            assert!(
+                matches!(
+                    result,
+                    Err(ScoopError::MigrationBatchFailed {
+                        failed_count: 1,
+                        conflict_count: 0,
+                    })
+                ),
+                "dry_run={dry_run}: {result:?}"
+            );
+            assert!(existing.join("keep").exists(), "dry_run={dry_run}");
+        }
+    });
+}
+
+/// Declining the plan does not turn the names already reported as failed
+/// into a success. What fails this: returning Ok on cancel regardless.
+#[test]
+#[serial]
+fn migrate_all_declined_plan_still_fails_reserved_names() {
+    with_full_migrate_env(|scoop, pyenv| {
+        create_mock_pyenv_env(pyenv.path(), "gc", "3.12.0");
+        create_mock_pyenv_env(pyenv.path(), "web", "3.12.0");
+
+        let output = Output::new(0, true, Colors::NONE, false);
+        let opts = MigrateExecuteOptions {
+            source_filter: Some(MigrateSource::Pyenv),
+            ..Default::default()
+        };
+        let mut asked = 0;
+        let result = migrate_all_with(&output, &opts, |count| {
+            asked += 1;
+            assert_eq!(count, 1, "only `web` is planned");
+            Ok(false)
+        });
+        assert_eq!(asked, 1);
+        assert!(
+            matches!(
+                result,
+                Err(ScoopError::MigrationBatchFailed {
+                    failed_count: 1,
+                    conflict_count: 0,
+                })
+            ),
+            "{result:?}"
+        );
+        assert!(!scoop.path().join("virtualenvs").join("web").exists());
+    });
+}
+
+/// Without invalid names a declined plan is still a clean cancel.
+#[test]
+#[serial]
+fn migrate_all_declined_plan_is_ok_without_failures() {
+    with_full_migrate_env(|_scoop, pyenv| {
+        create_mock_pyenv_env(pyenv.path(), "web", "3.12.0");
+
+        let output = Output::new(0, true, Colors::NONE, false);
+        let opts = MigrateExecuteOptions {
+            source_filter: Some(MigrateSource::Pyenv),
+            ..Default::default()
+        };
+        assert!(migrate_all_with(&output, &opts, |_| Ok(false)).is_ok());
+    });
+}
+
+/// What fails this: dropping the sort (the invalid name would stay last).
+#[test]
+fn merge_failures_keeps_the_list_sorted_by_name() {
+    use crate::core::migrate::SourceType;
+    let failure = |name: &str| super::super::types::MigrateFailure {
+        name: name.to_string(),
+        source_type: SourceType::Pyenv,
+        error_code: "X",
+        error: String::new(),
+    };
+    let mut failed = vec![failure("aaa"), failure("zzz")];
+    merge_failures(&mut failed, vec![failure("gc")]);
+    let names: Vec<_> = failed.iter().map(|f| f.name.as_str()).collect();
+    assert_eq!(names, ["aaa", "gc", "zzz"]);
+}

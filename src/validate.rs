@@ -21,7 +21,13 @@ static VERSION_REGEX: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"^\d+(\.\d+)*((a|b|rc)\d+)?$").expect("VERSION_REGEX is a valid pattern")
 });
 
-/// Reserved names that cannot be used as environment names
+/// Names a new environment cannot take: every top-level command and alias
+/// (enforced by `reserved_names_cover_every_top_level_command`) plus words
+/// that mean something else in a version file or to other tools.
+///
+/// Only creation checks this list ([`validate_env_name`]). An env that
+/// already has one of these names, made before the word was reserved, is
+/// still found, used and removed ([`validate_existing_env_name`]).
 const RESERVED_NAMES: &[&str] = &[
     "activate",
     "base",
@@ -31,23 +37,36 @@ const RESERVED_NAMES: &[&str] = &[
     "deactivate",
     "default",
     "delete",
+    "diff",
+    "doctor",
     "export",
+    "gc",
     "global",
     "help",
     "import",
+    "info",
     "init",
     "install",
+    "lang",
     "list",
     "local",
+    "ls",
+    "man",
+    "migrate",
+    "prune",
     "remove",
     "resolve",
+    "rm",
     "root",
     "run",
+    "self",
+    "shell",
     "status",
     "sync",
     "system",
     "uninstall",
     "use",
+    "verify",
     "version",
     "versions",
     "which",
@@ -56,7 +75,7 @@ const RESERVED_NAMES: &[&str] = &[
 /// Maximum length for environment names
 const MAX_ENV_NAME_LENGTH: usize = 64;
 
-/// Check if a string is a valid environment name.
+/// Check if a string is a valid name for a new environment.
 ///
 /// Valid names must:
 /// - Start with a letter (a-z, A-Z)
@@ -77,22 +96,29 @@ const MAX_ENV_NAME_LENGTH: usize = 64;
 /// assert!(!is_valid_env_name("123env"));    // starts with digit
 /// ```
 pub fn is_valid_env_name(name: &str) -> bool {
-    if name.is_empty() || name.len() > MAX_ENV_NAME_LENGTH {
-        return false;
-    }
-
-    if RESERVED_NAMES.contains(&name.to_lowercase().as_str()) {
-        return false;
-    }
-
-    if VERSION_REGEX.is_match(name) {
-        return false;
-    }
-
-    ENV_NAME_REGEX.is_match(name)
+    validate_env_name(name).is_ok()
 }
 
-/// Validate an environment name, returning an error if invalid.
+/// Check if a string is a valid name for an environment that may already
+/// exist: the rules of [`is_valid_env_name`] without the reserved list.
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::validate::is_valid_existing_env_name;
+///
+/// assert!(is_valid_existing_env_name("myenv"));
+/// assert!(is_valid_existing_env_name("list"));       // reserved, but may exist
+/// assert!(!is_valid_existing_env_name("../escape"));
+/// assert!(!is_valid_existing_env_name("3.12"));
+/// ```
+pub fn is_valid_existing_env_name(name: &str) -> bool {
+    validate_existing_env_name(name).is_ok()
+}
+
+/// Validate the name a new environment will get, returning an error if
+/// invalid. To look up, use or remove an env that may already exist, use
+/// [`validate_existing_env_name`].
 ///
 /// # Examples
 ///
@@ -112,6 +138,36 @@ pub fn is_valid_env_name(name: &str) -> bool {
 ///
 /// Returns [`ScoopError::InvalidEnvName`] if the name is invalid.
 pub fn validate_env_name(name: &str) -> Result<()> {
+    check_env_name(name, true)
+}
+
+/// Validate the name of an environment that may already exist, for looking
+/// it up, using it or removing it.
+///
+/// Applies every rule of [`validate_env_name`] except the reserved list:
+/// the name stays a single path component inside the virtualenvs
+/// directory, but an env named before its word was reserved stays
+/// reachable. Use [`validate_env_name`] for a name a new env will get.
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::validate::validate_existing_env_name;
+///
+/// assert!(validate_existing_env_name("myenv").is_ok());
+/// assert!(validate_existing_env_name("list").is_ok());
+/// assert!(validate_existing_env_name("../escape").is_err());
+/// ```
+///
+/// # Errors
+///
+/// Returns [`ScoopError::InvalidEnvName`] if the name is invalid.
+pub fn validate_existing_env_name(name: &str) -> Result<()> {
+    check_env_name(name, false)
+}
+
+/// The name rules; `reject_reserved` adds the reserved list.
+fn check_env_name(name: &str, reject_reserved: bool) -> Result<()> {
     if name.is_empty() {
         return Err(ScoopError::InvalidEnvName {
             name: name.to_string(),
@@ -126,7 +182,7 @@ pub fn validate_env_name(name: &str) -> Result<()> {
         });
     }
 
-    if RESERVED_NAMES.contains(&name.to_lowercase().as_str()) {
+    if reject_reserved && RESERVED_NAMES.contains(&name.to_lowercase().as_str()) {
         return Err(ScoopError::InvalidEnvName {
             name: name.to_string(),
             reason: "name is reserved".to_string(),
@@ -642,6 +698,67 @@ mod tests {
         assert_eq!(sorted, vec![&v3_9, &v3_10, &v3_11, &v3_12]);
     }
 
+    /// Every top-level command and alias is reserved, so `scuv <word>` can
+    /// never be read as an env name. Hidden commands count too: the shell
+    /// wrappers call them. What fails this: a new subcommand or alias that
+    /// is not added to RESERVED_NAMES.
+    #[test]
+    fn reserved_names_cover_every_top_level_command() {
+        use clap::CommandFactory;
+
+        let mut cmd = crate::cli::Cli::command();
+        cmd.build();
+        let mut seen = Vec::new();
+        for sub in cmd.get_subcommands() {
+            seen.push(sub.get_name().to_string());
+            seen.extend(sub.get_all_aliases().map(str::to_string));
+        }
+        for expected in ["help", "activate", "ls", "rm", "delete", "self"] {
+            assert!(seen.iter().any(|s| s == expected), "{expected} not seen");
+        }
+        let missing: Vec<_> = seen
+            .iter()
+            .filter(|s| !RESERVED_NAMES.contains(&s.as_str()))
+            .collect();
+        assert!(missing.is_empty(), "not in RESERVED_NAMES: {missing:?}");
+    }
+
+    /// A reserved word only stops a new env from taking the name; an env
+    /// that already has it can still be found, used and removed.
+    #[test]
+    fn reserved_words_pass_the_existing_name_check() {
+        for name in RESERVED_NAMES {
+            assert!(validate_existing_env_name(name).is_ok(), "{name}");
+            assert!(is_valid_existing_env_name(&name.to_uppercase()), "{name}");
+            assert!(validate_env_name(name).is_err(), "{name}");
+        }
+    }
+
+    /// The existing-name check keeps every rule but the reserved list, so
+    /// it still refuses anything that could leave the virtualenvs dir.
+    #[rstest]
+    #[case("")]
+    #[case("../x")]
+    #[case("a/b")]
+    #[case("a\\b")]
+    #[case(".")]
+    #[case("..")]
+    #[case("3.12")]
+    #[case("-x")]
+    #[case("my env")]
+    fn existing_name_check_rejects_unsafe_names(#[case] name: &str) {
+        assert!(validate_existing_env_name(name).is_err(), "{name:?}");
+        assert!(!is_valid_existing_env_name(name), "{name:?}");
+    }
+
+    #[test]
+    fn existing_name_check_enforces_the_length_limit() {
+        assert!(is_valid_existing_env_name(&"a".repeat(MAX_ENV_NAME_LENGTH)));
+        assert!(!is_valid_existing_env_name(
+            &"a".repeat(MAX_ENV_NAME_LENGTH + 1)
+        ));
+    }
+
     #[test]
     fn test_validate_env_name_errors() {
         let err = validate_env_name("").unwrap_err();
@@ -1028,6 +1145,17 @@ mod proptests {
         fn prop_empty_always_invalid(spaces in " {0,10}") {
             prop_assert!(!is_valid_env_name(&spaces));
             prop_assert!(!is_valid_python_version(&spaces));
+        }
+
+        // Property: the strict check is the existing-name check plus the
+        // reserved list, nothing else.
+        #[test]
+        fn prop_strict_is_existing_minus_reserved(name in "[ -~]{0,70}") {
+            let reserved = super::RESERVED_NAMES.contains(&name.to_lowercase().as_str());
+            prop_assert_eq!(
+                is_valid_env_name(&name),
+                is_valid_existing_env_name(&name) && !reserved
+            );
         }
 
         // Property: Reserved names should always be rejected (case-insensitive)

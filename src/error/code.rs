@@ -33,6 +33,7 @@ impl ScoopError {
             Self::PyenvEnvNotFound { .. } => "SOURCE_PYENV_ENV_NOT_FOUND",
             Self::VenvWrapperEnvNotFound { .. } => "SOURCE_VENVWRAPPER_ENV_NOT_FOUND",
             Self::CondaEnvNotFound { .. } => "SOURCE_CONDA_ENV_NOT_FOUND",
+            Self::SourceEnvNotFound { .. } => "SOURCE_ENV_NOT_FOUND",
             Self::CorruptedEnvironment { .. } => "MIGRATE_CORRUPTED",
             Self::PackageExtractionFailed { .. } => "MIGRATE_EXTRACTION_FAILED",
             Self::MigrationFailed { .. } => "MIGRATE_FAILED",

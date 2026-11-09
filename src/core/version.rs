@@ -162,7 +162,7 @@ impl VersionService {
         if trimmed.eq_ignore_ascii_case("system") {
             return Some("system".to_string());
         }
-        crate::validate::is_valid_env_name(trimmed).then(|| trimmed.to_string())
+        crate::validate::is_valid_existing_env_name(trimmed).then(|| trimmed.to_string())
     }
 
     /// Priority-1 environment-variable override: `SCUV_VERSION`. Falls

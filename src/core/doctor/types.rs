@@ -29,6 +29,11 @@ pub struct CheckResult {
     pub suggestion: Option<String>,
     /// Additional details (shown with --verbose).
     pub details: Option<String>,
+    /// What [`Check::fix`] acts on, set only on a finding it can repair:
+    /// the env name for a broken symlink, the home path for a missing
+    /// home. The check decides what the value means; a fix reads this
+    /// instead of parsing the message, which may be translated.
+    pub target: Option<String>,
 }
 
 impl CheckResult {
@@ -40,6 +45,7 @@ impl CheckResult {
             status: CheckStatus::Ok,
             suggestion: None,
             details: None,
+            target: None,
         }
     }
 
@@ -51,6 +57,7 @@ impl CheckResult {
             status: CheckStatus::Warning(message.into()),
             suggestion: None,
             details: None,
+            target: None,
         }
     }
 
@@ -62,6 +69,7 @@ impl CheckResult {
             status: CheckStatus::Error(message.into()),
             suggestion: None,
             details: None,
+            target: None,
         }
     }
 
@@ -74,6 +82,12 @@ impl CheckResult {
     /// Adds details to the result.
     pub fn with_details(mut self, details: impl Into<String>) -> Self {
         self.details = Some(details.into());
+        self
+    }
+
+    /// Marks the result as repairable and names what the repair acts on.
+    pub fn with_target(mut self, target: impl Into<String>) -> Self {
+        self.target = Some(target.into());
         self
     }
 

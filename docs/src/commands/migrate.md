@@ -391,7 +391,8 @@ to stderr as text. The exit code stays `3` either way.
 | Command | Error variant | Trigger |
 |---------|---------------|---------|
 | `migrate all` | `MigrationSourcesNotFound` | No source tool detected at all (pyenv / virtualenvwrapper / conda) |
-| `migrate @env <name>` | `PyenvEnvNotFound` / `VenvWrapperEnvNotFound` / `CondaEnvNotFound` | The named env isn't present in the requested (or any) source |
+| `migrate @env <name>` | `PyenvEnvNotFound` / `VenvWrapperEnvNotFound` / `CondaEnvNotFound` | The named env isn't present in the source `--source` asked for |
+| `migrate @env <name>` | `SourceEnvNotFound` | Without `--source`, no source has the named env (JSON code `SOURCE_ENV_NOT_FOUND`) |
 | `migrate @env <name>` | `CorruptedEnvironment` | The named env exists but its layout is broken (missing python, broken pyvenv.cfg, etc) |
 
 Script template:

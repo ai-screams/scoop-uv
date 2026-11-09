@@ -180,7 +180,8 @@ Stop automatic activation: set `SCUV_NO_AUTO=1` before `scuv init` runs (read on
 
 - Pattern: `^[a-zA-Z][a-zA-Z0-9_-]*$` (max 64 chars)
 - Must start with a letter
-- Reserved words: activate, base, clone, completions, create, deactivate, default, delete, export, global, help, import, init, install, list, local, remove, resolve, root, run, status, sync, system, uninstall, use, version, versions, which
+- Reserved words: activate, base, clone, completions, create, deactivate, default, delete, diff, doctor, export, gc, global, help, import, info, init, install, lang, list, local, ls, man, migrate, prune, remove, resolve, rm, root, run, self, shell, status, sync, system, uninstall, use, verify, version, versions, which
+- Reserved words only stop a new env from taking the name (`create`, `clone`, `import`, `migrate`, and `sync` when it creates the env); an env that already has one keeps working
 
 ### Migration Sources
 

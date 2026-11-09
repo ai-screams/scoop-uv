@@ -97,6 +97,9 @@ pub enum ScoopError {
     /// conda environment not found
     CondaEnvNotFound { name: String },
 
+    /// Environment not found in any migration source (no source filter given)
+    SourceEnvNotFound { name: String },
+
     /// Corrupted environment
     CorruptedEnvironment { name: String, reason: String },
 

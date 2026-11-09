@@ -183,7 +183,7 @@ pub(super) fn recheck_stale(name: &str, cutoff: DateTime<Utc>) -> Option<EnvOutc
     // results today (disk-walked basenames, can't traverse), but
     // guarding here closes the gap if a future caller passes raw
     // input.
-    if crate::validate::validate_env_name(name).is_err() {
+    if crate::validate::validate_existing_env_name(name).is_err() {
         return Some(EnvOutcome::SkippedNoData);
     }
     let path = match paths::virtualenv_path(name) {

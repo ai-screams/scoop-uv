@@ -11,7 +11,7 @@ use crate::shell::{
     detect_shell, print_activate_script, print_deactivate_script, print_export_scoop_version,
     print_unset_scoop_version,
 };
-use crate::validate::validate_env_name;
+use crate::validate::validate_existing_env_name;
 
 /// Execute the shell command - outputs shell code for eval
 pub fn execute(
@@ -51,7 +51,7 @@ pub fn execute(
     }
 
     // Validate environment name and check existence
-    validate_env_name(name)?;
+    validate_existing_env_name(name)?;
     let service = VirtualenvService::auto()?;
     let venv_path = service.get_path(name)?;
     let bin_path = paths::virtualenv_bin(name)?;

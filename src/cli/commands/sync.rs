@@ -34,6 +34,12 @@ pub fn execute(output: &Output, extra_groups: &[String], dry_run: bool) -> Resul
     let env_name = parsed.environment.name.clone();
     let wanted_python = parsed.environment.python.clone();
     let env_existed = service.exists(&env_name)?;
+    // The manifest may name an env that already exists under a word reserved
+    // since; creating one needs a name a new env may take. Checked before
+    // the dry-run plan so the plan never promises an env sync cannot make.
+    if !env_existed {
+        crate::validate::validate_env_name(&env_name)?;
+    }
 
     let packages = parsed.packages_for(extra_groups);
     let groups_resolved = resolved_groups(extra_groups);

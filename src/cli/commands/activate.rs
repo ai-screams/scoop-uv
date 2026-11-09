@@ -12,7 +12,7 @@ use crate::validate;
 pub fn execute(name: &str, shell: Option<ShellType>) -> Result<()> {
     // Security: Validate input before any processing
     // This is defense-in-depth against command injection via malicious .scuv-version files
-    validate::validate_env_name(name)?;
+    validate::validate_existing_env_name(name)?;
 
     let service = VirtualenvService::auto()?;
 

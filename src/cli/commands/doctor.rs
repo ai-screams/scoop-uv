@@ -237,6 +237,7 @@ mod tests {
             status,
             suggestion: None,
             details: None,
+            target: None,
         }
     }
 

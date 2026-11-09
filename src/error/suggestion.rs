@@ -50,7 +50,8 @@ impl ScoopError {
             }
             Self::PyenvEnvNotFound { .. }
             | Self::VenvWrapperEnvNotFound { .. }
-            | Self::CondaEnvNotFound { .. } => {
+            | Self::CondaEnvNotFound { .. }
+            | Self::SourceEnvNotFound { .. } => {
                 Some(t!("suggestion.source_env_not_found", locale = locale).to_string())
             }
             Self::MigrationNameConflict { .. } => {

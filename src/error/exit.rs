@@ -76,6 +76,7 @@ impl ScoopError {
             | Self::PyenvEnvNotFound { .. }
             | Self::VenvWrapperEnvNotFound { .. }
             | Self::CondaEnvNotFound { .. }
+            | Self::SourceEnvNotFound { .. }
             | Self::CorruptedEnvironment { .. }
             | Self::MigrationSourcesNotFound { .. } => 3,
 
@@ -150,6 +151,9 @@ mod tests {
                 name: "x".to_string(),
             },
             ScoopError::CondaEnvNotFound {
+                name: "x".to_string(),
+            },
+            ScoopError::SourceEnvNotFound {
                 name: "x".to_string(),
             },
             ScoopError::CorruptedEnvironment {

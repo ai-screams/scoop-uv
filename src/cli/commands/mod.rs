@@ -20,6 +20,8 @@ mod man;
 mod migrate;
 mod prune;
 mod remove;
+#[cfg(test)]
+mod reserved_name_tests;
 mod resolve;
 mod run;
 mod self_update;

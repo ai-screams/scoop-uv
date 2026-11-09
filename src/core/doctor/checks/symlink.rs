@@ -69,7 +69,8 @@ impl Check for SymlinkCheck {
                 .with_suggestion(format!(
                     "scuv remove {} && scuv create {} <python-version>",
                     name, name
-                )),
+                ))
+                .with_target(name.clone()),
             );
         }
 
@@ -85,12 +86,11 @@ impl Check for SymlinkCheck {
     }
 
     fn fix(&self, result: &CheckResult, output: &crate::output::Output) -> Option<CheckResult> {
-        // Extract environment name from error message: "Python symlink in 'name' is broken"
-        let venv_name = if let CheckStatus::Error(msg) = &result.status {
-            msg.split('\'').nth(1).map(|s| s.to_string())
-        } else {
-            None
-        }?;
+        // `run` names the env in `target` on each broken-link error.
+        if !matches!(result.status, CheckStatus::Error(_)) {
+            return None;
+        }
+        let venv_name = result.target.clone()?;
 
         output.info(&format!("Attempting to fix symlink for '{}'...", venv_name));
 
@@ -101,23 +101,22 @@ impl Check for SymlinkCheck {
                 CheckResult::ok("symlink", "broken symlink")
                     .with_details(format!("fixed symlink for '{}'", venv_name))
             }
-            Err(failed) => failed,
+            Err(failed) => *failed,
         })
     }
 }
 
-/// A failed fix: the error and what the user can do about it.
-fn failure(message: impl Into<String>, suggestion: impl Into<String>) -> CheckResult {
-    CheckResult::error("symlink", "broken symlink", message).with_suggestion(suggestion)
+/// A failed fix: the error and what the user can do about it. Boxed, as
+/// the helpers below return it as their `Err`.
+type Failed = Box<CheckResult>;
+
+fn failure(message: impl Into<String>, suggestion: impl Into<String>) -> Failed {
+    Box::new(CheckResult::error("symlink", "broken symlink", message).with_suggestion(suggestion))
 }
 
 /// Points the env's `python` at its installed interpreter again: find the
 /// env's Python version, find that Python via uv, replace the link.
-fn relink(
-    output: &crate::output::Output,
-    venv_path: &Path,
-    venv_name: &str,
-) -> Result<(), CheckResult> {
+fn relink(output: &crate::output::Output, venv_path: &Path, venv_name: &str) -> Result<(), Failed> {
     if !venv_path.exists() {
         return Err(failure(
             format!("environment '{}' not found", venv_name),
@@ -145,7 +144,7 @@ fn relink(
 }
 
 /// The interpreter uv has installed for `version`.
-fn installed_python_path(version: &str) -> Result<PathBuf, CheckResult> {
+fn installed_python_path(version: &str) -> Result<PathBuf, Failed> {
     let install_hint = format!("scuv install {}", version);
     let uv = UvClient::new().map_err(|_| failure("uv not available", "Install uv first"))?;
     match uv.find_python(version) {
@@ -161,7 +160,7 @@ fn installed_python_path(version: &str) -> Result<PathBuf, CheckResult> {
 }
 
 /// Replaces `link` (if anything is there) with a symlink to `target`.
-fn replace_symlink(target: &Path, link: &Path) -> Result<(), CheckResult> {
+fn replace_symlink(target: &Path, link: &Path) -> Result<(), Failed> {
     if (link.exists() || link.is_symlink())
         && let Err(e) = std::fs::remove_file(link)
     {
@@ -184,12 +183,14 @@ fn replace_symlink(target: &Path, link: &Path) -> Result<(), CheckResult> {
     #[cfg(not(unix))]
     {
         let _ = target;
-        Err(CheckResult::warn(
-            "symlink",
-            "broken symlink",
-            "symlink fix not supported on this platform",
-        )
-        .with_suggestion("Manually recreate the symlink"))
+        Err(Box::new(
+            CheckResult::warn(
+                "symlink",
+                "broken symlink",
+                "symlink fix not supported on this platform",
+            )
+            .with_suggestion("Manually recreate the symlink"),
+        ))
     }
 }
 
@@ -308,40 +309,61 @@ mod tests {
                 results.iter().any(|r| r.is_error()),
                 "expected at least one error result, got {results:#?}"
             );
+            // `fix` reads the env name from here, not from the message.
+            let error = results.iter().find(|r| r.is_error()).unwrap();
+            assert_eq!(error.target.as_deref(), Some("brokenlink"));
         });
     }
 
+    fn quiet() -> crate::output::Output {
+        crate::output::Output::new(0, true, crate::output::Colors::NONE, false)
+    }
+
+    /// `fix` repairs the env named in `target`, whatever the message says
+    /// (it may be translated). The env does not exist here, so the repair
+    /// stops at the lookup and reports it. What fails this: `fix` going
+    /// back to parsing the message (no quotes, no name) or returning None.
     #[test]
     #[serial]
-    fn fix_symlink_returns_some_for_parseable_error_name() {
+    fn fix_symlink_repairs_the_env_named_in_target() {
         with_temp_scoop_home(|temp| {
-            // SymlinkCheck::fix parses the env name out of a "Python symlink
-            // in 'name' is broken" message. If the parse succeeds and
-            // the env doesn't exist, it returns Some(error suggesting
-            // scuv create). The cargo-mutants -> None replacement
-            // would silently drop that guidance.
-            let broken = temp.path().join("virtualenvs");
-            std::fs::create_dir_all(&broken).unwrap();
+            std::fs::create_dir_all(temp.path().join("virtualenvs")).unwrap();
+            let probe = CheckResult::error("symlink", "broken symlink", "lien cassé")
+                .with_target("fix-target");
 
-            let probe = CheckResult::error(
-                "symlink",
-                "broken symlink",
-                "Python symlink in 'fix-target' is broken".to_string(),
+            let r = SymlinkCheck
+                .fix(&probe, &quiet())
+                .expect("a fix is attempted");
+            assert!(r.is_error());
+            assert!(
+                matches!(&r.status, CheckStatus::Error(msg) if msg.contains("'fix-target' not found")),
+                "{r:?}"
             );
-            let output = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
-
-            let fixed = SymlinkCheck.fix(&probe, &output);
-            assert!(fixed.is_some(), "fix_symlink must return Some");
-            let r = fixed.unwrap();
-            assert!(r.is_error() || r.is_warning());
-            // Suggestion text should point the user at `scuv create`.
             assert!(
                 r.suggestion
                     .as_deref()
-                    .is_some_and(|s| s.contains("scuv create"))
-                    || matches!(&r.status, CheckStatus::Error(msg) if msg.contains("fix-target"))
+                    .is_some_and(|s| s.contains("scuv create fix-target"))
             );
         });
+    }
+
+    /// Without a target there is nothing to repair, even when the message
+    /// still quotes a name.
+    #[test]
+    fn fix_symlink_needs_a_target() {
+        let probe = CheckResult::error(
+            "symlink",
+            "broken symlink",
+            "Python symlink in 'fix-target' is broken",
+        );
+        assert!(SymlinkCheck.fix(&probe, &quiet()).is_none());
+    }
+
+    /// Only an error is repaired. What fails this: dropping the status guard.
+    #[test]
+    fn fix_symlink_leaves_a_warning_alone() {
+        let probe = CheckResult::warn("symlink", "broken symlink", "x").with_target("fix-target");
+        assert!(SymlinkCheck.fix(&probe, &quiet()).is_none());
     }
 
     /// Fails if `relink` stops refusing a missing env (`!` deleted).

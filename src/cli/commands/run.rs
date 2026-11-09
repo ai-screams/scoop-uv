@@ -17,7 +17,7 @@ use crate::{paths, validate};
 
 /// Execute the `run` command.
 pub fn execute(_output: &Output, env_name: &str, command: &[String]) -> Result<()> {
-    validate::validate_env_name(env_name)?;
+    validate::validate_existing_env_name(env_name)?;
 
     let service = VirtualenvService::auto()?;
     if !service.exists(env_name)? {
