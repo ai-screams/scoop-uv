@@ -212,10 +212,24 @@ impl Migrator {
         Ok(target_path)
     }
 
-    /// Creates the target scuv environment at a path from `target_path`,
-    /// replacing an existing one (`target_path` allowed it only with `force`).
-    fn create_target_env(&self, target_path: &Path, python_version: &str) -> Result<()> {
+    /// Creates the target scuv environment at a path from `target_path`.
+    ///
+    /// Checks `force` again before replacing an existing env: the target
+    /// may have appeared since `target_path` looked (package extraction runs
+    /// in between), and only `force` may delete it.
+    fn create_target_env(
+        &self,
+        name: &str,
+        target_path: &Path,
+        python_version: &str,
+        force: bool,
+    ) -> Result<()> {
         if target_path.exists() {
+            if !force {
+                return Err(ScoopError::VirtualenvExists {
+                    name: name.to_string(),
+                });
+            }
             fs::remove_dir_all(target_path)?;
         }
 
@@ -363,7 +377,12 @@ impl Migrator {
         }
 
         // Create target environment
-        self.create_target_env(&target_path, &source.python_version)?;
+        self.create_target_env(
+            &target_name,
+            &target_path,
+            &source.python_version,
+            options.force,
+        )?;
 
         // Set up rollback guard
         let mut rollback = RollbackGuard::new(target_path.clone());
@@ -841,6 +860,33 @@ mod tests {
                     assert_eq!(result.packages_migrated, 1);
                 },
             );
+        }
+
+        /// A target that appears after the preflight (here: while `pip
+        /// freeze` runs) is still not deleted without `--force`.
+        #[test]
+        #[serial]
+        fn a_target_created_during_extraction_survives_without_force() {
+            run("six==1.16.0\\n", EnvironmentStatus::Ready, &[], |fx| {
+                use std::os::unix::fs::PermissionsExt;
+                let target = fx.target("web");
+                let pip = fx.source.path.join("bin").join("pip");
+                let script = format!(
+                    "#!/bin/sh\n/bin/mkdir -p '{t}'\n: > '{t}/keep'\nprintf 'six==1.16.0\\n'\n",
+                    t = target.display()
+                );
+                fs::write(&pip, script).unwrap();
+                fs::set_permissions(&pip, fs::Permissions::from_mode(0o755)).unwrap();
+                let err = fx
+                    .migrator()
+                    .migrate(&fx.source, &MigrateOptions::default())
+                    .unwrap_err();
+                assert!(matches!(err, ScoopError::VirtualenvExists { .. }), "{err}");
+                assert!(
+                    target.join("keep").exists(),
+                    "migrate deleted an env it had no --force for"
+                );
+            });
         }
 
         fn delete_source() -> MigrateOptions {
