@@ -16,9 +16,10 @@ use super::source::{EnvironmentStatus, SourceEnvironment};
 /// Options for migration
 #[derive(Debug, Clone, Default)]
 pub struct MigrateOptions {
-    /// Force overwrite existing environments (also allows EOL Python)
-    pub force: bool,
-    /// Allow an end-of-life source Python without overwriting anything
+    /// Replace a scuv env that already has the target name. Says nothing
+    /// about the source's Python: an end-of-life one also needs `allow_eol`.
+    pub overwrite: bool,
+    /// Allow an end-of-life source Python
     pub allow_eol: bool,
     /// Dry run mode (no actual changes)
     pub dry_run: bool,
@@ -112,7 +113,11 @@ impl Migrator {
     }
 
     /// Validates that the source environment can be migrated.
-    fn validate_source(&self, source: &SourceEnvironment, options: &MigrateOptions) -> Result<()> {
+    pub(crate) fn validate_source(
+        &self,
+        source: &SourceEnvironment,
+        options: &MigrateOptions,
+    ) -> Result<()> {
         match &source.status {
             EnvironmentStatus::Ready => Ok(()),
             EnvironmentStatus::NameConflict { existing } => {
@@ -125,9 +130,9 @@ impl Migrator {
                     .rename_to
                     .as_deref()
                     .is_some_and(|to| to != source.name);
-                if options.force {
-                    Ok(())
-                } else if !renamed {
+                // Overwriting or renaming settles the conflict, not the
+                // Python: the EOL guard still applies either way.
+                if !options.overwrite && !renamed {
                     Err(ScoopError::MigrationNameConflict {
                         name: source.name.clone(),
                         existing: existing.clone(),
@@ -140,7 +145,7 @@ impl Migrator {
                 }
             }
             EnvironmentStatus::PythonEol { version } => {
-                if options.force || options.allow_eol {
+                if options.allow_eol {
                     Ok(())
                 } else {
                     Err(eol_error(version))
@@ -159,9 +164,9 @@ impl Migrator {
     }
 
     /// Resolves the target env path, refusing what `create_target_env`
-    /// would refuse: an invalid name, or an existing env without `force`.
+    /// would refuse: an invalid name, or an existing env without `overwrite`.
     /// Touches nothing, so the dry run checks the same things.
-    fn target_path(&self, name: &str, force: bool) -> Result<PathBuf> {
+    fn target_path(&self, name: &str, overwrite: bool) -> Result<PathBuf> {
         // Validate at the trust boundary: for `--rename` / `--auto-rename` the
         // target name comes straight from CLI args and would otherwise reach
         // the filesystem unchecked, allowing path traversal (e.g. `../../x`).
@@ -169,7 +174,7 @@ impl Migrator {
         crate::validate::validate_env_name(name)?;
 
         let target_path = paths::virtualenv_path(name)?;
-        if target_path.exists() && !force {
+        if target_path.exists() && !overwrite {
             return Err(ScoopError::VirtualenvExists {
                 name: name.to_string(),
             });
@@ -179,32 +184,25 @@ impl Migrator {
 
     /// Creates the target scuv environment at a path from `target_path`.
     ///
-    /// Checks `force` again before replacing an existing env: the target
+    /// Checks `overwrite` again before replacing an existing env: the target
     /// may have appeared since `target_path` looked (package extraction runs
-    /// in between), and only `force` may delete it.
+    /// in between), and only `overwrite` may delete it.
     fn create_target_env(
         &self,
         name: &str,
         target_path: &Path,
         python_version: &str,
-        force: bool,
+        overwrite: bool,
     ) -> Result<()> {
         if target_path.exists() {
-            if !force {
+            if !overwrite {
                 return Err(ScoopError::VirtualenvExists {
                     name: name.to_string(),
                 });
             }
             fs::remove_dir_all(target_path)?;
         }
-
-        // Ensure parent directory exists
-        if let Some(parent) = target_path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-
-        // Create the virtual environment
-        self.uv.create_venv(target_path, python_version)
+        crate::core::create_venv_dir(&self.uv, target_path, python_version)
     }
 
     /// Installs packages into the target environment.
@@ -292,11 +290,8 @@ impl Migrator {
     fn write_metadata(&self, target_path: &Path, name: &str, python_version: &str) -> Result<()> {
         let uv_version = self.uv.version().ok();
         let metadata = Metadata::new(name.to_string(), python_version.to_string(), uv_version);
-
-        let metadata_path = target_path.join(Metadata::FILE_NAME);
-        let content = serde_json::to_string_pretty(&metadata)?;
-        fs::write(metadata_path, content)?;
-        Ok(())
+        // Atomic, like every other metadata write.
+        crate::core::write_metadata_file(target_path, &metadata)
     }
 
     /// Migrates a single environment.
@@ -315,7 +310,7 @@ impl Migrator {
         // The dry run checks what the real run checks, so a preview never
         // reports success for a migration the real run refuses.
         self.validate_source(source, options)?;
-        let target_path = self.target_path(&target_name, options.force)?;
+        let target_path = self.target_path(&target_name, options.overwrite)?;
 
         // Extract packages from source
         let packages = self.extract_packages(source)?;
@@ -338,7 +333,7 @@ impl Migrator {
             &target_name,
             &target_path,
             &source.python_version,
-            options.force,
+            options.overwrite,
         )?;
 
         // Set up rollback guard

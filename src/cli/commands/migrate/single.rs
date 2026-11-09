@@ -84,7 +84,7 @@ pub fn migrate_environment(
 
     let migrator = Migrator::new()?;
     let options = opts.migrate_options(
-        target.force,
+        target.overwrite,
         (target.name != name).then(|| target.name.clone()),
     );
 
@@ -112,8 +112,9 @@ pub fn migrate_environment(
 /// Where an environment will be migrated to, once its status is resolved.
 struct Target {
     name: String,
-    /// Overwrite an existing scuv env of that name.
-    force: bool,
+    /// Replace an existing scuv env of that name. Not permission for an
+    /// end-of-life Python: that comes from the flags.
+    overwrite: bool,
 }
 
 /// What is being migrated, before anything happens (human mode only).
@@ -144,13 +145,16 @@ fn resolve_target(
 ) -> Result<Option<Target>> {
     let target = Target {
         name: opts.rename.clone().unwrap_or_else(|| name.to_string()),
-        force: opts.force,
+        overwrite: opts.force,
     };
 
     match status {
         EnvironmentStatus::Ready => {}
         EnvironmentStatus::NameConflict { existing } => {
-            return resolve_name_conflict(output, name, existing, opts, target, can_prompt());
+            let prompt = || prompt_conflict_resolution(output, name, existing);
+            let prompt: Option<&dyn Fn() -> Result<ConflictResolution>> =
+                if can_prompt() { Some(&prompt) } else { None };
+            return resolve_name_conflict(output, name, existing, opts, target, prompt);
         }
         EnvironmentStatus::PythonEol { version } => {
             if !opts.allows_eol() {
@@ -207,15 +211,17 @@ fn can_prompt() -> bool {
 /// A scuv env named `name` already exists. In order: `--auto-rename`
 /// picks a free name; `--rename` must itself be free (unless `--force`);
 /// `--force` overwrites; non-interactive runs (`--json`, `--yes`, or no
-/// terminal to prompt on) fail with [`ScoopError::MigrationNameConflict`];
-/// otherwise the user is asked.
+/// terminal to prompt on, `prompt` is `None`) fail with
+/// [`ScoopError::MigrationNameConflict`]; otherwise the user is asked.
+/// Choosing Overwrite permits replacing the env only; an end-of-life source
+/// Python is still refused without `--allow-eol` (or `--force`).
 fn resolve_name_conflict(
     output: &Output,
     name: &str,
     existing: &Path,
     opts: &MigrateExecuteOptions,
     mut target: Target,
-    interactive: bool,
+    prompt: Option<&dyn Fn() -> Result<ConflictResolution>>,
 ) -> Result<Option<Target>> {
     if opts.auto_rename {
         target.name = generate_unique_name(name)?;
@@ -228,20 +234,14 @@ fn resolve_name_conflict(
         if !opts.json {
             output.warn(&t!("migrate.overwriting"));
         }
-    } else if opts.json || opts.yes || !interactive {
-        if !opts.json {
-            output.warn(&t!("migrate.name_exists", name = name));
-            output.info(&t!("migrate.use_flags"));
-        }
-        return Err(ScoopError::MigrationNameConflict {
-            name: name.to_string(),
-            existing: existing.to_path_buf(),
-        });
-    } else {
+    } else if !opts.json
+        && !opts.yes
+        && let Some(prompt) = prompt
+    {
         // Interactive (human mode, no --yes)
-        match prompt_conflict_resolution(output, name, existing)? {
+        match prompt()? {
             ConflictResolution::Overwrite => {
-                target.force = true;
+                target.overwrite = true;
                 output.warn(&t!("migrate.will_overwrite"));
             }
             ConflictResolution::Rename => {
@@ -253,6 +253,15 @@ fn resolve_name_conflict(
                 return Ok(None);
             }
         }
+    } else {
+        if !opts.json {
+            output.warn(&t!("migrate.name_exists", name = name));
+            output.info(&t!("migrate.use_flags"));
+        }
+        return Err(ScoopError::MigrationNameConflict {
+            name: name.to_string(),
+            existing: existing.to_path_buf(),
+        });
     }
     Ok(Some(target))
 }

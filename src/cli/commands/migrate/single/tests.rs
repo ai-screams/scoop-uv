@@ -425,7 +425,7 @@ fn resolve_target_allow_eol_proceeds_without_force() {
         .unwrap()
         .expect("--allow-eol proceeds");
     assert_eq!(target.name, "old");
-    assert!(!target.force, "--allow-eol must not overwrite");
+    assert!(!target.overwrite, "--allow-eol must not overwrite");
 
     let refused = resolve_target(
         &quiet_output(),
@@ -510,10 +510,10 @@ fn conflict_opts() -> MigrateExecuteOptions {
     }
 }
 
-fn start(name: &str, force: bool) -> Target {
+fn start(name: &str, overwrite: bool) -> Target {
     Target {
         name: name.to_string(),
-        force,
+        overwrite,
     }
 }
 
@@ -533,12 +533,12 @@ fn name_conflict_auto_rename_picks_a_free_name() {
             Path::new("/x"),
             &opts,
             start("web", false),
-            false,
+            None,
         )
         .unwrap()
         .expect("auto-rename proceeds");
         assert_ne!(t.name, "web");
-        assert!(!t.force);
+        assert!(!t.overwrite);
     });
 }
 
@@ -560,7 +560,7 @@ fn name_conflict_rename_must_itself_be_free() {
             Path::new("/x"),
             &opts,
             start("taken", false),
-            false,
+            None,
         );
         assert!(
             matches!(err, Err(ScoopError::MigrationNameConflict { ref name, .. }) if name == "taken")
@@ -576,7 +576,7 @@ fn name_conflict_rename_must_itself_be_free() {
             Path::new("/x"),
             &opts,
             start("free", false),
-            false,
+            None,
         )
         .unwrap()
         .unwrap();
@@ -599,11 +599,11 @@ fn name_conflict_force_overwrites_else_noninteractive_fails() {
         Path::new("/x"),
         &forced,
         start("web", true),
-        false,
+        None,
     )
     .unwrap()
     .unwrap();
-    assert_eq!((t.name.as_str(), t.force), ("web", true));
+    assert_eq!((t.name.as_str(), t.overwrite), ("web", true));
 
     for opts in [
         conflict_opts(),
@@ -618,7 +618,7 @@ fn name_conflict_force_overwrites_else_noninteractive_fails() {
             Path::new("/x"),
             &opts,
             start("web", false),
-            false,
+            None,
         );
         assert!(
             matches!(err, Err(ScoopError::MigrationNameConflict { ref name, .. }) if name == "web")
@@ -640,7 +640,7 @@ fn name_conflict_without_a_terminal_fails_as_a_conflict() {
         Path::new("/x"),
         &MigrateExecuteOptions::default(),
         start("web", false),
-        false,
+        None,
     );
     assert!(
         matches!(err, Err(ScoopError::MigrationNameConflict { ref name, .. }) if name == "web"),
@@ -651,4 +651,56 @@ fn name_conflict_without_a_terminal_fails_as_a_conflict() {
 
 fn quiet_output() -> Output {
     Output::new(0, true, crate::output::Colors::NONE, false)
+}
+
+/// Q5: choosing Overwrite at the conflict prompt replaces the env but does
+/// not allow an end-of-life Python. The chain the real run takes (prompt ->
+/// target -> core options -> source check) refuses an EOL source without
+/// `--allow-eol` and accepts it with. What fails this: Overwrite turning
+/// into EOL permission anywhere along it.
+#[test]
+fn interactive_overwrite_is_not_eol_permission() {
+    let out = quiet_output();
+    let overwrite = || Ok(ConflictResolution::Overwrite);
+    let interactive = MigrateExecuteOptions::default();
+    let mut source = crate::core::migrate::SourceEnvironment {
+        name: "web".to_string(),
+        python_version: "3.10.14".to_string(),
+        path: PathBuf::from("/src/web"),
+        source_type: crate::core::migrate::SourceType::Pyenv,
+        size_bytes: None,
+        status: EnvironmentStatus::NameConflict {
+            existing: PathBuf::from("/x"),
+        },
+    };
+    let migrator = Migrator::with_uv(crate::uv::UvClient::with_path(PathBuf::from("/mock/uv")));
+
+    for (allow_eol, accepted) in [(false, false), (true, true)] {
+        let opts = MigrateExecuteOptions {
+            allow_eol,
+            ..interactive.clone()
+        };
+        let target = resolve_name_conflict(
+            &out,
+            "web",
+            Path::new("/x"),
+            &opts,
+            start("web", false),
+            Some(&overwrite),
+        )
+        .unwrap()
+        .expect("Overwrite proceeds");
+        assert!(target.overwrite);
+        let core = opts.migrate_options(target.overwrite, None);
+        assert_eq!(
+            migrator.validate_source(&source, &core).is_ok(),
+            accepted,
+            "allow_eol={allow_eol}"
+        );
+    }
+
+    // A supported Python is fine with Overwrite alone.
+    source.python_version = "3.12.0".to_string();
+    let core = interactive.migrate_options(true, None);
+    assert!(migrator.validate_source(&source, &core).is_ok());
 }
