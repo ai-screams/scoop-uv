@@ -208,21 +208,9 @@ fn read_python_version(venv_path: &std::path::Path) -> Option<String> {
         }
     } else {
         // Try to extract from pyvenv.cfg as fallback.
-        let pyvenv_cfg = venv_path.join("pyvenv.cfg");
-        if pyvenv_cfg.exists() {
-            std::fs::read_to_string(&pyvenv_cfg)
-                .ok()
-                .and_then(|content| {
-                    for line in content.lines() {
-                        if line.starts_with("version") {
-                            return line.split('=').nth(1).map(|v| v.trim().to_string());
-                        }
-                    }
-                    None
-                })
-        } else {
-            None
-        }
+        // The `version` / `version_info` key, normalized like every other
+        // pyvenv.cfg reader (uv writes `version_info = 3.12.14.final.0`).
+        crate::core::parse_pyvenv_version(venv_path)
     }
 }
 
@@ -266,6 +254,20 @@ mod tests {
         )
         .unwrap();
         assert_eq!(read_python_version(tmp.path()).as_deref(), Some("3.11.9"));
+    }
+
+    /// uv writes only `version_info`, with a release tail; the fallback
+    /// reads it like every other pyvenv.cfg reader does. What fails this:
+    /// matching lines by the `version` prefix and returning the raw value.
+    #[test]
+    fn read_python_version_normalizes_uv_version_info() {
+        let tmp = tempfile::tempdir().unwrap();
+        std::fs::write(
+            tmp.path().join("pyvenv.cfg"),
+            "home = /x/bin\nversion_info = 3.12.14.final.0\n",
+        )
+        .unwrap();
+        assert_eq!(read_python_version(tmp.path()).as_deref(), Some("3.12.14"));
     }
 
     #[test]

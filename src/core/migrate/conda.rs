@@ -89,17 +89,9 @@ impl CondaDiscovery {
         }
 
         // Method 2: Check pyvenv.cfg (some conda envs have this)
-        let cfg_path = env_path.join("pyvenv.cfg");
-        if cfg_path.exists()
-            && let Ok(content) = fs::read_to_string(&cfg_path)
-        {
-            // Reads both `version` (stdlib venv) and `version_info` (uv) keys.
-            if let Some(version) = content
-                .lines()
-                .find_map(crate::core::pyvenv_version_from_line)
-            {
-                return Some(version);
-            }
+        // Reads both `version` (stdlib venv) and `version_info` (uv) keys.
+        if let Some(version) = crate::core::parse_pyvenv_version(env_path) {
+            return Some(version);
         }
 
         // Method 3: Try to run python --version (expensive, skip for now)

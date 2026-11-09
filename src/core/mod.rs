@@ -75,6 +75,49 @@ fn normalize_pyvenv_version(raw: &str) -> String {
     }
 }
 
+/// The `home` value of a `pyvenv.cfg`: the directory its interpreter lives
+/// in. The first line whose key is exactly `home` with a non-empty value.
+pub(crate) fn pyvenv_home(content: &str) -> Option<&str> {
+    content.lines().find_map(|line| {
+        let (key, value) = line.split_once('=')?;
+        let value = value.trim();
+        (key.trim() == "home" && !value.is_empty()).then_some(value)
+    })
+}
+
+/// A Python version read off a `home` path, by whole path components:
+/// `python@3.12` (Homebrew), `Versions/3.11` (macOS framework) or
+/// `versions/3.11.0` (pyenv). The token is kept as written (`3.13.0rc1`
+/// stays), unlike the `version` keys, which are normalized.
+pub(crate) fn version_from_home(home: &str) -> Option<String> {
+    let parts: Vec<&str> = home.split(['/', '\\']).collect();
+    for (i, part) in parts.iter().enumerate() {
+        if let Some(version) = part.strip_prefix("python@")
+            && !version.is_empty()
+        {
+            return Some(version.to_string());
+        }
+        if matches!(*part, "Versions" | "versions")
+            && let Some(next) = parts.get(i + 1)
+            && !next.is_empty()
+        {
+            return Some((*next).to_string());
+        }
+    }
+    None
+}
+
+/// The Python version of the env at `path` from its `pyvenv.cfg`: the
+/// `version` / `version_info` key, else the version in its `home` path.
+/// What the migrate discoverers record for a source env.
+pub(crate) fn pyvenv_python_version(path: &std::path::Path) -> Option<String> {
+    let content = std::fs::read_to_string(path.join("pyvenv.cfg")).ok()?;
+    content
+        .lines()
+        .find_map(pyvenv_version_from_line)
+        .or_else(|| version_from_home(pyvenv_home(&content)?))
+}
+
 /// List `(name, version)` pairs of packages installed in `venv_path`, via
 /// `uv pip list --python <venv>`.
 ///
@@ -146,6 +189,39 @@ pub fn get_active_env() -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+    use super::{pyvenv_home, version_from_home};
+
+    /// Whole path components only: a directory merely ending in `versions`
+    /// or containing `python@` mid-name does not count.
+    #[rstest::rstest]
+    #[case("/opt/homebrew/opt/python@3.12/bin", Some("3.12"))]
+    #[case("/usr/local/Cellar/python@3.11", Some("3.11"))]
+    #[case("/Library/Frameworks/Python.framework/Versions/3.11/bin", Some("3.11"))]
+    #[case("/Users/u/.pyenv/versions/3.13.0rc1/bin", Some("3.13.0rc1"))]
+    #[case("/Users/u/.pyenv/versions/3.9.7", Some("3.9.7"))]
+    #[case(r"C:\pyenv\versions\3.12.1\bin", Some("3.12.1"))]
+    #[case("/usr/bin", None)]
+    #[case("/srv/myversions/3.12/bin", None)]
+    #[case("/opt/notpython@3.12/bin", None)]
+    #[case("/opt/python@/bin", None)]
+    #[case("/x/versions/", None)]
+    #[case("/x/versions", None)]
+    fn version_from_home_reads_whole_components(#[case] home: &str, #[case] want: Option<&str>) {
+        assert_eq!(version_from_home(home).as_deref(), want);
+    }
+
+    /// The exact `home` key, first non-empty one; `homebrew = ...` is not it.
+    #[test]
+    fn pyvenv_home_matches_the_key_exactly() {
+        assert_eq!(
+            pyvenv_home("home = /a/bin\nhome = /b/bin\n"),
+            Some("/a/bin")
+        );
+        assert_eq!(pyvenv_home("home=/a/bin"), Some("/a/bin"));
+        assert_eq!(pyvenv_home("homebrew = /a\nhome =\nhome = /b"), Some("/b"));
+        assert_eq!(pyvenv_home("version = 3.12"), None);
+    }
+
     use super::*;
     use std::io::Write;
 
