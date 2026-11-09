@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794197901321,
+  "lastUpdate": 1794197902898,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -14353,6 +14353,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 458,
             "range": "± 8",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d9f208d623ecb85b937b6ef1c66fd7a36538b4f0",
+          "message": "Merge pull request #262 from ai-screams/docs/remove-stale-split-plan\n\ndocs: [#262] remove the finished doctor split plan and spec",
+          "timestamp": "2026-11-09T13:14:22+09:00",
+          "tree_id": "ae3390c5415071c5af9424eaf333300c24686283",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/d9f208d623ecb85b937b6ef1c66fd7a36538b4f0"
+        },
+        "date": 1794197902796,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1483,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1021,
+            "range": "± 17",
             "unit": "ns/iter"
           }
         ]
