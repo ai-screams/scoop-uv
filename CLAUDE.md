@@ -180,7 +180,7 @@ src/
 │   ├── color.rs   # Colors decision, made once in main
 │   ├── json/      # JSON response types (`JsonResponse` envelope)
 │   └── time.rs    # English fuzzy-age formatter for last_used display
-├── error/         # ScoopError module (code, display, exit codes, migrate, suggestion; i18n Display)
+├── error/         # ScoopError module (code, display, exit codes, suggestion; i18n Display)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic
 ├── i18n.rs        # Internationalization (locale detection, t! macro)

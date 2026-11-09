@@ -1519,6 +1519,13 @@ verify.summary_with_warnings:
   ja: "環境 %{total} 件を確認: 正常 %{healthy} 件、警告 %{warnings} 件、問題あり %{issues} 件"
   es: "%{total} entorno(s) comprobado(s): %{healthy} en buen estado, %{warnings} con avisos, %{issues} con problemas"
 
+error.doctor_findings:
+  en: "Doctor found %{errors} error(s) and %{warnings} warning(s)"
+  ko: "진단 결과 오류 %{errors}개, 경고 %{warnings}개"
+  pt-BR: "O diagnóstico encontrou %{errors} erro(s) e %{warnings} aviso(s)"
+  ja: "診断の結果、エラー %{errors} 件、警告 %{warnings} 件"
+  es: "El diagnóstico encontró %{errors} error(es) y %{warnings} advertencia(s)"
+
 error.verify_failed:
   en: "Verification found %{issues} environment(s) with failing checks"
   ko: "검증 결과 %{issues}개 환경에서 실패한 검사가 있어요"
