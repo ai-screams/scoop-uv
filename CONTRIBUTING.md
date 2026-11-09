@@ -560,10 +560,12 @@ tests/
 
 ### Unit Tests
 
-Located within source files:
+Located within source files; a module past roughly 450 lines moves to a
+child file beside its source (`src/validate.rs` declares
+`#[cfg(test)] mod tests;`, which loads `src/validate/tests.rs`):
 
 ```rust
-// src/validate.rs
+// src/example.rs
 
 pub fn is_valid_name(name: &str) -> bool {
     // implementation

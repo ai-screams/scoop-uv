@@ -288,7 +288,7 @@ mod tests {
     /// surfaces. cfg-gated to Unix because the symlink primitive
     /// differs on Windows (and the CI matrix that exercises mutants is
     /// Linux only — same rationale as the existing
-    /// test_virtualenv_exists_with_broken_symlink in paths.rs).
+    /// test_virtualenv_exists_with_broken_symlink in src/paths/tests.rs).
     #[cfg(unix)]
     #[test]
     #[serial]
