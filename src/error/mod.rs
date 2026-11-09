@@ -148,6 +148,11 @@ pub enum ScoopError {
     /// library code (which would skip destructors and stdout flush).
     VerifyFailed { issues: usize },
 
+    /// A destructive command needed a yes/no answer and could not ask for
+    /// one (stderr is not a terminal, or the prompt failed). `flag` skips
+    /// the question.
+    ConfirmationUnavailable { flag: String },
+
     /// `scuv doctor` found problems: exit 2 with any error, 1 with only
     /// warnings. The report was already rendered, like `VerifyFailed`.
     DoctorFindings { errors: usize, warnings: usize },

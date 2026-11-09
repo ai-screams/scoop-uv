@@ -378,10 +378,10 @@ pub enum ScoopError {
     CascadeAborted,
     CascadeIncomplete { failed_count: usize },
 
-    // Abridged: 42 variants in total. See src/error/mod.rs for the full set,
+    // Abridged: 43 variants in total. See src/error/mod.rs for the full set,
     // including UnsupportedLanguage, SelfUpdateFailed, NoActiveEnvironment, ExecutableNotFound,
     // ManifestNotFound, InvalidExportFile, UnsupportedExportVersion,
-    // VerifyFailed, DoctorFindings, SitePackagesNotFound, MigrationSourcesNotFound,
+    // VerifyFailed, DoctorFindings, ConfirmationUnavailable, SitePackagesNotFound, MigrationSourcesNotFound,
     // MigrationBatchFailed and DiffMismatch.
 }
 

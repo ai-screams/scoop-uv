@@ -2,7 +2,6 @@
 
 use std::io::IsTerminal;
 
-use dialoguer::Confirm;
 use rust_i18n::t;
 
 use crate::core::VirtualenvService;
@@ -230,11 +229,10 @@ fn plan_cascade(output: &Output, uv: &UvClient, version: &str, force: bool) -> R
             return Err(ScoopError::CascadeAborted);
         }
 
-        let confirmed = Confirm::new()
-            .with_prompt(t!("uninstall.cascade_confirm", version = version).to_string())
-            .default(false)
-            .interact()
-            .unwrap_or(false);
+        // Anything but a yes (stderr not a terminal included) aborts.
+        let confirmed =
+            crate::cli::confirm::confirm(&t!("uninstall.cascade_confirm", version = version))
+                == crate::cli::confirm::Confirmation::Yes;
 
         if !confirmed {
             output.info(&t!("uninstall.cascade_cancelled"));

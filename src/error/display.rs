@@ -188,6 +188,12 @@ impl ScoopError {
                 supported = supported
             )
             .to_string(),
+            Self::ConfirmationUnavailable { flag } => t!(
+                "error.confirmation_unavailable",
+                locale = locale,
+                flag = flag
+            )
+            .to_string(),
             Self::DoctorFindings { errors, warnings } => t!(
                 "error.doctor_findings",
                 locale = locale,

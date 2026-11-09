@@ -2,10 +2,10 @@
 
 use std::path::{Path, PathBuf};
 
-use dialoguer::Confirm;
 use rust_i18n::t;
 
 use super::use_env::is_venv_symlink_to;
+use crate::cli::confirm::Confirmation;
 use crate::core::VirtualenvService;
 use crate::error::Result;
 use crate::output::{Output, RemoveData};
@@ -25,13 +25,17 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
             path = crate::paths::abbreviate_home(&path)
         ));
 
-        let confirmed = Confirm::new()
-            .with_prompt(t!("remove.confirm", name = name).to_string())
-            .default(false)
-            .interact()
-            // No terminal to ask on (a script without --force) is an error,
-            // not a "no": it used to print "Cancelled" and exit 0.
-            .map_err(|e| crate::error::ScoopError::Io(std::io::Error::other(e)))?;
+        // No terminal to ask on (a script without --force) is an error, not
+        // a "no": it used to print "Cancelled" and exit 0.
+        let confirmed = match crate::cli::confirm::confirm(&t!("remove.confirm", name = name)) {
+            Confirmation::Yes => true,
+            Confirmation::No => false,
+            Confirmation::Unavailable => {
+                return Err(crate::error::ScoopError::ConfirmationUnavailable {
+                    flag: "--force".to_string(),
+                });
+            }
+        };
 
         if !confirmed {
             output.info(&t!("remove.cancelled"));

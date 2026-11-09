@@ -1519,6 +1519,20 @@ verify.summary_with_warnings:
   ja: "環境 %{total} 件を確認: 正常 %{healthy} 件、警告 %{warnings} 件、問題あり %{issues} 件"
   es: "%{total} entorno(s) comprobado(s): %{healthy} en buen estado, %{warnings} con avisos, %{issues} con problemas"
 
+error.confirmation_unavailable:
+  en: "Could not ask for confirmation. Pass %{flag} to go ahead without asking"
+  ko: "확인을 받을 수 없어요. 묻지 않고 진행하려면 %{flag}를 붙여주세요"
+  pt-BR: "Não foi possível pedir confirmação. Use %{flag} para prosseguir sem perguntar"
+  ja: "確認できませんでした。確認なしで続けるには %{flag} を付けてください"
+  es: "No se pudo pedir confirmación. Usa %{flag} para continuar sin preguntar"
+
+migrate.batch_confirm:
+  en: "Migrate %{count} environment(s)?"
+  ko: "환경 %{count}개를 옮길까요?"
+  pt-BR: "Migrar %{count} ambiente(s)?"
+  ja: "%{count} 件の環境を移行しますか?"
+  es: "¿Migrar %{count} entorno(s)?"
+
 error.doctor_findings:
   en: "Doctor found %{errors} error(s) and %{warnings} warning(s)"
   ko: "진단 결과 오류 %{errors}개, 경고 %{warnings}개"

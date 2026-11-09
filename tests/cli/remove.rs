@@ -220,9 +220,19 @@ fn test_remove_without_force_and_without_terminal_fails() {
     scoop_cmd(&fixture.scoop_home)
         .args(["remove", "keepme"])
         .assert()
-        .failure();
+        .code(1)
+        .stderr(predicate::str::contains("Pass --force"))
+        .stderr(predicate::str::contains("Dialog error").not());
     assert!(
         env_path.exists(),
         "nothing may be removed without an answer"
     );
+
+    // Under --json the prompt is skipped, and so is the error.
+    let out = scoop_cmd(&fixture.scoop_home)
+        .args(["remove", "keepme", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(0));
+    assert!(!env_path.exists());
 }

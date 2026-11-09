@@ -5,7 +5,6 @@ mod render;
 use std::env;
 use std::io::{self, IsTerminal};
 
-use dialoguer::Confirm;
 use rust_i18n::t;
 
 use crate::core::doctor::{CheckResult, Doctor, apply_uv_install};
@@ -114,11 +113,8 @@ fn confirm(output: &Output, plan: &Plan) -> bool {
             names = inherited.join(", ")
         ));
     }
-    Confirm::new()
-        .with_prompt(t!("doctor.uv_install.confirm").to_string())
-        .default(false)
-        .interact()
-        .unwrap_or(false)
+    crate::cli::confirm::confirm(&t!("doctor.uv_install.confirm"))
+        == crate::cli::confirm::Confirmation::Yes
 }
 
 /// Execute the doctor command.

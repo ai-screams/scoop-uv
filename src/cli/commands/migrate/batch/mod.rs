@@ -12,9 +12,9 @@ mod run;
 #[cfg(test)]
 mod tests;
 
-use dialoguer::Confirm;
 use rust_i18n::t;
 
+use crate::cli::confirm::Confirmation;
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
 use crate::paths;
@@ -182,11 +182,15 @@ fn merge_failures(
     failed.sort_by(|a, b| a.name.cmp(&b.name));
 }
 
+/// Asks whether to migrate `count` environments. No terminal to ask on is
+/// an error naming `--yes`, not a "no".
 fn confirm(count: usize) -> Result<bool> {
     println!();
-    Confirm::new()
-        .with_prompt(format!("Migrate {} environment(s)?", count))
-        .default(false)
-        .interact()
-        .map_err(|e| ScoopError::Io(std::io::Error::other(e)))
+    match crate::cli::confirm::confirm(&t!("migrate.batch_confirm", count = count)) {
+        Confirmation::Yes => Ok(true),
+        Confirmation::No => Ok(false),
+        Confirmation::Unavailable => Err(ScoopError::ConfirmationUnavailable {
+            flag: "--yes".to_string(),
+        }),
+    }
 }

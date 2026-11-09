@@ -31,6 +31,10 @@ scuv remove myproject --force   # Remove without asking
 scuv rm old-env -f              # Using alias
 ```
 
+The question is asked on stderr. When stderr is not a terminal (a script, `2>log`) and neither
+`--force` nor `--json` is given, `remove` stops with exit `1` and the error code
+`CONFIRMATION_UNAVAILABLE`, naming `--force`, and removes nothing.
+
 ## Project `.venv` Link
 
 If the current directory has a `.venv` symlink to the environment being

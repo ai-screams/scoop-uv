@@ -595,6 +595,16 @@ fn test_error_code_source_venvwrapper_env_not_found() {
 }
 
 #[test]
+fn test_error_code_confirmation_unavailable() {
+    let err = ScoopError::ConfirmationUnavailable {
+        flag: "--force".into(),
+    };
+    assert_eq!(err.code(), "CONFIRMATION_UNAVAILABLE");
+    assert_eq!(err.exit_code(), 1);
+    assert!(err.message_in("en").contains("--force"));
+}
+
+#[test]
 fn test_error_code_doctor_findings() {
     let err = ScoopError::DoctorFindings {
         errors: 1,
@@ -1155,6 +1165,9 @@ fn every_variant() -> Vec<ScoopError> {
             errors: 4211,
             warnings: 4212,
         },
+        ScoopError::ConfirmationUnavailable {
+            flag: "--flag-abf".into(),
+        },
         ScoopError::DiffMismatch {
             env_a: "env-abd".into(),
             env_b: "env-abe".into(),
@@ -1206,6 +1219,7 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::UnsupportedExportVersion { .. }
         | ScoopError::VerifyFailed { .. }
         | ScoopError::DoctorFindings { .. }
+        | ScoopError::ConfirmationUnavailable { .. }
         | ScoopError::SitePackagesNotFound { .. }
         | ScoopError::MigrationSourcesNotFound { .. }
         | ScoopError::MigrationBatchFailed { .. }
