@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794212870768,
+  "lastUpdate": 1794212872480,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -14833,6 +14833,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1033,
             "range": "± 11",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "da311c2622119c1ea9c2defc4d5c5c0c9931b08f",
+          "message": "Merge pull request #267 from ai-screams/refactor/split-inline-tests\n\ntest: [#267] move the five largest inline test modules into tests.rs files",
+          "timestamp": "2026-11-09T17:23:41+09:00",
+          "tree_id": "73e1953f885e4e310ee6a8023715c1639e48d2f2",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/da311c2622119c1ea9c2defc4d5c5c0c9931b08f"
+        },
+        "date": 1794212872364,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 639,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 458,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
