@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794237537576,
+  "lastUpdate": 1794239325894,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12136,6 +12136,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/reserved_reject",
             "value": 28,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 166,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e9e627ecc7e7f1529952d83697dd422b602d8971",
+          "message": "Merge pull request #275 from ai-screams/fix/pyvenv-cfg-readers\n\nfix(migrate): [#275] read pyvenv.cfg the same way everywhere",
+          "timestamp": "2026-11-10T00:44:54+09:00",
+          "tree_id": "6c6f051fc4941e69cd926e2abd6b4b4e18b3d17f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/e9e627ecc7e7f1529952d83697dd422b602d8971"
+        },
+        "date": 1794239325163,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 69087,
+            "range": "± 615",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 82244,
+            "range": "± 544",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 2321,
+            "range": "± 22",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 629,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 80,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 84,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 92,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 83,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 27,
             "range": "± 0",
             "unit": "ns/iter"
           },
