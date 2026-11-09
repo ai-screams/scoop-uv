@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794199315007,
+  "lastUpdate": 1794199316479,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -14473,6 +14473,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1021,
             "range": "± 17",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9fe45e964131d22a35d98181c8454bf77af84be1",
+          "message": "Merge pull request #263 from ai-screams/fix/env-copy-data-safety\n\nfix: [#263] keep data when clone, export and migrate cannot copy it",
+          "timestamp": "2026-11-09T13:38:08+09:00",
+          "tree_id": "ab1de51d9b7bfaff1fe376ea50a8af10f39e9714",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/9fe45e964131d22a35d98181c8454bf77af84be1"
+        },
+        "date": 1794199316387,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1334,
+            "range": "± 30",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 937,
+            "range": "± 12",
             "unit": "ns/iter"
           }
         ]
