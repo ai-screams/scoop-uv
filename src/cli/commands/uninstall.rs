@@ -444,11 +444,8 @@ fn env_home(env_path: &Path) -> std::result::Result<PathBuf, HomeUnknown> {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Err(HomeUnknown::NoConfig),
         Err(e) => return Err(HomeUnknown::Unreadable(e.to_string())),
     };
-    cfg.lines()
-        .find_map(|line| {
-            let (key, value) = line.split_once('=')?;
-            (key.trim() == "home" && !value.trim().is_empty()).then(|| PathBuf::from(value.trim()))
-        })
+    crate::core::pyvenv_home(&cfg)
+        .map(PathBuf::from)
         .ok_or(HomeUnknown::NoHomeLine)
 }
 

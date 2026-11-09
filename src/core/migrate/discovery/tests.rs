@@ -452,3 +452,55 @@ fn test_source_type_returns_pyenv() {
 
     assert!(matches!(discovery.source_type(), SourceType::Pyenv));
 }
+
+// =========================================================================
+// Version precedence: version key, then the `home` path, then the Python
+// directory the env sits under.
+// =========================================================================
+
+fn env_with_cfg(root: &Path, py: &str, name: &str, cfg: &str) -> PathBuf {
+    let env = make_pyenv_env(root, py, name);
+    fs::write(env.join("pyvenv.cfg"), cfg).unwrap();
+    env
+}
+
+/// What fails this: the home path or the parent directory winning over an
+/// explicit version key.
+#[test]
+fn version_key_beats_home_and_parent_directory() {
+    let temp = TempDir::new().unwrap();
+    env_with_cfg(
+        temp.path(),
+        "3.11.0",
+        "web",
+        "home = /opt/homebrew/opt/python@3.10/bin\nversion_info = 3.12.4.final.0\n",
+    );
+    let envs = PyenvDiscovery::new(temp.path().to_path_buf())
+        .scan_environments()
+        .unwrap();
+    assert_eq!(envs[0].python_version, "3.12.4");
+}
+
+/// Without a version key the home path wins over the parent directory,
+/// including a Homebrew `python@` home, which pyenv's own reader did not
+/// recognise before. What fails this: pyenv keeping only `versions/`.
+#[test]
+fn home_path_beats_parent_directory_including_homebrew() {
+    let temp = TempDir::new().unwrap();
+    env_with_cfg(
+        temp.path(),
+        "3.11.0",
+        "web",
+        "home = /opt/homebrew/opt/python@3.10/bin\n",
+    );
+    env_with_cfg(temp.path(), "3.11.0", "plain", "home = /usr/bin\n");
+    let mut envs = PyenvDiscovery::new(temp.path().to_path_buf())
+        .scan_environments()
+        .unwrap();
+    envs.sort_by(|a, b| a.name.cmp(&b.name));
+    let versions: Vec<_> = envs
+        .iter()
+        .map(|e| (e.name.as_str(), e.python_version.as_str()))
+        .collect();
+    assert_eq!(versions, [("plain", "3.11.0"), ("web", "3.10")]);
+}

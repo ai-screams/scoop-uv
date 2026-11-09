@@ -42,35 +42,9 @@ impl PyenvDiscovery {
         self.root.join("versions")
     }
 
-    /// Parse pyvenv.cfg to extract Python version
+    /// The Python version from pyvenv.cfg (see [`crate::core::pyvenv_python_version`]).
     fn parse_pyvenv_cfg(path: &Path) -> Option<String> {
-        let cfg_path = path.join("pyvenv.cfg");
-        let content = fs::read_to_string(&cfg_path).ok()?;
-
-        // Reads both `version` (stdlib venv) and `version_info` (uv) keys.
-        if let Some(version) = content
-            .lines()
-            .find_map(crate::core::pyvenv_version_from_line)
-        {
-            return Some(version);
-        }
-
-        // Fallback: try to extract from home path
-        for line in content.lines() {
-            let line = line.trim();
-            if let Some(home) = line.strip_prefix("home") {
-                let home = home.trim_start_matches([' ', '=']).trim();
-                // Extract version from path like /Users/user/.pyenv/versions/3.11.0/bin
-                if let Some(versions_idx) = home.find("versions/") {
-                    let after_versions = &home[versions_idx + 9..];
-                    if let Some(slash_idx) = after_versions.find('/') {
-                        return Some(after_versions[..slash_idx].to_string());
-                    }
-                }
-            }
-        }
-
-        None
+        crate::core::pyvenv_python_version(path)
     }
 
     /// Parse a single environment directory into SourceEnvironment

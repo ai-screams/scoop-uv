@@ -37,43 +37,9 @@ impl VenvWrapperDiscovery {
         }
     }
 
-    /// Parse pyvenv.cfg to extract Python version
+    /// The Python version from pyvenv.cfg (see [`crate::core::pyvenv_python_version`]).
     fn parse_pyvenv_cfg(path: &Path) -> Option<String> {
-        let cfg_path = path.join("pyvenv.cfg");
-        let content = fs::read_to_string(&cfg_path).ok()?;
-
-        // Reads both `version` (stdlib venv) and `version_info` (uv) keys.
-        if let Some(version) = content
-            .lines()
-            .find_map(crate::core::pyvenv_version_from_line)
-        {
-            return Some(version);
-        }
-
-        // Fallback: try to extract from home path
-        for line in content.lines() {
-            let line = line.trim();
-            if let Some(home) = line.strip_prefix("home") {
-                let home = home.trim_start_matches([' ', '=']).trim();
-                // Try to extract version from Python path
-                // e.g., /usr/local/opt/python@3.11/bin or /Library/Frameworks/Python.framework/Versions/3.11/bin
-                if let Some(at_idx) = home.find("python@") {
-                    let after_at = &home[at_idx + 7..];
-                    if let Some(slash_idx) = after_at.find('/') {
-                        return Some(after_at[..slash_idx].to_string());
-                    }
-                    return Some(after_at.to_string());
-                }
-                if let Some(versions_idx) = home.find("Versions/") {
-                    let after_versions = &home[versions_idx + 9..];
-                    if let Some(slash_idx) = after_versions.find('/') {
-                        return Some(after_versions[..slash_idx].to_string());
-                    }
-                }
-            }
-        }
-
-        None
+        crate::core::pyvenv_python_version(path)
     }
 
     /// Parse a single environment directory into SourceEnvironment
@@ -377,5 +343,22 @@ mod tests {
     fn test_determine_status_ready() {
         let status = common::determine_status("nonexistent_venv_wrapper_test", "3.12.0");
         assert!(matches!(status, EnvironmentStatus::Ready));
+    }
+
+    /// A virtualenvwrapper env made from a pyenv Python records a
+    /// `versions/<v>` home, which its reader did not recognise before.
+    /// What fails this: venvwrapper keeping only `python@` and `Versions/`.
+    #[test]
+    fn parse_pyvenv_cfg_reads_version_from_pyenv_home() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(
+            temp.path().join("pyvenv.cfg"),
+            "home = /Users/u/.pyenv/versions/3.11.9/bin\n",
+        )
+        .unwrap();
+        assert_eq!(
+            VenvWrapperDiscovery::parse_pyvenv_cfg(temp.path()).as_deref(),
+            Some("3.11.9")
+        );
     }
 }
