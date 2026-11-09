@@ -424,8 +424,10 @@ impl EnvironmentSource for MyDiscovery {
 
 2. Export it from `core/migrate/mod.rs` and add a `SourceType` variant.
 
-3. Wire it into `cli/commands/migrate/scan.rs`, next to `PyenvDiscovery`, `CondaDiscovery` and
-   `VenvWrapperDiscovery`.
+3. Add a `MigrateSource` variant in `cli/mod.rs` (its position is the search order) and an arm
+   for it in `discovery()` in `cli/commands/migrate/scan.rs`; the match is exhaustive, so the
+   compiler points at it. Scanning, lookup and the "is any tool installed" check all go through
+   that one list.
 
 ### Adding a New Doctor Check
 

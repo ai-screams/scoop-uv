@@ -7335,7 +7335,7 @@ msgstr ""
 "`--delete-source`를 사용하면 원본이 제거됩니다."
 
 #: src/commands/migrate.md:425 src/commands/lang.md:139
-#: src/development/architecture.md:436
+#: src/development/architecture.md:438
 msgid "Notes"
 msgstr "참고 사항"
 
@@ -11435,17 +11435,21 @@ msgstr "`core/migrate/mod.rs`에서 내보내고 `SourceType` variant를 추가�
 
 #: src/development/architecture.md:427
 msgid ""
-"Wire it into `cli/commands/migrate/scan.rs`, next to `PyenvDiscovery`, "
-"`CondaDiscovery` and `VenvWrapperDiscovery`."
+"Add a `MigrateSource` variant in `cli/mod.rs` (its position is the search "
+"order) and an arm for it in `discovery()` in `cli/commands/migrate/scan.rs`; "
+"the match is exhaustive, so the compiler points at it. Scanning, lookup and "
+"the \"is any tool installed\" check all go through that one list."
 msgstr ""
-"`PyenvDiscovery`, `CondaDiscovery`, `VenvWrapperDiscovery`와 나란히 `cli/"
-"commands/migrate/scan.rs`에 연결합니다."
+"`cli/mod.rs`에 `MigrateSource` variant를 추가하고(선언 위치가 검색 순서입니"
+"다) `cli/commands/migrate/scan.rs`의 `discovery()`에 그 arm을 추가합니다. "
+"match가 exhaustive이므로 빠뜨리면 컴파일러가 알려 줍니다. 스캔, 이름 검색, "
+"\"설치된 도구가 있는지\" 확인은 모두 이 목록 하나를 거칩니다."
 
-#: src/development/architecture.md:430
+#: src/development/architecture.md:432
 msgid "Adding a New Doctor Check"
 msgstr "새 Doctor 점검 항목 추가"
 
-#: src/development/architecture.md:432
+#: src/development/architecture.md:434
 msgid ""
 "See [API Reference - Adding a New Health Check](../api.md#adding-a-new-"
 "health-check) for details."
@@ -11453,79 +11457,79 @@ msgstr ""
 "자세한 내용은 [API 레퍼런스 - 새 상태 점검 추가](../api.md#adding-a-new-"
 "health-check)를 참고하세요."
 
-#: src/development/architecture.md:434
+#: src/development/architecture.md:436
 msgid "Performance Characteristics"
 msgstr "성능 특성"
 
-#: src/development/architecture.md:436
+#: src/development/architecture.md:438
 msgid "Operation"
 msgstr "작업"
 
-#: src/development/architecture.md:436
+#: src/development/architecture.md:438
 msgid "Time Complexity"
 msgstr "시간 복잡도"
 
-#: src/development/architecture.md:438
+#: src/development/architecture.md:440
 msgid "List envs"
 msgstr "환경 목록 조회"
 
-#: src/development/architecture.md:438 src/development/architecture.md:442
+#: src/development/architecture.md:440 src/development/architecture.md:444
 msgid "O(n)"
 msgstr "O(n)"
 
-#: src/development/architecture.md:438
+#: src/development/architecture.md:440
 msgid "n = number of virtualenvs"
 msgstr "n = virtualenv 수"
 
-#: src/development/architecture.md:439
+#: src/development/architecture.md:441
 msgid "Create env"
 msgstr "환경 생성"
 
-#: src/development/architecture.md:439
+#: src/development/architecture.md:441
 msgid "O(1)\\*"
 msgstr "O(1)\\*"
 
-#: src/development/architecture.md:439
+#: src/development/architecture.md:441
 msgid "\\*Depends on uv performance"
 msgstr "\\*uv 성능에 따라 다름"
 
-#: src/development/architecture.md:440
+#: src/development/architecture.md:442
 msgid "Delete env"
 msgstr "환경 삭제"
 
-#: src/development/architecture.md:440
+#: src/development/architecture.md:442
 msgid "O(1)"
 msgstr "O(1)"
 
-#: src/development/architecture.md:440
+#: src/development/architecture.md:442
 msgid "Simple directory removal"
 msgstr "단순 디렉토리 제거"
 
-#: src/development/architecture.md:441
+#: src/development/architecture.md:443
 msgid "Version resolution"
 msgstr "버전 결정"
 
-#: src/development/architecture.md:441
+#: src/development/architecture.md:443
 msgid "O(d)"
 msgstr "O(d)"
 
-#: src/development/architecture.md:441
+#: src/development/architecture.md:443
 msgid "d = directory depth (walks parents)"
 msgstr "d = 디렉토리 깊이 (상위 디렉토리 탐색)"
 
-#: src/development/architecture.md:442
+#: src/development/architecture.md:444
 msgid "Doctor checks"
 msgstr "Doctor 점검"
 
-#: src/development/architecture.md:442
+#: src/development/architecture.md:444
 msgid "n = number of checks (fixed)"
 msgstr "n = 점검 항목 수 (고정)"
 
-#: src/development/architecture.md:444
+#: src/development/architecture.md:446
 msgid "Thread Safety"
 msgstr "스레드 안전성"
 
-#: src/development/architecture.md:446
+#: src/development/architecture.md:448
 msgid ""
 "`migrate all` migrates environments in parallel (`rayon::par_iter`), and "
 "`migrate list` measures their sizes in parallel. Everything else runs on one "
@@ -11535,7 +11539,7 @@ msgstr ""
 "list`는 환경 크기를 병렬로 계산합니다. 나머지는 모두 한 스레드에서 실행됩니"
 "다."
 
-#: src/development/architecture.md:448
+#: src/development/architecture.md:450
 msgid ""
 "**File locking:** Not implemented. Assumes single user on single machine. "
 "Concurrent operations (e.g., two terminals creating the same env) may result "
@@ -11545,11 +11549,11 @@ msgstr ""
 "고 가정합니다. 동시 작업(예: 두 터미널에서 동일한 환경 생성)은 레이스 컨디션"
 "을 유발할 수 있습니다."
 
-#: src/development/architecture.md:450 src/development/code-quality.md:356
+#: src/development/architecture.md:452 src/development/code-quality.md:356
 msgid "Security Considerations"
 msgstr "보안 고려 사항"
 
-#: src/development/architecture.md:452
+#: src/development/architecture.md:454
 msgid ""
 "**Path Traversal:** All user-provided names are validated via regex before "
 "use in filesystem operations."
@@ -11557,7 +11561,7 @@ msgstr ""
 "**경로 순회 공격:** 사용자가 제공한 모든 이름은 파일시스템 작업에 사용되기 전"
 "에 regex로 검증됩니다."
 
-#: src/development/architecture.md:453
+#: src/development/architecture.md:455
 msgid ""
 "**Command Injection:** uv commands are constructed using typed arguments, "
 "not string concatenation."
@@ -11565,33 +11569,33 @@ msgstr ""
 "**커맨드 인젝션:** uv 커맨드는 문자열 연결이 아닌 타입 안전한 인수를 사용하"
 "여 구성됩니다."
 
-#: src/development/architecture.md:454
+#: src/development/architecture.md:456
 msgid ""
 "**Symlink Safety:** Doctor checks detect and warn about broken symlinks."
 msgstr ""
 "**심볼릭 링크 안전성:** Doctor 점검이 끊어진 심볼릭 링크를 감지하고 경고합니"
 "다."
 
-#: src/development/architecture.md:455
+#: src/development/architecture.md:457
 msgid ""
 "**Metadata Integrity:** JSON parsing errors are gracefully handled without "
 "panics."
 msgstr ""
 "**메타데이터 무결성:** JSON 파싱 오류는 패닉 없이 정상적으로 처리됩니다."
 
-#: src/development/architecture.md:457 src/api.md:682
+#: src/development/architecture.md:459 src/api.md:682
 msgid "Related Documentation"
 msgstr "관련 문서"
 
-#: src/development/architecture.md:459
+#: src/development/architecture.md:461
 msgid "[API Reference](../api.md) - Detailed API documentation"
 msgstr "[API 레퍼런스](../api.md) - 상세 API 문서"
 
-#: src/development/architecture.md:460
+#: src/development/architecture.md:462
 msgid "[Testing](testing.md) - Testing strategies"
 msgstr "[테스팅](testing.md) - 테스팅 전략"
 
-#: src/development/architecture.md:461
+#: src/development/architecture.md:463
 msgid "[Contributing](contributing.md) - Development guide"
 msgstr "[기여하기](contributing.md) - 개발 가이드"
 
@@ -16476,6 +16480,13 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid ""
+#~ "Wire it into `cli/commands/migrate/scan.rs`, next to `PyenvDiscovery`, "
+#~ "`CondaDiscovery` and `VenvWrapperDiscovery`."
+#~ msgstr ""
+#~ "`PyenvDiscovery`, `CondaDiscovery`, `VenvWrapperDiscovery`와 나란히 `cli/"
+#~ "commands/migrate/scan.rs`에 연결합니다."
 
 #~ msgid "Healthy environments are left untouched."
 #~ msgstr "정상적인 환경은 그대로 유지됩니다."
