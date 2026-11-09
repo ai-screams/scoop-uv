@@ -188,6 +188,13 @@ impl ScoopError {
                 supported = supported
             )
             .to_string(),
+            Self::DoctorFindings { errors, warnings } => t!(
+                "error.doctor_findings",
+                locale = locale,
+                errors = errors.to_string(),
+                warnings = warnings.to_string()
+            )
+            .to_string(),
             Self::VerifyFailed { issues } => t!(
                 "error.verify_failed",
                 locale = locale,

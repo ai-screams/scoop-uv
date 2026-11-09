@@ -1,5 +1,7 @@
 //! Doctor command
 
+mod render;
+
 use std::env;
 use std::io::{self, IsTerminal};
 
@@ -7,35 +9,20 @@ use dialoguer::Confirm;
 use rust_i18n::t;
 
 use crate::core::doctor::{CheckResult, Doctor, apply_uv_install};
-use crate::error::Result;
+use crate::error::{Result, ScoopError};
 use crate::output::Output;
 use crate::uv::install::{self, MANUAL_URL, Outcome, Plan, ProcessRunner, Skip};
 
-/// Calculates exit code based on check results.
-///
-/// - 0: All checks passed
-/// - 1: Warnings found (no errors)
-/// - 2: Errors found (takes priority over warnings)
-#[inline]
-fn calculate_exit_code(results: &[CheckResult]) -> i32 {
-    if results.iter().any(|r| r.is_error()) {
-        2
-    } else if results.iter().any(|r| r.is_warning()) {
-        1
+/// The outcome of a run: `Ok` when every check passed, otherwise
+/// [`ScoopError::DoctorFindings`] with the counts (exit 2 with any error, 1
+/// with only warnings). The report is already printed, so the error is quiet.
+fn findings(results: &[CheckResult]) -> Result<()> {
+    let errors = results.iter().filter(|r| r.is_error()).count();
+    let warnings = results.iter().filter(|r| r.is_warning()).count();
+    if errors + warnings == 0 {
+        Ok(())
     } else {
-        0
-    }
-}
-
-/// Exit process with appropriate code based on check results.
-///
-/// - Exit 2: If any errors found
-/// - Exit 1: If any warnings found (no errors)
-/// - No exit: If all checks passed
-fn exit_with_result_status(results: &[CheckResult]) {
-    let code = calculate_exit_code(results);
-    if code != 0 {
-        std::process::exit(code);
+        Err(ScoopError::DoctorFindings { errors, warnings })
     }
 }
 
@@ -50,8 +37,8 @@ fn install_context(output: &Output, terminal: bool) -> install::Context {
 
 /// Offers to install uv if it is missing. `None` when nothing was offered.
 ///
-/// The temporary directory holding the script ends with this function: the
-/// caller may leave through `process::exit`, which runs no destructors.
+/// The temporary directory holding the script ends with this function, so it
+/// is gone before the report is printed.
 fn offer_uv_install(output: &Output) -> Option<Outcome> {
     if which::which("uv").is_ok() {
         return None;
@@ -148,7 +135,7 @@ pub fn execute(output: &Output, fix: bool) -> Result<()> {
 
     if fix {
         // Run with auto-fix
-        output.doctor_header();
+        render::header(output);
         // Before the fixes, so a repair that needs uv can find it if it landed
         // on PATH.
         let install = offer_uv_install(output);
@@ -166,40 +153,38 @@ pub fn execute(output: &Output, fix: bool) -> Result<()> {
             apply_uv_install(&mut results, outcome, which::which("uv").is_ok());
         }
         for result in &results {
-            output.doctor_check(result);
+            render::check(output, result);
         }
 
         // Print summary or JSON
         if output.is_json() {
-            output.doctor_json(&results);
+            render::json(output, &results);
         } else {
-            output.doctor_summary(&results);
+            render::summary(output, &results);
         }
 
-        exit_with_result_status(&results);
+        findings(&results)
     } else {
         // Normal run
         let results = doctor.run_all();
 
         // Print header
-        output.doctor_header();
+        render::header(output);
 
         // Print each result
         for result in &results {
-            output.doctor_check(result);
+            render::check(output, result);
         }
 
         // Print summary or JSON
         if output.is_json() {
-            output.doctor_json(&results);
+            render::json(output, &results);
         } else {
-            output.doctor_summary(&results);
+            render::summary(output, &results);
         }
 
-        exit_with_result_status(&results);
+        findings(&results)
     }
-
-    Ok(())
 }
 
 // ============================================================================
@@ -230,6 +215,10 @@ mod tests {
     }
 
     /// Creates a test CheckResult with given status.
+    fn exit_code(results: &[CheckResult]) -> u8 {
+        findings(results).map_or_else(|e| e.exit_code(), |()| 0)
+    }
+
     fn make_result(status: CheckStatus) -> CheckResult {
         CheckResult {
             id: "test",
@@ -242,61 +231,61 @@ mod tests {
     }
 
     #[test]
-    fn calculate_exit_code_all_passed_returns_zero() {
+    fn exit_code_all_passed_returns_zero() {
         let results = vec![make_result(CheckStatus::Ok), make_result(CheckStatus::Ok)];
-        assert_eq!(calculate_exit_code(&results), 0);
+        assert_eq!(exit_code(&results), 0);
     }
 
     #[test]
-    fn calculate_exit_code_empty_results_returns_zero() {
+    fn exit_code_empty_results_returns_zero() {
         let results: Vec<CheckResult> = vec![];
-        assert_eq!(calculate_exit_code(&results), 0);
+        assert_eq!(exit_code(&results), 0);
     }
 
     #[test]
-    fn calculate_exit_code_warnings_only_returns_one() {
+    fn exit_code_warnings_only_returns_one() {
         let results = vec![
             make_result(CheckStatus::Ok),
             make_result(CheckStatus::Warning("something".into())),
         ];
-        assert_eq!(calculate_exit_code(&results), 1);
+        assert_eq!(exit_code(&results), 1);
     }
 
     #[test]
-    fn calculate_exit_code_errors_only_returns_two() {
+    fn exit_code_errors_only_returns_two() {
         let results = vec![
             make_result(CheckStatus::Ok),
             make_result(CheckStatus::Error("critical".into())),
         ];
-        assert_eq!(calculate_exit_code(&results), 2);
+        assert_eq!(exit_code(&results), 2);
     }
 
     #[test]
-    fn calculate_exit_code_mixed_errors_and_warnings_returns_two() {
+    fn exit_code_mixed_errors_and_warnings_returns_two() {
         // Error takes priority over warning
         let results = vec![
             make_result(CheckStatus::Warning("minor".into())),
             make_result(CheckStatus::Error("major".into())),
             make_result(CheckStatus::Ok),
         ];
-        assert_eq!(calculate_exit_code(&results), 2);
+        assert_eq!(exit_code(&results), 2);
     }
 
     #[test]
-    fn calculate_exit_code_multiple_warnings_returns_one() {
+    fn exit_code_multiple_warnings_returns_one() {
         let results = vec![
             make_result(CheckStatus::Warning("warn1".into())),
             make_result(CheckStatus::Warning("warn2".into())),
         ];
-        assert_eq!(calculate_exit_code(&results), 1);
+        assert_eq!(exit_code(&results), 1);
     }
 
     #[test]
-    fn calculate_exit_code_multiple_errors_returns_two() {
+    fn exit_code_multiple_errors_returns_two() {
         let results = vec![
             make_result(CheckStatus::Error("err1".into())),
             make_result(CheckStatus::Error("err2".into())),
         ];
-        assert_eq!(calculate_exit_code(&results), 2);
+        assert_eq!(exit_code(&results), 2);
     }
 }

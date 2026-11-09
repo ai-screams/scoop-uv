@@ -1142,6 +1142,10 @@ fn every_variant() -> Vec<ScoopError> {
             failed_count: 4208,
             conflict_count: 4209,
         },
+        ScoopError::DoctorFindings {
+            errors: 4211,
+            warnings: 4212,
+        },
         ScoopError::DiffMismatch {
             env_a: "env-abd".into(),
             env_b: "env-abe".into(),
@@ -1192,6 +1196,7 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::InvalidExportFile { .. }
         | ScoopError::UnsupportedExportVersion { .. }
         | ScoopError::VerifyFailed { .. }
+        | ScoopError::DoctorFindings { .. }
         | ScoopError::SitePackagesNotFound { .. }
         | ScoopError::MigrationSourcesNotFound { .. }
         | ScoopError::MigrationBatchFailed { .. }
@@ -1277,6 +1282,7 @@ fn only_self_reporting_variants_are_quiet() {
         [
             "CascadeIncomplete",
             "DiffMismatch",
+            "DoctorFindings",
             "MigrationBatchFailed",
             "VerifyFailed"
         ]

@@ -68,6 +68,15 @@ impl ScoopError {
             // exit 1 (signal "I found something") and Quiet render policy.
             Self::VerifyFailed { .. } | Self::DiffMismatch { .. } => 1,
 
+            // doctor's own scale: 2 when any check failed, 1 for warnings.
+            Self::DoctorFindings { errors, .. } => {
+                if *errors > 0 {
+                    2
+                } else {
+                    1
+                }
+            }
+
             // Migration source problems: a missing or broken source tool
             // or env. MigrationSourcesNotFound is here so that
             // `scuv migrate all` on a system with no source tools
@@ -121,6 +130,7 @@ impl ScoopError {
             // table or JSON envelope) before returning these variants,
             // so `main.rs` must not append the generic `error:` prefix.
             Self::VerifyFailed { .. }
+            | Self::DoctorFindings { .. }
             | Self::MigrationBatchFailed { .. }
             | Self::CascadeIncomplete { .. }
             | Self::DiffMismatch { .. } => ErrorRenderPolicy::Quiet,

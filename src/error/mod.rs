@@ -148,6 +148,10 @@ pub enum ScoopError {
     /// library code (which would skip destructors and stdout flush).
     VerifyFailed { issues: usize },
 
+    /// `scuv doctor` found problems: exit 2 with any error, 1 with only
+    /// warnings. The report was already rendered, like `VerifyFailed`.
+    DoctorFindings { errors: usize, warnings: usize },
+
     /// `paths::virtualenv_site_packages` could not locate the
     /// `site-packages` directory inside a virtualenv root. The fallback
     /// chain (pyvenv.cfg → glob → sysconfig subprocess) exhausted with

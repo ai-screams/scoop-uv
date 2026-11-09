@@ -57,7 +57,7 @@ Docs can always be clearer. PRs welcome for:
 Help make scuv accessible to developers worldwide!
 
 **Quick start:**
-1. Add translations to `locales/app.yml` (257 keys)
+1. Add translations to `locales/app.yml` (258 keys)
 2. Register your language in `src/i18n.rs`
 3. Submit PR with title: `feat(i18n): add {Language} translation`
 
@@ -678,7 +678,7 @@ scoop-uv/
 ├── src/
 │   ├── main.rs              # Entry point
 │   ├── lib.rs               # Library root
-│   ├── error/               # ScoopError enum (mod/code/display/exit/migrate/suggestion)
+│   ├── error/               # ScoopError enum (mod/code/display/exit/suggestion)
 │   ├── paths.rs             # Path utilities
 │   ├── validate.rs          # Validation logic
 │   │
