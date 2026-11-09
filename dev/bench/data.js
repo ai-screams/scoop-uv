@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794231265269,
+  "lastUpdate": 1794231267191,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -15313,6 +15313,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 458,
             "range": "± 12",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "be6ed0e4d46481195f28420d5c4aa745c03af4bd",
+          "message": "Merge pull request #271 from ai-screams/feat/doctor-i18n\n\nfeat(doctor)!: [#271] translate the doctor report",
+          "timestamp": "2026-11-09T22:30:23+09:00",
+          "tree_id": "aa99d0074f3e6ebb350c94b11340d3623a71ebed",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/be6ed0e4d46481195f28420d5c4aa745c03af4bd"
+        },
+        "date": 1794231267075,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1559,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 1022,
+            "range": "± 7",
             "unit": "ns/iter"
           }
         ]
