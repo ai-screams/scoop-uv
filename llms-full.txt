@@ -88,7 +88,7 @@ Verify: `scuv --version`
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) — delete unused download/wheel cache entries. |
 | `scuv diff <a> <b>` | Compare two envs (Python version, packages, metadata); `--strict` exits 1 on any difference |
 | `scuv self update` | Update scuv itself from crates.io |
-| `scuv verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scuv.toml` Python matches (skipped if no manifest). Default exits 0 once the report completes; `--strict` exits 1 if any check fails (warnings pass). Pass `NAME` to check a single env. Complements `doctor` (system-level) and `gc` (orphan removal). |
+| `scuv verify [NAME]` | Per-env health diagnosis. Six checks: `.scoop-metadata.json` present/parseable, Python interpreter exists, `pyvenv.cfg` present, activate script present, `python --version` executes, `.scuv.toml` Python matches (skipped if no manifest). Default exits 0 once the report completes; `--strict` exits 1 if any check fails (warnings pass). Pass `NAME` to check a single env. Complements `doctor` (system-level plus a quick file check of every env; missing metadata is only a warning there) and `gc` (orphan removal). |
 | `scuv man [DIR]` | Generate man pages from the live `clap::Command` tree. Without `DIR`: print top-level `scuv.1` to stdout (pipe to `man -l -`). With `DIR`: write `scuv.1` + one `scuv-<sub>.1` per visible subcommand for distro packagers. |
 
 ### Python Management

@@ -1851,18 +1851,18 @@ msgstr "환경 정리 없이 Python을 제거한 경우:"
 msgid "# Detect broken environments\n"
 msgstr "# 깨진 환경 감지\n"
 
-#: src/python-management.md:296 src/commands/doctor.md:86
+#: src/python-management.md:296 src/commands/doctor.md:89
 msgid "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 msgstr "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 
 #: src/python-management.md:299 src/commands/uninstall.md:124
 #: src/commands/uninstall.md:214 src/commands/uninstall.md:216
-#: src/commands/doctor.md:91 src/commands/migrate.md:187
+#: src/commands/doctor.md:94 src/commands/migrate.md:187
 msgid "'myproject'"
 msgstr "'myproject'"
 
 #: src/python-management.md:299 src/commands/uninstall.md:214
-#: src/commands/uninstall.md:216 src/commands/doctor.md:91
+#: src/commands/uninstall.md:216 src/commands/doctor.md:94
 msgid "#   → scuv remove myproject && scuv create myproject <python-version>\n"
 msgstr ""
 "#   → scuv remove myproject && scuv create myproject <python-version>\n"
@@ -2737,7 +2737,7 @@ msgstr ""
 msgid "# • Scanning all sources for environments...\n"
 msgstr "# • Scanning all sources for environments...\n"
 
-#: src/faq.md:344 src/commands/doctor.md:99
+#: src/faq.md:344 src/commands/doctor.md:102
 #: src/development/docs-translation.md:98
 #: src/development/docs-translation.md:104
 msgid "#\n"
@@ -3453,7 +3453,7 @@ msgid ""
 msgstr "`--python-version` 옵션은 접두사 매칭으로 환경을 필터링합니다:"
 
 #: src/commands/list.md:132 src/commands/uninstall.md:165
-#: src/commands/doctor.md:78 src/commands/doctor.md:106
+#: src/commands/doctor.md:81 src/commands/doctor.md:109
 msgid "# Output:\n"
 msgstr "# 출력:\n"
 
@@ -4664,8 +4664,14 @@ msgid "**virtual environments**"
 msgstr "**가상 환경**"
 
 #: src/commands/doctor.md:25
-msgid "Every environment has a `bin/python` and a `pyvenv.cfg`"
-msgstr "모든 환경에 `bin/python`과 `pyvenv.cfg`가 있음"
+msgid ""
+"Every environment has a `bin/python` and a `pyvenv.cfg` (an error when "
+"either is missing), and readable scuv metadata (a warning when it is missing "
+"or does not parse; `scuv verify <name>` shows the details)"
+msgstr ""
+"모든 환경에 `bin/python`과 `pyvenv.cfg`가 있음(하나라도 없으면 오류), 그리고 "
+"읽을 수 있는 scuv metadata가 있음(없거나 해석되지 않으면 경고, 자세한 내용은 "
+"`scuv verify <name>`)"
 
 #: src/commands/doctor.md:26
 msgid "**symbolic links**"
@@ -4833,7 +4839,29 @@ msgid ""
 "Python binary)?"
 msgstr "**pyvenv.cfg** — 환경의 설정 파일(과 Python 바이너리)이 존재합니까?"
 
-#: src/commands/doctor.md:74
+#: src/commands/doctor.md:73
+msgid ""
+"**scuv metadata** — Does `.scoop-metadata.json` exist and parse? Without it "
+"the env still works, so doctor only warns; `scuv verify` counts it as a "
+"failure. `--fix` does not recreate metadata."
+msgstr ""
+"**scuv metadata** — `.scoop-metadata.json`이 있고 해석됩니까? 없어도 환경은 "
+"동작하므로 doctor는 경고만 하고, `scuv verify`는 실패로 셉니다. `--fix`는 "
+"metadata를 다시 만들지 않습니다."
+
+#: src/commands/doctor.md:75
+msgid ""
+"doctor looks at the same directories `scuv list` shows: a symlink placed "
+"inside `~/.scuv/virtualenvs/` is not an environment and is not checked. The "
+"activate script, running the interpreter and `.scuv.toml` drift are checked "
+"by `scuv verify` only."
+msgstr ""
+"doctor는 `scuv list`가 보여 주는 디렉터리와 같은 것을 봅니다. `~/.scuv/"
+"virtualenvs/` 안에 둔 심볼릭 링크는 환경이 아니므로 검사하지 않습니다. "
+"activate 스크립트, 인터프리터 실행, `.scuv.toml`과의 차이는 `scuv verify`만 "
+"검사합니다."
+
+#: src/commands/doctor.md:77
 msgid ""
 "Environments can become broken when their underlying Python version is "
 "uninstalled. Use `scuv doctor` to detect these issues:"
@@ -4841,76 +4869,76 @@ msgstr ""
 "기반 Python 버전이 제거되면 환경이 손상될 수 있습니다. `scuv doctor`를 사용하"
 "여 이러한 문제를 감지하세요:"
 
-#: src/commands/doctor.md:77
+#: src/commands/doctor.md:80
 msgid "# After accidentally uninstalling Python 3.12:\n"
 msgstr "# Python 3.12를 실수로 제거한 후:\n"
 
-#: src/commands/doctor.md:80
+#: src/commands/doctor.md:83
 msgid "# Checking installation...\n"
 msgstr "# Checking installation...\n"
 
-#: src/commands/doctor.md:82 src/commands/doctor.md:114
+#: src/commands/doctor.md:85 src/commands/doctor.md:117
 msgid "# ✓ uv installation\n"
 msgstr "# ✓ uv installation\n"
 
-#: src/commands/doctor.md:84
+#: src/commands/doctor.md:87
 msgid "# ✓ SCUV_HOME directory\n"
 msgstr "# ✓ SCUV_HOME directory\n"
 
-#: src/commands/doctor.md:89 src/commands/doctor.md:93
-#: src/commands/doctor.md:112 src/commands/doctor.md:114
+#: src/commands/doctor.md:92 src/commands/doctor.md:96
+#: src/commands/doctor.md:115 src/commands/doctor.md:117
 msgid "'webapp'"
 msgstr "'webapp'"
 
-#: src/commands/doctor.md:89 src/commands/doctor.md:93
+#: src/commands/doctor.md:92 src/commands/doctor.md:96
 msgid "#   → scuv remove webapp && scuv create webapp <python-version>\n"
 msgstr "#   → scuv remove webapp && scuv create webapp <python-version>\n"
 
-#: src/commands/doctor.md:95
+#: src/commands/doctor.md:98
 msgid "#   found in ~/.zshrc\n"
 msgstr "#   found in ~/.zshrc\n"
 
-#: src/commands/doctor.md:97
+#: src/commands/doctor.md:100
 msgid "#   no version files configured\n"
 msgstr "#   no version files configured\n"
 
-#: src/commands/doctor.md:101
+#: src/commands/doctor.md:104
 msgid "# Found 4 error(s).\n"
 msgstr "# Found 4 error(s).\n"
 
-#: src/commands/doctor.md:103
+#: src/commands/doctor.md:106
 msgid "# Auto-fix by recreating symlinks (requires Python to be reinstalled)\n"
 msgstr "# 심볼릭 링크 재생성으로 자동 수정 (Python 재설치 필요)\n"
 
-#: src/commands/doctor.md:108
+#: src/commands/doctor.md:111
 msgid "# • Attempting to fix symlink for 'myproject'...\n"
 msgstr "# • Attempting to fix symlink for 'myproject'...\n"
 
-#: src/commands/doctor.md:110
+#: src/commands/doctor.md:113
 msgid "# ✓ Fixed symlink for 'myproject'\n"
 msgstr "# ✓ Fixed symlink for 'myproject'\n"
 
-#: src/commands/doctor.md:112
+#: src/commands/doctor.md:115
 msgid "# • Found Python version: 3.12\n"
 msgstr "# • Found Python version: 3.12\n"
 
-#: src/commands/doctor.md:116
+#: src/commands/doctor.md:119
 msgid "# ✓ virtual environments\n"
 msgstr "# ✓ virtual environments\n"
 
-#: src/commands/doctor.md:118
+#: src/commands/doctor.md:121
 msgid "# ✓ broken symlink\n"
 msgstr "# ✓ broken symlink\n"
 
-#: src/commands/doctor.md:120
+#: src/commands/doctor.md:123
 msgid "# ✓ version files\n"
 msgstr "# ✓ version files\n"
 
-#: src/commands/doctor.md:122
+#: src/commands/doctor.md:125
 msgid "# ──────────────────────────────────\n"
 msgstr "# ──────────────────────────────────\n"
 
-#: src/commands/doctor.md:127
+#: src/commands/doctor.md:130
 msgid ""
 "`✓` marks a passing check, `⚠` a warning and `✗` an error; `→` lines suggest "
 "a fix. The report goes to stderr. `doctor` exits `2` when any check errors, "
@@ -4922,7 +4950,7 @@ msgstr ""
 "있으면 `2`, 가장 심각한 결과가 경고이면 `1`, 모든 검사를 통과하면 `0`(`All "
 "checks passed!`)으로 종료합니다."
 
-#: src/commands/doctor.md:132
+#: src/commands/doctor.md:135
 msgid ""
 "`--fix` attempts its fixes first and then prints the report. A fix can clear "
 "an error another check found — relinking an env's interpreter also mends its "
@@ -4941,7 +4969,7 @@ msgstr ""
 "걸지 못했으면 그 이유(`Python 3.7 not installed` → `scuv install 3.7`)가 나옵"
 "니다."
 
-#: src/commands/doctor.md:140
+#: src/commands/doctor.md:143
 msgid ""
 "**Tip:** Run `scuv doctor` periodically or after uninstalling Python "
 "versions to catch broken environments early. See [uninstall command]"
@@ -8053,8 +8081,12 @@ msgid "`doctor`"
 msgstr "`doctor`"
 
 #: src/commands/verify.md:44
-msgid "System (uv install, shell wrapper, paths)"
-msgstr "시스템 (uv 설치, shell wrapper, 경로)"
+msgid ""
+"System (uv install, shell wrapper, paths) plus a quick file check of every "
+"env (interpreter, `pyvenv.cfg`, metadata)"
+msgstr ""
+"시스템 (uv 설치, shell wrapper, 경로)과 모든 환경의 간단한 파일 검사 (인터프"
+"리터, `pyvenv.cfg`, metadata)"
 
 #: src/commands/verify.md:44
 msgid "Diagnose + optional `--fix`"
@@ -16397,6 +16429,12 @@ msgstr ""
 #: src/examples.md:10
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
+
+#~ msgid "Every environment has a `bin/python` and a `pyvenv.cfg`"
+#~ msgstr "모든 환경에 `bin/python`과 `pyvenv.cfg`가 있음"
+
+#~ msgid "System (uv install, shell wrapper, paths)"
+#~ msgstr "시스템 (uv 설치, shell wrapper, 경로)"
 
 #~ msgid ""
 #~ "`[environment].name` follows the same validation as `scuv create <NAME>` "

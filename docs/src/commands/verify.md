@@ -41,7 +41,7 @@ By default, `verify` exits 0 whenever it could run the checks, even when some fa
 
 | Command | Scope | Action |
 |---------|-------|--------|
-| `doctor` | System (uv install, shell wrapper, paths) | Diagnose + optional `--fix` |
+| `doctor` | System (uv install, shell wrapper, paths) plus a quick file check of every env (interpreter, `pyvenv.cfg`, metadata) | Diagnose + optional `--fix` |
 | `verify` | Per-env (file presence, exec, manifest) | Diagnose only |
 | `gc` | All envs (orphan detection) | Diagnose + optional removal |
 

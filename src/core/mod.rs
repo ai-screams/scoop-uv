@@ -12,7 +12,7 @@ pub use export_schema::{EXPORT_SCHEMA_VERSION, ExportSchema};
 pub use manifest::ScoopManifest;
 pub use metadata::Metadata;
 pub use version::{VersionService, VersionSource};
-pub(crate) use virtualenv::env_dirs;
+pub(crate) use virtualenv::{MetadataState, env_dirs, inspect_env};
 pub use virtualenv::{VirtualenvInfo, VirtualenvService};
 
 /// Environment variable for currently active virtualenv

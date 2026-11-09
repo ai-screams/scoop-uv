@@ -19,6 +19,12 @@ impl Doctor {
         }
     }
 
+    /// A doctor running only `checks`, in order.
+    #[cfg(test)]
+    pub(crate) fn with_checks(checks: Vec<Box<dyn Check>>) -> Self {
+        Self { checks }
+    }
+
     /// Runs all checks and returns results.
     pub fn run_all(&self) -> Vec<CheckResult> {
         self.checks.iter().flat_map(|c| c.run()).collect()

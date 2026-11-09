@@ -22,7 +22,7 @@ scuv doctor [options]
 |-------|------------------|
 | **uv installation** | uv is installed and meets the minimum version (0.5.19) |
 | **SCUV_HOME directory** | `~/.scuv/` exists and is writable |
-| **virtual environments** | Every environment has a `bin/python` and a `pyvenv.cfg` |
+| **virtual environments** | Every environment has a `bin/python` and a `pyvenv.cfg` (an error when either is missing), and readable scuv metadata (a warning when it is missing or does not parse; `scuv verify <name>` shows the details) |
 | **symbolic links** | Python symlinks inside each environment still resolve |
 | **shell configuration** | The shell hook is present in your rc file |
 | **version files** | `.scuv-version` entries reference environments that exist |
@@ -70,6 +70,9 @@ The doctor checks each virtual environment for:
 
 - **Python symlink** — Does the `python` binary in the environment point to a valid Python installation?
 - **pyvenv.cfg** — Does the environment's configuration file exist (and its Python binary)?
+- **scuv metadata** — Does `.scoop-metadata.json` exist and parse? Without it the env still works, so doctor only warns; `scuv verify` counts it as a failure. `--fix` does not recreate metadata.
+
+doctor looks at the same directories `scuv list` shows: a symlink placed inside `~/.scuv/virtualenvs/` is not an environment and is not checked. The activate script, running the interpreter and `.scuv.toml` drift are checked by `scuv verify` only.
 
 Environments can become broken when their underlying Python version is uninstalled. Use `scuv doctor` to detect these issues:
 

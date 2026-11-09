@@ -54,7 +54,7 @@ pub fn execute(output: &crate::output::Output, target: Option<&str>, strict: boo
 
     let reports: Vec<EnvReport> = envs
         .iter()
-        .map(|env| verify_one(&service, env, manifest.as_ref()))
+        .map(|env| verify_one(env, manifest.as_ref()))
         .collect();
     let summary = compute_summary(&reports);
     let strict_failure = strict && summary.issues > 0;
