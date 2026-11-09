@@ -26,7 +26,7 @@ pub(super) fn collect_target_envs(
 ) -> Result<Vec<VirtualenvInfo>> {
     match target {
         Some(name) => {
-            validate::validate_env_name(name)?;
+            validate::validate_existing_env_name(name)?;
             if !service.exists(name)? {
                 return Err(ScoopError::VirtualenvNotFound {
                     name: name.to_string(),

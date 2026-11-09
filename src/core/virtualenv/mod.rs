@@ -189,9 +189,11 @@ impl VirtualenvService {
     /// against an unvalidated name would happily walk into and remove
     /// the target directory under the user's UID. The validation guard
     /// here is the trust boundary — CLI handlers no longer have to
-    /// remember to call `validate_env_name` themselves for safety.
+    /// remember to validate the name themselves for safety. It is the
+    /// existing-name check: an env named before its word was reserved
+    /// can still be removed.
     pub fn delete(&self, name: &str) -> Result<()> {
-        validate::validate_env_name(name)?;
+        validate::validate_existing_env_name(name)?;
         let path = paths::virtualenv_path(name)?;
 
         if !path.exists() {
@@ -229,7 +231,7 @@ impl VirtualenvService {
     /// traversal rationale. A `false` return for an invalid name would
     /// hide the bug instead of surfacing it, so we error out.
     pub fn exists(&self, name: &str) -> Result<bool> {
-        validate::validate_env_name(name)?;
+        validate::validate_existing_env_name(name)?;
         let path = paths::virtualenv_path(name)?;
         Ok(path.exists())
     }
@@ -239,7 +241,7 @@ impl VirtualenvService {
     /// Validates `name` internally — see [`Self::delete`] for the path
     /// traversal rationale.
     pub fn get_path(&self, name: &str) -> Result<PathBuf> {
-        validate::validate_env_name(name)?;
+        validate::validate_existing_env_name(name)?;
         let path = paths::virtualenv_path(name)?;
         if !path.exists() {
             return Err(ScoopError::VirtualenvNotFound {
@@ -360,7 +362,7 @@ impl VirtualenvService {
         // returning; the public callers (activate/run/shell) already
         // validate first so this is purely defense-in-depth against
         // future internal callers.
-        if let Err(e) = validate::validate_env_name(env_name) {
+        if let Err(e) = validate::validate_existing_env_name(env_name) {
             warn!("touch_metadata: rejecting invalid env name {env_name:?}: {e}");
             return;
         }

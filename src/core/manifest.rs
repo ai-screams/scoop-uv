@@ -30,7 +30,7 @@ use crate::error::{Result, ScoopError};
 pub const MANIFEST_FILE: &str = ".scuv.toml";
 
 /// Parsed `.scuv.toml`. Fields are validated at parse time so callers receive
-/// a struct that's already meaningful (`name` passes `is_valid_env_name`,
+/// a struct that's already meaningful (`name` passes `is_valid_existing_env_name`,
 /// `python` is non-empty).
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -103,7 +103,7 @@ impl ScoopManifest {
     }
 
     fn validate(&self) -> Result<()> {
-        if !crate::validate::is_valid_env_name(&self.environment.name) {
+        if !crate::validate::is_valid_existing_env_name(&self.environment.name) {
             return Err(ScoopError::InvalidEnvName {
                 name: self.environment.name.clone(),
                 reason: format!("invalid name in {MANIFEST_FILE} [environment]"),
@@ -232,12 +232,26 @@ mod tests {
     }
 
     #[test]
-    fn parse_rejects_reserved_env_name() {
-        // `list` is a CLI subcommand and reserved by `validate::RESERVED_NAMES`.
-        let err = ScoopManifest::parse(
+    fn parse_accepts_a_reserved_env_name() {
+        // `list` is reserved, but an env may already have the name; `sync`
+        // refuses it only when it would create the env.
+        let parsed = ScoopManifest::parse(
             r#"
             [environment]
             name = "list"
+            python = "3.12"
+            "#,
+        )
+        .unwrap();
+        assert_eq!(parsed.environment.name, "list");
+    }
+
+    #[test]
+    fn parse_rejects_a_name_that_leaves_the_virtualenvs_dir() {
+        let err = ScoopManifest::parse(
+            r#"
+            [environment]
+            name = "../escape"
             python = "3.12"
             "#,
         )

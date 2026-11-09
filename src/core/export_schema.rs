@@ -69,7 +69,7 @@ impl ExportSchema {
                 supported: EXPORT_SCHEMA_VERSION.to_string(),
             });
         }
-        if !crate::validate::is_valid_env_name(&self.environment.name) {
+        if !crate::validate::is_valid_existing_env_name(&self.environment.name) {
             return Err(ScoopError::InvalidEnvName {
                 name: self.environment.name.clone(),
                 reason: "invalid name in export schema".to_string(),
@@ -165,11 +165,24 @@ mod tests {
     fn from_json_rejects_invalid_env_name() {
         let payload = r#"{
             "scoop_export_version": "1",
-            "environment": { "name": "list", "python": "3.12" },
+            "environment": { "name": "../escape", "python": "3.12" },
             "packages": []
         }"#;
         let err = ExportSchema::from_json(payload, Path::new("bad-name.json")).unwrap_err();
         assert!(matches!(err, ScoopError::InvalidEnvName { .. }));
+    }
+
+    /// A file exported from an env named before its word was reserved
+    /// still loads; `import` checks the name of the env it creates.
+    #[test]
+    fn from_json_accepts_a_reserved_env_name() {
+        let payload = r#"{
+            "scoop_export_version": "1",
+            "environment": { "name": "list", "python": "3.12" },
+            "packages": []
+        }"#;
+        let schema = ExportSchema::from_json(payload, Path::new("list.json")).unwrap();
+        assert_eq!(schema.environment.name, "list");
     }
 
     #[test]

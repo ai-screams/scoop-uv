@@ -221,6 +221,8 @@ pub struct CheckResult {
     pub status: CheckStatus,
     pub suggestion: Option<String>,
     pub details: Option<String>,
+    /// What `Check::fix` acts on; set only on findings it can repair
+    pub target: Option<String>,
 }
 
 impl CheckResult {
@@ -238,6 +240,9 @@ impl CheckResult {
 
     /// Adds detailed information
     pub fn with_details(mut self, details: impl Into<String>) -> Self
+
+    /// Marks the result as repairable and names what the repair acts on
+    pub fn with_target(mut self, target: impl Into<String>) -> Self
 
     // Status checks
     pub fn is_ok(&self) -> bool
@@ -360,6 +365,7 @@ pub enum ScoopError {
     PyenvEnvNotFound { name: String },
     VenvWrapperEnvNotFound { name: String },
     CondaEnvNotFound { name: String },
+    SourceEnvNotFound { name: String },
     CorruptedEnvironment { name: String, reason: String },
     PackageExtractionFailed { reason: String },
     MigrationFailed { reason: String },

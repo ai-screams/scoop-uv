@@ -24,9 +24,13 @@ pub fn execute(
     let mut schema = ExportSchema::from_json(&raw_json, &source_path)?;
 
     if let Some(new_name) = name_override {
-        crate::validate::validate_env_name(new_name)?;
         schema.environment.name = new_name.to_string();
     }
+    // The schema check accepts any name an env may already have, so a file
+    // exported from an env named before its word was reserved still loads.
+    // The env this creates needs a name a new env may take; check it before
+    // `--force` removes anything or a Python is installed.
+    crate::validate::validate_env_name(&schema.environment.name)?;
 
     let service = VirtualenvService::auto()?;
     let env_name = schema.environment.name.clone();

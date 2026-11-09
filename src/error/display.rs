@@ -112,6 +112,9 @@ impl ScoopError {
             Self::CondaEnvNotFound { name } => {
                 t!("error.conda_env_not_found", locale = locale, name = name).to_string()
             }
+            Self::SourceEnvNotFound { name } => {
+                t!("error.source_env_not_found", locale = locale, name = name).to_string()
+            }
             Self::CorruptedEnvironment { name, reason } => t!(
                 "error.corrupted_environment",
                 locale = locale,

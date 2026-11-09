@@ -182,7 +182,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 256 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 257 keys
 ```
 
 ### Design Principles
@@ -537,6 +537,8 @@ pub fn abbreviate_home(path: &Path) -> String;
 ```rust
 pub fn is_valid_env_name(name: &str) -> bool;
 pub fn validate_env_name(name: &str) -> Result<()>;
+pub fn is_valid_existing_env_name(name: &str) -> bool;   // Same rules minus the reserved words
+pub fn validate_existing_env_name(name: &str) -> Result<()>;
 pub fn is_valid_python_version(version: &str) -> bool;
 pub fn validate_python_version(version: &str) -> Result<()>;
 impl PythonVersion { pub fn parse(version: &str) -> Option<Self>; }
@@ -548,7 +550,7 @@ Environment name rules:
 - Pattern: `^[a-zA-Z][a-zA-Z0-9_-]*$`
 - Max length: 64 characters
 - Must start with a letter
-- Cannot be reserved words
+- A new env cannot take a reserved word (an env that already has one keeps working)
 
 Python version rules:
 - Pattern: `^\d+(\.\d+)*((a|b|rc)\d+)?$`
@@ -661,6 +663,7 @@ pub enum ScoopError {
     PyenvEnvNotFound { name: String },
     VenvWrapperEnvNotFound { name: String },
     CondaEnvNotFound { name: String },
+    SourceEnvNotFound { name: String },
     CorruptedEnvironment { name: String, reason: String },
     PackageExtractionFailed { reason: String },
     MigrationFailed { reason: String },

@@ -595,6 +595,12 @@ fn test_error_code_source_venvwrapper_env_not_found() {
 }
 
 #[test]
+fn test_error_code_source_env_not_found() {
+    let err = ScoopError::SourceEnvNotFound { name: "x".into() };
+    assert_eq!(err.code(), "SOURCE_ENV_NOT_FOUND");
+}
+
+#[test]
 fn test_error_code_source_conda_env_not_found() {
     let err = ScoopError::CondaEnvNotFound { name: "x".into() };
     assert_eq!(err.code(), "SOURCE_CONDA_ENV_NOT_FOUND");
@@ -707,6 +713,7 @@ fn test_all_error_codes_are_unique() {
         ScoopError::PyenvEnvNotFound { name: "".into() }.code(),
         ScoopError::VenvWrapperEnvNotFound { name: "".into() }.code(),
         ScoopError::CondaEnvNotFound { name: "".into() }.code(),
+        ScoopError::SourceEnvNotFound { name: "".into() }.code(),
         ScoopError::CorruptedEnvironment {
             name: "".into(),
             reason: "".into(),
@@ -748,6 +755,7 @@ fn test_error_codes_follow_naming_convention() {
         ScoopError::PyenvEnvNotFound { name: "".into() }.code(),
         ScoopError::VenvWrapperEnvNotFound { name: "".into() }.code(),
         ScoopError::CondaEnvNotFound { name: "".into() }.code(),
+        ScoopError::SourceEnvNotFound { name: "".into() }.code(),
         ScoopError::CorruptedEnvironment {
             name: "".into(),
             reason: "".into(),
@@ -1080,6 +1088,9 @@ fn every_variant() -> Vec<ScoopError> {
         ScoopError::CondaEnvNotFound {
             name: "env-aaq".into(),
         },
+        ScoopError::SourceEnvNotFound {
+            name: "env-src-any".into(),
+        },
         ScoopError::CorruptedEnvironment {
             name: "env-aar".into(),
             reason: "why-aar".into(),
@@ -1166,6 +1177,7 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::PyenvEnvNotFound { .. }
         | ScoopError::VenvWrapperEnvNotFound { .. }
         | ScoopError::CondaEnvNotFound { .. }
+        | ScoopError::SourceEnvNotFound { .. }
         | ScoopError::CorruptedEnvironment { .. }
         | ScoopError::PackageExtractionFailed { .. }
         | ScoopError::MigrationFailed { .. }

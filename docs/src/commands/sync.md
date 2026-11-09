@@ -28,7 +28,7 @@ points you at this doc.
 
 ```toml
 [environment]
-name = "myproject"        # required — must pass `is_valid_env_name`
+name = "myproject"        # required — an env name (see Field rules)
 python = "3.12"           # required — same specifier syntax as `scuv create`
 
 [packages]
@@ -38,8 +38,10 @@ docs = ["mkdocs"]                       # opt-in via `--with docs`
 ```
 
 Field rules:
-- `[environment].name` follows the same validation as `scuv create <NAME>`
-  (letter-leading, `[a-zA-Z][a-zA-Z0-9_-]*`, not a reserved subcommand name).
+- `[environment].name` is letter-leading, `[a-zA-Z][a-zA-Z0-9_-]*`. When
+  `sync` creates the env, the name must also pass `scuv create <NAME>`'s
+  check, so it cannot be a reserved word. An existing env whose name became
+  reserved in a later release is still synced.
 - `[environment].python` is forwarded to `uv venv --python` as-is, so any
   specifier uv accepts works (`3.12`, `3.12.7`, `cpython@3.12`, `pypy@3.10`).
 - `[packages]` is optional; `default = []` is valid.

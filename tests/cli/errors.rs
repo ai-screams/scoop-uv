@@ -285,6 +285,18 @@ fn json_errors_name_nested_commands_and_keep_exit_codes() {
     let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
     assert_eq!(json["status"], "error");
     assert_eq!(json["command"], "migrate");
+    assert_eq!(json["error"]["code"], "SOURCE_ENV_NOT_FOUND", "{json}");
+    let message = json["error"]["message"].as_str().unwrap();
+    for source in ["pyenv", "virtualenvwrapper", "conda"] {
+        assert!(message.contains(source), "{message}");
+    }
+    assert!(
+        json["error"]["suggestion"]
+            .as_str()
+            .unwrap()
+            .contains("scuv migrate list"),
+        "{json}"
+    );
     assert_eq!(out.status.code(), Some(3), "{json}");
 }
 

@@ -55,7 +55,7 @@ pub fn execute(output: &Output, exe: &str, env: Option<&str>) -> Result<()> {
 /// (`SCUV_ACTIVE`) env, otherwise the version-file resolution.
 fn resolve_target_env(explicit: Option<&str>) -> Result<String> {
     if let Some(name) = explicit {
-        validate::validate_env_name(name)?;
+        validate::validate_existing_env_name(name)?;
         return Ok(name.to_string());
     }
     get_active_env()

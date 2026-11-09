@@ -116,7 +116,8 @@ pub fn any_source_tool_available(filter: Option<MigrateSource>) -> bool {
 ///
 /// # Errors
 ///
-/// Returns source-specific error if environment is not found:
+/// Returns [`ScoopError::SourceEnvNotFound`] if no source has the
+/// environment, or the source-specific error when a filter was given:
 /// - [`ScoopError::PyenvEnvNotFound`]
 /// - [`ScoopError::VenvWrapperEnvNotFound`]
 /// - [`ScoopError::CondaEnvNotFound`]
@@ -159,7 +160,7 @@ pub fn find_environment_by_name(
         Some(MigrateSource::Conda) => Err(ScoopError::CondaEnvNotFound {
             name: name.to_string(),
         }),
-        None => Err(ScoopError::PyenvEnvNotFound {
+        None => Err(ScoopError::SourceEnvNotFound {
             name: name.to_string(),
         }),
     }
@@ -214,17 +215,16 @@ mod tests {
         }
     }
 
-    /// Tests that source_filter=None returns PyenvEnvNotFound for nonexistent env.
+    /// Without a filter every source was searched, so the miss names none
+    /// of them in particular.
     #[test]
-    fn find_environment_by_name_no_filter_returns_pyenv_error() {
+    fn find_environment_by_name_no_filter_returns_a_source_neutral_error() {
         with_isolated_migrate_env(|| {
-            let result = find_environment_by_name("nonexistent_env_12345", None);
-
-            assert!(result.is_err());
-            assert!(matches!(
-                result.unwrap_err(),
-                ScoopError::PyenvEnvNotFound { .. }
-            ));
+            let err = find_environment_by_name("nonexistent_env_12345", None).unwrap_err();
+            assert!(
+                matches!(err, ScoopError::SourceEnvNotFound { ref name } if name == "nonexistent_env_12345"),
+                "{err:?}"
+            );
         });
     }
 

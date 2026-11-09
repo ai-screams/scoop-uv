@@ -19,6 +19,10 @@ pub fn execute(
     force: bool,
     install_python: bool,
 ) -> Result<()> {
+    // Before `--force` removes anything: a name a new env may not take
+    // must not cost the env that already has it.
+    validate::validate_env_name(name)?;
+
     let service = VirtualenvService::auto()?;
 
     // Check if exists and handle force

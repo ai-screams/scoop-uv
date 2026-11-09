@@ -38,7 +38,8 @@ impl Check for HomeCheck {
             Ok(path) => {
                 vec![
                     CheckResult::error(self.id(), self.name(), "directory not found")
-                        .with_suggestion(format!("mkdir -p {}", path.display())),
+                        .with_suggestion(format!("mkdir -p {}", path.display()))
+                        .with_target(path.display().to_string()),
                 ]
             }
             Err(_) => {
@@ -55,10 +56,9 @@ impl Check for HomeCheck {
     }
 
     fn fix(&self, result: &CheckResult, output: &crate::output::Output) -> Option<CheckResult> {
-        // Only fix "directory not found" errors
-        if let CheckStatus::Error(msg) = &result.status
-            && msg.contains("not found")
-        {
+        // Only the missing-home error carries a target; `fix` still
+        // creates `paths::scoop_home()`, the target only marks the finding.
+        if matches!(result.status, CheckStatus::Error(_)) && result.target.is_some() {
             // Create the directory
             if let Ok(home) = paths::scoop_home() {
                 output.info(&format!("Creating {}...", home.display()));
@@ -224,7 +224,8 @@ mod tests {
         )]);
 
         let output = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
-        let broken = CheckResult::error("home", "SCUV_HOME directory", "directory not found");
+        let broken = CheckResult::error("home", "SCUV_HOME directory", "dossier absent")
+            .with_target("scuvhome");
 
         let fixed = HomeCheck.fix(&broken, &output);
         let fixed = fixed.expect("a 'not found' home error must be fixable");
@@ -251,15 +252,19 @@ mod tests {
             crate::test_utils::env_guard(&[(paths::SCUV_HOME_ENV, Some(home.to_str().unwrap()))]);
 
         let output = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
-        let broken = CheckResult::error("home", "SCUV_HOME directory", "directory not found");
+        let broken = CheckResult::error("home", "SCUV_HOME directory", "dossier absent")
+            .with_target("scuvhome");
 
         let result = HomeCheck.fix(&broken, &output).expect("a fix is attempted");
         assert!(result.is_error(), "got {result:#?}");
     }
 
+    /// Only the missing-home error is repaired, and it is recognised by its
+    /// target, not its (translatable) message. What fails this: matching
+    /// the message again, or dropping the status guard.
     #[test]
     #[serial]
-    fn fix_home_ignores_non_not_found_results() {
+    fn fix_home_repairs_only_a_targeted_error() {
         let tmp = tempfile::tempdir().unwrap();
         let _g = crate::test_utils::env_guard(&[(
             paths::SCUV_HOME_ENV,
@@ -267,13 +272,32 @@ mod tests {
         )]);
 
         let output = crate::output::Output::new(0, true, crate::output::Colors::NONE, false);
-        let unrelated = CheckResult::error("home", "SCUV_HOME directory", "permission denied");
-        assert!(HomeCheck.fix(&unrelated, &output).is_none());
+        let untargeted = CheckResult::error("home", "SCUV_HOME directory", "directory not found");
+        assert!(HomeCheck.fix(&untargeted, &output).is_none());
 
-        let warning = CheckResult::warn("home", "SCUV_HOME directory", "directory not found");
+        let warning = CheckResult::warn("home", "SCUV_HOME directory", "directory not found")
+            .with_target("scuvhome");
         assert!(
             HomeCheck.fix(&warning, &output).is_none(),
             "only Error status is fixable, not Warning"
         );
+    }
+
+    /// `run` marks only the missing-home error as repairable.
+    #[test]
+    #[serial]
+    fn run_targets_only_a_missing_home() {
+        let tmp = tempfile::tempdir().unwrap();
+        let missing = tmp.path().join("scuvhome");
+        let _g = crate::test_utils::env_guard(&[(
+            paths::SCUV_HOME_ENV,
+            Some(missing.to_str().unwrap()),
+        )]);
+        let results = HomeCheck.run();
+        assert_eq!(results[0].target.as_deref(), missing.to_str());
+
+        std::fs::create_dir_all(&missing).unwrap();
+        let results = HomeCheck.run();
+        assert!(results.iter().all(|r| r.target.is_none()), "{results:#?}");
     }
 }
