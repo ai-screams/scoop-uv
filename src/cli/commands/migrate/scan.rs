@@ -31,31 +31,11 @@ use rust_i18n::t;
 pub fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<SourceEnvironment> {
     let mut all_envs = Vec::new();
 
-    // Scan sources based on filter
-    let scan_pyenv = source_filter.is_none() || source_filter == Some(MigrateSource::Pyenv);
-    let scan_venv =
-        source_filter.is_none() || source_filter == Some(MigrateSource::Virtualenvwrapper);
-    let scan_conda = source_filter.is_none() || source_filter == Some(MigrateSource::Conda);
-
-    if scan_pyenv
-        && let Some(discovery) = PyenvDiscovery::default_root()
-        && let Ok(envs) = discovery.scan_environments()
-    {
-        all_envs.extend(envs);
-    }
-
-    if scan_venv
-        && let Some(discovery) = VenvWrapperDiscovery::default_root()
-        && let Ok(envs) = discovery.scan_environments()
-    {
-        all_envs.extend(envs);
-    }
-
-    if scan_conda
-        && let Some(discovery) = CondaDiscovery::default_roots()
-        && let Ok(envs) = discovery.scan_environments()
-    {
-        all_envs.extend(envs);
+    // A source that fails to scan is skipped; the others still count.
+    for discovery in discoveries(source_filter) {
+        if let Ok(envs) = discovery.scan_environments() {
+            all_envs.extend(envs);
+        }
     }
 
     // Sort by source type, then by name
@@ -88,13 +68,37 @@ pub fn scan_all_environments(source_filter: Option<MigrateSource>) -> Vec<Source
 /// `filter == None` checks all three sources; a specific `MigrateSource`
 /// only checks that one.
 pub fn any_source_tool_available(filter: Option<MigrateSource>) -> bool {
-    let want_pyenv = filter.is_none() || filter == Some(MigrateSource::Pyenv);
-    let want_venv = filter.is_none() || filter == Some(MigrateSource::Virtualenvwrapper);
-    let want_conda = filter.is_none() || filter == Some(MigrateSource::Conda);
+    // Stops at the first installed source, as the roots are probed lazily.
+    discoveries(filter).next().is_some()
+}
 
-    (want_pyenv && PyenvDiscovery::default_root().is_some())
-        || (want_venv && VenvWrapperDiscovery::default_root().is_some())
-        || (want_conda && CondaDiscovery::default_roots().is_some())
+/// The discovery for one source tool, or `None` when the tool's root is not
+/// on this system. Exhaustive, so a new [`MigrateSource`] has to say how it
+/// is found.
+fn discovery(source: MigrateSource) -> Option<Box<dyn EnvironmentSource>> {
+    match source {
+        MigrateSource::Pyenv => {
+            PyenvDiscovery::default_root().map(|d| Box::new(d) as Box<dyn EnvironmentSource>)
+        }
+        MigrateSource::Virtualenvwrapper => {
+            VenvWrapperDiscovery::default_root().map(|d| Box::new(d) as Box<dyn EnvironmentSource>)
+        }
+        MigrateSource::Conda => {
+            CondaDiscovery::default_roots().map(|d| Box::new(d) as Box<dyn EnvironmentSource>)
+        }
+    }
+}
+
+/// The installed sources `filter` selects, in search order: the declaration
+/// order of [`MigrateSource`] (pyenv, virtualenvwrapper, conda). Lazy, so a
+/// caller that stops early does not probe the remaining tools' roots.
+fn discoveries(filter: Option<MigrateSource>) -> impl Iterator<Item = Box<dyn EnvironmentSource>> {
+    use clap::ValueEnum;
+    MigrateSource::value_variants()
+        .iter()
+        .copied()
+        .filter(move |source| filter.is_none_or(|f| f == *source))
+        .filter_map(discovery)
 }
 
 /// Find an environment by name, searching across sources.
@@ -125,26 +129,9 @@ pub fn find_environment_by_name(
     name: &str,
     source_filter: Option<MigrateSource>,
 ) -> Result<SourceEnvironment> {
-    // Try pyenv first
-    if (source_filter.is_none() || source_filter == Some(MigrateSource::Pyenv))
-        && let Some(discovery) = PyenvDiscovery::default_root()
-        && let Ok(env) = discovery.find_environment(name)
-    {
-        return Ok(env);
-    }
-
-    // Try virtualenvwrapper
-    if (source_filter.is_none() || source_filter == Some(MigrateSource::Virtualenvwrapper))
-        && let Some(discovery) = VenvWrapperDiscovery::default_root()
-        && let Ok(env) = discovery.find_environment(name)
-    {
-        return Ok(env);
-    }
-
-    // Try conda
-    if (source_filter.is_none() || source_filter == Some(MigrateSource::Conda))
-        && let Some(discovery) = CondaDiscovery::default_roots()
-        && let Ok(env) = discovery.find_environment(name)
+    // The first source that has it wins; one that fails to look is skipped.
+    if let Some(env) =
+        discoveries(source_filter).find_map(|discovery| discovery.find_environment(name).ok())
     {
         return Ok(env);
     }
@@ -340,6 +327,128 @@ mod tests {
         with_full_migrate_env(|_scoop, _pyenv| {
             assert!(any_source_tool_available(None));
             assert!(any_source_tool_available(Some(MigrateSource::Pyenv)));
+        });
+    }
+
+    // =========================================================================
+    // Source order and precedence, with every source installed under the
+    // isolated HOME (no PYENV_ROOT, WORKON_HOME or CONDA_PREFIX: the
+    // defaults under HOME are used).
+    // =========================================================================
+
+    fn home() -> std::path::PathBuf {
+        dirs::home_dir().unwrap()
+    }
+
+    fn pyenv_env(name: &str) {
+        crate::test_utils::create_mock_pyenv_env(&home().join(".pyenv"), name, "3.12.0");
+    }
+
+    fn venvwrapper_env(name: &str) {
+        let env = home().join(".virtualenvs").join(name);
+        std::fs::create_dir_all(env.join("bin")).unwrap();
+        std::fs::write(env.join("bin").join("python"), "").unwrap();
+    }
+
+    fn conda_env(name: &str) {
+        let env = home().join(".conda").join("envs").join(name);
+        std::fs::create_dir_all(env.join("conda-meta")).unwrap();
+        std::fs::create_dir_all(env.join("bin")).unwrap();
+        std::fs::write(env.join("bin").join("python"), "").unwrap();
+    }
+
+    /// Unfiltered: pyenv, then virtualenvwrapper, then conda, names sorted
+    /// within each; a name more than one source has is found in the first.
+    /// What fails this: a different source order, or lookup not stopping
+    /// at the first source that has the name.
+    #[test]
+    #[serial]
+    fn sources_are_scanned_and_searched_in_order() {
+        with_isolated_migrate_env(|| {
+            pyenv_env("zeta");
+            pyenv_env("web");
+            venvwrapper_env("web");
+            venvwrapper_env("api");
+            conda_env("web");
+
+            let found: Vec<_> = scan_all_environments(None)
+                .into_iter()
+                .map(|e| (e.source_type, e.name))
+                .collect();
+            assert_eq!(
+                found,
+                [
+                    (SourceType::Pyenv, "web".to_string()),
+                    (SourceType::Pyenv, "zeta".to_string()),
+                    (SourceType::VirtualenvWrapper, "api".to_string()),
+                    (SourceType::VirtualenvWrapper, "web".to_string()),
+                    (SourceType::Conda, "web".to_string()),
+                ]
+            );
+
+            let web = find_environment_by_name("web", None).unwrap();
+            assert_eq!(web.source_type, SourceType::Pyenv);
+            let api = find_environment_by_name("api", None).unwrap();
+            assert_eq!(api.source_type, SourceType::VirtualenvWrapper);
+            let filtered = find_environment_by_name("web", Some(MigrateSource::Conda)).unwrap();
+            assert_eq!(filtered.source_type, SourceType::Conda);
+        });
+    }
+
+    /// A filter picks exactly that source.
+    #[test]
+    #[serial]
+    fn a_filter_selects_exactly_one_source() {
+        with_isolated_migrate_env(|| {
+            pyenv_env("web");
+            venvwrapper_env("web");
+            conda_env("web");
+            for (filter, want) in [
+                (MigrateSource::Pyenv, SourceType::Pyenv),
+                (
+                    MigrateSource::Virtualenvwrapper,
+                    SourceType::VirtualenvWrapper,
+                ),
+                (MigrateSource::Conda, SourceType::Conda),
+            ] {
+                let types: Vec<_> = discoveries(Some(filter)).map(|d| d.source_type()).collect();
+                assert_eq!(types, [want]);
+                let envs = scan_all_environments(Some(filter));
+                assert_eq!(envs.len(), 1);
+                assert_eq!(envs[0].source_type, want);
+            }
+            let all: Vec<_> = discoveries(None).map(|d| d.source_type()).collect();
+            assert_eq!(
+                all,
+                [
+                    SourceType::Pyenv,
+                    SourceType::VirtualenvWrapper,
+                    SourceType::Conda
+                ]
+            );
+        });
+    }
+
+    /// A source that fails to scan does not hide the others. Here pyenv's
+    /// `versions` is a file, so reading it fails.
+    #[test]
+    #[serial]
+    fn a_failing_source_does_not_hide_the_others() {
+        with_isolated_migrate_env(|| {
+            std::fs::create_dir_all(home().join(".pyenv")).unwrap();
+            std::fs::write(home().join(".pyenv").join("versions"), "").unwrap();
+            conda_env("web");
+
+            let names: Vec<_> = scan_all_environments(None)
+                .into_iter()
+                .map(|e| (e.source_type, e.name))
+                .collect();
+            assert_eq!(names, [(SourceType::Conda, "web".to_string())]);
+            assert!(any_source_tool_available(Some(MigrateSource::Conda)));
+            assert_eq!(
+                find_environment_by_name("web", None).unwrap().source_type,
+                SourceType::Conda
+            );
         });
     }
 }
