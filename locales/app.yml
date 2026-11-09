@@ -654,6 +654,13 @@ migrate.failed_packages:
   ja: "  失敗したパッケージ (%{count}):"
   es: "  Paquetes fallidos (%{count}):"
 
+migrate.source_kept:
+  en: "Kept the source of '%{name}': not every package was migrated"
+  ko: "'%{name}'의 원본을 남겼습니다. 옮기지 못한 패키지가 있습니다"
+  pt-BR: "A origem de '%{name}' foi mantida: nem todos os pacotes foram migrados"
+  ja: "'%{name}' の移行元を残しました。移行できなかったパッケージがあります"
+  es: "Se conservó el origen de '%{name}': no se migraron todos los paquetes"
+
 migrate.dry_run_hint:
   en: "→ Run without --dry-run to migrate"
   ko: "→ --dry-run 없이 실행하면 마이그레이션 진행"

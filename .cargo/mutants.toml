@@ -63,11 +63,6 @@ exclude_re = [
     "VirtualenvService::create",
     "VirtualenvService::create_with_python_path",
     "VirtualenvService::create_inner",
-    # Shells out to the venv's own pip and graceful-degrades on parse failure;
-    # the meaningful coverage is provided by the two list_installed_packages
-    # tests in core::tests. Mutating the wrapper body can only flip behaviour
-    # in paths that need a real pip invocation to observe.
-    "list_installed_packages",
     # Excluded specifically for the `delete !` mutation on the pop guard,
     # which inverts the termination condition and makes the function loop
     # forever. cargo-mutants reports the result as TIMEOUT (exit 3), failing
@@ -118,18 +113,6 @@ exclude_re = [
     # (extract_errors_when_pip_is_missing), as is the freeze-output parsing
     # (parse_freeze_output tests).
     "PackageExtractor::extract",
-    # Needs a real uv. `install_packages` shells out to `uv pip install`, then
-    # retries failures one at a time to attribute them; every mutation of its
-    # return value, its empty-list guard, and its per-spec comparison can only
-    # be observed once packages actually install. The specs it builds come from
-    # PackageSpec::to_requirement, which is unit-tested.
-    "Migrator::install_packages",
-    # Needs a real uv: `migrate` creates the target with `uv venv` before it
-    # reaches the `packages.len() - failed.len()` arithmetic. The pieces that
-    # can be exercised offline —
-    # create_target_env's conflict guard, RollbackGuard, write_metadata,
-    # delete_source — have their own tests.
-    "Migrator::migrate",
     # `cfg(windows)` branch of the cross-platform extension probe. On non-
     # Windows hosts the variant doesn't compile, so its mutations can't be
     # tested locally; on Windows hosts the existing rstest cases cover it.

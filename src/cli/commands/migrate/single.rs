@@ -103,6 +103,9 @@ pub fn migrate_environment(
         return Ok(());
     }
     print_migration_result(output, &result, opts.dry_run);
+    if opts.kept_source(&result) {
+        output.warn(&t!("migrate.source_kept", name = name));
+    }
     Ok(())
 }
 
@@ -174,8 +177,8 @@ fn resolve_target(
         }
     }
     // The source's own name is free, but `--rename` may point at a taken
-    // one. The migrator refuses that only on a real run; a dry run would
-    // report success.
+    // one. The migrator refuses that as `VirtualenvExists`; this reports it
+    // as the name conflict it is, with the conflict's exit code.
     if opts.rename.is_some() {
         ensure_rename_free(&target.name, opts.force)?;
     }

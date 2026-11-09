@@ -48,8 +48,10 @@ Other states come first. A name conflict is reported as a conflict (and fails
 `migrate all` with exit `2`), and a corrupted source is reported as corrupted
 (`migrate @env` exits `3`, `migrate all` skips it). Choosing Overwrite at the
 interactive conflict prompt acts like `--force`, so it migrates an EOL env too.
-`--rename` does not skip the EOL check of a conflicting env, though
-`--rename --dry-run` only prints the plan and does not run that check.
+`--rename` does not skip the EOL check of a conflicting env.
+`--dry-run` runs the same checks as a real run (source status, the target
+name, an existing target), so a preview that succeeds is one the real run
+accepts.
 
 `--allow-eol` lets such an env migrate and changes nothing else: a name
 conflict still stops it. `--force` allows EOL envs too, but it also
@@ -70,7 +72,7 @@ migrated without `--force`.
 | `--allow-eol` | `@env`, `all` | Migrate envs whose Python is end of life; overwrites nothing |
 | `--yes` | `@env`, `all` | Skip the interactive confirmation prompt |
 | `--strict` | `@env`, `all` | Fail on the first package install error inside an env (default: keep going) |
-| `--delete-source` | `@env`, `all` | Remove the source env after successful migration |
+| `--delete-source` | `@env`, `all` | Remove the source env after a migration that moved every package |
 | `--rename <new-name>` | `@env` | Migrate under a different name |
 | `--auto-rename` | `@env` | On name conflict, migrate under `<name>-pyenv` automatically (conflicts with `--force`) |
 
@@ -317,9 +319,15 @@ without parsing the localized `reason` string in `skipped[]`.
 }
 ```
 
-`actual_python_version` currently repeats the source env's
-`python_version`. `source_deleted` reflects whether `--delete-source` was
-honored for this env. `dry_run` mirrors the flag the command was
+`actual_python_version` is the version the new env's `pyvenv.cfg`
+records. Current uv writes the minor (`3.12`) when it links the env to a
+minor version and the full version otherwise; a dry run, or a `pyvenv.cfg`
+without one, repeats the source's `python_version`. `packages_failed` lists
+packages that failed to install and `pip freeze` lines scuv could not
+parse; neither changes the exit code or the `success` count.
+`source_deleted` reflects whether `--delete-source` was honored for this
+env: scuv keeps the source when `packages_failed` is not empty, since those
+packages exist nowhere else. `dry_run` mirrors the flag the command was
 invoked with.
 
 ### `migrate all --json` — failure path (exit 2)
@@ -408,7 +416,7 @@ empty.
 2. **Extraction**: Identifies Python version and installed packages
 3. **Recreation**: Creates new scuv environment with same Python version
 4. **Package Install**: Reinstalls packages using `uv pip install`
-5. **Cleanup**: Originals are preserved by default; `--delete-source` removes them after successful migration
+5. **Cleanup**: Originals are preserved by default; `--delete-source` removes them after a migration that moved every package
 
 ## Notes
 

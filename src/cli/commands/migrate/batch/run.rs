@@ -1,6 +1,7 @@
 //! Running a planned batch: one migration per environment, in parallel when
 //! that helps, with a progress bar on a terminal.
 
+use std::io::IsTerminal;
 use std::sync::Mutex;
 
 use indicatif::{ProgressBar, ProgressStyle};
@@ -46,7 +47,12 @@ pub(super) fn run_batch(
         opts,
         migrator,
         options: opts.migrate_options(opts.force, None),
-        progress: progress_bar(output, opts, migratable.len()),
+        progress: progress_bar(
+            output,
+            opts,
+            migratable.len(),
+            std::io::stderr().is_terminal(),
+        ),
         migrated: Mutex::new(Vec::new()),
         failed: Mutex::new(Vec::new()),
     };
@@ -139,9 +145,17 @@ impl BatchRun<'_> {
     }
 }
 
-/// The progress bar, only for a real (not dry-run) human-facing run.
-fn progress_bar(output: &Output, opts: &MigrateExecuteOptions, len: usize) -> Option<ProgressBar> {
-    if opts.json || opts.dry_run || output.is_quiet() {
+/// The progress bar, only for a real (not dry-run) human-facing run on a
+/// terminal. indicatif hides a bar on a stderr that is not one and drops
+/// what `println` sends through it, so redirected stderr (`2>log`) would
+/// lose the per-env lines and warnings; ordinary output prints them then.
+fn progress_bar(
+    output: &Output,
+    opts: &MigrateExecuteOptions,
+    len: usize,
+    stderr_is_terminal: bool,
+) -> Option<ProgressBar> {
+    if opts.json || opts.dry_run || output.is_quiet() || !stderr_is_terminal {
         return None;
     }
     let pb = ProgressBar::new(len as u64);
@@ -173,6 +187,12 @@ fn report_success(
                 result.packages_failed.len()
             ));
         }
+        if opts.kept_source(result) {
+            pb.println(format!(
+                "  ⚠ {}",
+                t!("migrate.source_kept", name = &result.name)
+            ));
+        }
         return;
     }
     if opts.json {
@@ -187,12 +207,15 @@ fn report_success(
     } else {
         output.success(&t!("migrate.batch_item_success", name = &result.name));
         output.info(&t!("migrate.packages", count = result.packages_migrated));
-        if !result.packages_failed.is_empty() {
-            output.warn(&t!(
-                "migrate.failed_packages",
-                count = result.packages_failed.len()
-            ));
-        }
+    }
+    if !result.packages_failed.is_empty() {
+        output.warn(&t!(
+            "migrate.failed_packages",
+            count = result.packages_failed.len()
+        ));
+    }
+    if opts.kept_source(result) {
+        output.warn(&t!("migrate.source_kept", name = &result.name));
     }
 }
 
@@ -213,6 +236,16 @@ fn progress_template(output: &Output) -> &'static str {
 mod tests {
     use super::*;
     use crate::output::Colors;
+
+    /// No bar without a terminal on stderr: a hidden bar would swallow the
+    /// lines sent through it. Fails if the terminal check is dropped.
+    #[test]
+    fn progress_bar_needs_a_terminal() {
+        let output = Output::new(0, false, Colors::NONE, false);
+        let opts = MigrateExecuteOptions::default();
+        assert!(progress_bar(&output, &opts, 2, false).is_none());
+        assert!(progress_bar(&output, &opts, 2, true).is_some());
+    }
 
     /// `--no-color` must reach the progress bar too. Fails if the template
     /// ignores the color setting, either way round.

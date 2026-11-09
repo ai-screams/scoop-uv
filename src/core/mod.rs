@@ -92,10 +92,37 @@ fn normalize_pyvenv_version(raw: &str) -> String {
 /// println!("{} packages installed", pkgs.len());
 /// ```
 pub fn list_installed_packages(venv_path: &std::path::Path) -> Vec<(String, String)> {
-    crate::uv::UvClient::new()
-        .and_then(|uv| uv.pip_list(venv_path))
-        .map(|entries| entries.into_iter().map(|e| (e.name, e.version)).collect())
-        .unwrap_or_default()
+    try_list_installed_packages(venv_path).unwrap_or_default()
+}
+
+/// [`list_installed_packages`] that reports a failure instead of an empty
+/// list, for callers that copy what they read (`scuv clone`, `scuv export`):
+/// an empty list there would silently produce an env or file without the
+/// source's packages.
+///
+/// # Examples
+///
+/// ```no_run
+/// use scoop_uv::core::try_list_installed_packages;
+/// use std::path::Path;
+///
+/// # fn main() -> scoop_uv::error::Result<()> {
+/// let pkgs = try_list_installed_packages(Path::new("/path/to/venv"))?;
+/// println!("{} packages installed", pkgs.len());
+/// # Ok(())
+/// # }
+/// ```
+///
+/// # Errors
+///
+/// Returns [`ScoopError::UvNotFound`](crate::error::ScoopError::UvNotFound)
+/// without uv, and the `uv pip list` error when it fails or prints
+/// unparseable JSON.
+pub fn try_list_installed_packages(
+    venv_path: &std::path::Path,
+) -> crate::error::Result<Vec<(String, String)>> {
+    let entries = crate::uv::UvClient::new()?.pip_list(venv_path)?;
+    Ok(entries.into_iter().map(|e| (e.name, e.version)).collect())
 }
 
 /// Get the currently active environment name from $SCUV_ACTIVE

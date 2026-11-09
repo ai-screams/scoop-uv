@@ -216,7 +216,7 @@ pub enum MigrateCommand {
         #[arg(long)]
         strict: bool,
 
-        /// Delete original environments after successful migration
+        /// Delete original environments once every package has migrated
         #[arg(long)]
         delete_source: bool,
 
@@ -262,7 +262,7 @@ pub enum MigrateCommand {
         #[arg(long, conflicts_with = "force")]
         auto_rename: bool,
 
-        /// Delete original environment after successful migration
+        /// Delete the original environment once every package has migrated
         #[arg(long)]
         delete_source: bool,
 

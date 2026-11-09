@@ -606,6 +606,11 @@ impl FakeUv {
         // `FAKE_UV_UNINSTALL_FAILS` makes it fail before removing anything,
         // or after removing when set to `after`.
         // `FAKE_UV_LIST_FAILS` makes `python list` exit 2 with an error.
+        // `venv <path>` makes `<path>/bin` and a pyvenv.cfg that carries
+        // `version_info = $FAKE_UV_VENV_VERSION_INFO` only when that is set.
+        // `FAKE_UV_PIP_LIST_FAILS` makes `pip list` exit 2. `pip install`
+        // logs its arguments and exits 1 when any of them equals
+        // `FAKE_UV_PIP_INSTALL_FAILS`, or `FAKE_UV_PIP_INSTALL_FAILS` is `all`.
         let json = format!("[{}]", entries.join(","));
         let d = dir.path().display();
         std::fs::create_dir_all(dir.path().join("py")).expect("fake uv python dir");
@@ -616,7 +621,9 @@ case "$1 $2" in
   "python list") echo "$*" >> "{d}/list.log"; [ -n "$FAKE_UV_LIST_FAILS" ] && {{ echo "error: fake list failure" >&2; exit 2; }}; printf '%s\n' '{json}' ;;
   "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && [ "$FAKE_UV_UNINSTALL_FAILS" != after ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* "{d}/py/cpython-$3."*-*; [ "$FAKE_UV_UNINSTALL_FAILS" != after ] ;;
   "python dir") echo "{d}/py" ;;
-  "pip list") echo "$*" >> "{d}/pip.log"; printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
+  "pip list") echo "$*" >> "{d}/pip.log"; [ -n "$FAKE_UV_PIP_LIST_FAILS" ] && {{ echo "error: fake pip list failure" >&2; exit 2; }}; printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
+  "pip install") echo "$*" >> "{d}/pip.log"; [ "$FAKE_UV_PIP_INSTALL_FAILS" = all ] && exit 1; for a in "$@"; do [ -n "$FAKE_UV_PIP_INSTALL_FAILS" ] && [ "$a" = "$FAKE_UV_PIP_INSTALL_FAILS" ] && exit 1; done; exit 0 ;;
+  "venv "*) echo "$*" >> "{d}/venv.log"; /bin/mkdir -p "$2/bin" || exit 1; : > "$2/pyvenv.cfg"; [ -n "$FAKE_UV_VENV_VERSION_INFO" ] && echo "version_info = $FAKE_UV_VENV_VERSION_INFO" >> "$2/pyvenv.cfg"; exit 0 ;;
   "cache prune") ;;
   *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;
 esac
@@ -632,6 +639,11 @@ esac
     /// What the fake answers to `uv python dir` (an existing, empty directory).
     pub fn python_dir(&self) -> std::path::PathBuf {
         self.dir.path().join("py")
+    }
+
+    /// The fake `uv` executable, for `UvClient::with_path`.
+    pub fn exe(&self) -> std::path::PathBuf {
+        self.dir.path().join("uv")
     }
 
     /// `PATH` with the fake `uv` first.

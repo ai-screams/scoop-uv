@@ -355,4 +355,4 @@ scuv migrate @env myproject
 scuv migrate all
 ```
 
-The original environments are preserved by default. Use `--delete-source` to remove source envs after successful migration. See [migrate command](commands/migrate.md) for details.
+The original environments are preserved by default. Use `--delete-source` to remove source envs after a migration that moved every package. See [migrate command](commands/migrate.md) for details.

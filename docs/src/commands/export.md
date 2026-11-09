@@ -71,7 +71,13 @@ Field notes:
 | Code | Meaning |
 |------|---------|
 | 0 | Export written successfully (or printed to stdout) |
-| 1 | Env not found, or writing the destination file failed |
+| 1 | Env not found, listing its packages with uv failed, or writing the destination file failed |
+| 3 | The env has no readable metadata, so there is no Python version to record |
+
+scuv writes nothing when listing the packages fails; it never exports an
+empty package list in place of one it could not read. A shell redirect
+(`scuv export myenv > myenv.json`) still creates or truncates the file
+before scuv runs.
 
 ## See Also
 
