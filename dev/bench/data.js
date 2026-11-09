@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794233487997,
+  "lastUpdate": 1794233489840,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -15433,6 +15433,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 1022,
             "range": "± 7",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b8e3cfb26c9cca9e709107084627bf03d6004028",
+          "message": "Merge pull request #272 from ai-screams/fix/migrate-overwrite-and-env-creation\n\nfix(migrate)!: [#272] let the conflict prompt's Overwrite replace the env without allowing an EOL Python",
+          "timestamp": "2026-11-09T23:07:12+09:00",
+          "tree_id": "49f3434fd3992f843977514a42decf9940e09735",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/b8e3cfb26c9cca9e709107084627bf03d6004028"
+        },
+        "date": 1794233489739,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 638,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 469,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
