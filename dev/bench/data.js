@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794290258465,
+  "lastUpdate": 1794290260088,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -16153,6 +16153,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 414,
             "range": "± 21",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8cb6a65bcede3c6f8ebee0fc4e6388490ca58658",
+          "message": "Merge pull request #278 from ai-screams/refactor/module-boundaries\n\nrefactor!: [#278] break the shell-cli and paths-core module cycles",
+          "timestamp": "2026-11-10T14:52:58+09:00",
+          "tree_id": "283fefb3d2015f2fc4955a709087ac9ba756b364",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/8cb6a65bcede3c6f8ebee0fc4e6388490ca58658"
+        },
+        "date": 1794290259963,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 636,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 464,
+            "range": "± 4",
             "unit": "ns/iter"
           }
         ]
