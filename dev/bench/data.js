@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794284424902,
+  "lastUpdate": 1794284426482,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -15913,6 +15913,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 919,
             "range": "± 7",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ed8a51dd2eab9413585ec507f921e7bf9e585a2e",
+          "message": "Merge pull request #276 from ai-screams/fix/confirmation-prompts\n\nfix!: [#276] say which flag to pass when a confirmation cannot be asked",
+          "timestamp": "2026-11-10T13:15:01+09:00",
+          "tree_id": "2063fcb20b78c2e5bc1bf666e128be359fa90753",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/ed8a51dd2eab9413585ec507f921e7bf9e585a2e"
+        },
+        "date": 1794284426414,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1210,
+            "range": "± 25",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 767,
+            "range": "± 18",
             "unit": "ns/iter"
           }
         ]
