@@ -108,16 +108,24 @@ fn with_sizes(mut environments: Vec<SourceEnvironment>) -> Vec<SourceEnvironment
     environments
 }
 
+/// A status's icon and the hint that ends its line.
+fn status_display(status: &EnvironmentStatus) -> (&'static str, String) {
+    match status {
+        EnvironmentStatus::Ready => ("✓", "".to_string()),
+        EnvironmentStatus::NameConflict { existing } => (
+            "⚠",
+            t!("migrate.list_conflict", path = existing.display()).to_string(),
+        ),
+        EnvironmentStatus::PythonEol { version } => {
+            ("⚠", t!("migrate.list_eol", version = version).to_string())
+        }
+        EnvironmentStatus::Corrupted { reason } => ("✗", format!(" ({})", reason)),
+    }
+}
+
 /// One environment's line: status icon, name, Python, size and a hint.
 fn env_line(env: &SourceEnvironment) -> String {
-    let (status_icon, status_hint) = match &env.status {
-        EnvironmentStatus::Ready => ("✓", "".to_string()),
-        EnvironmentStatus::NameConflict { existing } => {
-            ("⚠", format!(" (conflicts with {})", existing.display()))
-        }
-        EnvironmentStatus::PythonEol { version } => ("⚠", format!(" (Python {} is EOL)", version)),
-        EnvironmentStatus::Corrupted { reason } => ("✗", format!(" ({})", reason)),
-    };
+    let (status_icon, status_hint) = status_display(&env.status);
 
     let size_str = match env.size_bytes {
         Some(bytes) => format!("{:>8.1} MB", bytes as f64 / 1_048_576.0),
@@ -194,20 +202,6 @@ mod tests {
         }
 
         (ready, conflict, eol, corrupted)
-    }
-
-    /// Get status icon and hint for an environment.
-    fn status_display(status: &EnvironmentStatus) -> (&'static str, String) {
-        match status {
-            EnvironmentStatus::Ready => ("✓", "".to_string()),
-            EnvironmentStatus::NameConflict { existing } => {
-                ("⚠", format!(" (conflicts with {})", existing.display()))
-            }
-            EnvironmentStatus::PythonEol { version } => {
-                ("⚠", format!(" (Python {} is EOL)", version))
-            }
-            EnvironmentStatus::Corrupted { reason } => ("✗", format!(" ({})", reason)),
-        }
     }
 
     /// Format size for display.
@@ -317,6 +311,26 @@ mod tests {
     // status_display Tests
     // =========================================================================
 
+    /// The conflict and EOL hints are word for word the English they were,
+    /// and follow the language. Fails if either is hard-coded again.
+    #[test]
+    #[serial]
+    fn status_display_hints_follow_the_language() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        let conflict = EnvironmentStatus::NameConflict {
+            existing: PathBuf::from("/v/myenv"),
+        };
+        let eol = EnvironmentStatus::PythonEol {
+            version: "2.7.18".to_string(),
+        };
+        rust_i18n::set_locale("en");
+        assert_eq!(status_display(&conflict).1, " (conflicts with /v/myenv)");
+        assert_eq!(status_display(&eol).1, " (Python 2.7.18 is EOL)");
+        rust_i18n::set_locale("ko");
+        assert_eq!(status_display(&conflict).1, " (/v/myenv와(과) 충돌)");
+        assert_eq!(status_display(&eol).1, " (Python 2.7.18 지원 종료)");
+    }
+
     #[test]
     fn status_display_ready_returns_checkmark() {
         let (icon, hint) = status_display(&EnvironmentStatus::Ready);
@@ -325,7 +339,10 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn status_display_conflict_returns_warning_with_path() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        rust_i18n::set_locale("en");
         let status = EnvironmentStatus::NameConflict {
             existing: PathBuf::from("/home/user/.scoop/virtualenvs/myenv"),
         };
@@ -336,7 +353,10 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn status_display_eol_returns_warning_with_version() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        rust_i18n::set_locale("en");
         let status = EnvironmentStatus::PythonEol {
             version: "2.7.18".to_string(),
         };

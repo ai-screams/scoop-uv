@@ -15,18 +15,15 @@ use super::super::types::{
 
 /// Lists what is about to migrate (human mode only).
 pub(super) fn print_plan(output: &Output, migratable: &[&SourceEnvironment], skipped_count: usize) {
-    output.info(&format!(
-        "Found {} environment(s) to migrate:",
-        migratable.len()
-    ));
+    output.info(&t!("migrate.plan_header", count = migratable.len()));
     for env in migratable {
         let status_hint = match &env.status {
             EnvironmentStatus::Ready => "".to_string(),
-            EnvironmentStatus::NameConflict { .. } => " (will overwrite)".to_string(),
+            EnvironmentStatus::NameConflict { .. } => t!("migrate.plan_will_overwrite").to_string(),
             EnvironmentStatus::PythonEol { version } => {
-                format!(" (Python {} EOL)", version)
+                t!("migrate.plan_eol", version = version).to_string()
             }
-            EnvironmentStatus::Corrupted { .. } => " (corrupted)".to_string(),
+            EnvironmentStatus::Corrupted { .. } => t!("migrate.plan_corrupted").to_string(),
         };
         output.info(&format!(
             "  - {} (Python {}){}",
@@ -35,10 +32,7 @@ pub(super) fn print_plan(output: &Output, migratable: &[&SourceEnvironment], ski
     }
 
     if skipped_count > 0 {
-        output.warn(&format!(
-            "{} environment(s) will be skipped (see summary)",
-            skipped_count
-        ));
+        output.warn(&t!("migrate.plan_skipped", count = skipped_count));
     }
 }
 

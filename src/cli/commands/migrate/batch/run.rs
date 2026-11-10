@@ -67,7 +67,7 @@ pub(super) fn run_batch(
     }
 
     if let Some(pb) = &run.progress {
-        pb.finish_with_message("Done");
+        pb.finish_with_message(t!("migrate.progress_done").to_string());
     }
 
     let mut migrated = run.migrated.into_inner().expect("results lock poisoned");
@@ -123,7 +123,7 @@ impl BatchRun<'_> {
             Err(e) => {
                 let msg = e.to_string();
                 if let Some(pb) = progress {
-                    pb.println(format!("✗ '{}' failed: {}", env.name, msg));
+                    pb.println(progress_failed_line(&env.name, &msg));
                 } else if !opts.json {
                     output.error(&t!("migrate.batch_item_failed", error = msg.clone()));
                 }
@@ -177,15 +177,8 @@ fn report_success(
     result: &MigrationResult,
 ) {
     if let Some(pb) = progress {
-        pb.println(format!(
-            "✓ '{}' migrated ({} packages)",
-            result.name, result.packages_migrated
-        ));
-        if !result.packages_failed.is_empty() {
-            pb.println(format!(
-                "  ⚠ {} package(s) failed",
-                result.packages_failed.len()
-            ));
+        for line in progress_success_lines(result) {
+            pb.println(line);
         }
         if opts.kept_source(result) {
             pb.println(format!(
@@ -199,9 +192,9 @@ fn report_success(
         return;
     }
     if opts.dry_run {
-        output.info(&format!(
-            "  [DRY-RUN] Would create: {}",
-            result.path.display()
+        output.info(&t!(
+            "migrate.dry_run_would_create",
+            path = result.path.display()
         ));
         output.info(&t!("migrate.packages", count = result.packages_migrated));
     } else {
@@ -217,6 +210,34 @@ fn report_success(
     if opts.kept_source(result) {
         output.warn(&t!("migrate.source_kept", name = &result.name));
     }
+}
+
+/// The progress-bar line for one environment that failed.
+fn progress_failed_line(name: &str, error: &str) -> String {
+    t!("migrate.progress_failed", name = name, error = error).to_string()
+}
+
+/// The progress-bar lines for one migrated environment: the package count,
+/// then the number of packages that did not install, if any.
+fn progress_success_lines(result: &MigrationResult) -> Vec<String> {
+    let mut lines = vec![
+        t!(
+            "migrate.progress_migrated",
+            name = &result.name,
+            count = result.packages_migrated
+        )
+        .to_string(),
+    ];
+    if !result.packages_failed.is_empty() {
+        lines.push(
+            t!(
+                "migrate.progress_packages_failed",
+                count = result.packages_failed.len()
+            )
+            .to_string(),
+        );
+    }
+    lines
 }
 
 /// Returns the progress bar template; the colorless one when color is off.
@@ -235,6 +256,46 @@ fn progress_template(output: &Output) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The progress-bar lines are word for word the English they were and
+    /// follow the language; the failed-packages line appears only when a
+    /// package failed. Fails if a line is hard-coded again or the second
+    /// line shows up for a clean migration.
+    #[test]
+    #[serial_test::serial]
+    fn progress_lines_follow_the_language() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        let mut result = MigrationResult {
+            name: "web".to_string(),
+            packages_migrated: 3,
+            packages_failed: Vec::new(),
+            python_version: "3.12".to_string(),
+            dry_run: false,
+            path: std::path::PathBuf::from("/v/web"),
+            source_deleted: false,
+            actual_python_version: "3.12".to_string(),
+        };
+        rust_i18n::set_locale("en");
+        assert_eq!(
+            progress_success_lines(&result),
+            ["✓ 'web' migrated (3 packages)"]
+        );
+        assert_eq!(progress_failed_line("web", "boom"), "✗ 'web' failed: boom");
+        result.packages_failed = vec!["a".to_string(), "b".to_string()];
+        assert_eq!(
+            progress_success_lines(&result),
+            ["✓ 'web' migrated (3 packages)", "  ⚠ 2 package(s) failed"]
+        );
+        rust_i18n::set_locale("ko");
+        assert_eq!(
+            progress_success_lines(&result),
+            [
+                "✓ 'web' 마이그레이션 완료 (패키지 3개)",
+                "  ⚠ 패키지 2개 실패"
+            ]
+        );
+        assert_eq!(progress_failed_line("web", "boom"), "✗ 'web' 실패: boom");
+    }
     use crate::output::Colors;
 
     /// No bar without a terminal on stderr: a hidden bar would swallow the
