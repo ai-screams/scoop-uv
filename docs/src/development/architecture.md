@@ -7,7 +7,7 @@ scuv is built in Rust using a modular architecture.
 ```
 src/
 ├── cli/              # Command-line interface
-│   ├── mod.rs        # Cli struct, Commands enum, ShellType
+│   ├── mod.rs        # Cli struct, Commands enum
 │   └── commands/     # Individual command handlers
 ├── core/             # Domain logic
 │   ├── metadata.rs   # Virtualenv metadata (JSON)
@@ -22,7 +22,7 @@ src/
 │       ├── migrator.rs   # Migration orchestrator
 │       └── ...
 ├── shell/            # Shell integration
-│   ├── mod.rs        # Shell module exports & detection
+│   ├── mod.rs        # ShellType, shell detection
 │   ├── common.rs     # Shared shell utilities & macros
 │   ├── bash.rs       # Bash init script
 │   ├── zsh.rs        # Zsh init script
@@ -34,6 +34,7 @@ src/
 ├── error/            # ScoopError module
 │   └── exit.rs       # Exit code policy
 ├── paths.rs          # Path utilities
+├── python_version.rs # PythonVersion (parse, match, order); depends on nothing else
 ├── validate.rs       # Input validation
 ├── i18n.rs           # Internationalization
 └── config.rs         # Configuration management
@@ -383,7 +384,7 @@ pub fn init_script() -> &'static str {
 > `powershell_completion.ps1`) — those need updating by hand when a subcommand or option
 > changes.
 
-2. Add to `ShellType` enum in `cli/mod.rs`:
+2. Add to `ShellType` enum in `shell/mod.rs`:
 ```rust
 pub enum ShellType {
     // ... existing

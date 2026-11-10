@@ -10,8 +10,8 @@ use crate::output::{CascadeFailure, Output, UninstallData, UnverifiedEnv};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
+use crate::python_version::PythonVersion;
 use crate::uv::UvClient;
-use crate::validate::PythonVersion;
 
 /// Execute the uninstall command
 pub fn execute(output: &Output, version: &str, cascade: bool, force: bool) -> Result<()> {

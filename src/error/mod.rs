@@ -157,12 +157,6 @@ pub enum ScoopError {
     /// warnings. The report was already rendered, like `VerifyFailed`.
     DoctorFindings { errors: usize, warnings: usize },
 
-    /// `paths::virtualenv_site_packages` could not locate the
-    /// `site-packages` directory inside a virtualenv root. The fallback
-    /// chain (pyvenv.cfg → glob → sysconfig subprocess) exhausted with
-    /// no usable result, so the env is likely malformed.
-    SitePackagesNotFound { venv: String },
-
     /// `scuv migrate all`/`migrate @env` ran but no supported source
     /// tool (pyenv, virtualenvwrapper, conda) was detected on the
     /// system. Carries the requested filter (or `None` for "any") so

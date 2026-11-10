@@ -11,5 +11,5 @@ fuzz_target!(|data: &[u8]| {
 
     let _ = scoop_uv::validate::is_valid_python_version(version);
     let _ = scoop_uv::validate::validate_python_version(version);
-    let _ = scoop_uv::validate::PythonVersion::parse(version);
+    let _ = scoop_uv::python_version::PythonVersion::parse(version);
 });

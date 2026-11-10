@@ -38,6 +38,7 @@ src/
 ├── error/               # Error types (ScoopError)
 │   └── exit.rs          # Exit code policy
 ├── paths.rs             # Path utilities
+├── python_version.rs    # PythonVersion parsing and ordering
 ├── validate.rs          # Name/version validation
 
 ├── uv/                  # uv client wrapper

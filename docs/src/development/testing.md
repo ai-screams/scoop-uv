@@ -25,6 +25,7 @@ src/
 ├── error/                    # Unit tests for error types
 ├── validate/                 # Unit + property tests for validate.rs (tests.rs, proptests.rs)
 ├── paths/tests.rs            # Unit tests for paths.rs
+├── python_version/           # Unit + property tests for python_version.rs
 ├── output/
 │   └── json/tests.rs         # Unit tests for JSON output
 ├── core/

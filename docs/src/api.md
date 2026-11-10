@@ -378,10 +378,10 @@ pub enum ScoopError {
     CascadeAborted,
     CascadeIncomplete { failed_count: usize },
 
-    // Abridged: 43 variants in total. See src/error/mod.rs for the full set,
+    // Abridged: 42 variants in total. See src/error/mod.rs for the full set,
     // including UnsupportedLanguage, SelfUpdateFailed, NoActiveEnvironment, ExecutableNotFound,
     // ManifestNotFound, InvalidExportFile, UnsupportedExportVersion,
-    // VerifyFailed, DoctorFindings, ConfirmationUnavailable, SitePackagesNotFound, MigrationSourcesNotFound,
+    // VerifyFailed, DoctorFindings, ConfirmationUnavailable, MigrationSourcesNotFound,
     // MigrationBatchFailed and DiffMismatch.
 }
 
@@ -459,7 +459,7 @@ match my_function("123invalid") {
 
 ## Shell Integration
 
-### Shell Types (`cli/mod.rs`)
+### Shell Types (`shell/mod.rs`, re-exported as `cli::ShellType`)
 
 ```rust
 pub enum ShellType {

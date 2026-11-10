@@ -451,19 +451,6 @@ fn executable_candidates_windows_respects_explicit_extension() {
 #[cfg(unix)]
 mod cross_platform_unix {
     use super::*;
-    use std::fs;
-    use tempfile::TempDir;
-
-    fn make_venv_root(pyvenv_cfg: Option<&str>, lib_dirs: &[&str]) -> TempDir {
-        let tmp = TempDir::new().unwrap();
-        if let Some(cfg) = pyvenv_cfg {
-            fs::write(tmp.path().join("pyvenv.cfg"), cfg).unwrap();
-        }
-        for d in lib_dirs {
-            fs::create_dir_all(tmp.path().join("lib").join(d).join("site-packages")).unwrap();
-        }
-        tmp
-    }
 
     #[test]
     fn virtualenv_bin_dir_returns_bin_on_unix() {
@@ -486,63 +473,6 @@ mod cross_platform_unix {
         assert_eq!(
             virtualenv_activate_script(&root),
             root.join("bin").join("activate")
-        );
-    }
-
-    #[test]
-    fn site_packages_resolves_via_pyvenv_cfg_when_dir_exists() {
-        let tmp = make_venv_root(
-            Some("home = /usr/local/bin\nversion = 3.12.4\n"),
-            &["python3.12"],
-        );
-        let sp = virtualenv_site_packages(tmp.path()).unwrap();
-        assert!(sp.ends_with("lib/python3.12/site-packages"), "got {:?}", sp);
-    }
-
-    #[test]
-    fn site_packages_falls_back_to_glob_when_pyvenv_cfg_absent() {
-        let tmp = make_venv_root(None, &["python3.12"]);
-        let sp = virtualenv_site_packages(tmp.path()).unwrap();
-        assert!(sp.ends_with("lib/python3.12/site-packages"), "got {:?}", sp);
-    }
-
-    #[test]
-    fn site_packages_glob_ignores_non_python_dirs() {
-        // pythonbenchmarks must NOT match — strict regex requires MAJOR.MINOR.
-        let tmp = make_venv_root(None, &["pythonbenchmarks", "python3.12"]);
-        let sp = virtualenv_site_packages(tmp.path()).unwrap();
-        assert!(sp.ends_with("lib/python3.12/site-packages"));
-    }
-
-    #[test]
-    fn site_packages_glob_ambiguous_falls_through_to_err() {
-        // python3.12 AND python3.13 both present, no python exe → Err.
-        let tmp = make_venv_root(None, &["python3.12", "python3.13"]);
-        let result = virtualenv_site_packages(tmp.path());
-        assert!(matches!(
-            result,
-            Err(ScoopError::SitePackagesNotFound { .. })
-        ));
-    }
-
-    #[test]
-    fn site_packages_returns_err_when_completely_empty() {
-        let tmp = TempDir::new().unwrap();
-        let result = virtualenv_site_packages(tmp.path());
-        assert!(matches!(
-            result,
-            Err(ScoopError::SitePackagesNotFound { .. })
-        ));
-    }
-
-    #[test]
-    fn site_packages_glob_accepts_free_threaded_t_suffix() {
-        let tmp = make_venv_root(None, &["python3.13t"]);
-        let sp = virtualenv_site_packages(tmp.path()).unwrap();
-        assert!(
-            sp.ends_with("lib/python3.13t/site-packages"),
-            "got {:?}",
-            sp
         );
     }
 

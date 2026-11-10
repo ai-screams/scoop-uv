@@ -50,7 +50,6 @@ impl ScoopError {
             Self::VerifyFailed { .. } => "VERIFY_FAILED",
             Self::DoctorFindings { .. } => "DOCTOR_FINDINGS",
             Self::ConfirmationUnavailable { .. } => "CONFIRMATION_UNAVAILABLE",
-            Self::SitePackagesNotFound { .. } => "IO_SITE_PACKAGES_NOT_FOUND",
             Self::MigrationSourcesNotFound { .. } => "MIGRATE_SOURCES_NOT_FOUND",
             Self::MigrationBatchFailed { .. } => "MIGRATE_BATCH_FAILED",
             Self::DiffMismatch { .. } => "DIFF_MISMATCH",

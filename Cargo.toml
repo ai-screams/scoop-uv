@@ -92,6 +92,11 @@ serde-saphyr = { version = "1.2", default-features = false, features = ["deseria
 # Benchmark runner. html_reports gives a `target/criterion/report/index.html`
 # overview that's useful when comparing baselines locally.
 criterion = { version = "0.8", features = ["html_reports"] }
+# Parse src/ for the module-boundary test (tests/module_boundaries.rs).
+# Both are already in the lock file with these features (proc-macro
+# dependencies pull them in), so this adds no new package.
+syn = { version = "2", features = ["full", "visit"] }
+proc-macro2 = "1"
 
 # Benchmarks live in benches/. Each [[bench]] entry compiles to its own
 # binary, so a broken bench only fails one target — useful during regressions.

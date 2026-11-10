@@ -137,14 +137,6 @@ exclude_re = [
     # The Unix variant is pinned by test_virtualenv_activate_unix. The
     # trailing ` ->` keeps this from matching virtualenv_activate_script.
     "virtualenv_activate ->",
-    # Strategy 3 of virtualenv_site_packages spawns the venv's own python
-    # to ask sysconfig for the purelib path. The `delete !` mutation on
-    # the empty-stdout guard (paths.rs:222) flips the success/failure
-    # branch but can only be observed when a real python subprocess is
-    # available — and the unit tests for site_packages deliberately
-    # don't shell out (they test Strategy 1 + 2 paths). Strategy 3 is
-    # covered end-to-end by the migrate integration tests.
-    "virtualenv_site_packages",
     # Equivalent mutation: deleting the `VerifyFailed | DiffMismatch | ...`
     # arms in exit_code() / render_policy() falls through to the
     # catchall (`_ => 1` / `_ => Default`) which returns the same value

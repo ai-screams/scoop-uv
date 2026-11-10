@@ -2,9 +2,6 @@
 
 use std::path::{Path, PathBuf};
 
-use once_cell::sync::Lazy;
-use regex::Regex;
-
 use crate::error::{Result, ScoopError};
 
 /// Environment variable for the scuv home directory.
@@ -103,114 +100,6 @@ pub fn virtualenv_activate_script(venv_root: &Path) -> PathBuf {
 #[cfg(windows)]
 pub fn virtualenv_activate_script(venv_root: &Path) -> PathBuf {
     virtualenv_bin_dir(venv_root).join("Activate.ps1")
-}
-
-/// Strict glob pattern for Python lib directories inside a venv.
-///
-/// Requires `MAJOR.MINOR` (e.g. `python3.12`) — `python312` (no dot) is
-/// rejected because uv never produces that form, and matching it would
-/// risk false-positives on user-created directories like `pythonpath`.
-/// The optional `t` suffix accepts free-threaded Python (`python3.13t`).
-static PYTHON_LIB_DIR_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^python\d+\.\d+t?$").expect("PYTHON_LIB_DIR_RE is a valid pattern"));
-
-/// Returns the `site-packages` directory for a virtualenv root.
-///
-/// # Resolution order (Unix)
-///
-/// 1. `pyvenv.cfg` `version_info` → `lib/python<MAJOR.MINOR>/site-packages`
-/// 2. Glob `lib/` for a single `python<MAJOR.MINOR>[t]/site-packages` dir
-/// 3. Subprocess fallback: `python -c "import sysconfig; print(sysconfig.get_path('purelib'))"`
-///
-/// On Windows the path is always `<root>/Lib/site-packages` (no Python
-/// version in the path).
-///
-/// # Errors
-///
-/// Returns [`ScoopError::SitePackagesNotFound`] when every strategy
-/// fails (malformed/missing `pyvenv.cfg`, ambiguous or absent glob
-/// matches, and either no python executable or sysconfig produced no
-/// usable path). The Err carries the venv path so callers can surface
-/// it to the user.
-#[cfg(windows)]
-pub fn virtualenv_site_packages(venv_root: &Path) -> Result<PathBuf> {
-    let candidate = venv_root.join("Lib").join("site-packages");
-    if candidate.is_dir() {
-        Ok(candidate)
-    } else {
-        Err(ScoopError::SitePackagesNotFound {
-            venv: venv_root.display().to_string(),
-        })
-    }
-}
-
-#[cfg(unix)]
-pub fn virtualenv_site_packages(venv_root: &Path) -> Result<PathBuf> {
-    // Strategy 1: pyvenv.cfg version → lib/python{MAJOR.MINOR}/site-packages.
-    // parse_pyvenv_version normalizes "3.14.3.final.0" to "3.14.3".
-    if let Some(ver) = crate::core::parse_pyvenv_version(venv_root) {
-        let major_minor: String = ver.splitn(3, '.').take(2).collect::<Vec<_>>().join(".");
-        let candidate = venv_root
-            .join("lib")
-            .join(format!("python{major_minor}"))
-            .join("site-packages");
-        if candidate.is_dir() {
-            return Ok(candidate);
-        }
-    }
-
-    // Strategy 2: glob lib/ for a single python* directory matching the
-    // strict regex. Multiple matches → ambiguity; fall through to sysconfig
-    // rather than guessing.
-    let lib_dir = venv_root.join("lib");
-    if lib_dir.is_dir() {
-        let mut matches: Vec<PathBuf> = std::fs::read_dir(&lib_dir)
-            .into_iter()
-            .flatten()
-            .flatten()
-            .filter_map(|entry| {
-                let name = entry.file_name();
-                let name_str = name.to_string_lossy();
-                if entry.path().is_dir() && PYTHON_LIB_DIR_RE.is_match(&name_str) {
-                    let sp = entry.path().join("site-packages");
-                    if sp.is_dir() { Some(sp) } else { None }
-                } else {
-                    None
-                }
-            })
-            .collect();
-        if matches.len() == 1 {
-            return Ok(matches.remove(0));
-        }
-    }
-
-    // Strategy 3: sysconfig subprocess fallback. Pure-python and platform
-    // libs resolve to the same dir inside a venv; `purelib` is the
-    // canonical site-packages.
-    let python_exe = virtualenv_python_exe(venv_root);
-    if python_exe.is_file() {
-        let output = std::process::Command::new(&python_exe)
-            .args([
-                "-c",
-                "import sysconfig; print(sysconfig.get_path('purelib'))",
-            ])
-            .output();
-        if let Ok(out) = output
-            && out.status.success()
-        {
-            let line = String::from_utf8_lossy(&out.stdout).trim().to_string();
-            if !line.is_empty() {
-                let path = PathBuf::from(line);
-                if path.is_dir() {
-                    return Ok(path);
-                }
-            }
-        }
-    }
-
-    Err(ScoopError::SitePackagesNotFound {
-        venv: venv_root.display().to_string(),
-    })
 }
 
 /// Check if a virtualenv exists
