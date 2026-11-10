@@ -3,6 +3,7 @@
 //! Handles name conflicts when a scuv environment with the same name already exists.
 
 use dialoguer::{Input, Select};
+use rust_i18n::t;
 
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
@@ -43,21 +44,16 @@ pub fn prompt_conflict_resolution(
     name: &str,
     existing: &std::path::Path,
 ) -> Result<ConflictResolution> {
-    output.warn(&format!(
-        "Name conflict: '{}' already exists at {}",
-        name,
-        existing.display()
+    output.warn(&t!(
+        "migrate.conflict_warning",
+        name = name,
+        path = existing.display()
     ));
 
-    let options = &[
-        "Overwrite - Delete existing and migrate fresh",
-        "Rename - Migrate with a different name",
-        "Skip - Don't migrate this environment",
-    ];
-
+    let options = conflict_choices();
     let selection = Select::new()
-        .with_prompt("How would you like to resolve this conflict?")
-        .items(options)
+        .with_prompt(t!("migrate.conflict_prompt"))
+        .items(&options)
         .default(2) // Default to Skip (safest)
         .interact()
         .map_err(|e| ScoopError::Io(std::io::Error::other(format!("Dialog error: {}", e))))?;
@@ -67,6 +63,16 @@ pub fn prompt_conflict_resolution(
         1 => ConflictResolution::Rename,
         _ => ConflictResolution::Skip,
     })
+}
+
+/// The three choices, in the order the selection index dispatches on:
+/// overwrite, rename, skip.
+fn conflict_choices() -> [String; 3] {
+    [
+        t!("migrate.conflict_overwrite").to_string(),
+        t!("migrate.conflict_rename").to_string(),
+        t!("migrate.conflict_skip").to_string(),
+    ]
 }
 
 /// Prompts for new environment name when renaming.
@@ -84,7 +90,7 @@ pub fn prompt_rename(name: &str) -> Result<String> {
     let suggested = format!("{}-pyenv", name);
 
     let new_name: String = Input::new()
-        .with_prompt("Enter new name for the environment")
+        .with_prompt(t!("migrate.rename_prompt"))
         .default(suggested)
         .validate_with(|input: &String| {
             crate::validate::validate_env_name(input)
@@ -134,16 +140,43 @@ pub fn generate_unique_name(base_name: &str) -> Result<String> {
     }
 
     Err(ScoopError::MigrationFailed {
-        reason: format!("Could not find unique name for '{}'", base_name),
+        reason: t!("migrate.unique_name_exhausted", name = base_name).to_string(),
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::with_temp_scoop_home;
+    use crate::test_utils::{LocaleGuard, with_temp_scoop_home};
     use serial_test::serial;
     use std::fs;
+
+    /// The choices keep the order the selection index maps to, in English
+    /// word for word and in Korean. Fails if two are swapped or one goes
+    /// back to a hard-coded string.
+    #[test]
+    #[serial]
+    fn conflict_choices_keep_their_order_in_each_language() {
+        let _locale = LocaleGuard::capture();
+        rust_i18n::set_locale("en");
+        assert_eq!(
+            conflict_choices(),
+            [
+                "Overwrite - Delete existing and migrate fresh",
+                "Rename - Migrate with a different name",
+                "Skip - Don't migrate this environment",
+            ]
+        );
+        rust_i18n::set_locale("ko");
+        assert_eq!(
+            conflict_choices(),
+            [
+                "덮어쓰기 - 기존 환경을 지우고 새로 마이그레이션",
+                "이름 변경 - 다른 이름으로 마이그레이션",
+                "건너뛰기 - 이 환경은 마이그레이션하지 않음",
+            ]
+        );
+    }
 
     /// Happy path: 충돌 없을 때 {name}-pyenv 반환
     #[test]
@@ -206,16 +239,18 @@ mod tests {
                 fs::create_dir_all(venvs_dir.join(format!("myenv-{}", i))).unwrap();
             }
 
-            let result = generate_unique_name("myenv");
-            assert!(result.is_err());
-
-            let err = result.unwrap_err();
-            let err_msg = err.to_string();
-            assert!(
-                err_msg.contains("myenv") || err_msg.contains("unique name"),
-                "Error should mention the base name or unique name: {}",
-                err_msg
-            );
+            let _locale = LocaleGuard::capture();
+            for (lang, want) in [
+                ("en", "Could not find unique name for 'myenv'"),
+                ("ko", "'myenv'에 쓸 겹치지 않는 이름을 찾지 못함"),
+            ] {
+                rust_i18n::set_locale(lang);
+                let err = generate_unique_name("myenv").unwrap_err();
+                assert!(
+                    matches!(&err, ScoopError::MigrationFailed { reason } if reason == want),
+                    "{err:?}"
+                );
+            }
         });
     }
 

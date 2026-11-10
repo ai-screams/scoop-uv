@@ -136,3 +136,137 @@ fn migrate_all_without_a_terminal_names_yes() {
         .stderr(predicate::str::contains("Dialog error").not());
     assert!(!fixture.scoop_home.join("virtualenvs/web").exists());
 }
+
+/// [`fake_pyenv_env_with`] plus a `pip` that freezes nothing, so a dry run
+/// gets past package extraction without a real interpreter.
+#[cfg(unix)]
+fn fake_pyenv_env_with_pip(root: &std::path::Path, name: &str, version: &str) {
+    use std::os::unix::fs::PermissionsExt;
+    fake_pyenv_env_with(root, name, version);
+    let pip = root.join(format!("versions/{version}/envs/{name}/bin/pip"));
+    std::fs::write(&pip, "#!/bin/sh\nexit 0\n").unwrap();
+    std::fs::set_permissions(&pip, std::fs::Permissions::from_mode(0o755)).unwrap();
+}
+
+/// Runs `scuv` with `args` against `pyenv` in language `lang` and returns
+/// (exit code, stdout, stderr).
+#[cfg(unix)]
+fn migrate_in(
+    fixture: &TestFixture,
+    pyenv: &std::path::Path,
+    lang: &str,
+    args: &[&str],
+) -> (Option<i32>, String, String) {
+    let out = scoop_cmd(&fixture.scoop_home)
+        .args(args)
+        .env("PYENV_ROOT", pyenv)
+        .env("HOME", fixture.temp_dir.path())
+        .env("SCUV_LANG", lang)
+        .output()
+        .unwrap();
+    (
+        out.status.code(),
+        String::from_utf8_lossy(&out.stdout).into_owned(),
+        String::from_utf8_lossy(&out.stderr).into_owned(),
+    )
+}
+
+/// `migrate @env` on an EOL env: the source line and the refusal follow
+/// the language, the English stays word for word, and under `--json` the
+/// error code does not change with the language. Fails if either message
+/// goes back to a hard-coded string.
+#[cfg(unix)]
+#[test]
+fn migrate_env_source_line_and_eol_refusal_follow_the_language() {
+    let fixture = TestFixture::new();
+    let pyenv = fixture.temp_dir.path().join("pyenv");
+    fake_pyenv_env_with(&pyenv, "old", "3.10.14");
+
+    let (code, _, err) = migrate_in(&fixture, &pyenv, "en", &["migrate", "@env", "old"]);
+    assert_eq!(code, Some(2));
+    assert!(
+        err.contains("Source: old (pyenv, Python 3.10.14)\n"),
+        "{err}"
+    );
+    assert!(
+        err.contains("Migration failed: Python 3.10.14 is EOL"),
+        "{err}"
+    );
+
+    let (code, _, err) = migrate_in(&fixture, &pyenv, "ko", &["migrate", "@env", "old"]);
+    assert_eq!(code, Some(2));
+    assert!(err.contains("원본: old (pyenv, Python 3.10.14)\n"), "{err}");
+    assert!(err.contains("Python 3.10.14 지원 종료됨"), "{err}");
+    assert!(!err.contains("is EOL"), "{err}");
+
+    let (_, out, _) = migrate_in(
+        &fixture,
+        &pyenv,
+        "ko",
+        &["migrate", "@env", "old", "--json"],
+    );
+    let json: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(json["error"]["code"], "MIGRATE_FAILED", "{json}");
+    let message = json["error"]["message"].as_str().unwrap();
+    assert!(message.contains("Python 3.10.14 지원 종료됨"), "{json}");
+}
+
+/// `migrate list` ends an EOL env's line with a hint in the user's language.
+/// Fails if the hint is hard-coded again.
+#[cfg(unix)]
+#[test]
+fn migrate_list_eol_hint_follows_the_language() {
+    let fixture = TestFixture::new();
+    let pyenv = fixture.temp_dir.path().join("pyenv");
+    fake_pyenv_env_with(&pyenv, "old", "3.10.14");
+
+    let args = ["migrate", "list", "--source", "pyenv"];
+    let (_, out, _) = migrate_in(&fixture, &pyenv, "en", &args);
+    assert!(out.contains("MB (Python 3.10.14 is EOL)\n"), "{out}");
+    let (_, out, _) = migrate_in(&fixture, &pyenv, "ko", &args);
+    assert!(out.contains("MB (Python 3.10.14 지원 종료)\n"), "{out}");
+}
+
+/// The `migrate all` preview (plan header, skipped count, dry-run target)
+/// follows the language, the English stays word for word, and the JSON
+/// `skipped[].reason` stays English for scripts. Fails if any of the three
+/// lines is hard-coded again or the JSON reason gets translated.
+#[cfg(unix)]
+#[test]
+fn migrate_all_preview_follows_the_language_and_json_reasons_do_not() {
+    let fixture = TestFixture::new();
+    let pyenv = fixture.temp_dir.path().join("pyenv");
+    fake_pyenv_env_with_pip(&pyenv, "web", "3.12.14");
+    fake_pyenv_env_with(&pyenv, "old", "3.10.14");
+    let args = ["migrate", "all", "--source", "pyenv", "--dry-run", "--yes"];
+
+    let (code, _, err) = migrate_in(&fixture, &pyenv, "en", &args);
+    assert_eq!(code, Some(0), "{err}");
+    assert!(
+        err.contains("Found 1 environment(s) to migrate:\n"),
+        "{err}"
+    );
+    assert!(
+        err.contains("1 environment(s) will be skipped (see summary)\n"),
+        "{err}"
+    );
+    assert!(err.contains("  [DRY-RUN] Would create: "), "{err}");
+
+    let (code, _, err) = migrate_in(&fixture, &pyenv, "ko", &args);
+    assert_eq!(code, Some(0), "{err}");
+    assert!(err.contains("마이그레이션할 환경 1개 발견:\n"), "{err}");
+    assert!(
+        err.contains("환경 1개는 건너뛸 예정 (요약 참고)\n"),
+        "{err}"
+    );
+    assert!(err.contains("  [DRY-RUN] 생성 예정: "), "{err}");
+
+    let mut json_args = args.to_vec();
+    json_args.push("--json");
+    let (_, out, _) = migrate_in(&fixture, &pyenv, "ko", &json_args);
+    let json: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(
+        json["data"]["skipped"][0]["reason"], "Python 3.10.14 is EOL (use --allow-eol)",
+        "{json}"
+    );
+}

@@ -3,6 +3,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use rust_i18n::t;
 use serde::{Deserialize, Serialize};
 
 use crate::core::metadata::Metadata;
@@ -86,7 +87,7 @@ pub struct Migrator {
 /// The refusal for an end-of-life source Python without --allow-eol or --force.
 fn eol_error(version: &str) -> ScoopError {
     ScoopError::MigrationFailed {
-        reason: format!("Python {version} is end-of-life. Use --allow-eol to migrate anyway."),
+        reason: t!("migrate.eol_refused_hint", version = version).to_string(),
     }
 }
 
@@ -239,7 +240,7 @@ impl Migrator {
                 {
                     if strict {
                         return Err(ScoopError::MigrationFailed {
-                            reason: format!("Failed to install package: {}", spec),
+                            reason: t!("migrate.package_install_failed", spec = spec).to_string(),
                         });
                     }
                     failed.push(spec.clone());

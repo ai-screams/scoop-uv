@@ -119,9 +119,11 @@ struct Target {
 
 /// What is being migrated, before anything happens (human mode only).
 fn print_source_info(output: &Output, name: &str, source: &SourceEnvironment) {
-    output.info(&format!(
-        "Source: {} ({}, Python {})",
-        name, source.source_type, source.python_version
+    output.info(&t!(
+        "migrate.source_line",
+        name = name,
+        source = source.source_type,
+        version = &source.python_version
     ));
     output.info(&t!(
         "migrate.source_path",
@@ -163,7 +165,7 @@ fn resolve_target(
                     output.info(&t!("migrate.eol_allow_hint"));
                 }
                 return Err(ScoopError::MigrationFailed {
-                    reason: format!("Python {} is EOL", version),
+                    reason: t!("migrate.eol_refused", version = version).to_string(),
                 });
             }
             if !opts.json {

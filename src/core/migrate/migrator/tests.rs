@@ -290,7 +290,10 @@ fn test_validate_source_name_conflict_with_force() {
 /// through, unrenamed either; `allow_eol` does. What fails this: the
 /// overwrite branch returning `Ok` before the EOL guard.
 #[test]
+#[serial_test::serial]
 fn validate_source_overwrite_still_refuses_an_eol_python() {
+    let _locale = crate::test_utils::LocaleGuard::capture();
+    rust_i18n::set_locale("en");
     let migrator = Migrator {
         uv: UvClient::with_path(PathBuf::from("/mock/uv")),
         extractor: PackageExtractor::new(),
@@ -539,6 +542,38 @@ mod with_fake_uv {
         );
     }
 
+    /// Under `--strict` the first package that does not install stops the
+    /// migration, with a reason that is word for word the English it was and
+    /// follows the language. Fails if the reason is hard-coded again.
+    #[test]
+    #[serial]
+    fn strict_install_failure_reason_follows_the_language() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        let fails = [("FAKE_UV_PIP_INSTALL_FAILS", Some("bad==1.0"))];
+        let strict = MigrateOptions {
+            strict: true,
+            ..Default::default()
+        };
+        for (lang, want) in [
+            ("en", "Failed to install package: bad==1.0"),
+            ("ko", "패키지 설치 실패: bad==1.0"),
+        ] {
+            rust_i18n::set_locale(lang);
+            run(
+                "six==1.16.0\\nbad==1.0\\n",
+                EnvironmentStatus::Ready,
+                &fails,
+                |fx| {
+                    let err = fx.migrator().migrate(&fx.source, &strict).unwrap_err();
+                    assert!(
+                        matches!(&err, ScoopError::MigrationFailed { reason } if reason == want),
+                        "{err:?}"
+                    );
+                },
+            );
+        }
+    }
+
     #[test]
     #[serial]
     fn delete_source_keeps_a_source_with_a_failed_install() {
@@ -586,4 +621,26 @@ mod with_fake_uv {
             assert_eq!(result.actual_python_version, "3.12.0");
         });
     }
+}
+
+/// The EOL refusal is word for word the English it was and follows the
+/// language. Fails if the reason is hard-coded again.
+#[test]
+#[serial_test::serial]
+fn eol_error_follows_the_language() {
+    let _locale = crate::test_utils::LocaleGuard::capture();
+    let reason = |e: ScoopError| match e {
+        ScoopError::MigrationFailed { reason } => reason,
+        other => panic!("{other:?}"),
+    };
+    rust_i18n::set_locale("en");
+    assert_eq!(
+        reason(eol_error("2.7")),
+        "Python 2.7 is end-of-life. Use --allow-eol to migrate anyway."
+    );
+    rust_i18n::set_locale("ko");
+    assert_eq!(
+        reason(eol_error("2.7")),
+        "Python 2.7 지원 종료됨. 그래도 마이그레이션하려면 --allow-eol 사용."
+    );
 }

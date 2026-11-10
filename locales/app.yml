@@ -747,7 +747,7 @@ migrate.overwriting:
 
 migrate.eol_warning:
   en: "Python %{version} reached end-of-life"
-  ko: "Python %{version}은 지원 종료됨"
+  ko: "Python %{version} 지원 종료됨"
   pt-BR: "Python %{version} chegou ao fim do suporte"
   ja: "Python %{version} はサポートが終了しています (EOL)"
   es: "Python %{version} ha llegado al fin de su ciclo de vida (EOL)"
@@ -1665,6 +1665,170 @@ migrate.batch_conflicts_header:
   pt-BR: "%{count} conflito(s) de nome pulado(s) (use --force):"
   ja: "名前衝突 %{count} 件をスキップ (--force を使用):"
   es: "%{count} conflicto(s) de nombre omitido(s) (usar --force):"
+
+# ============================================================================
+# Migrate command - conflicts, plan, progress
+# ============================================================================
+migrate.source_line:
+  en: "Source: %{name} (%{source}, Python %{version})"
+  ko: "원본: %{name} (%{source}, Python %{version})"
+  pt-BR: "Origem: %{name} (%{source}, Python %{version})"
+  ja: "ソース: %{name} (%{source}, Python %{version})"
+  es: "Origen: %{name} (%{source}, Python %{version})"
+
+migrate.conflict_warning:
+  en: "Name conflict: '%{name}' already exists at %{path}"
+  ko: "이름 충돌: '%{name}'이(가) %{path}에 이미 존재"
+  pt-BR: "Conflito de nome: '%{name}' já existe em %{path}"
+  ja: "名前の衝突: '%{name}' は %{path} にすでに存在します"
+  es: "Conflicto de nombre: '%{name}' ya existe en %{path}"
+
+migrate.conflict_prompt:
+  en: "How would you like to resolve this conflict?"
+  ko: "이 충돌을 어떻게 처리할까요?"
+  pt-BR: "Como deseja resolver este conflito?"
+  ja: "この衝突をどう解決しますか?"
+  es: "¿Cómo quiere resolver este conflicto?"
+
+migrate.conflict_overwrite:
+  en: "Overwrite - Delete existing and migrate fresh"
+  ko: "덮어쓰기 - 기존 환경을 지우고 새로 마이그레이션"
+  pt-BR: "Sobrescrever - Excluir o existente e migrar do zero"
+  ja: "上書き - 既存の環境を削除して新しく移行"
+  es: "Sobrescribir - Eliminar el existente y migrar desde cero"
+
+migrate.conflict_rename:
+  en: "Rename - Migrate with a different name"
+  ko: "이름 변경 - 다른 이름으로 마이그레이션"
+  pt-BR: "Renomear - Migrar com outro nome"
+  ja: "名前を変更 - 別の名前で移行"
+  es: "Renombrar - Migrar con otro nombre"
+
+migrate.conflict_skip:
+  en: "Skip - Don't migrate this environment"
+  ko: "건너뛰기 - 이 환경은 마이그레이션하지 않음"
+  pt-BR: "Pular - Não migrar este ambiente"
+  ja: "スキップ - この環境は移行しない"
+  es: "Omitir - No migrar este entorno"
+
+migrate.rename_prompt:
+  en: "Enter new name for the environment"
+  ko: "환경의 새 이름 입력"
+  pt-BR: "Digite o novo nome do ambiente"
+  ja: "環境の新しい名前を入力してください"
+  es: "Introduzca el nuevo nombre del entorno"
+
+migrate.unique_name_exhausted:
+  en: "Could not find unique name for '%{name}'"
+  ko: "'%{name}'에 쓸 겹치지 않는 이름을 찾지 못함"
+  pt-BR: "Não foi possível encontrar um nome único para '%{name}'"
+  ja: "'%{name}' に使える重複しない名前が見つかりません"
+  es: "No se encontró un nombre único para '%{name}'"
+
+migrate.eol_refused:
+  en: "Python %{version} is EOL"
+  ko: "Python %{version} 지원 종료됨"
+  pt-BR: "Python %{version} está EOL (fim de suporte)"
+  ja: "Python %{version} はEOLです"
+  es: "Python %{version} está en EOL"
+
+migrate.eol_refused_hint:
+  en: "Python %{version} is end-of-life. Use --allow-eol to migrate anyway."
+  ko: "Python %{version} 지원 종료됨. 그래도 마이그레이션하려면 --allow-eol 사용."
+  pt-BR: "Python %{version} chegou ao fim do suporte. Use --allow-eol para migrar mesmo assim."
+  ja: "Python %{version} はサポートが終了しています。それでも移行するには --allow-eol を使用してください。"
+  es: "Python %{version} ha llegado al fin de su ciclo de vida. Usar --allow-eol para migrar de todos modos."
+
+migrate.package_install_failed:
+  en: "Failed to install package: %{spec}"
+  ko: "패키지 설치 실패: %{spec}"
+  pt-BR: "Falha ao instalar o pacote: %{spec}"
+  ja: "パッケージのインストールに失敗: %{spec}"
+  es: "Fallo al instalar el paquete: %{spec}"
+
+migrate.plan_header:
+  en: "Found %{count} environment(s) to migrate:"
+  ko: "마이그레이션할 환경 %{count}개 발견:"
+  pt-BR: "%{count} ambiente(s) para migrar:"
+  ja: "移行する環境が %{count} 個見つかりました:"
+  es: "Se encontraron %{count} entorno(s) para migrar:"
+
+migrate.plan_will_overwrite:
+  en: " (will overwrite)"
+  ko: " (덮어쓰기 예정)"
+  pt-BR: " (será sobrescrito)"
+  ja: " (上書きします)"
+  es: " (se sobrescribirá)"
+
+migrate.plan_eol:
+  en: " (Python %{version} EOL)"
+  ko: " (Python %{version} EOL)"
+  pt-BR: " (Python %{version} EOL)"
+  ja: " (Python %{version} EOL)"
+  es: " (Python %{version} EOL)"
+
+migrate.plan_corrupted:
+  en: " (corrupted)"
+  ko: " (손상됨)"
+  pt-BR: " (corrompido)"
+  ja: " (破損)"
+  es: " (dañado)"
+
+migrate.plan_skipped:
+  en: "%{count} environment(s) will be skipped (see summary)"
+  ko: "환경 %{count}개는 건너뛸 예정 (요약 참고)"
+  pt-BR: "%{count} ambiente(s) serão pulados (veja o resumo)"
+  ja: "%{count} 個の環境をスキップします (概要を参照)"
+  es: "Se omitirán %{count} entorno(s) (ver el resumen)"
+
+migrate.list_conflict:
+  en: " (conflicts with %{path})"
+  ko: " (%{path}와(과) 충돌)"
+  pt-BR: " (conflito com %{path})"
+  ja: " (%{path} と衝突)"
+  es: " (conflicto con %{path})"
+
+migrate.list_eol:
+  en: " (Python %{version} is EOL)"
+  ko: " (Python %{version} 지원 종료)"
+  pt-BR: " (Python %{version} está EOL)"
+  ja: " (Python %{version} はEOL)"
+  es: " (Python %{version} está en EOL)"
+
+migrate.progress_done:
+  en: "Done"
+  ko: "완료"
+  pt-BR: "Concluído"
+  ja: "完了"
+  es: "Hecho"
+
+migrate.progress_migrated:
+  en: "✓ '%{name}' migrated (%{count} packages)"
+  ko: "✓ '%{name}' 마이그레이션 완료 (패키지 %{count}개)"
+  pt-BR: "✓ '%{name}' migrado (%{count} pacotes)"
+  ja: "✓ '%{name}' を移行しました (パッケージ %{count} 個)"
+  es: "✓ '%{name}' migrado (%{count} paquetes)"
+
+migrate.progress_packages_failed:
+  en: "  ⚠ %{count} package(s) failed"
+  ko: "  ⚠ 패키지 %{count}개 실패"
+  pt-BR: "  ⚠ %{count} pacote(s) falharam"
+  ja: "  ⚠ %{count} 個のパッケージが失敗しました"
+  es: "  ⚠ %{count} paquete(s) fallaron"
+
+migrate.progress_failed:
+  en: "✗ '%{name}' failed: %{error}"
+  ko: "✗ '%{name}' 실패: %{error}"
+  pt-BR: "✗ '%{name}' falhou: %{error}"
+  ja: "✗ '%{name}' が失敗しました: %{error}"
+  es: "✗ '%{name}' falló: %{error}"
+
+migrate.dry_run_would_create:
+  en: "  [DRY-RUN] Would create: %{path}"
+  ko: "  [DRY-RUN] 생성 예정: %{path}"
+  pt-BR: "  [DRY-RUN] Criaria: %{path}"
+  ja: "  [DRY-RUN] 作成予定: %{path}"
+  es: "  [DRY-RUN] Se crearía: %{path}"
 
 gc.skipped_now_healthy:
   en: "Skipped '%{name}' — became healthy between scan and remove"
