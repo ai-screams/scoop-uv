@@ -1,6 +1,5 @@
 //! Shell integration module
 
-use crate::cli::ShellType;
 use std::path::Path;
 
 pub mod bash;
@@ -8,6 +7,20 @@ pub mod common;
 pub mod fish;
 pub mod powershell;
 pub mod zsh;
+
+/// Supported shell types
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+pub enum ShellType {
+    /// Bash shell
+    Bash,
+    /// Zsh shell
+    Zsh,
+    /// Fish shell
+    Fish,
+    /// PowerShell
+    #[value(alias = "pwsh")]
+    Powershell,
+}
 
 /// Detect current shell from environment variables.
 ///

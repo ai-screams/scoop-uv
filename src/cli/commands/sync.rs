@@ -10,7 +10,7 @@ use rust_i18n::t;
 use crate::core::{ScoopManifest, VirtualenvService, manifest};
 use crate::error::{Result, ScoopError};
 use crate::output::{Output, SyncData};
-use crate::validate::PythonVersion;
+use crate::python_version::PythonVersion;
 
 /// Execute the `sync` command.
 pub fn execute(output: &Output, extra_groups: &[String], dry_run: bool) -> Result<()> {

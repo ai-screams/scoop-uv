@@ -9,7 +9,8 @@ use rust_i18n::t;
 use crate::core::manifest::{ScoopManifest, find_manifest_from_cwd};
 use crate::core::{MetadataState, VirtualenvInfo, VirtualenvService};
 use crate::error::Result;
-use crate::validate::{self, PythonVersion};
+use crate::python_version::PythonVersion;
+use crate::validate;
 
 use super::types::{CheckKind, CheckResult, CheckStatus, EnvReport};
 

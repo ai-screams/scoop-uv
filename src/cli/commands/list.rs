@@ -12,8 +12,8 @@ use crate::core::{VirtualenvInfo as CoreVirtualenvInfo, VirtualenvService, get_a
 use crate::error::Result;
 use crate::output::{ListEnvsData, ListPythonsData, Output, PythonInfo, VirtualenvInfo};
 use crate::paths::abbreviate_home;
+use crate::python_version::PythonVersion;
 use crate::uv::UvClient;
-use crate::validate::PythonVersion;
 
 /// Execute the list command
 pub fn execute(

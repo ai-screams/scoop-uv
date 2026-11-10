@@ -9,6 +9,7 @@ use std::path::PathBuf;
 use clap::{ArgAction, Parser, Subcommand, ValueEnum};
 
 use self::color::ColorChoice;
+pub use crate::shell::ShellType;
 
 /// scuv - Python virtual environment manager powered by uv
 #[derive(Parser, Debug)]
@@ -749,20 +750,6 @@ pub enum Commands {
         #[arg(long)]
         json: bool,
     },
-}
-
-/// Supported shell types
-#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
-pub enum ShellType {
-    /// Bash shell
-    Bash,
-    /// Zsh shell
-    Zsh,
-    /// Fish shell
-    Fish,
-    /// PowerShell
-    #[value(alias = "pwsh")]
-    Powershell,
 }
 
 #[cfg(test)]

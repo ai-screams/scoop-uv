@@ -6,7 +6,7 @@ use std::process::Command;
 use serde::Deserialize;
 
 use crate::error::{Result, ScoopError};
-use crate::validate::PythonVersion;
+use crate::python_version::PythonVersion;
 
 /// One entry from `uv pip list --format=json`.
 ///

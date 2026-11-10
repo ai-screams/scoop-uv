@@ -1150,9 +1150,6 @@ fn every_variant() -> Vec<ScoopError> {
             supported: "s-aba".into(),
         },
         ScoopError::VerifyFailed { issues: 4207 },
-        ScoopError::SitePackagesNotFound {
-            venv: "env-abb".into(),
-        },
         ScoopError::MigrationSourcesNotFound {
             requested: Some("src-abc".into()),
         },
@@ -1220,7 +1217,6 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::VerifyFailed { .. }
         | ScoopError::DoctorFindings { .. }
         | ScoopError::ConfirmationUnavailable { .. }
-        | ScoopError::SitePackagesNotFound { .. }
         | ScoopError::MigrationSourcesNotFound { .. }
         | ScoopError::MigrationBatchFailed { .. }
         | ScoopError::DiffMismatch { .. } => {}

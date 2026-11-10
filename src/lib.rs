@@ -13,6 +13,7 @@ pub mod error;
 pub mod i18n;
 pub mod output;
 pub mod paths;
+pub mod python_version;
 pub mod shell;
 pub mod uv;
 pub mod validate;

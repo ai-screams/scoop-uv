@@ -155,7 +155,7 @@ CI enforces it: `ci.yml` tests both toolchains, and `msrv-check.yml` runs
 ```
 src/
 ├── cli/           # CLI parsing (clap)
-│   ├── mod.rs     # Cli struct, Commands enum, ShellType
+│   ├── mod.rs     # Cli struct, Commands enum (re-exports shell::ShellType)
 │   ├── color.rs   # --color/--no-color flag (ColorChoice); the decision lives in output/color.rs
 │   └── commands/  # Subcommand handlers (execute functions)
 │       ├── use_env/   # Use command modular (normal, system, unset, symlink)
@@ -182,6 +182,7 @@ src/
 │   └── time.rs    # English fuzzy-age formatter for last_used display
 ├── error/         # ScoopError module (code, display, exit codes, suggestion; i18n Display)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
+├── python_version.rs # PythonVersion (parse, matches, Ord); leaf module, re-exported from validate
 ├── validate.rs    # Validation logic
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
 ├── test_utils.rs  # env_guard, with_temp_scoop_home, FakeUv (test-only)
