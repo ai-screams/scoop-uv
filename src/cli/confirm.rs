@@ -22,6 +22,10 @@ pub(crate) enum Confirmation {
 
 /// Asks `prompt`, defaulting to no.
 pub(crate) fn confirm(prompt: &str) -> Confirmation {
+    #[cfg(test)]
+    if let Some(answer) = TEST_ANSWER.with(std::cell::Cell::get) {
+        return confirm_with(true, || answer);
+    }
     confirm_with(std::io::stderr().is_terminal(), || {
         Confirm::new()
             .with_prompt(prompt)
@@ -29,6 +33,29 @@ pub(crate) fn confirm(prompt: &str) -> Confirmation {
             .interact()
             .ok()
     })
+}
+
+#[cfg(test)]
+thread_local! {
+    /// The answer [`confirm`] gives on this thread instead of asking, set by
+    /// [`answering`]: `Some(Some(yes))` answers, `Some(None)` is a failed
+    /// prompt, `None` asks for real.
+    static TEST_ANSWER: std::cell::Cell<Option<Option<bool>>> = const { std::cell::Cell::new(None) };
+}
+
+/// Runs `f` with [`confirm`] answering `answer` (see [`TEST_ANSWER`]), so
+/// the callers' yes/no paths can be tested without a terminal.
+#[cfg(test)]
+pub(crate) fn answering<T>(answer: Option<bool>, f: impl FnOnce() -> T) -> T {
+    struct Reset;
+    impl Drop for Reset {
+        fn drop(&mut self) {
+            TEST_ANSWER.with(|a| a.set(None));
+        }
+    }
+    TEST_ANSWER.with(|a| a.set(Some(answer)));
+    let _reset = Reset;
+    f()
 }
 
 /// [`confirm`] with the terminal check and the prompt passed in: `ask` runs

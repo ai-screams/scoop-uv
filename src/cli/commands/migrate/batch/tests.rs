@@ -299,3 +299,18 @@ fn merge_failures_keeps_the_list_sorted_by_name() {
     let names: Vec<_> = failed.iter().map(|f| f.name.as_str()).collect();
     assert_eq!(names, ["aaa", "gc", "zzz"]);
 }
+
+/// The batch question: yes and no are answers; a question that could not
+/// be asked is an error naming `--yes`. What fails this: an unavailable
+/// prompt read as "no" (the batch would quietly do nothing).
+#[test]
+fn batch_confirm_maps_each_answer() {
+    use crate::cli::confirm::answering;
+    assert!(answering(Some(true), || confirm(3)).unwrap());
+    assert!(!answering(Some(false), || confirm(3)).unwrap());
+    let err = answering(None, || confirm(3)).unwrap_err();
+    assert!(
+        matches!(err, ScoopError::ConfirmationUnavailable { ref flag } if flag == "--yes"),
+        "{err:?}"
+    );
+}

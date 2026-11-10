@@ -144,3 +144,47 @@ fn unlink_venv(output: &Output, link: VenvLink) -> (Option<PathBuf>, Option<Stri
         }
     }
 }
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use crate::output::Colors;
+    use crate::test_utils::{FakeUv, env_guard};
+    use serial_test::serial;
+
+    /// With a fake uv on PATH and a fresh SCUV_HOME holding env `e`.
+    fn with_env(f: impl FnOnce(&std::path::Path)) {
+        let uv = FakeUv::new(&[]);
+        let home = tempfile::tempdir().unwrap();
+        let path = uv.path_var();
+        let _env = env_guard(&[
+            ("PATH", Some(path.as_str())),
+            ("SCUV_HOME", Some(home.path().to_str().unwrap())),
+        ]);
+        let env = home.path().join("virtualenvs").join("e");
+        std::fs::create_dir_all(&env).unwrap();
+        f(&env);
+    }
+
+    /// Yes removes, no keeps (and succeeds), a question that could not be
+    /// asked keeps and fails naming `--force`. What fails this: any answer
+    /// other than yes removing the env.
+    #[test]
+    #[serial]
+    fn remove_acts_only_on_yes() {
+        let out = Output::new(0, true, Colors::NONE, false);
+        with_env(|env| {
+            crate::cli::confirm::answering(Some(false), || execute(&out, "e", false)).unwrap();
+            assert!(env.exists());
+            let err =
+                crate::cli::confirm::answering(None, || execute(&out, "e", false)).unwrap_err();
+            assert!(
+                matches!(err, crate::error::ScoopError::ConfirmationUnavailable { ref flag } if flag == "--force"),
+                "{err:?}"
+            );
+            assert!(env.exists());
+            crate::cli::confirm::answering(Some(true), || execute(&out, "e", false)).unwrap();
+            assert!(!env.exists());
+        });
+    }
+}
