@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794285741684,
+  "lastUpdate": 1794285743485,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -16033,6 +16033,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 767,
             "range": "± 18",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8916c9a6d8e6d224f5106e4956b21254da9ede6e",
+          "message": "Merge pull request #277 from ai-screams/feat/migrate-i18n\n\nfeat(migrate): [#277] translate the remaining migrate output",
+          "timestamp": "2026-11-10T13:38:24+09:00",
+          "tree_id": "475e84d24e411dabe391407bac17fdeddb81ab4f",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/8916c9a6d8e6d224f5106e4956b21254da9ede6e"
+        },
+        "date": 1794285743397,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 580,
+            "range": "± 26",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 414,
+            "range": "± 21",
             "unit": "ns/iter"
           }
         ]
