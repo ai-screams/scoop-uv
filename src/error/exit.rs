@@ -173,7 +173,8 @@ impl ScoopError {
             | Self::InvalidExportFile { .. }
             | Self::UnsupportedExportVersion { .. }
             | Self::SitePackagesNotFound { .. }
-            | Self::MigrationSourcesNotFound { .. } => ErrorRenderPolicy::Default,
+            | Self::MigrationSourcesNotFound { .. }
+            | Self::ConfirmationUnavailable { .. } => ErrorRenderPolicy::Default,
         }
     }
 }

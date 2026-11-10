@@ -115,3 +115,24 @@ fn migrate_env_allow_eol_does_not_overwrite_a_conflict() {
         .stderr(predicate::str::contains("'old' already exists"));
     assert!(existing.join("keep").exists());
 }
+
+/// `migrate all` with no terminal to ask on and no `--yes` is an error that
+/// names `--yes` (exit 1), not "Dialog error: not a terminal", and nothing
+/// is migrated. assert_cmd's piped stderr is never a terminal.
+#[cfg(unix)]
+#[test]
+fn migrate_all_without_a_terminal_names_yes() {
+    let fixture = TestFixture::new();
+    let pyenv = fixture.temp_dir.path().join("pyenv");
+    fake_pyenv_env(&pyenv, "web");
+
+    scoop_cmd(&fixture.scoop_home)
+        .args(["migrate", "all", "--source", "pyenv"])
+        .env("PYENV_ROOT", &pyenv)
+        .env("HOME", fixture.temp_dir.path())
+        .assert()
+        .code(1)
+        .stderr(predicate::str::contains("Pass --yes"))
+        .stderr(predicate::str::contains("Dialog error").not());
+    assert!(!fixture.scoop_home.join("virtualenvs/web").exists());
+}

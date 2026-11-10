@@ -90,6 +90,7 @@ Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands.
 | Code | Returned when |
 |------|---------------|
 | `0` | (a) all envs migrated, (b) no envs found but source tools are installed, or (c) only non-conflict skips occurred (EOL / corrupted envs in the skipped bucket, no preflight name conflicts, no per-env failures) |
+| `1` | Confirmation was needed (no `--yes`, `--json` or `--dry-run`) but stderr is not a terminal to ask on: `CONFIRMATION_UNAVAILABLE`, naming `--yes`. Nothing is migrated |
 | `2` | At least one per-env failure **or** at least one preflight name conflict without `--force`, **or** two sources offering the same env name in one batch. `--force` does not resolve that case: the first source migrates, and the skipped one needs `scuv migrate @env <name> --source <tool> --rename <other>` (without `--source`, `@env` finds the env that already migrated). Returned via `MigrationBatchFailed` |
 | `3` | No source tool (pyenv / virtualenvwrapper / conda) is detected on the system. Returned via `MigrationSourcesNotFound` |
 

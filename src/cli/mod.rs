@@ -2,6 +2,7 @@
 
 pub mod color;
 pub mod commands;
+pub(crate) mod confirm;
 
 use std::path::PathBuf;
 

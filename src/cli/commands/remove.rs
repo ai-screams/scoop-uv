@@ -2,10 +2,10 @@
 
 use std::path::{Path, PathBuf};
 
-use dialoguer::Confirm;
 use rust_i18n::t;
 
 use super::use_env::is_venv_symlink_to;
+use crate::cli::confirm::Confirmation;
 use crate::core::VirtualenvService;
 use crate::error::Result;
 use crate::output::{Output, RemoveData};
@@ -25,13 +25,17 @@ pub fn execute(output: &Output, name: &str, force: bool) -> Result<()> {
             path = crate::paths::abbreviate_home(&path)
         ));
 
-        let confirmed = Confirm::new()
-            .with_prompt(t!("remove.confirm", name = name).to_string())
-            .default(false)
-            .interact()
-            // No terminal to ask on (a script without --force) is an error,
-            // not a "no": it used to print "Cancelled" and exit 0.
-            .map_err(|e| crate::error::ScoopError::Io(std::io::Error::other(e)))?;
+        // No terminal to ask on (a script without --force) is an error, not
+        // a "no": it used to print "Cancelled" and exit 0.
+        let confirmed = match crate::cli::confirm::confirm(&t!("remove.confirm", name = name)) {
+            Confirmation::Yes => true,
+            Confirmation::No => false,
+            Confirmation::Unavailable => {
+                return Err(crate::error::ScoopError::ConfirmationUnavailable {
+                    flag: "--force".to_string(),
+                });
+            }
+        };
 
         if !confirmed {
             output.info(&t!("remove.cancelled"));
@@ -138,5 +142,49 @@ fn unlink_venv(output: &Output, link: VenvLink) -> (Option<PathBuf>, Option<Stri
             ));
             (None, Some(e.to_string()))
         }
+    }
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use crate::output::Colors;
+    use crate::test_utils::{FakeUv, env_guard};
+    use serial_test::serial;
+
+    /// With a fake uv on PATH and a fresh SCUV_HOME holding env `e`.
+    fn with_env(f: impl FnOnce(&std::path::Path)) {
+        let uv = FakeUv::new(&[]);
+        let home = tempfile::tempdir().unwrap();
+        let path = uv.path_var();
+        let _env = env_guard(&[
+            ("PATH", Some(path.as_str())),
+            ("SCUV_HOME", Some(home.path().to_str().unwrap())),
+        ]);
+        let env = home.path().join("virtualenvs").join("e");
+        std::fs::create_dir_all(&env).unwrap();
+        f(&env);
+    }
+
+    /// Yes removes, no keeps (and succeeds), a question that could not be
+    /// asked keeps and fails naming `--force`. What fails this: any answer
+    /// other than yes removing the env.
+    #[test]
+    #[serial]
+    fn remove_acts_only_on_yes() {
+        let out = Output::new(0, true, Colors::NONE, false);
+        with_env(|env| {
+            crate::cli::confirm::answering(Some(false), || execute(&out, "e", false)).unwrap();
+            assert!(env.exists());
+            let err =
+                crate::cli::confirm::answering(None, || execute(&out, "e", false)).unwrap_err();
+            assert!(
+                matches!(err, crate::error::ScoopError::ConfirmationUnavailable { ref flag } if flag == "--force"),
+                "{err:?}"
+            );
+            assert!(env.exists());
+            crate::cli::confirm::answering(Some(true), || execute(&out, "e", false)).unwrap();
+            assert!(!env.exists());
+        });
     }
 }

@@ -5,7 +5,6 @@ mod render;
 use std::env;
 use std::io::{self, IsTerminal};
 
-use dialoguer::Confirm;
 use rust_i18n::t;
 
 use crate::core::doctor::{CheckResult, Doctor, apply_uv_install};
@@ -114,11 +113,8 @@ fn confirm(output: &Output, plan: &Plan) -> bool {
             names = inherited.join(", ")
         ));
     }
-    Confirm::new()
-        .with_prompt(t!("doctor.uv_install.confirm").to_string())
-        .default(false)
-        .interact()
-        .unwrap_or(false)
+    crate::cli::confirm::confirm(&t!("doctor.uv_install.confirm"))
+        == crate::cli::confirm::Confirmation::Yes
 }
 
 /// Execute the doctor command.
@@ -196,6 +192,24 @@ mod tests {
     use super::*;
     use crate::core::doctor::CheckStatus;
     use crate::output::Colors;
+
+    /// The installer runs only on a yes; a no and a prompt that could not be
+    /// shown both decline. What fails this: treating an unavailable prompt
+    /// as consent.
+    #[test]
+    fn confirm_installs_only_on_yes() {
+        let plan = Plan::new(
+            "/usr/bin/curl".into(),
+            "/bin/sh".into(),
+            std::path::Path::new("/tmp/x/install.sh"),
+            "/tmp/x/bin".into(),
+        );
+        let out = Output::new(0, true, Colors::NONE, false);
+        for (answer, want) in [(Some(true), true), (Some(false), false), (None, false)] {
+            let got = crate::cli::confirm::answering(answer, || confirm(&out, &plan));
+            assert_eq!(got, want, "{answer:?}");
+        }
+    }
 
     // A broken wiring here would still look safe from the CLI tests, which run
     // without a terminal and so never get past that check.
