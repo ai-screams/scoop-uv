@@ -16116,6 +16116,18 @@ msgstr ""
 "progress: false`와 함께 갖췄으며 — 블록을 생략하는 것으로는 절반만 달성되던 "
 "\"must always complete\" 의도를 제대로 구현합니다."
 
+#: src/development/ci-cd.md:452
+msgid ""
+"`Mutants (diff)` had a 20-minute limit, enough for PRs of a few dozen "
+"mutants. #279 changed enough code for 177; the limit stopped the run at 147 "
+"(about 8 s each, none missed), and GitHub reported it as cancelled. The "
+"limit is 45 minutes now."
+msgstr ""
+"`Mutants (diff)`의 제한 시간은 20분이었고, 변이가 수십 개인 PR에는 충분했습니"
+"다. #279는 변이 177개가 나올 만큼 코드를 바꿨는데, 제한 시간이 147번째에서 실"
+"행을 멈췄고(변이당 약 8초, 놓친 것 없음) GitHub는 이를 cancelled로 보고했습니"
+"다. 지금 제한 시간은 45분입니다."
+
 #: src/llms.md:3
 msgid ""
 "This page provides a concise reference for AI/LLM tools working with scuv."
