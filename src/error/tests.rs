@@ -1165,6 +1165,24 @@ fn every_variant() -> Vec<ScoopError> {
         ScoopError::ConfirmationUnavailable {
             flag: "--flag-abf".into(),
         },
+        ScoopError::PackageOriginsUnreadable {
+            env: "env-abg".into(),
+            reason: "why-abh".into(),
+        },
+        ScoopError::PackageSourceMissing {
+            package: "pkg-abi".into(),
+            path: PathBuf::from("/p/abj"),
+        },
+        ScoopError::PackageSourceInsideTarget {
+            package: "pkg-abk".into(),
+            path: PathBuf::from("/p/abl"),
+            target: PathBuf::from("/p/abm"),
+        },
+        ScoopError::PackageHashUnenforced {
+            package: "pkg-abn".into(),
+            uv_version: "uv-abo".into(),
+            required: "req-abp".into(),
+        },
         ScoopError::DiffMismatch {
             env_a: "env-abd".into(),
             env_b: "env-abe".into(),
@@ -1217,6 +1235,10 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::VerifyFailed { .. }
         | ScoopError::DoctorFindings { .. }
         | ScoopError::ConfirmationUnavailable { .. }
+        | ScoopError::PackageOriginsUnreadable { .. }
+        | ScoopError::PackageSourceMissing { .. }
+        | ScoopError::PackageSourceInsideTarget { .. }
+        | ScoopError::PackageHashUnenforced { .. }
         | ScoopError::MigrationSourcesNotFound { .. }
         | ScoopError::MigrationBatchFailed { .. }
         | ScoopError::DiffMismatch { .. } => {}

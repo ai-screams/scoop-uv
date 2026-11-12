@@ -1526,6 +1526,34 @@ error.confirmation_unavailable:
   ja: "確認できませんでした。確認なしで続けるには %{flag} を付けてください"
   es: "No se pudo pedir confirmación. Usa %{flag} para continuar sin preguntar"
 
+error.package_origins_unreadable:
+  en: "Could not read where the packages in %{env} came from: %{reason}"
+  ko: "%{env}의 패키지 출처를 읽지 못함: %{reason}"
+  pt-BR: "Não foi possível ler a origem dos pacotes de %{env}: %{reason}"
+  ja: "%{env} のパッケージの出所を読み取れません: %{reason}"
+  es: "No se pudo leer el origen de los paquetes de %{env}: %{reason}"
+
+error.package_source_missing:
+  en: "'%{package}' installs from %{path}, which does not exist"
+  ko: "'%{package}'의 설치 경로가 없음: %{path}"
+  pt-BR: "'%{package}' é instalado de %{path}, que não existe"
+  ja: "'%{package}' のインストール元 %{path} が存在しません"
+  es: "'%{package}' se instala desde %{path}, que no existe"
+
+error.package_source_inside_target:
+  en: "'%{package}' installs from %{path}, which depends on %{target}: replacing that env would remove its source"
+  ko: "'%{package}'의 설치 경로가 %{target} 안을 거쳐서(%{path}) 그 env를 바꾸면 소스가 지워짐"
+  pt-BR: "'%{package}' é instalado de %{path}, que depende de %{target}: substituir esse ambiente removeria a origem"
+  ja: "'%{package}' のインストール元 %{path} は %{target} に依存しています。その環境を置き換えるとソースが削除されます"
+  es: "'%{package}' se instala desde %{path}, que depende de %{target}: reemplazar ese entorno eliminaría su origen"
+
+error.package_hash_unenforced:
+  en: "'%{package}' installs from an archive with a recorded hash, which %{uv_version} does not check. Upgrade uv to %{required} or later"
+  ko: "'%{package}'는 해시가 기록된 아카이브에서 설치되는데, 이 uv(%{uv_version})는 해시를 확인하지 않음. uv를 %{required} 이상으로 올려주세요"
+  pt-BR: "'%{package}' é instalado de um arquivo com hash registrado, que %{uv_version} não verifica. Atualize o uv para %{required} ou mais recente"
+  ja: "'%{package}' はハッシュが記録されたアーカイブからインストールされますが、%{uv_version} はハッシュを確認しません。uv を %{required} 以降に更新してください"
+  es: "'%{package}' se instala desde un archivo con hash registrado, que %{uv_version} no comprueba. Actualiza uv a %{required} o posterior"
+
 migrate.batch_confirm:
   en: "Migrate %{count} environment(s)?"
   ko: "환경 %{count}개를 옮길까요?"
@@ -2586,3 +2614,83 @@ doctor.venv.all_healthy:
   pt-BR: "Ambientes: %{count}, todos saudáveis"
   ja: "%{count} 件の環境、すべて正常です"
   es: "Entornos: %{count}, todos en buen estado"
+
+# ============================================================================
+# Package origins (clone, export, import, diff)
+# ============================================================================
+packages.interpreter_unrunnable:
+  en: "could not run %{python}: %{error}"
+  ko: "Python을 실행하지 못함(%{python}): %{error}"
+  pt-BR: "não foi possível executar %{python}: %{error}"
+  ja: "%{python} を実行できません: %{error}"
+  es: "no se pudo ejecutar %{python}: %{error}"
+
+packages.interpreter_timeout:
+  en: "the env's Python did not finish within %{seconds} s"
+  ko: "env의 Python이 %{seconds}초 안에 끝나지 않음"
+  pt-BR: "o Python do ambiente não terminou em %{seconds} s"
+  ja: "環境の Python が %{seconds} 秒以内に終了しませんでした"
+  es: "el Python del entorno no terminó en %{seconds} s"
+
+packages.interpreter_failed:
+  en: "the env's Python exited with %{status}: %{stderr}"
+  ko: "env의 Python이 %{status}로 종료됨: %{stderr}"
+  pt-BR: "o Python do ambiente saiu com %{status}: %{stderr}"
+  ja: "環境の Python が %{status} で終了しました: %{stderr}"
+  es: "el Python del entorno salió con %{status}: %{stderr}"
+
+packages.listing_too_large:
+  en: "the env's Python printed more than %{mib} MiB"
+  ko: "env의 Python 출력이 %{mib} MiB를 넘음"
+  pt-BR: "o Python do ambiente imprimiu mais de %{mib} MiB"
+  ja: "環境の Python の出力が %{mib} MiB を超えました"
+  es: "el Python del entorno imprimió más de %{mib} MiB"
+
+packages.python_too_old:
+  en: "reading package origins needs Python 3.8 or later, and the env has Python %{version}"
+  ko: "패키지 출처를 읽으려면 Python 3.8 이상이 필요한데 env는 Python %{version}"
+  pt-BR: "ler a origem dos pacotes requer Python 3.8 ou mais recente, e o ambiente tem Python %{version}"
+  ja: "パッケージの出所を読むには Python 3.8 以降が必要ですが、環境は Python %{version} です"
+  es: "leer el origen de los paquetes requiere Python 3.8 o posterior, y el entorno tiene Python %{version}"
+
+packages.listing_unparseable:
+  en: "the env's Python printed a listing that is not valid JSON: %{error}"
+  ko: "env의 Python이 출력한 목록이 올바른 JSON이 아님: %{error}"
+  pt-BR: "o Python do ambiente imprimiu uma lista que não é JSON válido: %{error}"
+  ja: "環境の Python が出力した一覧が正しい JSON ではありません: %{error}"
+  es: "el Python del entorno imprimió una lista que no es JSON válido: %{error}"
+
+packages.listing_missing:
+  en: "the env's Python printed no package listing"
+  ko: "env의 Python이 패키지 목록을 출력하지 않음"
+  pt-BR: "o Python do ambiente não imprimiu a lista de pacotes"
+  ja: "環境の Python がパッケージ一覧を出力しませんでした"
+  es: "el Python del entorno no imprimió la lista de paquetes"
+
+packages.bad_direct_url:
+  en: "'%{package}' has a malformed direct_url.json: %{error}"
+  ko: "'%{package}'의 direct_url.json이 잘못됨: %{error}"
+  pt-BR: "'%{package}' tem um direct_url.json malformado: %{error}"
+  ja: "'%{package}' の direct_url.json が不正です: %{error}"
+  es: "'%{package}' tiene un direct_url.json mal formado: %{error}"
+
+packages.not_seen:
+  en: "uv lists %{package} %{version}, but the env's Python does not"
+  ko: "%{package} %{version}: uv 목록에는 있지만 env의 Python에는 없음"
+  pt-BR: "o uv lista %{package} %{version}, mas o Python do ambiente não"
+  ja: "uv は %{package} %{version} を一覧に出しますが、環境の Python にはありません"
+  es: "uv lista %{package} %{version}, pero el Python del entorno no"
+
+packages.ambiguous:
+  en: "%{package} %{version} is installed more than once with different origins"
+  ko: "%{package} %{version}: 출처가 다른 설치가 여러 개 있음"
+  pt-BR: "%{package} %{version} está instalado mais de uma vez com origens diferentes"
+  ja: "%{package} %{version} が異なる出所で複数回インストールされています"
+  es: "%{package} %{version} está instalado más de una vez con orígenes distintos"
+
+packages.editable_without_origin:
+  en: "uv reports %{package} as editable, but it has no editable origin recorded"
+  ko: "uv는 %{package}를 editable로 보지만 기록된 editable 출처가 없음"
+  pt-BR: "o uv informa %{package} como editável, mas não há origem editável registrada"
+  ja: "uv は %{package} を editable と報告していますが、editable の出所が記録されていません"
+  es: "uv indica que %{package} es editable, pero no tiene un origen editable registrado"

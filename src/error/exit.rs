@@ -173,7 +173,11 @@ impl ScoopError {
             | Self::InvalidExportFile { .. }
             | Self::UnsupportedExportVersion { .. }
             | Self::MigrationSourcesNotFound { .. }
-            | Self::ConfirmationUnavailable { .. } => ErrorRenderPolicy::Default,
+            | Self::ConfirmationUnavailable { .. }
+            | Self::PackageOriginsUnreadable { .. }
+            | Self::PackageSourceMissing { .. }
+            | Self::PackageSourceInsideTarget { .. }
+            | Self::PackageHashUnenforced { .. } => ErrorRenderPolicy::Default,
         }
     }
 }

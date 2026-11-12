@@ -21,6 +21,13 @@
 /// [`UvClient::list_installed_pythons`]: crate::uv::UvClient::list_installed_pythons
 pub const MIN_VERSION: (u32, u32, u32) = (0, 5, 19);
 
+/// The first uv that checks a `#<alg>=<hex>` hash on a direct URL
+/// (`name @ file:///x.whl#sha256=...`). Measured with `uvx --from uv==<v>`
+/// installing a wheel under a wrong sha256: 0.5.19 through 0.11.28 install
+/// it, 0.11.29 and later refuse. scuv refuses to replay a hashed archive on
+/// an older uv rather than install it unchecked.
+pub const HASH_FRAGMENT_MIN_VERSION: (u32, u32, u32) = (0, 11, 29);
+
 /// Parse `uv --version` stdout into a `(major, minor, patch)` tuple.
 ///
 /// Accepted formats (uv prints any of these depending on install source):

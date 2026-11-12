@@ -5,6 +5,7 @@ pub mod export_schema;
 pub mod manifest;
 mod metadata;
 pub mod migrate;
+pub mod packages;
 mod version;
 mod virtualenv;
 
