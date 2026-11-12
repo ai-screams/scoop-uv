@@ -764,6 +764,36 @@ fn install_plan_refuses_an_unusable_local_url() {
     );
 }
 
+/// The gate asks uv only for a hashed archive, and passes from the
+/// first release that checks hashes. What fails this: comparing against
+/// the wrong constant, or asking (or passing) without a hashed archive.
+#[test]
+fn check_hash_support_gates_on_the_first_enforcing_uv() {
+    let hashed = InstallPlan::build(
+        &[pkg(
+            "w",
+            "1",
+            Some(
+                origin(r#"{"url":"https://h/w.whl","archive_info":{"hashes":{"sha256":"aa"}}}"#)
+                    .unwrap(),
+            ),
+        )],
+        "src",
+    )
+    .unwrap();
+    let plain = InstallPlan::build(&[pkg("six", "1.16.0", None)], "src").unwrap();
+    check_hash_support(&plain, || panic!("asked uv without a hashed archive")).unwrap();
+    check_hash_support(&hashed, || Ok("uv 0.11.29".into())).unwrap();
+    check_hash_support(&hashed, || Ok("uv 0.12.13 (abc 2026-09-10)".into())).unwrap();
+    for old in ["uv 0.11.28", "uv 0.5.19", "garbage"] {
+        let err = check_hash_support(&hashed, || Ok(old.into())).unwrap_err();
+        assert!(
+            matches!(err, ScoopError::PackageHashUnenforced { ref package, .. } if package == "w"),
+            "{old}: {err:?}"
+        );
+    }
+}
+
 /// The first *hashed* archive is the one reported, not the first archive.
 /// What fails this: `||` in place of `&&` when recording it.
 #[test]

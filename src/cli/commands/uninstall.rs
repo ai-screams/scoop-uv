@@ -7,6 +7,7 @@ use rust_i18n::t;
 use crate::core::VirtualenvService;
 use crate::error::{Result, ScoopError};
 use crate::output::{CascadeFailure, Output, UninstallData, UnverifiedEnv};
+use crate::paths::{DirIdentity, dir_identity};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
@@ -355,32 +356,6 @@ fn recheck(env: &Planned) -> Recheck {
         Ok(false) => Recheck::Remove,
         Err(e) => Recheck::Unknown(format!("{}: {e}", env.home.display())),
     }
-}
-
-/// Identifies a directory beyond its path, so an env removed and created
-/// again under the same name is told apart: device and inode on unix, the
-/// creation time elsewhere (Windows). Neither is unique for all time: a
-/// filesystem may reuse an inode once the old directory is gone, and a copy
-/// can keep the original's creation time; with the same `home` such a
-/// replacement passes. (The crate does not build for Windows yet, so that
-/// branch is not exercised.) Reading it fails, with `NotFound`, when the
-/// directory is gone.
-type DirIdentity = (u64, u64);
-
-#[cfg(unix)]
-fn dir_identity(path: &Path) -> std::io::Result<DirIdentity> {
-    use std::os::unix::fs::MetadataExt;
-    let meta = std::fs::symlink_metadata(path)?;
-    Ok((meta.dev(), meta.ino()))
-}
-
-#[cfg(not(unix))]
-fn dir_identity(path: &Path) -> std::io::Result<DirIdentity> {
-    let created = std::fs::symlink_metadata(path)?.created()?;
-    let since = created
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_err(std::io::Error::other)?;
-    Ok((since.as_secs(), u64::from(since.subsec_nanos())))
 }
 
 /// An env's identity and the `home` its `pyvenv.cfg` points at, read in

@@ -572,6 +572,30 @@ where
     }
 }
 
+/// Writes `<env>/bin/python`, a shell script that answers the
+/// `core::packages` origin query with `rows` (a JSON array of
+/// `[name, version, direct_url_json|null]`). The FakeUv default listing is
+/// `six` 1.16.0 with no recorded origin, which `NO_ORIGINS` matches.
+#[cfg(unix)]
+pub fn write_fake_python(env: &std::path::Path, rows: &str) {
+    use std::os::unix::fs::PermissionsExt;
+    let bin = env.join("bin");
+    std::fs::create_dir_all(&bin).expect("fake python bin dir");
+    let python = bin.join("python");
+    let rows = rows.replace('\'', "'\\''");
+    std::fs::write(
+        &python,
+        format!("#!/bin/sh\nprintf '%s\\n' 'SCUV_ORIGINS:{rows}'\n"),
+    )
+    .expect("write fake python");
+    std::fs::set_permissions(&python, std::fs::Permissions::from_mode(0o755))
+        .expect("chmod fake python");
+}
+
+/// The origin rows for FakeUv's default listing (six 1.16.0, no origin).
+#[cfg(unix)]
+pub const NO_ORIGINS: &str = r#"[["six","1.16.0",null]]"#;
+
 /// A fake `uv` for hermetic tests (unix only): a shell script that reports
 /// `versions` as installed and appends every `python uninstall <v>` to a
 /// log, so a test can reach uv-backed paths without a real uv or Python.
@@ -608,7 +632,11 @@ impl FakeUv {
         // `FAKE_UV_LIST_FAILS` makes `python list` exit 2 with an error.
         // `venv <path>` makes `<path>/bin` and a pyvenv.cfg that carries
         // `version_info = $FAKE_UV_VENV_VERSION_INFO` only when that is set.
-        // `FAKE_UV_PIP_LIST_FAILS` makes `pip list` exit 2. `pip install`
+        // `FAKE_UV_PIP_LIST_FAILS` makes `pip list` exit 2, and
+        // `FAKE_UV_PIP_LIST_JSON` replaces what it lists (default: six
+        // 1.16.0). `FAKE_UV_VERSION` replaces the `--version` number.
+        // `pip install` also writes each argument on its own line
+        // (`install_args`). `pip install`
         // logs its arguments and exits 1 when any of them equals
         // `FAKE_UV_PIP_INSTALL_FAILS`, or `FAKE_UV_PIP_INSTALL_FAILS` is `all`.
         let json = format!("[{}]", entries.join(","));
@@ -617,12 +645,12 @@ impl FakeUv {
         let script = format!(
             r#"#!/bin/sh
 case "$1 $2" in
-  "--version "*) echo "$*" >> "{d}/version.log"; echo "uv 0.12.22" ;;
+  "--version "*) echo "$*" >> "{d}/version.log"; echo "uv ${{FAKE_UV_VERSION:-0.12.22}}" ;;
   "python list") echo "$*" >> "{d}/list.log"; [ -n "$FAKE_UV_LIST_FAILS" ] && {{ echo "error: fake list failure" >&2; exit 2; }}; printf '%s\n' '{json}' ;;
   "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && [ "$FAKE_UV_UNINSTALL_FAILS" != after ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* "{d}/py/cpython-$3."*-*; [ "$FAKE_UV_UNINSTALL_FAILS" != after ] ;;
   "python dir") echo "{d}/py" ;;
-  "pip list") echo "$*" >> "{d}/pip.log"; [ -n "$FAKE_UV_PIP_LIST_FAILS" ] && {{ echo "error: fake pip list failure" >&2; exit 2; }}; printf '%s\n' '[{{"name":"six","version":"1.16.0"}}]' ;;
-  "pip install") echo "$*" >> "{d}/pip.log"; [ "$FAKE_UV_PIP_INSTALL_FAILS" = all ] && exit 1; for a in "$@"; do [ -n "$FAKE_UV_PIP_INSTALL_FAILS" ] && [ "$a" = "$FAKE_UV_PIP_INSTALL_FAILS" ] && exit 1; done; exit 0 ;;
+  "pip list") echo "$*" >> "{d}/pip.log"; [ -n "$FAKE_UV_PIP_LIST_FAILS" ] && {{ echo "error: fake pip list failure" >&2; exit 2; }}; l="$FAKE_UV_PIP_LIST_JSON"; [ -z "$l" ] && l='[{{"name":"six","version":"1.16.0"}}]'; printf '%s\n' "$l" ;;
+  "pip install") echo "$*" >> "{d}/pip.log"; for a in "$@"; do printf '%s\n' "$a"; done >> "{d}/install-args.log"; echo "<end>" >> "{d}/install-args.log"; [ "$FAKE_UV_PIP_INSTALL_FAILS" = all ] && exit 1; for a in "$@"; do [ -n "$FAKE_UV_PIP_INSTALL_FAILS" ] && [ "$a" = "$FAKE_UV_PIP_INSTALL_FAILS" ] && exit 1; done; exit 0 ;;
   "venv "*) echo "$*" >> "{d}/venv.log"; /bin/mkdir -p "$2/bin" || exit 1; : > "$2/pyvenv.cfg"; [ -n "$FAKE_UV_VENV_VERSION_INFO" ] && echo "version_info = $FAKE_UV_VENV_VERSION_INFO" >> "$2/pyvenv.cfg"; exit 0 ;;
   "cache prune") ;;
   *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;
@@ -664,6 +692,23 @@ esac
         std::fs::read_to_string(self.dir.path().join("pip.log"))
             .map(|s| s.lines().map(str::to_string).collect())
             .unwrap_or_default()
+    }
+
+    /// The arguments of each `uv pip install` call, one element per
+    /// argument (`pip_calls` joins them with spaces).
+    pub fn install_args(&self) -> Vec<Vec<String>> {
+        let raw =
+            std::fs::read_to_string(self.dir.path().join("install-args.log")).unwrap_or_default();
+        let mut calls = Vec::new();
+        let mut call = Vec::new();
+        for line in raw.lines() {
+            if line == "<end>" {
+                calls.push(std::mem::take(&mut call));
+            } else {
+                call.push(line.to_string());
+            }
+        }
+        calls
     }
 
     /// How many times `uv --version` was called.

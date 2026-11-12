@@ -1,14 +1,16 @@
 //! Handler for the `scuv clone` command.
 //!
-//! Composes existing service primitives (`create` + `try_list_installed_packages` +
-//! `pip_install`) rather than adding a clone method on `VirtualenvService`:
-//! the operation is "create a new env at the same python and optionally
-//! re-install the source's pinned packages", which is more cleanly expressed
-//! at the handler layer than as a bespoke service API.
+//! Composes existing service primitives (`create` +
+//! `core::packages::read_installed_packages` + `pip_install`) rather than
+//! adding a clone method on `VirtualenvService`: the operation is "create a
+//! new env at the same python and re-install the source's packages from
+//! where they came from", which is more cleanly expressed at the handler
+//! layer than as a bespoke service API.
 
 use rust_i18n::t;
 
-use crate::core::{VirtualenvService, try_list_installed_packages};
+use crate::core::VirtualenvService;
+use crate::core::packages::{InstallPlan, prepare_install, read_installed_packages};
 use crate::error::{Result, ScoopError};
 use crate::output::{CloneData, Output};
 use crate::paths::abbreviate_home;
@@ -64,8 +66,11 @@ pub fn execute(
     let packages = if no_packages {
         Vec::new()
     } else {
-        try_list_installed_packages(&src_path)?
+        read_installed_packages(&src_path)?
     };
+    // Local sources and hash support are checked here too, so a package
+    // that cannot be put back leaves the destination as it was.
+    let plan: InstallPlan = prepare_install(&packages, src, &crate::paths::virtualenv_path(dst)?)?;
 
     if dst_exists {
         service.delete(dst)?;
@@ -74,16 +79,20 @@ pub fn execute(
     output.info(&t!("clone.cloning", src = src, dst = dst, python = python));
 
     let dst_path = service.create(dst, &python)?;
+    let created = crate::paths::dir_identity(&dst_path).ok();
 
     if no_packages {
         output.info(&t!("clone.no_packages_skipped"));
-    } else if !packages.is_empty() {
-        output.info(&t!("clone.copying_packages", count = packages.len()));
-        let specs: Vec<String> = packages.iter().map(|(n, v)| format!("{n}=={v}")).collect();
-        if let Err(e) = service.pip_install(&dst_path, &specs) {
+    } else if plan.packages() > 0 {
+        output.info(&t!("clone.copying_packages", count = plan.packages()));
+        if let Err(e) = service.pip_install(&dst_path, plan.args()) {
             // Best effort: the env was made by this call, so nothing else
-            // depends on it. The install error is the one to report.
-            let _ = service.delete(dst);
+            // depends on it, and the install error is the one to report.
+            // Only that directory goes: an env another command put under
+            // the name meanwhile stays.
+            if let Some(created) = created {
+                let _ = crate::paths::remove_dir_if_unchanged(&dst_path, created);
+            }
             return Err(e);
         }
     }
@@ -96,7 +105,7 @@ pub fn execute(
                 dst: dst.to_string(),
                 python: python.clone(),
                 path: dst_path.display().to_string(),
-                packages_copied: packages.len(),
+                packages_copied: plan.packages(),
                 packages_skipped: no_packages,
             },
         );
@@ -203,7 +212,7 @@ mod tests {
     #[cfg(unix)]
     mod with_fake_uv {
         use super::*;
-        use crate::test_utils::{FakeUv, env_guard};
+        use crate::test_utils::{FakeUv, NO_ORIGINS, env_guard, write_fake_python};
         use std::path::{Path, PathBuf};
 
         fn run<T>(
@@ -223,10 +232,12 @@ mod tests {
             f(&home.path().join("virtualenvs"), &uv)
         }
 
-        /// An env directory with a `keep` marker file, and metadata if asked.
+        /// An env directory with a `keep` marker file, an interpreter that
+        /// reports FakeUv's default package with no origin, and metadata if
+        /// asked.
         fn env(envs: &Path, name: &str, with_metadata: bool) -> PathBuf {
             let dir = envs.join(name);
-            std::fs::create_dir_all(dir.join("bin")).unwrap();
+            write_fake_python(&dir, NO_ORIGINS);
             std::fs::write(dir.join("keep"), "").unwrap();
             if with_metadata {
                 let meta = crate::core::Metadata::new(name.to_string(), "3.12".to_string(), None);
@@ -345,6 +356,153 @@ mod tests {
                     !envs.join("dst").exists(),
                     "half-built destination left behind"
                 );
+            });
+        }
+
+        /// An editable source is put back with `--editable <path>`, two
+        /// arguments, next to the registry package. What fails this:
+        /// reinstalling it as `name==version`.
+        #[test]
+        #[serial]
+        fn reinstalls_an_editable_package_from_its_path() {
+            let work = tempfile::TempDir::new().unwrap();
+            let proj = std::fs::canonicalize(work.path()).unwrap().join("proj");
+            std::fs::create_dir_all(&proj).unwrap();
+            let listing = r#"[{"name":"six","version":"1.16.0"},{"name":"proj","version":"0.1"}]"#;
+            run(&[("FAKE_UV_PIP_LIST_JSON", Some(listing))], |envs, uv| {
+                let src = env(envs, "src", true);
+                let rows = format!(
+                    r#"[["six","1.16.0",null],["proj","0.1","{{\"url\":\"file://{}\",\"dir_info\":{{\"editable\":true}}}}"]]"#,
+                    proj.display()
+                );
+                write_fake_python(&src, &rows);
+                execute(&quiet(), "src", "dst", false, false).unwrap();
+                let installs = uv.install_args();
+                let last = installs.last().expect("an install call");
+                let tail: Vec<&str> = last
+                    .iter()
+                    .rev()
+                    .take(3)
+                    .rev()
+                    .map(String::as_str)
+                    .collect();
+                assert_eq!(
+                    tail,
+                    ["six==1.16.0", "--editable", proj.to_str().unwrap()],
+                    "{installs:?}"
+                );
+            });
+        }
+
+        /// A local source that no longer exists stops the clone before
+        /// `--force` touches the destination.
+        #[test]
+        #[serial]
+        fn force_keeps_the_destination_when_a_local_source_is_missing() {
+            let listing = r#"[{"name":"gone","version":"1"}]"#;
+            run(&[("FAKE_UV_PIP_LIST_JSON", Some(listing))], |envs, _| {
+                let src = env(envs, "src", true);
+                write_fake_python(
+                    &src,
+                    r#"[["gone","1","{\"url\":\"file:///nonexistent/scuv/gone\",\"dir_info\":{}}"]]"#,
+                );
+                let dst = env(envs, "dst", true);
+                let err = execute(&quiet(), "src", "dst", false, true).unwrap_err();
+                assert!(
+                    matches!(err, ScoopError::PackageSourceMissing { .. }),
+                    "{err:?}"
+                );
+                assert!(
+                    dst.join("keep").exists(),
+                    "--force removed the destination before failing"
+                );
+            });
+        }
+
+        /// A source that lives inside the destination would be deleted by
+        /// `--force` before it is installed: refused, destination kept.
+        #[test]
+        #[serial]
+        fn force_refuses_a_source_inside_the_destination() {
+            let listing = r#"[{"name":"inner","version":"1"}]"#;
+            run(&[("FAKE_UV_PIP_LIST_JSON", Some(listing))], |envs, _| {
+                let dst = env(envs, "dst", true);
+                let inner = std::fs::canonicalize(&dst).unwrap().join("inner");
+                std::fs::create_dir_all(&inner).unwrap();
+                let src = env(envs, "src", true);
+                let rows = format!(
+                    r#"[["inner","1","{{\"url\":\"file://{}\",\"dir_info\":{{}}}}"]]"#,
+                    inner.display()
+                );
+                write_fake_python(&src, &rows);
+                let err = execute(&quiet(), "src", "dst", false, true).unwrap_err();
+                assert!(
+                    matches!(err, ScoopError::PackageSourceInsideTarget { .. }),
+                    "{err:?}"
+                );
+                assert!(dst.join("keep").exists());
+            });
+        }
+
+        /// A hashed archive on a uv that does not check hashes is refused
+        /// before anything is created; a new enough uv installs it with the
+        /// hash in the URL. What fails this: skipping the gate.
+        #[test]
+        #[serial]
+        fn a_hashed_archive_needs_a_uv_that_checks_it() {
+            let listing = r#"[{"name":"whl","version":"1"}]"#;
+            let rows = r#"[["whl","1","{\"url\":\"https://h/whl-1.whl\",\"archive_info\":{\"hashes\":{\"sha256\":\"ab\"}}}"]]"#;
+            run(
+                &[
+                    ("FAKE_UV_PIP_LIST_JSON", Some(listing)),
+                    ("FAKE_UV_VERSION", Some("0.11.28")),
+                ],
+                |envs, _| {
+                    let src = env(envs, "src", true);
+                    write_fake_python(&src, rows);
+                    let err = execute(&quiet(), "src", "dst", false, false).unwrap_err();
+                    assert!(
+                        matches!(err, ScoopError::PackageHashUnenforced { .. }),
+                        "{err:?}"
+                    );
+                    assert!(!envs.join("dst").exists());
+                },
+            );
+            run(
+                &[
+                    ("FAKE_UV_PIP_LIST_JSON", Some(listing)),
+                    ("FAKE_UV_VERSION", Some("0.11.29")),
+                ],
+                |envs, uv| {
+                    let src = env(envs, "src", true);
+                    write_fake_python(&src, rows);
+                    execute(&quiet(), "src", "dst", false, false).unwrap();
+                    let installs = uv.install_args();
+                    assert!(
+                        installs
+                            .iter()
+                            .flatten()
+                            .any(|a| a == "whl @ https://h/whl-1.whl#sha256=ab"),
+                        "{installs:?}"
+                    );
+                },
+            );
+        }
+
+        /// An interpreter that cannot report origins stops the clone; it
+        /// does not fall back to registry versions.
+        #[test]
+        #[serial]
+        fn an_unreadable_origin_listing_stops_the_clone() {
+            run(&[], |envs, _| {
+                let src = env(envs, "src", true);
+                std::fs::remove_file(src.join("bin").join("python")).unwrap();
+                let err = execute(&quiet(), "src", "dst", false, false).unwrap_err();
+                assert!(
+                    matches!(err, ScoopError::PackageOriginsUnreadable { .. }),
+                    "{err:?}"
+                );
+                assert!(!envs.join("dst").exists());
             });
         }
 

@@ -236,6 +236,61 @@ pub fn remove_symlink_if_unchanged(
     }
 }
 
+/// Identifies a directory beyond its path, so an env removed and created
+/// again under the same name is told apart: device and inode on unix, the
+/// creation time elsewhere (Windows). Neither is unique for all time: a
+/// filesystem may reuse an inode once the old directory is gone, and a copy
+/// can keep the original's creation time; with the same `home` such a
+/// replacement passes. (The crate does not build for Windows yet, so that
+/// branch is not exercised.) Reading it fails, with `NotFound`, when the
+/// directory is gone.
+///
+/// # Errors
+///
+/// Reading the directory's metadata.
+pub type DirIdentity = (u64, u64);
+
+pub fn dir_identity(path: &Path) -> std::io::Result<DirIdentity> {
+    let meta = std::fs::symlink_metadata(path)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        Ok((meta.dev(), meta.ino()))
+    }
+    #[cfg(not(unix))]
+    created_identity(&meta)
+}
+
+/// The creation time as a [`DirIdentity`]. Not compiled on Unix, so its
+/// mutants are excluded there (`.cargo/mutants.toml`).
+#[cfg(not(unix))]
+fn created_identity(meta: &std::fs::Metadata) -> std::io::Result<DirIdentity> {
+    let since = meta
+        .created()?
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(std::io::Error::other)?;
+    Ok((since.as_secs(), u64::from(since.subsec_nanos())))
+}
+
+/// Removes the directory at `path` only if it is still the one `created`
+/// identifies, and reports whether it did. A failed `clone` or `import`
+/// cleans up with this, so an env another command put under the same name
+/// meanwhile is left alone. A replacement between the check and the
+/// removal is not caught (that would need a lock across commands).
+///
+/// # Errors
+///
+/// Reading the directory's metadata (other than `NotFound`), or removing
+/// it.
+pub fn remove_dir_if_unchanged(path: &Path, created: DirIdentity) -> std::io::Result<bool> {
+    match dir_identity(path) {
+        Ok(now) if now == created => std::fs::remove_dir_all(path).map(|()| true),
+        Ok(_) => Ok(false),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(e) => Err(e),
+    }
+}
+
 #[cfg(windows)]
 fn executable_candidates(exe: &str) -> Vec<String> {
     if exe.contains('.') {

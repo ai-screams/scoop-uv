@@ -1161,6 +1161,53 @@ fn is_within_by_name(entry: &Path, target: &Path) -> std::io::Result<bool> {
     Ok(lower(&entry).starts_with(lower(&target)))
 }
 
+/// Refuses a plan with a hashed archive when the uv `version` reports
+/// (its `uv --version` line, asked only then) is older than
+/// [`HASH_FRAGMENT_MIN_VERSION`](crate::uv::HASH_FRAGMENT_MIN_VERSION): an
+/// older uv installs the archive without checking the hash. A version line
+/// that does not parse is refused too.
+///
+/// # Errors
+///
+/// [`ScoopError::PackageHashUnenforced`], or the error from `version`.
+pub fn check_hash_support(
+    plan: &InstallPlan,
+    version: impl FnOnce() -> Result<String>,
+) -> Result<()> {
+    let Some(package) = plan.hashed_archive() else {
+        return Ok(());
+    };
+    let required = crate::uv::HASH_FRAGMENT_MIN_VERSION;
+    let raw = version()?;
+    if crate::uv::version::parse(&raw).is_some_and(|v| v >= required) {
+        return Ok(());
+    }
+    Err(ScoopError::PackageHashUnenforced {
+        package: package.to_string(),
+        uv_version: raw,
+        required: crate::uv::version::format_version(required),
+    })
+}
+
+/// Everything checked before an install that may replace `target`: the
+/// plan is built, its local sources pass [`preflight`], and the installed
+/// uv can enforce any recorded archive hash. Call it before `--force`
+/// deletes anything, a Python is installed, or an env is created.
+///
+/// # Errors
+///
+/// As [`InstallPlan::build`], [`preflight`] and [`check_hash_support`].
+pub fn prepare_install(
+    packages: &[InstalledPackage],
+    from: &str,
+    target: &Path,
+) -> Result<InstallPlan> {
+    let plan = InstallPlan::build(packages, from)?;
+    preflight(&plan, target)?;
+    check_hash_support(&plan, || crate::uv::UvClient::new()?.version())?;
+    Ok(plan)
+}
+
 /// The symlinks a path resolution may expand before it is refused.
 const MAX_SYMLINK_EXPANSIONS: usize = 40;
 
