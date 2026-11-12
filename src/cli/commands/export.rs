@@ -9,7 +9,8 @@ use std::path::Path;
 
 use rust_i18n::t;
 
-use crate::core::{ExportSchema, VirtualenvService, try_list_installed_packages};
+use crate::core::packages::read_installed_packages;
+use crate::core::{ExportSchema, VirtualenvService};
 use crate::error::{Result, ScoopError};
 use crate::output::Output;
 
@@ -27,7 +28,7 @@ pub fn execute(output: &Output, name: &str, dest: Option<&Path>) -> Result<()> {
     })?;
     let python = metadata.python_version.clone();
     let created_at = Some(metadata.created_at.to_rfc3339());
-    let packages = try_list_installed_packages(&env_path)?;
+    let packages = read_installed_packages(&env_path)?;
 
     let schema = ExportSchema::new(name.to_string(), python, created_at, packages);
     let json = schema.to_json_pretty();
@@ -85,7 +86,7 @@ mod tests {
     #[cfg(unix)]
     fn env(home: &std::path::Path, name: &str, with_metadata: bool) {
         let dir = home.join("virtualenvs").join(name);
-        std::fs::create_dir_all(dir.join("bin")).unwrap();
+        crate::test_utils::write_fake_python(&dir, crate::test_utils::NO_ORIGINS);
         if with_metadata {
             let meta = crate::core::Metadata::new(name.to_string(), "3.12.0".to_string(), None);
             std::fs::write(
@@ -111,6 +112,37 @@ mod tests {
             assert_eq!(parsed.environment.name, "snap");
             assert_eq!(parsed.environment.python, "3.12.0");
             assert_eq!(parsed.packages.len(), 1, "{contents}");
+        });
+    }
+
+    /// The export is version 2 and records each package's origin. What
+    /// fails this: writing only `{name, version}`.
+    #[test]
+    #[serial]
+    #[cfg(unix)]
+    fn execute_records_package_origins() {
+        let listing = r#"[{"name":"six","version":"1.16.0"},{"name":"proj","version":"0.1"}]"#;
+        with_fake_uv(&[("FAKE_UV_PIP_LIST_JSON", Some(listing))], |home| {
+            env(home, "snap", true);
+            crate::test_utils::write_fake_python(
+                &home.join("virtualenvs").join("snap"),
+                r#"[["six","1.16.0",null],["proj","0.1","{\"url\":\"file:///work/proj\",\"dir_info\":{\"editable\":true}}"]]"#,
+            );
+            let out_file = home.join("snap.json");
+            let output = Output::new(0, true, crate::output::Colors::NONE, false);
+            execute(&output, "snap", Some(&out_file)).unwrap();
+            let json: serde_json::Value =
+                serde_json::from_str(&std::fs::read_to_string(&out_file).unwrap()).unwrap();
+            assert_eq!(json["scoop_export_version"], "2");
+            assert!(json["packages"][0]["source"].is_null(), "{json}");
+            assert_eq!(
+                json["packages"][1]["source"]["url"], "file:///work/proj",
+                "{json}"
+            );
+            assert_eq!(
+                json["packages"][1]["source"]["dir_info"]["editable"], true,
+                "{json}"
+            );
         });
     }
 
