@@ -26,7 +26,9 @@ jobs:
     name: Mutants (diff)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # A mutant takes about 8 s here (build + nextest): #279 reached 147 of
+    # its 177 mutants in 20 minutes, when the old limit cancelled it.
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

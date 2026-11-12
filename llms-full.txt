@@ -77,7 +77,7 @@ Verify: `scuv --version`
 | Command | Description |
 |---------|-------------|
 | `scuv sync` | Create the env named in `.scuv.toml` if missing and install its packages |
-| `scuv export <name>` | Snapshot env as JSON (schema v1) |
+| `scuv export <name>` | Snapshot env as JSON (schema v2, with package origins) |
 | `scuv import <file>` | Restore env from JSON snapshot; `--name <new>` to rename |
 
 ### Cleanup & Packaging
@@ -174,15 +174,16 @@ src/
 │   ├── color.rs   # color decision (Colors, resolve); the flag is cli/color.rs
 │   └── time.rs    # Fuzzy-age formatter (last_used display)
 ├── core/manifest.rs   # ScoopManifest (.scuv.toml parser, deny_unknown_fields, parent-walk discovery)
-├── core/export_schema.rs # ExportSchema (JSON snapshot schema v1)
-├── error/         # ScoopError enum (42 variants, i18n Display; code/display/exit/suggestion)
+├── core/export_schema.rs # ExportSchema (JSON snapshot schema v2; reads v1)
+├── core/packages.rs # Installed packages with PEP 610 origins, InstallPlan, preflight
+├── error/         # ScoopError enum (46 variants, i18n Display; code/display/exit/suggestion)
 ├── paths.rs       # Path utilities (scoop_home, virtualenvs_dir)
 ├── validate.rs    # Validation logic (env names, Python versions)
 ├── i18n.rs        # Internationalization (locale detection, t! macro)
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 361 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 377 keys
 ```
 
 ### Design Principles
@@ -352,13 +353,13 @@ scuv run myproject -- python -c 'import sys; print(sys.prefix)'
 **Snapshot / Restore / Clone (v0.11.0)**:
 
 ```bash
-scuv export myproject > myproject.scuv.json   # JSON schema v1
+scuv export myproject > myproject.scuv.json   # JSON schema v2
 scuv import myproject.scuv.json --name copy   # Restore with rename
 scuv clone myproject myproject-exp             # Duplicate in-place
 scuv clone myproject skeleton --no-packages    # Skeleton without packages
 ```
 
-The export schema is `EXPORT_SCHEMA_VERSION = "1"` (`core::export_schema`). `pip_specs()` produces `name==version` strings; `from_json()` validates the schema version and env name on import.
+The export schema is `EXPORT_SCHEMA_VERSION = "2"` (`core::export_schema`); import also reads `"1"`. Each package carries `source`: its PEP 610 origin (`direct_url.json`, read through the env's Python 3.8+ with `importlib.metadata`) or `null`. `from_json()` reads the version first, then the rest. clone, export and diff read packages with `core::packages::read_installed_packages`; clone and import put them back with `InstallPlan` (`name==version`, `--editable <path>`, `name @ <url>`, `name @ git+<url>@<commit>`) after `prepare_install` checks local sources and hash support, before any `--force` deletion. A failed import install removes the env it created. diff counts an origin-only change as a change.
 
 ---
 
@@ -688,6 +689,10 @@ pub enum ScoopError {
     VerifyFailed { issues: usize },                                  // scuv verify --strict
     DoctorFindings { errors: usize, warnings: usize },               // scuv doctor: exit 2 errors, 1 warnings
     ConfirmationUnavailable { flag: String },                        // remove / migrate all: no terminal to confirm on
+    PackageOriginsUnreadable { env: String, reason: String },        // clone/export/diff: origins unreadable or unmatched
+    PackageSourceMissing { package: String, path: PathBuf },         // clone/import: local source gone
+    PackageSourceInsideTarget { package: String, path: PathBuf, target: PathBuf }, // --force would delete the source
+    PackageHashUnenforced { package: String, uv_version: String, required: String }, // hashed archive, uv < 0.11.29
     MigrationSourcesNotFound { requested: Option<String> },          // scuv migrate: no pyenv/conda/virtualenvwrapper
     MigrationBatchFailed { failed_count: usize, conflict_count: usize }, // scuv migrate all
     DiffMismatch { env_a: String, env_b: String, differences: usize }, // scuv diff --strict

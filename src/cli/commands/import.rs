@@ -1,14 +1,17 @@
 //! Handler for the `scuv import` command.
 //!
 //! Reads a `scuv export` JSON file (or stdin via `-`), validates the schema,
-//! creates the env (with implicit lazy Python install — same ergonomic call as
-//! `scuv sync`), then installs every pinned package via uv pip.
+//! checks that every package can be put back where it came from, creates the
+//! env (with implicit lazy Python install — same ergonomic call as
+//! `scuv sync`), then installs the packages via uv pip. A failed install
+//! removes the env this call created.
 
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use rust_i18n::t;
 
+use crate::core::packages::prepare_install;
 use crate::core::{ExportSchema, VirtualenvService};
 use crate::error::{Result, ScoopError};
 use crate::output::{ImportData, Output};
@@ -36,6 +39,14 @@ pub fn execute(
     let env_name = schema.environment.name.clone();
     let python = schema.environment.python.clone();
 
+    // Local sources and hash support are checked before `--force` deletes
+    // anything or a Python is installed.
+    let plan = prepare_install(
+        &schema.installed_packages(),
+        &source_path.display().to_string(),
+        &crate::paths::virtualenv_path(&env_name)?,
+    )?;
+
     if service.exists(&env_name)? {
         if force {
             service.delete(&env_name)?;
@@ -52,13 +63,22 @@ pub fn execute(
         output.info(&t!("create.installing_python", version = python));
         service.install_python(&python)?;
     }
-    service.create(&env_name, &python)?;
+    let venv_path = service.create(&env_name, &python)?;
+    let created = crate::paths::dir_identity(&venv_path).ok();
 
-    let pip_specs = schema.pip_specs();
-    if !pip_specs.is_empty() {
-        output.info(&t!("import.installing", count = pip_specs.len()));
-        let venv_path = service.get_path(&env_name)?;
-        service.pip_install(&venv_path, &pip_specs)?;
+    if plan.packages() > 0 {
+        output.info(&t!("import.installing", count = plan.packages()));
+        if let Err(e) = service.pip_install(&venv_path, plan.args()) {
+            // Best effort, like `clone`: this call made the env, nothing
+            // else depends on it, and the install error is the one to
+            // report. Only that directory goes (an env another command put
+            // under the name meanwhile stays), and an env `--force` removed
+            // earlier is not restored.
+            if let Some(created) = created {
+                let _ = crate::paths::remove_dir_if_unchanged(&venv_path, created);
+            }
+            return Err(e);
+        }
     }
 
     if output.is_json() {
@@ -67,7 +87,7 @@ pub fn execute(
             ImportData {
                 name: env_name.clone(),
                 python: python.clone(),
-                packages_installed: pip_specs.len(),
+                packages_installed: plan.packages(),
                 source: source_path.display().to_string(),
             },
         );
@@ -77,7 +97,7 @@ pub fn execute(
     output.success(&t!(
         "import.success",
         name = env_name,
-        count = pip_specs.len()
+        count = plan.packages()
     ));
     Ok(())
 }
@@ -187,5 +207,132 @@ mod tests {
             .unwrap_err();
             assert!(matches!(err, ScoopError::VirtualenvExists { .. }));
         });
+    }
+
+    /// Import against the fake uv, with Python 3.12 installed.
+    #[cfg(unix)]
+    mod with_fake_uv {
+        use super::*;
+        use crate::test_utils::{FakeUv, env_guard};
+
+        fn run(extra: &[(&'static str, Option<&str>)], f: impl FnOnce(&Path, &FakeUv)) {
+            let uv = FakeUv::new(&["3.12.0"]);
+            let home = tempfile::TempDir::new().unwrap();
+            let path = uv.path_var();
+            let home_str = home.path().display().to_string();
+            let mut vars: Vec<(&'static str, Option<&str>)> = vec![
+                ("PATH", Some(path.as_str())),
+                ("SCUV_HOME", Some(home_str.as_str())),
+            ];
+            vars.extend_from_slice(extra);
+            let _env = env_guard(&vars);
+            std::fs::create_dir_all(home.path().join("virtualenvs")).unwrap();
+            f(home.path(), &uv);
+        }
+
+        fn quiet() -> Output {
+            Output::new(0, true, crate::output::Colors::NONE, false)
+        }
+
+        fn export(home: &Path, version: &str, packages: &str) -> PathBuf {
+            write_export_file(
+                home,
+                &format!(
+                    r#"{{"scoop_export_version":"{version}","environment":{{"name":"imp","python":"3.12"}},"packages":{packages}}}"#
+                ),
+            )
+        }
+
+        /// A failed install removes the env this import created and
+        /// reports the install error. What fails this: `?` on the install.
+        #[test]
+        #[serial]
+        fn install_failure_removes_the_new_env() {
+            run(&[("FAKE_UV_PIP_INSTALL_FAILS", Some("all"))], |home, _| {
+                let file = export(
+                    home,
+                    "2",
+                    r#"[{"name":"six","version":"1.16.0","source":null}]"#,
+                );
+                let err = execute(&quiet(), file.to_str().unwrap(), None, false).unwrap_err();
+                assert!(matches!(err, ScoopError::UvCommandFailed { .. }), "{err:?}");
+                assert!(
+                    !home.join("virtualenvs/imp").exists(),
+                    "half-built env left behind"
+                );
+            });
+        }
+
+        /// A version 2 editable package is installed from its path.
+        #[test]
+        #[serial]
+        fn installs_an_editable_package_from_its_path() {
+            let work = tempfile::TempDir::new().unwrap();
+            let proj = std::fs::canonicalize(work.path()).unwrap();
+            run(&[], |home, uv| {
+                let packages = format!(
+                    r#"[{{"name":"six","version":"1.16.0","source":null}},{{"name":"p","version":"1","source":{{"url":"file://{}","dir_info":{{"editable":true}}}}}}]"#,
+                    proj.display()
+                );
+                let file = export(home, "2", &packages);
+                execute(&quiet(), file.to_str().unwrap(), None, false).unwrap();
+                let installs = uv.install_args();
+                let last = installs.last().expect("an install call");
+                let tail: Vec<&str> = last
+                    .iter()
+                    .rev()
+                    .take(3)
+                    .rev()
+                    .map(String::as_str)
+                    .collect();
+                assert_eq!(
+                    tail,
+                    ["six==1.16.0", "--editable", proj.to_str().unwrap()],
+                    "{installs:?}"
+                );
+            });
+        }
+
+        /// A local source missing on this machine stops the import before
+        /// `--force` deletes the existing env.
+        #[test]
+        #[serial]
+        fn force_keeps_the_env_when_a_local_source_is_missing() {
+            run(&[], |home, _| {
+                let existing = home.join("virtualenvs/imp");
+                std::fs::create_dir_all(&existing).unwrap();
+                std::fs::write(existing.join("keep"), "").unwrap();
+                let file = export(
+                    home,
+                    "2",
+                    r#"[{"name":"p","version":"1","source":{"url":"file:///nonexistent/scuv/p","dir_info":{}}}]"#,
+                );
+                let err = execute(&quiet(), file.to_str().unwrap(), None, true).unwrap_err();
+                assert!(
+                    matches!(err, ScoopError::PackageSourceMissing { .. }),
+                    "{err:?}"
+                );
+                assert!(
+                    existing.join("keep").exists(),
+                    "--force removed the env before failing"
+                );
+            });
+        }
+
+        /// A version 1 file still imports, as `name==version`.
+        #[test]
+        #[serial]
+        fn imports_a_version_1_file() {
+            run(&[], |home, uv| {
+                let file = export(home, "1", r#"[{"name":"six","version":"1.16.0"}]"#);
+                execute(&quiet(), file.to_str().unwrap(), None, false).unwrap();
+                let installs = uv.install_args();
+                assert!(
+                    installs.iter().flatten().any(|a| a == "six==1.16.0"),
+                    "{installs:?}"
+                );
+                assert!(home.join("virtualenvs/imp").exists());
+            });
+        }
     }
 }

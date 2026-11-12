@@ -513,3 +513,34 @@ mod cross_platform_windows {
         );
     }
 }
+
+/// A failed clone or import removes only the directory it made: one put
+/// under the name meanwhile survives, and one already gone is no error.
+/// What fails this: removing by path without comparing the identity, or
+/// never removing.
+#[test]
+fn remove_dir_if_unchanged_spares_a_replaced_directory() {
+    let tmp = tempfile::tempdir().unwrap();
+    let env = tmp.path().join("work");
+    std::fs::create_dir(&env).unwrap();
+    let created = super::dir_identity(&env).unwrap();
+    // Replaced: a new directory under the same name, kept alive by a file
+    // so the old one's inode is not reused for it.
+    let old = tmp.path().join("old");
+    std::fs::rename(&env, &old).unwrap();
+    std::fs::create_dir(&env).unwrap();
+    std::fs::write(env.join("saved"), "x").unwrap();
+    assert!(!super::remove_dir_if_unchanged(&env, created).unwrap());
+    assert!(env.join("saved").exists());
+    // The original, back in place, is removed.
+    std::fs::remove_dir_all(&env).unwrap();
+    std::fs::rename(&old, &env).unwrap();
+    assert!(super::remove_dir_if_unchanged(&env, created).unwrap());
+    assert!(!env.exists());
+    assert!(!super::remove_dir_if_unchanged(&env, created).unwrap());
+    // Unreadable for another reason (a file where a directory should be):
+    // an error, not "gone".
+    let file = tmp.path().join("file");
+    std::fs::write(&file, "x").unwrap();
+    assert!(super::remove_dir_if_unchanged(&file.join("work"), created).is_err());
+}

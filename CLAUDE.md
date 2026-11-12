@@ -83,6 +83,7 @@ prek run cargo-fmt cargo-clippy  # Run specific hooks
 - cargo-mutants builds from a copy of the tree without `target/`, so caching `target/` does not speed up the mutants jobs; it saves only the registry download (`ci-cd.md`).
 - `--in-diff` scopes mutants to the *enclosing function*, not the changed lines — touching one line in an untested function surfaces its pre-existing gaps as new failures. Check whether the missed mutant is one your change could have caused before treating it as a regression.
 - A `cfg!(target_os = ...)` inside a match guard or `if` yields a mutant that is equivalent on one OS (CI mutants run on Linux), so `--in-diff` reports it MISSED. Pass the platform in as a `bool` parameter (`rc_files(shell, home, cfg!(target_os = "macos"))`) and test both values.
+- clone, export and diff read package origins by running `<env>/bin/python` (`core::packages`), so a FakeUv test env needs `write_fake_python(env, NO_ORIGINS)` (rows matching the fake's `pip list`), or the command fails with `PACKAGE_ORIGINS_UNREADABLE`. `FAKE_UV_PIP_LIST_JSON` and `FAKE_UV_VERSION` change the fake's listing and version; `install_args()` keeps argument boundaries. Real-uv round trips are the `#[ignore]` tests named `*origin*` in `tests/cli/requires_uv.rs`; the uv-floor CI job runs them at MIN_VERSION too.
 - Tests that need `uv` use `FakeUv` (src/test_utils.rs; see `with_fake_uv_home` in gc/tests.rs), which puts a fake `uv` script in front of `PATH`. Keep its script to shell builtins (`printf`/`echo`): if `uv python list` fails, gc falls back to "no Pythons" and a fail-closed test passes vacuously — so also assert the fake's listing is non-empty.
 - To make a directory read fail, put a regular file where the directory should be; `chmod 000` does not stop root, and the test then proves nothing in root CI.
 - `codecov/patch` = base coverage − 5% (codecov.yml); a split/move refactor counts relocated lines as new, and every continuation line of a multi-line `assert!` message is an uncovered line (it runs only on failure), so keep assert messages on one line. Per-file patch misses: `curl -s "https://api.codecov.io/api/v2/github/ai-screams/repos/scoop-uv/compare/?pullid=<n>"` → `.files[].totals.patch`.
@@ -167,7 +168,8 @@ src/
 │   ├── version.rs       # Version file resolution (.scuv-version)
 │   ├── metadata.rs      # Virtualenv metadata (JSON; last_used since 0.13)
 │   ├── manifest.rs      # .scuv.toml manifest parsing (scuv sync)
-│   ├── export_schema.rs # Portable env export/import schema (scuv export/import)
+│   ├── export_schema.rs # Portable env export/import schema (scuv export/import), v2 with package origins
+│   ├── packages.rs      # Installed packages + PEP 610 origins, InstallPlan, preflight (clone/export/import/diff)
 │   ├── virtualenv/      # Virtualenv entity (mod.rs + tests.rs)
 │   ├── doctor/          # Health check (engine.rs, types.rs, checks/)
 │   └── migrate/         # Migration from pyenv/conda/virtualenvwrapper

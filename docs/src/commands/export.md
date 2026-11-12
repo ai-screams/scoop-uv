@@ -1,7 +1,9 @@
 # export
 
-Write a portable JSON snapshot of an environment so another machine (or
-another teammate) can recreate it with [`scuv import`](import.md).
+Write a JSON snapshot of an environment so another machine (or another
+teammate) can recreate it with [`scuv import`](import.md). Each package
+records where it came from, so an editable, local-path or git package is put
+back from the same place instead of from the registry.
 
 ## Usage
 
@@ -31,20 +33,33 @@ scuv export myenv | jq '.packages | length'
 
 ## Schema
 
-The exported file is versioned (`scoop_export_version`) so a future format
-change is detected cleanly rather than silently mis-parsed.
+The exported file is versioned (`scoop_export_version`) so a format change
+is detected cleanly rather than silently mis-parsed. `scuv export` writes
+version `2`; `scuv import` reads `1` and `2`.
 
 ```json
 {
-  "scoop_export_version": "1",
+  "scoop_export_version": "2",
   "environment": {
     "name": "myproject",
     "python": "3.12",
     "created_at": "2026-05-29T12:34:56.762998+00:00"
   },
   "packages": [
-    { "name": "pytest", "version": "8.0.0" },
-    { "name": "black",  "version": "24.1.0" }
+    { "name": "pytest", "version": "8.0.0", "source": null },
+    {
+      "name": "mylib",
+      "version": "0.3.0",
+      "source": { "url": "file:///home/me/src/mylib", "dir_info": { "editable": true } }
+    },
+    {
+      "name": "tool",
+      "version": "1.2.0",
+      "source": {
+        "url": "https://github.com/org/tool.git",
+        "vcs_info": { "vcs": "git", "commit_id": "8013f4a4…" }
+      }
+    }
   ]
 }
 ```
@@ -56,11 +71,29 @@ Field notes:
   interpreter uv does not manage record its full version (e.g. `3.14.8`).
 - `environment.created_at` is RFC 3339 and may be absent for hand-authored or
   pre-metadata exports.
-- `packages` is what `uv pip list` reports for the env — versions are pinned
-  exactly so imports are reproducible.
+- `packages` is what `uv pip list` reports for the env, versions pinned
+  exactly.
+- `source` is the package's [PEP 610](https://packaging.python.org/en/latest/specifications/direct-url/)
+  origin, as its installer recorded it in `direct_url.json`: `dir_info` for a
+  local directory (`"editable": true` for `uv pip install -e`), `vcs_info`
+  for a VCS checkout (pinned to `commit_id`), `archive_info` for a wheel or
+  sdist URL (with its hashes, when recorded). `null` means no direct origin
+  was recorded, which is usually a registry install; it does not say which
+  index.
+- scuv reads origins by running the env's own Python (3.8 or later) with
+  `importlib.metadata`. The env's site hooks run as part of that, as they do
+  whenever the env's Python starts.
 
-> **Note:** The export schema is still v1
-> and intentionally does **not** include the new `last_used`
+A local `file://` source is an absolute path on the machine that exported
+it. Importing on another machine needs the same path there; scuv checks
+before creating anything and names the package whose path is missing. The
+export does not contain the source code itself.
+
+Version 1 files (scuv 0.21 and older) have no `source`; importing one
+reinstalls every package from the registry, as before. scuv 0.21 and older
+refuse version 2 files.
+
+> **Note:** The export schema intentionally does **not** include the `last_used`
 > timestamp. `last_used` is local usage telemetry — it describes how
 > you've been using *this* env, not what an importer needs to recreate
 > it elsewhere. Imported envs start fresh with no `last_used` and the
@@ -71,11 +104,12 @@ Field notes:
 | Code | Meaning |
 |------|---------|
 | 0 | Export written successfully (or printed to stdout) |
-| 1 | Env not found, listing its packages with uv failed, or writing the destination file failed |
+| 1 | Env not found, listing its packages with uv failed, reading their origins failed (`PACKAGE_ORIGINS_UNREADABLE`), or writing the destination file failed |
 | 3 | The env has no readable metadata, so there is no Python version to record |
 
-scuv writes nothing when listing the packages fails; it never exports an
-empty package list in place of one it could not read. A shell redirect
+scuv writes nothing when listing the packages or reading their origins
+fails; it never exports an empty package list, or a package without the
+origin it has, in place of one it could not read. A shell redirect
 (`scuv export myenv > myenv.json`) still creates or truncates the file
 before scuv runs.
 

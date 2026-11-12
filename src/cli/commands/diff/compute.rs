@@ -7,36 +7,13 @@
 
 use std::collections::BTreeMap;
 
+use crate::core::packages::origins_differ;
+
 use super::types::{PackageChanged, PackageDiff, PackageEntry};
 
-/// PEP 503 name normalisation used as the diff key.
-///
-/// Lower-cases ASCII and collapses runs of `-`/`_`/`.` into a single
-/// `-`. Stripping anything in `[extras]` is defensive — `pip list`
-/// doesn't emit extras in the name field anyway, but the cost is
-/// trivial and it makes the function robust to other inputs.
-///
-/// Marked `pub(super)` because the enumerator needs it to produce
-/// the canonical key as part of [`PackageEntry`] construction. Not
-/// part of the crate's public API.
-pub(super) fn canonical_name(raw: &str) -> String {
-    let lower = raw.to_ascii_lowercase();
-    let trimmed = lower.split('[').next().unwrap_or(&lower);
-    let mut out = String::with_capacity(trimmed.len());
-    let mut prev_dash = false;
-    for c in trimmed.chars() {
-        if c == '-' || c == '_' || c == '.' {
-            if !prev_dash {
-                out.push('-');
-                prev_dash = true;
-            }
-        } else {
-            out.push(c);
-            prev_dash = false;
-        }
-    }
-    out
-}
+/// PEP 503 name normalisation used as the diff key; the one
+/// `core::packages` matches origins with.
+pub(super) use crate::core::packages::canonical_name;
 
 /// Compute the package-set diff between two envs.
 ///
@@ -45,8 +22,8 @@ pub(super) fn canonical_name(raw: &str) -> String {
 /// alphabetic listing without an extra sort pass.
 ///
 /// Side-A-only entries appear in `removed`; side-B-only in `added`;
-/// version-mismatched entries (same canonical name, different
-/// version string) in `changed`. Same canonical name with the same
+/// entries whose version string or origin differs (same canonical
+/// name) in `changed`; an origin-only change counts like a version one. Same canonical name with the same
 /// version string is silently a no-op even if the original
 /// [`PackageEntry::display_name`] differs (e.g. `requests` vs
 /// `Requests`).
@@ -76,11 +53,16 @@ pub fn compute_package_diff(a: &[PackageEntry], b: &[PackageEntry]) -> PackageDi
     for (name, pkg_a) in &map_a {
         match map_b.get(name) {
             None => removed.push((*pkg_a).clone()),
-            Some(pkg_b) if pkg_a.version != pkg_b.version => {
+            Some(pkg_b)
+                if pkg_a.version != pkg_b.version
+                    || origins_differ(pkg_a.source.as_ref(), pkg_b.source.as_ref()) =>
+            {
                 changed.push(PackageChanged {
                     name: (*name).to_string(),
                     version_a: pkg_a.version.clone(),
                     version_b: pkg_b.version.clone(),
+                    source_a: pkg_a.source.clone(),
+                    source_b: pkg_b.source.clone(),
                 });
             }
             Some(_) => {}
@@ -108,7 +90,50 @@ mod tests {
             name: canonical_name(name),
             version: version.to_string(),
             display_name: name.to_string(),
+            source: None,
         }
+    }
+
+    fn editable(path: &str) -> crate::core::packages::Origin {
+        crate::core::packages::Origin::Dir {
+            url: format!("file://{path}"),
+            editable: true,
+            subdirectory: None,
+        }
+    }
+
+    /// Same version, different origin: changed, with both origins. What
+    /// fails this: comparing versions only.
+    #[test]
+    fn an_origin_only_change_is_a_change() {
+        let mut local = pkg("idna", "3.4");
+        local.source = Some(editable("/w/idna"));
+        let diff = compute_package_diff(&[local.clone()], &[pkg("idna", "3.4")]);
+        assert_eq!(diff.changed.len(), 1);
+        assert_eq!(diff.changed[0].source_a, local.source);
+        assert_eq!(diff.changed[0].source_b, None);
+        // Same origin on both sides is no change.
+        assert!(
+            compute_package_diff(&[local.clone()], &[local])
+                .changed
+                .is_empty()
+        );
+    }
+
+    /// `/repo` + `pkg` and `/repo/pkg` are one origin, so an editable
+    /// subdirectory that round-trips is not reported. What fails this:
+    /// comparing recorded fields instead of the identity.
+    #[test]
+    fn equivalent_origins_are_not_a_change() {
+        let mut split = pkg("p", "1");
+        split.source = Some(crate::core::packages::Origin::Dir {
+            url: "file:///repo".into(),
+            editable: true,
+            subdirectory: Some("pkg".into()),
+        });
+        let mut joined = pkg("p", "1");
+        joined.source = Some(editable("/repo/pkg"));
+        assert!(compute_package_diff(&[split], &[joined]).changed.is_empty());
     }
 
     // ====== canonical_name table tests ======

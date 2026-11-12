@@ -238,7 +238,7 @@ jobs:
   uv-floor:
     name: uv floor (MIN_VERSION)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20  # Build + doctor/list probes + origin round-trip tests
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -252,7 +252,8 @@ jobs:
         id: floor
         run: |
           set -e
-          V=$(grep -oE 'MIN_VERSION: \(u32, u32, u32\) = \(([0-9]+), ([0-9]+), ([0-9]+)\)' src/uv/version.rs \
+          # Anchored: HASH_FRAGMENT_MIN_VERSION has the same shape.
+          V=$(grep -oE '^pub const MIN_VERSION: \(u32, u32, u32\) = \(([0-9]+), ([0-9]+), ([0-9]+)\)' src/uv/version.rs \
                 | grep -oE '\(([0-9]+), ([0-9]+), ([0-9]+)\)$' | tr -d '() ' | tr ',' '.')
           test -n "$V" || { echo "::error::could not parse MIN_VERSION"; exit 1; }
           echo "version=$V" >> "$GITHUB_OUTPUT"
@@ -304,6 +305,12 @@ jobs:
           set -e
           ./target/debug/scuv list --pythons --json > pythons.json
           python3 -c "import json;d=json.load(open('pythons.json'));print(f'parsed {len(d) if isinstance(d,list) else 1} entries')"
+
+      # clone / export / import / diff reproduce editable, local-path and
+      # git packages through this uv too; hashed archives are refused here
+      # (this uv does not check `#sha256=`), not installed unchecked.
+      - name: Package origins round-trip at the floor
+        run: cargo test --test cli -- --ignored origin
 
   # ====================
   # ShellCheck (embedded shell script linting)

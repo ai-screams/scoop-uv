@@ -26,6 +26,14 @@ exclude_globs = [
 # uv + network), so unit-level mutation can't kill "return Ok(...)" mutants —
 # an acceptable gap, not a test hole.
 exclude_re = [
+    # core::packages::{bytes_to_windows_path, windows_url_path,
+    # is_within_by_name} and paths::created_identity are
+    # #[cfg(not(unix))]: on the Linux runner they are not compiled, so
+    # every mutant of them changes nothing and reads as MISSED. The
+    # drive-letter logic is strip_drive_slash and the encoding is
+    # percent_encode, both compiled and tested everywhere.
+    "replace (bytes_to_windows_path|windows_url_path|is_within_by_name|created_identity) -> ",
+    " in (windows_url_path|is_within_by_name|created_identity)$",
     "UvClient::version",
     "UvClient::create_venv",
     "UvClient::install_python",

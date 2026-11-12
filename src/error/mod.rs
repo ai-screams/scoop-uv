@@ -153,6 +153,34 @@ pub enum ScoopError {
     /// the question.
     ConfirmationUnavailable { flag: String },
 
+    /// The origins of an env's packages could not be read: the env's
+    /// interpreter failed, timed out or is older than 3.8, or a package uv
+    /// lists could not be matched to one recorded origin. `env` is the env
+    /// path (or the env or file the packages came from).
+    PackageOriginsUnreadable { env: String, reason: String },
+
+    /// A package installs from a local path that does not exist (checked
+    /// before anything is deleted or created).
+    PackageSourceMissing { package: String, path: PathBuf },
+
+    /// A package's local source is reached through `target`, the env
+    /// `--force` would delete first, so replacing it would remove the
+    /// source.
+    PackageSourceInsideTarget {
+        package: String,
+        path: PathBuf,
+        target: PathBuf,
+    },
+
+    /// A package installs from an archive with a recorded hash, and this
+    /// uv does not check `#<alg>=` URL hashes (first done in
+    /// [`HASH_FRAGMENT_MIN_VERSION`](crate::uv::HASH_FRAGMENT_MIN_VERSION)).
+    PackageHashUnenforced {
+        package: String,
+        uv_version: String,
+        required: String,
+    },
+
     /// `scuv doctor` found problems: exit 2 with any error, 1 with only
     /// warnings. The report was already rendered, like `VerifyFailed`.
     DoctorFindings { errors: usize, warnings: usize },

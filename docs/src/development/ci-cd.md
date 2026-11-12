@@ -449,3 +449,7 @@ outstanding.
 - `release-plz.yml` had no concurrency group. It has one now, with
   `cancel-in-progress: false` — which delivers the "must always complete"
   intent that omitting the block only half-achieved.
+- `Mutants (diff)` had a 20-minute limit, enough for PRs of a few dozen
+  mutants. #279 changed enough code for 177; the limit stopped the run at
+  147 (about 8 s each, none missed), and GitHub reported it as cancelled.
+  The limit is 45 minutes now.

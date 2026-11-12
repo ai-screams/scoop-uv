@@ -194,6 +194,44 @@ impl ScoopError {
                 flag = flag
             )
             .to_string(),
+            Self::PackageOriginsUnreadable { env, reason } => t!(
+                "error.package_origins_unreadable",
+                locale = locale,
+                env = env,
+                reason = reason
+            )
+            .to_string(),
+            Self::PackageSourceMissing { package, path } => t!(
+                "error.package_source_missing",
+                locale = locale,
+                package = package,
+                path = path.display()
+            )
+            .to_string(),
+            Self::PackageSourceInsideTarget {
+                package,
+                path,
+                target,
+            } => t!(
+                "error.package_source_inside_target",
+                locale = locale,
+                package = package,
+                path = path.display(),
+                target = target.display()
+            )
+            .to_string(),
+            Self::PackageHashUnenforced {
+                package,
+                uv_version,
+                required,
+            } => t!(
+                "error.package_hash_unenforced",
+                locale = locale,
+                package = package,
+                uv_version = uv_version,
+                required = required
+            )
+            .to_string(),
             Self::DoctorFindings { errors, warnings } => t!(
                 "error.doctor_findings",
                 locale = locale,
