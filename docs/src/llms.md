@@ -37,7 +37,7 @@ All virtualenvs are stored in `~/.scuv/virtualenvs/`. Override with `SCUV_HOME` 
 | `scuv which <exe>` | Resolve an executable inside the active env (v0.11.0) |
 | `scuv run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
 | `scuv sync` | Create the env named in `.scuv.toml` if missing and install its packages (v0.11.0) |
-| `scuv export <name>` | Snapshot an env as JSON (schema v1) (v0.11.0) |
+| `scuv export <name>` | Snapshot an env as JSON with package origins (schema v2) (v0.11.0) |
 | `scuv import <file>` | Restore an env from a JSON snapshot (v0.11.0) |
 | `scuv doctor` | Health check |
 | `scuv doctor --fix` | Auto-fix issues |

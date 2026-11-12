@@ -34,16 +34,27 @@ scuv clone <SRC> <DST> [--no-packages] [--force] [--json]
    clear `CorruptedEnvironment` error when metadata is missing so you know
    recreate-from-scratch is the right next step.
 5. Unless `--no-packages`, lists the source's installed packages with
-   `uv pip list`. A failed listing stops the clone instead of copying an
-   empty package list.
-6. Only now does `--force` remove the existing `<DST>`, so a source that
+   `uv pip list` and reads where each came from (its PEP 610
+   `direct_url.json`, through the source's own Python 3.8+; see
+   [`scuv export`](export.md#schema)). A failed listing, or a package whose
+   origin cannot be read or matched (`PACKAGE_ORIGINS_UNREADABLE`), stops
+   the clone instead of copying a guess.
+6. Checks that every package can be put back: each local source path
+   exists, none lies inside `<DST>` or is reached through it when `--force`
+   would delete it, and a hashed archive has a uv (0.11.29+) that checks
+   the hash. See [`scuv import`](import.md#behaviour) for the error codes.
+7. Only now does `--force` remove the existing `<DST>`, so a source that
    cannot be cloned leaves it in place.
-7. Creates `<DST>` at the same Python version and re-installs the packages
-   pinned (`name==version`) into it. If the install fails, scuv removes the
-   `<DST>` it just created (best effort) and reports the install error.
+8. Creates `<DST>` at the same Python version and installs the packages in
+   one `uv pip install`, each from where it came: `name==version` from the
+   registry, `--editable <path>` for an editable project (the same working
+   tree, shared with the source), `name @ <url>` for a local directory or
+   archive, `name @ git+<url>@<commit>` for a git checkout. If the install
+   fails, scuv removes the `<DST>` it just created (best effort) and
+   reports the install error.
 
-`--force` is not transactional: once step 6 has removed the old `<DST>`, a
-failure in step 7 does not bring it back.
+`--force` is not transactional: once step 7 has removed the old `<DST>`, a
+failure in step 8 does not bring it back.
 
 ## Examples
 
@@ -80,7 +91,7 @@ scuv clone myenv myenv-experiment --force
 | Code | Meaning |
 |------|---------|
 | 0 | Cloned successfully |
-| 1 | Invalid dst name, self-clone, src missing, dst exists without `--force`, or a uv failure (listing, creating, installing) |
+| 1 | Invalid dst name, self-clone, src missing, dst exists without `--force`, a package origin that cannot be read or put back, or a uv failure (listing, creating, installing) |
 | 3 | src is corrupted (no readable metadata) |
 
 ## See Also

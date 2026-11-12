@@ -238,7 +238,7 @@ jobs:
   uv-floor:
     name: uv floor (MIN_VERSION)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20  # Build + doctor/list probes + origin round-trip tests
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -304,6 +304,12 @@ jobs:
           set -e
           ./target/debug/scuv list --pythons --json > pythons.json
           python3 -c "import json;d=json.load(open('pythons.json'));print(f'parsed {len(d) if isinstance(d,list) else 1} entries')"
+
+      # clone / export / import / diff reproduce editable, local-path and
+      # git packages through this uv too; hashed archives are refused here
+      # (this uv does not check `#sha256=`), not installed unchecked.
+      - name: Package origins round-trip at the floor
+        run: cargo test --test cli -- --ignored origin
 
   # ====================
   # ShellCheck (embedded shell script linting)

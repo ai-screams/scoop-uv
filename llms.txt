@@ -73,7 +73,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv which <exe>` | Resolve an executable path inside the active env (v0.11.0) |
 | `scuv run <env> -- <cmd>` | Run a command inside an env without activating (v0.11.0) |
 | `scuv sync` | Create the env named in `.scuv.toml` if missing and install its packages (v0.11.0) |
-| `scuv export <name>` | Snapshot env as JSON (schema v1) (v0.11.0) |
+| `scuv export <name>` | Snapshot env as JSON with package origins (schema v2) (v0.11.0) |
 | `scuv import <file>` | Restore env from JSON snapshot; `--name <new>` to rename (v0.11.0) |
 | `scuv doctor` | Health check |
 | `scuv doctor --fix` | Auto-fix issues |
