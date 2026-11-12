@@ -270,6 +270,20 @@ impl From<Origin> for DirectUrl {
     }
 }
 
+/// Whether two installs of one package differ in where they came from,
+/// by [`Origin::identity`]. No recorded origin on both sides is the same.
+///
+/// # Examples
+///
+/// ```
+/// use scoop_uv::core::packages::origins_differ;
+///
+/// assert!(!origins_differ(None, None));
+/// ```
+pub fn origins_differ(a: Option<&Origin>, b: Option<&Origin>) -> bool {
+    a.map(Origin::identity) != b.map(Origin::identity)
+}
+
 /// What two origins are compared by. Recorded data that does not change
 /// what gets installed (a VCS `requested_revision`, a URL spelling of the
 /// same directory) is left out.
@@ -608,7 +622,19 @@ sys.stdout.write("SCUV_ORIGINS:" + json.dumps(rows) + "\n")
 /// `direct_url.json` is malformed, or when a package uv lists cannot be
 /// matched to exactly one origin.
 pub fn read_installed_packages(env_path: &Path) -> Result<Vec<InstalledPackage>> {
-    let listed = crate::uv::UvClient::new()?.pip_list(env_path)?;
+    read_installed_packages_with(&crate::uv::UvClient::new()?, env_path)
+}
+
+/// [`read_installed_packages`] with a uv client the caller already has.
+///
+/// # Errors
+///
+/// As [`read_installed_packages`], without the `UvNotFound` case.
+pub fn read_installed_packages_with(
+    uv: &crate::uv::UvClient,
+    env_path: &Path,
+) -> Result<Vec<InstalledPackage>> {
+    let listed = uv.pip_list(env_path)?;
     if listed.is_empty() {
         return Ok(Vec::new());
     }

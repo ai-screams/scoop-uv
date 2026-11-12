@@ -1603,6 +1603,13 @@ error.diff_mismatch:
   ja: "'%{a}' と '%{b}' は異なります (%{n} 件)"
   es: "'%{a}' y '%{b}' son diferentes (%{n} diferencia(s))"
 
+diff.no_origin:
+  en: "no recorded origin"
+  ko: "기록된 출처 없음"
+  pt-BR: "sem origem registrada"
+  ja: "記録された出所なし"
+  es: "sin origen registrado"
+
 diff.identical_summary:
   en: "Environments are identical"
   ko: "두 환경이 동일해요"

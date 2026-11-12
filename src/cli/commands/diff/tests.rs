@@ -60,6 +60,7 @@ fn pkg(name: &str, version: &str) -> PackageEntry {
         name: compute::canonical_name(name),
         version: version.to_string(),
         display_name: name.to_string(),
+        source: None,
     }
 }
 
@@ -104,6 +105,41 @@ fn execute_identical_envs_returns_ok_non_strict() {
             &svc,
         );
         assert!(result.is_ok());
+    });
+}
+
+/// Two envs that differ only in where one package came from are not
+/// identical: `--strict` fails with one difference. What fails this:
+/// comparing package versions only.
+#[test]
+fn execute_strict_fails_on_an_origin_only_difference() {
+    with_temp_scoop_home(|_tmp| {
+        let a = make_env_with_metadata("a", "3.12.0");
+        make_env_with_metadata("b", "3.12.0");
+        let svc = VirtualenvService::auto().unwrap();
+        let mut local = pkg("idna", "3.4");
+        local.source = Some(crate::core::packages::Origin::Dir {
+            url: "file:///work/idna".into(),
+            editable: true,
+            subdirectory: None,
+        });
+        let enumerator =
+            MockEnumerator::with_per_env(vec![pkg("idna", "3.4")], vec![(a, vec![local])]);
+        let out = Output::new(0, true, crate::output::Colors::NONE, false);
+        let err = execute_with(
+            &out,
+            &opts_for("a", "b", true, DiffMode::PackagesOnly),
+            &enumerator,
+            &svc,
+        )
+        .unwrap_err();
+        assert!(
+            matches!(
+                err,
+                crate::error::ScoopError::DiffMismatch { differences: 1, .. }
+            ),
+            "{err:?}"
+        );
     });
 }
 

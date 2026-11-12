@@ -5,6 +5,7 @@
 //! orchestration depend on these shapes; this module depends only on
 //! `serde` and `std`.
 
+use crate::core::packages::Origin;
 use serde::Serialize;
 
 /// Options collected from the CLI parse, forwarded into `execute`.
@@ -61,6 +62,8 @@ pub struct PackageEntry {
     pub name: String,
     pub version: String,
     pub display_name: String,
+    /// The PEP 610 origin, or `null` when none is recorded.
+    pub source: Option<Origin>,
 }
 
 /// One package that changed version between two envs.
@@ -69,6 +72,8 @@ pub struct PackageChanged {
     pub name: String,
     pub version_a: String,
     pub version_b: String,
+    pub source_a: Option<Origin>,
+    pub source_b: Option<Origin>,
 }
 
 /// Package-set diff: added (only in b), removed (only in a),
