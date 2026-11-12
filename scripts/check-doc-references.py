@@ -202,7 +202,9 @@ for rel in (
 # earlier version of this check matched too narrowly to notice.
 floor = ".".join(
     re.search(
-        r"MIN_VERSION: \(u32, u32, u32\) = \((\d+), (\d+), (\d+)\)", read("src/uv/version.rs")
+        r"^pub const MIN_VERSION: \(u32, u32, u32\) = \((\d+), (\d+), (\d+)\)",
+        read("src/uv/version.rs"),
+        re.M,
     ).groups()
 )
 FLOOR_LINE = re.compile(r"\buv\b", re.I)
