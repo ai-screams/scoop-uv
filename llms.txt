@@ -84,7 +84,7 @@ scuv remove myproject        # Delete a virtualenv
 | `scuv lang [code]` | Get/set language (en, ko, ja, pt-BR, es) |
 | `scuv migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scuv migrate @env <name>` | Migrate single environment |
-| `scuv migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
+| `scuv migrate all` | Migrate all environments, one at a time after checking all of them |
 | `scuv gc` | Garbage-collect orphan virtualenvs; default is dry-run, pass `-y`/`--yes` to remove; `--aggressive` also flags unused uv-managed Pythons; `--older-than <30d|2w|1y>` adds stale envs whose `last_used` is past the cutoff (0.13.0) |
 | `scuv prune` | Prune the uv cache (thin wrapper around `uv cache prune`) |
 | `scuv diff <a> <b>` | Compare two envs (Python version, packages, metadata); `--strict` exits 1 on any difference |

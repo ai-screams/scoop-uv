@@ -31,6 +31,57 @@ scuv migrate all
 | **virtualenvwrapper** | `$WORKON_HOME` or `~/.virtualenvs/` |
 | **conda** | `$CONDA_PREFIX/envs`, `~/.conda/envs`, `~/anaconda3/envs`, `~/miniconda3/envs`, `~/miniforge3/envs` |
 
+## What moves
+
+scuv reads the source's packages the way `scuv clone` and `scuv export` do:
+uv lists them, and the source's own Python reports where each came from
+(its [PEP 610](https://packaging.python.org/en/latest/specifications/direct-url/)
+`direct_url.json`). The source needs no `pip`. Each package is put back from
+there:
+
+| Installed from | Reinstalled as |
+| -- | -- |
+| the registry (no recorded origin) | `name==version` |
+| an editable directory | `--editable <path>` (an old `setup.py develop` install, which records no origin, is read from where uv reports it) |
+| a directory | `name @ file://<path>` |
+| a wheel or sdist URL | `name @ <url>`, with its strongest recorded hash |
+| a git checkout | `name @ git+<url>@<commit>` |
+
+Three kinds of package are treated differently:
+
+- `pip` is not moved: scuv environments carry no installer. It is reported in
+  `packages_excluded` and does not count as a failure. `setuptools` and
+  `wheel` move like any other package (some packages use `pkg_resources`
+  without declaring it).
+- A package conda installed (its `INSTALLER` file says `conda`) records the
+  directory conda built it in, which does not exist on your machine. scuv
+  installs the registry release of the same name and version instead, and
+  lists those packages in `packages_from_conda`. One that the registry does
+  not have fails like any other package.
+- A source whose Python is older than 3.8 cannot report origins and is
+  refused (`PACKAGE_ORIGINS_UNREADABLE`) before uv runs. Nothing is
+  installed from the registry in place of what could not be read.
+
+Before anything is created or replaced, every package must be one that can
+be put back: a local source that exists and is that package's project (a
+directory needs a `pyproject.toml` or `setup.py`, and a static
+`[project] name` in it, when there is one, must be the package's), none
+inside a target `--force` would replace, and a
+uv that checks recorded archive hashes (0.11.29 or later). Any of these
+failing fails that environment, in a dry run too. So does a source whose
+directory and the new environment's overlap (one inside the other, for
+example `SCUV_HOME` inside the source).
+
+The packages are then installed in one `uv pip install`. When that fails,
+each package is tried on its own (without dependencies) to find the ones
+that do not install, and the environment is rebuilt with the rest, so it
+holds no leftovers of the failed attempt. Afterwards scuv reads the new
+environment back and compares each package's name, version and origin with
+the source; one that differs is a failure (`packages_failed`), and a package
+the source did not have (a dependency the install added) is listed in
+`packages_added`. `--strict` turns any install or verification failure into
+a failed migration and removes the new environment.
+
 ## End-of-life Python
 
 scuv treats an env as end of life (EOL) when its Python is 2.x or 3.10 and
@@ -59,7 +110,8 @@ accepts.
 `--allow-eol` lets such an env migrate and changes nothing else: a name
 conflict still stops it. `--force` allows EOL envs too, but it also
 overwrites a scuv env of the same name. Up to scuv 0.19.0 `--force` was the
-only way through.
+only way through. Neither helps a Python older than 3.8: its package
+origins cannot be read, so it is refused (see [What moves](#what-moves)).
 
 Released versions up to 0.18.0 used a cutoff of 3.8, so 3.9 and 3.10 envs
 migrated without `--force`.
@@ -74,8 +126,8 @@ migrated without `--force`.
 | `--force` | `@env`, `all` | Overwrite existing scuv env with the same name; bypass EOL Python guard |
 | `--allow-eol` | `@env`, `all` | Migrate envs whose Python is end of life; overwrites nothing |
 | `--yes` | `@env`, `all` | Skip the interactive confirmation prompt |
-| `--strict` | `@env`, `all` | Fail on the first package install error inside an env (default: keep going) |
-| `--delete-source` | `@env`, `all` | Remove the source env after a migration that moved every package |
+| `--strict` | `@env`, `all` | Fail an env when any of its packages does not install or verify, removing its new env (default: migrate the rest and report them) |
+| `--delete-source` | `@env`, `all` | Remove the source env after a migration that moved every package (see [Deleting the source](#deleting-the-source)) |
 | `--rename <new-name>` | `@env` | Migrate under a different name |
 | `--auto-rename` | `@env` | On name conflict, migrate under `<name>-pyenv` automatically (conflicts with `--force`) |
 
@@ -124,7 +176,7 @@ contract.
 |----------------------|----------------|
 | Ready | Migrated normally |
 | Name conflict with an existing scuv env | The existing scuv env is overwritten in place |
-| EOL Python version (e.g. 2.7, 3.10) | Migrated anyway (the EOL guard is intentionally bypassed) |
+| EOL Python version (e.g. 3.9, 3.10) | Migrated anyway (the EOL guard is intentionally bypassed); below 3.8 still refused, since package origins cannot be read there |
 | Corrupted source env | **Not bypassed** — still returns `CorruptedEnvironment` (exit 3) |
 
 ### `--auto-rename` (name-conflict only)
@@ -309,6 +361,11 @@ without parsing the localized `reason` string in `skipped[]`.
         "python_version": "3.12",
         "packages_migrated": 1,
         "packages_failed": [],
+        "packages_excluded": [
+          { "name": "pip", "version": "24.0", "reason": "installer" }
+        ],
+        "packages_from_conda": [],
+        "packages_added": [],
         "dry_run": false,
         "path": "/home/u/.scuv/virtualenvs/myproject",
         "source_deleted": false,
@@ -326,13 +383,15 @@ without parsing the localized `reason` string in `skipped[]`.
 `actual_python_version` is the version the new env's `pyvenv.cfg`
 records. Current uv writes the minor (`3.12`) when it links the env to a
 minor version and the full version otherwise; a dry run, or a `pyvenv.cfg`
-without one, repeats the source's `python_version`. `packages_failed` lists
-packages that failed to install and `pip freeze` lines scuv could not
-parse; neither changes the exit code or the `success` count.
+without one, repeats the source's `python_version`. `packages_migrated`
+counts packages verified in the new env (for a dry run, packages planned).
+`packages_failed` lists packages that did not install or did not verify,
+each with what went wrong; it does not change the exit code or the
+`success` count. `packages_excluded` (pip), `packages_from_conda` and
+`packages_added` are described in [What moves](#what-moves).
 `source_deleted` reflects whether `--delete-source` was honored for this
-env: scuv keeps the source when `packages_failed` is not empty, since those
-packages exist nowhere else. `dry_run` mirrors the flag the command was
-invoked with.
+env, and `source_kept_reason` (present only when it was not) says why. `dry_run` mirrors
+the flag the command was invoked with.
 
 ### `migrate all --json` — failure path (exit 2)
 
@@ -357,8 +416,8 @@ failure side either.
       {
         "name": "brokenpip",
         "source_type": "virtualenv_wrapper",
-        "error_code": "MIGRATE_EXTRACTION_FAILED",
-        "error": "Couldn't extract packages: pip not found at /home/u/.virtualenvs/brokenpip/bin/pip"
+        "error_code": "PACKAGE_ORIGINS_UNREADABLE",
+        "error": "Could not read where the packages in /home/u/.virtualenvs/brokenpip came from: reading package origins needs Python 3.8 or later, and the env has Python 3.7.17"
       }
     ],
     "skipped": [
@@ -380,7 +439,7 @@ Per-env failure objects carry two additive fields:
 
 - `source_type` (`"pyenv"`, `"virtualenv_wrapper"`, `"conda"`) — origin tool.
 - `error_code` — the stable `ScoopError::code()` constant (e.g.
-  `"MIGRATE_EXTRACTION_FAILED"`, `"MIGRATE_NAME_CONFLICT"`,
+  `"PACKAGE_ORIGINS_UNREADABLE"`, `"MIGRATE_NAME_CONFLICT"`,
   `"UV_COMMAND_FAILED"`). Scripts branch on this instead of parsing
   `error` (which is localized).
 
@@ -418,30 +477,54 @@ empty.
 ## Migration Process
 
 1. **Discovery**: Scans configured source paths for virtual environments
-2. **Extraction**: Identifies Python version and installed packages
-3. **Recreation**: Creates new scuv environment with same Python version
-4. **Package Install**: Reinstalls packages using `uv pip install`
-5. **Cleanup**: Originals are preserved by default; `--delete-source` removes them after a migration that moved every package
+2. **Reading**: Lists the source's packages and their origins (see [What moves](#what-moves))
+3. **Checks**: Plans every package and checks what may be deleted, before anything changes
+4. **Recreation**: Creates the new scuv environment with the same Python version
+5. **Package Install**: Reinstalls the packages with `uv pip install` and verifies the result
+6. **Cleanup**: Originals are preserved by default; `--delete-source` removes them as described below
+
+## Deleting the source
+
+`--delete-source` removes a source only when all of these hold:
+
+- every package migrated and verified (`packages_failed` is empty; a
+  deliberately excluded pip does not count);
+- the source is not a conda environment: it also holds packages migrate
+  does not move (native libraries, conda's own builds), so it is always
+  kept;
+- nothing that must keep working goes through the source: a local package
+  source inside it (an editable project in the source directory, say), the
+  Python another environment or the new one runs on (uv may have put a
+  managed Python there), the way to the scuv environment directory, or
+  another source reached through a link inside it.
+
+In `migrate all`, the environments found but not migrated (skipped,
+conflicting, or with a name scuv cannot take) count too: their packages
+are read and must survive. If any environment cannot be read, its packages
+are unknown, so that batch deletes no source and replaces no target.
+
+When a source is kept, the output says why (`source_kept_reason` in JSON).
+The same check guards `--force`: replacing an existing scuv environment
+that something listed above goes through fails that environment before
+anything is removed.
 
 ## Notes
 
 - Original environments are preserved by default; use `--delete-source` to remove sources after migration
-- Package versions are preserved where possible
+- Package versions and origins are preserved; see [What moves](#what-moves)
 - Migration creates fresh environments using `uv` for improved performance
 
 ## Performance
 
-`scuv migrate all` fans out across all CPU cores via [rayon] when migrating
-more than one environment. The dominant cost (uv venv + pip install per env)
-is I/O-bound on subprocesses, so wall-clock time scales close to linearly
-with core count.
+`scuv migrate all` migrates one environment at a time, in order. Every
+environment is read and checked before the first one starts, and source
+deletions under `--delete-source` happen after the last one finishes, so
+no removal can interleave with another environment's creation (for
+example, with uv installing a Python inside a directory that is about to
+be replaced). uv still downloads and installs in parallel within each
+environment. Up to scuv 0.22 environments migrated in parallel.
 
-`--dry-run` stays sequential — preview output is more useful when ordered.
-Progress lines may interleave when multiple envs finish close together. In
-the JSON summary, the `migrated[]` and `failed[]` arrays are sorted
-alphabetically by env name (so worker thread scheduling doesn't leak into
-the output). `skipped[]` and `conflicts[]` preserve the scan / partition
-order — which itself is deterministic (source-type then name; see
-`scan_all_environments`).
-
-[rayon]: https://docs.rs/rayon
+In the JSON summary, the `migrated[]` and `failed[]` arrays are sorted
+alphabetically by env name. `skipped[]` and `conflicts[]` preserve the scan
+/ partition order — which itself is deterministic (source-type then name;
+see `scan_all_environments`).

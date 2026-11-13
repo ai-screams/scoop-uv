@@ -165,9 +165,13 @@ mod tests {
             python_version: "3.12".to_string(),
             packages_migrated: 0,
             packages_failed: vec!["not-a-pin".to_string()],
+            packages_excluded: Vec::new(),
+            packages_from_conda: Vec::new(),
+            packages_added: Vec::new(),
             dry_run,
             path: PathBuf::from("/x"),
             source_deleted,
+            source_kept_reason: None,
             actual_python_version: "3.12".to_string(),
         };
         let delete = MigrateExecuteOptions {

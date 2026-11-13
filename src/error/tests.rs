@@ -635,12 +635,6 @@ fn test_error_code_migrate_corrupted() {
 }
 
 #[test]
-fn test_error_code_migrate_extraction_failed() {
-    let err = ScoopError::PackageExtractionFailed { reason: "x".into() };
-    assert_eq!(err.code(), "MIGRATE_EXTRACTION_FAILED");
-}
-
-#[test]
 fn test_error_code_migrate_failed() {
     let err = ScoopError::MigrationFailed { reason: "x".into() };
     assert_eq!(err.code(), "MIGRATE_FAILED");
@@ -738,7 +732,6 @@ fn test_all_error_codes_are_unique() {
             reason: "".into(),
         }
         .code(),
-        ScoopError::PackageExtractionFailed { reason: "".into() }.code(),
         ScoopError::MigrationFailed { reason: "".into() }.code(),
         ScoopError::MigrationNameConflict {
             name: "".into(),
@@ -780,7 +773,6 @@ fn test_error_codes_follow_naming_convention() {
             reason: "".into(),
         }
         .code(),
-        ScoopError::PackageExtractionFailed { reason: "".into() }.code(),
         ScoopError::MigrationFailed { reason: "".into() }.code(),
         ScoopError::MigrationNameConflict {
             name: "".into(),
@@ -1114,9 +1106,6 @@ fn every_variant() -> Vec<ScoopError> {
             name: "env-aar".into(),
             reason: "why-aar".into(),
         },
-        ScoopError::PackageExtractionFailed {
-            reason: "why-aas".into(),
-        },
         ScoopError::MigrationFailed {
             reason: "why-aat".into(),
         },
@@ -1173,6 +1162,11 @@ fn every_variant() -> Vec<ScoopError> {
             package: "pkg-abi".into(),
             path: PathBuf::from("/p/abj"),
         },
+        ScoopError::PackageSourceNotAProject {
+            package: "pkg-abq".into(),
+            path: PathBuf::from("/p/abr"),
+            reason: "why-abs".into(),
+        },
         ScoopError::PackageSourceInsideTarget {
             package: "pkg-abk".into(),
             path: PathBuf::from("/p/abl"),
@@ -1220,7 +1214,6 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::CondaEnvNotFound { .. }
         | ScoopError::SourceEnvNotFound { .. }
         | ScoopError::CorruptedEnvironment { .. }
-        | ScoopError::PackageExtractionFailed { .. }
         | ScoopError::MigrationFailed { .. }
         | ScoopError::MigrationNameConflict { .. }
         | ScoopError::InvalidPythonPath { .. }
@@ -1237,6 +1230,7 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::ConfirmationUnavailable { .. }
         | ScoopError::PackageOriginsUnreadable { .. }
         | ScoopError::PackageSourceMissing { .. }
+        | ScoopError::PackageSourceNotAProject { .. }
         | ScoopError::PackageSourceInsideTarget { .. }
         | ScoopError::PackageHashUnenforced { .. }
         | ScoopError::MigrationSourcesNotFound { .. }

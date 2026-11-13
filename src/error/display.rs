@@ -122,12 +122,6 @@ impl ScoopError {
                 reason = reason
             )
             .to_string(),
-            Self::PackageExtractionFailed { reason } => t!(
-                "error.package_extraction_failed",
-                locale = locale,
-                reason = reason
-            )
-            .to_string(),
             Self::MigrationFailed { reason } => {
                 t!("error.migration_failed", locale = locale, reason = reason).to_string()
             }
@@ -206,6 +200,18 @@ impl ScoopError {
                 locale = locale,
                 package = package,
                 path = path.display()
+            )
+            .to_string(),
+            Self::PackageSourceNotAProject {
+                package,
+                path,
+                reason,
+            } => t!(
+                "error.package_source_not_a_project",
+                locale = locale,
+                package = package,
+                path = path.display(),
+                reason = reason
             )
             .to_string(),
             Self::PackageSourceInsideTarget {

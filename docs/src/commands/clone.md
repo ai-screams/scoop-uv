@@ -40,7 +40,8 @@ scuv clone <SRC> <DST> [--no-packages] [--force] [--json]
    origin cannot be read or matched (`PACKAGE_ORIGINS_UNREADABLE`), stops
    the clone instead of copying a guess.
 6. Checks that every package can be put back: each local source path
-   exists, none lies inside `<DST>` or is reached through it when `--force`
+   exists (a directory being that package's project), none lies inside
+   `<DST>` or is reached through it when `--force`
    would delete it, and a hashed archive has a uv (0.11.29+) that checks
    the hash. See [`scuv import`](import.md#behaviour) for the error codes.
 7. Only now does `--force` remove the existing `<DST>`, so a source that

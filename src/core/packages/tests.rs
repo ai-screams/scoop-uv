@@ -12,6 +12,7 @@ fn pkg(name: &str, version: &str, origin: Option<Origin>) -> InstalledPackage {
         name: name.to_string(),
         version: version.to_string(),
         origin,
+        installer: None,
     }
 }
 
@@ -28,6 +29,21 @@ fn row(name: &str, version: &str, direct_url: Option<&str>) -> OriginRow {
         Some(name.to_string()),
         Some(version.to_string()),
         direct_url.map(str::to_string),
+        None,
+    )
+}
+
+fn row_by(
+    name: &str,
+    version: &str,
+    direct_url: Option<&str>,
+    installer: Option<&str>,
+) -> OriginRow {
+    OriginRow(
+        Some(name.to_string()),
+        Some(version.to_string()),
+        direct_url.map(str::to_string),
+        installer.map(str::to_string),
     )
 }
 
@@ -921,7 +937,10 @@ fn reconcile_attaches_origins_by_name_and_version() {
 #[rstest]
 #[case::not_seen(vec![listed("six", "1.16.0", None)], vec![row("six", "1.15.0", None)], "Python")]
 #[case::ambiguous(vec![listed("six", "1.16.0", None)], vec![row("six", "1.16.0", None), row("six", "1.16.0", Some(EDITABLE))], "origins")]
-#[case::editable_mismatch(vec![listed("p", "1", Some("/work/proj"))], vec![row("p", "1", None)], "editable")]
+#[case::editable_mismatch(vec![listed("p", "1", Some("/work/proj"))], vec![row("p", "1", Some(r#"{"url":"file:///work/proj","dir_info":{}}"#))], "editable")]
+#[case::editable_relative(vec![listed("p", "1", Some("proj"))], vec![row("p", "1", None)], "editable")]
+#[case::installer_ambiguous(vec![listed("p", "1", None)], vec![row_by("p", "1", None, Some("pip")), row_by("p", "1", None, Some("conda"))], "installers")]
+#[case::installer_none_vs_conda(vec![listed("p", "1", None)], vec![row_by("p", "1", None, None), row_by("p", "1", None, Some("conda"))], "installers")]
 #[case::bad_record(vec![listed("p", "1", None)], vec![row("p", "1", Some("{not json"))], "direct_url")]
 fn reconcile_refuses_what_it_cannot_match(
     #[case] uv: Vec<UvPipListEntry>,
@@ -934,6 +953,48 @@ fn reconcile_refuses_what_it_cannot_match(
     assert!(err.contains(says), "{err}");
 }
 
+/// An `.egg-link` editable (old pip, `setup.py develop`) records no
+/// direct_url.json; its origin is the absolute project location uv
+/// reports. What fails this: requiring a recorded origin.
+#[cfg(unix)]
+#[test]
+fn reconcile_reads_an_egg_link_editable_from_uvs_location() {
+    let got = reconcile(
+        vec![listed("p", "1", Some("/work/my proj"))],
+        vec![row("p", "1", None)],
+    )
+    .unwrap();
+    assert_eq!(
+        got[0].origin,
+        Some(Origin::Dir {
+            url: "file:///work/my%20proj".to_string(),
+            editable: true,
+            subdirectory: None,
+        })
+    );
+}
+
+/// The installer travels with the package; an empty one is none. What
+/// fails this: dropping the fourth field.
+#[test]
+fn reconcile_keeps_the_installer() {
+    let got = reconcile(
+        vec![
+            listed("a", "1", None),
+            listed("b", "1", None),
+            listed("c", "1", None),
+        ],
+        vec![
+            row_by("a", "1", None, Some("conda")),
+            row_by("b", "1", None, Some("")),
+            row("c", "1", None),
+        ],
+    )
+    .unwrap();
+    let installers: Vec<_> = got.iter().map(|p| p.installer.as_deref()).collect();
+    assert_eq!(installers, [Some("conda"), None, None]);
+}
+
 #[test]
 fn reconcile_accepts_identical_duplicates_and_skips_unnamed_rows() {
     let got = reconcile(
@@ -941,7 +1002,7 @@ fn reconcile_accepts_identical_duplicates_and_skips_unnamed_rows() {
         vec![
             row("six", "1.16.0", None),
             row("six", "1.16.0", None),
-            OriginRow(None, Some("1".into()), None),
+            OriginRow(None, Some("1".into()), None, None),
         ],
     )
     .unwrap();
@@ -959,6 +1020,28 @@ fn parse_origin_output_reads_the_marker_line_among_noise() {
         parse_origin_output(out).unwrap(),
         [row("six", "1.16.0", None)]
     );
+}
+
+/// The script writes four fields (the installer last); three is the shape
+/// before it did, and is read as no installer. Any other count is refused.
+/// What fails this: a fixed-length tuple, or accepting any length.
+#[test]
+fn parse_origin_output_reads_rows_of_three_or_four() {
+    let out = b"SCUV_ORIGINS:[[\"a\",\"1\",null,\"conda\"],[\"b\",\"1\",null]]\n";
+    assert_eq!(
+        parse_origin_output(out).unwrap(),
+        [row_by("a", "1", None, Some("conda")), row("b", "1", None)]
+    );
+    for bad in [
+        &b"SCUV_ORIGINS:[[\"a\",\"1\"]]\n"[..],
+        b"SCUV_ORIGINS:[[\"a\",\"1\",null,null,null]]\n",
+    ] {
+        assert!(
+            parse_origin_output(bad).is_err(),
+            "{}",
+            String::from_utf8_lossy(bad)
+        );
+    }
 }
 
 #[rstest]
@@ -1155,13 +1238,16 @@ mod deletion_safety {
             local_sources: vec![LocalSource {
                 package: "proj".to_string(),
                 path: path.to_path_buf(),
+                // These tests are about traversal; the project check has
+                // its own below.
+                project: false,
             }],
             hashed_archive: None,
         }
     }
 
     fn check(tree: &Tree, source: &Path) -> Result<()> {
-        preflight(&plan(source), &tree.target())
+        preflight(&plan(source), &[&tree.target()])
     }
 
     #[test]
@@ -1307,8 +1393,8 @@ mod deletion_safety {
     fn an_absent_target_only_checks_existence() {
         let t = Tree::new();
         let absent = t.p("envs/new");
-        preflight(&plan(&t.p("work/project")), &absent).unwrap();
-        let err = preflight(&plan(&t.p("work/gone")), &absent).unwrap_err();
+        preflight(&plan(&t.p("work/project")), &[&absent]).unwrap();
+        let err = preflight(&plan(&t.p("work/gone")), &[&absent]).unwrap_err();
         assert!(
             matches!(err, ScoopError::PackageSourceMissing { .. }),
             "{err:?}"
@@ -1318,5 +1404,122 @@ mod deletion_safety {
     #[test]
     fn a_relative_path_is_refused() {
         assert!(resolve_visiting(Path::new("work/project")).is_err());
+    }
+}
+
+// ============================================================================
+// Project check
+// ============================================================================
+
+#[cfg(unix)]
+mod project_check {
+    use super::*;
+
+    fn dir_plan(name: &str, dir: &Path) -> InstallPlan {
+        let o = Origin::Dir {
+            url: format!("file://{}", dir.display()),
+            editable: true,
+            subdirectory: None,
+        };
+        InstallPlan::build(&[pkg(name, "1", Some(o))], "src").unwrap()
+    }
+
+    fn reason(err: ScoopError) -> String {
+        match err {
+            ScoopError::PackageSourceNotAProject { reason, .. } => reason,
+            other => panic!("{other:?}"),
+        }
+    }
+
+    /// A directory uv would refuse, or build as another project, is
+    /// refused before anything is deleted. What fails each case: dropping
+    /// the file check, the name check, or the parse check.
+    #[test]
+    fn a_directory_that_is_not_the_package_is_refused() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        rust_i18n::set_locale("en");
+        let work = tempfile::TempDir::new().unwrap();
+        let dir = std::fs::canonicalize(work.path()).unwrap();
+
+        // An old src-layout .egg-link points at src/, which has neither file.
+        let err = preflight(&dir_plan("alpha", &dir), &[]).unwrap_err();
+        assert!(reason(err).contains("pyproject.toml or setup.py"));
+
+        std::fs::write(dir.join("pyproject.toml"), "[project]\nname = \"beta\"\n").unwrap();
+        let err = preflight(&dir_plan("alpha", &dir), &[]).unwrap_err();
+        assert!(reason(err).contains("beta"));
+
+        std::fs::write(dir.join("pyproject.toml"), "[project\n").unwrap();
+        let err = preflight(&dir_plan("alpha", &dir), &[]).unwrap_err();
+        assert!(reason(err).contains("does not parse"));
+    }
+
+    /// The package's own project passes: a name that differs only in case
+    /// or separators, a pyproject without `[project]` (setuptools with
+    /// setup.py), or setup.py alone. An archive is not a directory to
+    /// check. What fails this: comparing names as written, or requiring
+    /// `[project]`.
+    #[test]
+    fn the_packages_own_project_passes() {
+        let work = tempfile::TempDir::new().unwrap();
+        let dir = std::fs::canonicalize(work.path()).unwrap();
+        std::fs::write(dir.join("setup.py"), "").unwrap();
+        preflight(&dir_plan("alpha", &dir), &[]).unwrap();
+        std::fs::write(
+            dir.join("pyproject.toml"),
+            "[build-system]\nrequires = []\n",
+        )
+        .unwrap();
+        preflight(&dir_plan("alpha", &dir), &[]).unwrap();
+        std::fs::write(
+            dir.join("pyproject.toml"),
+            "[project]\nname = \"My.Proj\"\n",
+        )
+        .unwrap();
+        preflight(&dir_plan("my_proj", &dir), &[]).unwrap();
+
+        let wheel = dir.join("w.whl");
+        std::fs::write(&wheel, "").unwrap();
+        let archive = Origin::Archive {
+            url: format!("file://{}", wheel.display()),
+            subdirectory: None,
+            hashes: BTreeMap::new(),
+        };
+        let plan = InstallPlan::build(&[pkg("w", "1", Some(archive))], "src").unwrap();
+        assert!(!plan.local_sources()[0].project);
+        preflight(&plan, &[]).unwrap();
+    }
+
+    /// With no root to remove, every source is still checked. What fails
+    /// this: returning early when `roots` is empty.
+    #[test]
+    fn sources_are_checked_with_no_roots() {
+        let err = preflight(
+            &dir_plan("alpha", Path::new("/nonexistent/scuv/alpha")),
+            &[],
+        )
+        .unwrap_err();
+        assert!(
+            matches!(err, ScoopError::PackageSourceMissing { .. }),
+            "{err:?}"
+        );
+    }
+
+    /// Every root is checked, not only the first. What fails this: one
+    /// root.
+    #[test]
+    fn every_root_is_checked() {
+        let work = tempfile::TempDir::new().unwrap();
+        let base = std::fs::canonicalize(work.path()).unwrap();
+        let (a, b) = (base.join("a"), base.join("b"));
+        let proj = b.join("proj");
+        std::fs::create_dir_all(&a).unwrap();
+        std::fs::create_dir_all(&proj).unwrap();
+        std::fs::write(proj.join("setup.py"), "").unwrap();
+        let err = preflight(&dir_plan("proj", &proj), &[&a, &b]).unwrap_err();
+        assert!(
+            matches!(err, ScoopError::PackageSourceInsideTarget { ref target, .. } if *target == b),
+            "{err:?}"
+        );
     }
 }

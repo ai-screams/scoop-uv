@@ -368,6 +368,7 @@ mod tests {
             let work = tempfile::TempDir::new().unwrap();
             let proj = std::fs::canonicalize(work.path()).unwrap().join("proj");
             std::fs::create_dir_all(&proj).unwrap();
+            std::fs::write(proj.join("setup.py"), "").unwrap();
             let listing = r#"[{"name":"six","version":"1.16.0"},{"name":"proj","version":"0.1"}]"#;
             run(&[("FAKE_UV_PIP_LIST_JSON", Some(listing))], |envs, uv| {
                 let src = env(envs, "src", true);
@@ -429,6 +430,7 @@ mod tests {
                 let dst = env(envs, "dst", true);
                 let inner = std::fs::canonicalize(&dst).unwrap().join("inner");
                 std::fs::create_dir_all(&inner).unwrap();
+                std::fs::write(inner.join("setup.py"), "").unwrap();
                 let src = env(envs, "src", true);
                 let rows = format!(
                     r#"[["inner","1","{{\"url\":\"file://{}\",\"dir_info\":{{}}}}"]]"#,

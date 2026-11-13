@@ -256,6 +256,94 @@ fn clone_reproduces_package_origins() {
     );
 }
 
+/// `migrate @env` on a real virtualenvwrapper env puts every package back
+/// from where it came (editable, plain directory, git), leaves pip out, and
+/// under `--delete-source` removes the source once all of it moved. What
+/// fails this: reading the source with `pip freeze` again, which skipped
+/// editables and reinstalled the rest as `name==version`.
+#[test]
+#[ignore = "requires uv to be installed"]
+fn migrate_reproduces_package_origins() {
+    let fixture = TestFixture::new();
+    let work = std::fs::canonicalize(fixture.temp_dir.path())
+        .unwrap()
+        .join("work");
+    origin_project(&work.join("edit"), "originedit");
+    origin_project(&work.join("plain"), "originplain");
+    let git = work.join("git");
+    origin_project(&git, "origingit");
+    for args in [
+        vec!["init", "-q"],
+        vec!["add", "-A"],
+        vec![
+            "-c",
+            "user.email=t@t",
+            "-c",
+            "user.name=t",
+            "commit",
+            "-qm",
+            "init",
+        ],
+    ] {
+        origin_run(
+            std::process::Command::new("git")
+                .current_dir(&git)
+                .args(args),
+        );
+    }
+    let workon = work.join("workon");
+    let source = workon.join("wsrc");
+    origin_run(
+        std::process::Command::new("uv")
+            .args(["venv", "-q", "-p", "3.12"])
+            .arg(&source),
+    );
+    let git_req = format!("origingit @ git+file://{}", git.display());
+    origin_run(
+        std::process::Command::new("uv")
+            .args(["pip", "install", "--python"])
+            .arg(source.join("bin/python"))
+            .args(["--editable", work.join("edit").to_str().unwrap()])
+            .arg(work.join("plain"))
+            .arg(&git_req)
+            .arg("pip"),
+    );
+
+    let out = origin_ok(
+        "scuv migrate",
+        scoop_cmd(&fixture.scoop_home)
+            .env("HOME", fixture.temp_dir.path())
+            .env("WORKON_HOME", &workon)
+            .args([
+                "migrate",
+                "@env",
+                "wsrc",
+                "--source",
+                "virtualenvwrapper",
+                "--delete-source",
+                "--json",
+            ])
+            .output()
+            .unwrap(),
+    );
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let data = &json["data"];
+    assert_eq!(data["packages_failed"], serde_json::json!([]), "{json}");
+    assert_eq!(data["packages_migrated"], 3, "{json}");
+    assert_eq!(data["packages_excluded"][0]["name"], "pip", "{json}");
+    assert_eq!(data["source_deleted"], true, "{json}");
+    assert!(!source.exists());
+
+    let got = origin_sources(&fixture, "wsrc");
+    assert_eq!(got["originedit"]["dir_info"]["editable"], true, "{got:?}");
+    assert!(got["originplain"]["dir_info"].is_object(), "{got:?}");
+    assert!(
+        got["origingit"]["vcs_info"]["commit_id"].is_string(),
+        "{got:?}"
+    );
+    assert!(!got.contains_key("pip"), "{got:?}");
+}
+
 /// export → import keeps every origin.
 #[test]
 #[ignore = "requires uv to be installed"]
@@ -315,12 +403,13 @@ fn import_never_installs_a_hashed_origin_archive_unchecked() {
             .arg("-o")
             .arg(&dist),
     );
+    // The wheel, not whatever else `uv build` writes there (newer uv adds a
+    // `.gitignore`), and directory order is not fixed.
     let wheel = std::fs::read_dir(&dist)
         .unwrap()
-        .next()
-        .unwrap()
-        .unwrap()
-        .path();
+        .map(|entry| entry.unwrap().path())
+        .find(|path| path.extension().is_some_and(|e| e == "whl"))
+        .expect("uv build wrote a wheel");
     let file = fixture.temp_dir.path().join("whl.json");
     std::fs::write(
         &file,

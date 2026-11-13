@@ -579,6 +579,9 @@ pub struct InstalledPackage {
     /// `None`: the interpreter found this distribution and it has no
     /// `direct_url.json`.
     pub origin: Option<Origin>,
+    /// The tool that installed it, from the distribution's `INSTALLER`
+    /// file (`pip`, `uv`, `conda`), when it has one.
+    pub installer: Option<String>,
 }
 
 /// How long the env's interpreter may take to list its distributions.
@@ -608,7 +611,8 @@ for d in m.distributions():
         name = d.metadata["Name"]
     except Exception:
         name = None
-    rows.append([name, d.version, d.read_text("direct_url.json")])
+    installer = d.read_text("INSTALLER")
+    rows.append([name, d.version, d.read_text("direct_url.json"), installer and installer.strip()])
 sys.stdout.write("SCUV_ORIGINS:" + json.dumps(rows) + "\n")
 "#;
 
@@ -651,9 +655,31 @@ fn unreadable(env_path: &Path, reason: String) -> ScoopError {
     }
 }
 
-/// One distribution as the interpreter reports it.
+/// One distribution as the interpreter reports it: name, version,
+/// `direct_url.json` and `INSTALLER`. A row of three (no installer) is
+/// accepted as one with no `INSTALLER`.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-pub(crate) struct OriginRow(Option<String>, Option<String>, Option<String>);
+#[serde(try_from = "Vec<Option<String>>")]
+pub(crate) struct OriginRow(
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+);
+
+impl TryFrom<Vec<Option<String>>> for OriginRow {
+    type Error = String;
+
+    fn try_from(mut fields: Vec<Option<String>>) -> std::result::Result<Self, String> {
+        if !(3..=4).contains(&fields.len()) {
+            return Err(format!("a row has {} fields, not 3 or 4", fields.len()));
+        }
+        fields.resize(4, None);
+        let mut fields = fields.into_iter();
+        let mut next = || fields.next().flatten();
+        Ok(Self(next(), next(), next(), next()))
+    }
+}
 
 /// Runs [`ORIGIN_SCRIPT`] with `python` and returns its rows.
 ///
@@ -759,14 +785,18 @@ pub(crate) fn parse_origin_output(out: &[u8]) -> std::result::Result<Vec<OriginR
 }
 
 /// Joins uv's inventory with the interpreter's rows by canonical name and
-/// version. Every uv package must match rows that agree on one origin, and
-/// a package uv calls editable must have an editable directory origin.
+/// version. Every uv package must match rows that agree on one origin and
+/// one installer. A package uv calls editable must have an editable
+/// directory origin; an old `setup.py develop` install (an `.egg-link`)
+/// records none, and then the origin is the editable project location uv
+/// reports.
 pub(crate) fn reconcile(
     listed: Vec<UvPipListEntry>,
     rows: Vec<OriginRow>,
 ) -> std::result::Result<Vec<InstalledPackage>, String> {
-    let mut by_key: BTreeMap<(String, String), Vec<Option<Origin>>> = BTreeMap::new();
-    for OriginRow(name, version, direct_url) in rows {
+    type Found = (Option<Origin>, Option<String>);
+    let mut by_key: BTreeMap<(String, String), Vec<Found>> = BTreeMap::new();
+    for OriginRow(name, version, direct_url, installer) in rows {
         let (Some(name), Some(version)) = (name, version) else {
             continue;
         };
@@ -776,10 +806,11 @@ pub(crate) fn reconcile(
                 t!("packages.bad_direct_url", package = &name, error = e).to_string()
             })?),
         };
+        let installer = installer.filter(|i| !i.is_empty());
         by_key
             .entry((canonical_name(&name), version))
             .or_default()
-            .push(origin);
+            .push((origin, installer));
     }
 
     listed
@@ -794,8 +825,8 @@ pub(crate) fn reconcile(
                 )
                 .to_string()
             })?;
-            let origin = found[0].clone();
-            if found.iter().any(|o| *o != origin) {
+            let (origin, installer) = found[0].clone();
+            if found.iter().any(|(o, _)| *o != origin) {
                 return Err(t!(
                     "packages.ambiguous",
                     package = &entry.name,
@@ -803,16 +834,37 @@ pub(crate) fn reconcile(
                 )
                 .to_string());
             }
-            let editable = matches!(origin, Some(Origin::Dir { editable: true, .. }));
-            if entry.editable_project_location.is_some() && !editable {
-                return Err(
-                    t!("packages.editable_without_origin", package = &entry.name).to_string(),
-                );
+            // The installer decides how migrate treats a package (conda's
+            // builds go to the registry), so rows must agree on it too.
+            if found.iter().any(|(_, i)| *i != installer) {
+                return Err(t!(
+                    "packages.installer_ambiguous",
+                    package = &entry.name,
+                    version = &entry.version
+                )
+                .to_string());
             }
+            let origin = match (origin, entry.editable_project_location.as_deref()) {
+                (Some(o @ Origin::Dir { editable: true, .. }), _) => Some(o),
+                // An `.egg-link` install records no direct_url.json; uv
+                // still reports where the project is.
+                (None, Some(location)) if Path::new(location).is_absolute() => Some(Origin::Dir {
+                    url: path_to_file_url(Path::new(location)),
+                    editable: true,
+                    subdirectory: None,
+                }),
+                (_, Some(_)) => {
+                    return Err(
+                        t!("packages.editable_without_origin", package = &entry.name).to_string(),
+                    );
+                }
+                (origin, None) => origin,
+            };
             Ok(InstalledPackage {
                 name: entry.name,
                 version: entry.version,
                 origin,
+                installer,
             })
         })
         .collect()
@@ -827,6 +879,9 @@ pub(crate) fn reconcile(
 pub struct LocalSource {
     pub package: String,
     pub path: PathBuf,
+    /// A directory uv builds (`Origin::Dir`), which [`preflight`] checks is
+    /// that package's project; an archive or repository is not.
+    pub project: bool,
 }
 
 /// `uv pip install` arguments that put the packages back as they came.
@@ -884,6 +939,7 @@ impl InstallPlan {
                 local_sources.push(LocalSource {
                     package: p.name.clone(),
                     path,
+                    project: matches!(origin, Origin::Dir { .. }),
                 });
             }
             match origin {
@@ -1120,42 +1176,96 @@ fn strongest_hash(hashes: &BTreeMap<String, String>) -> Option<(&str, &str)> {
         .find_map(|alg| hashes.get(alg).map(|hex| (alg, hex.as_str())))
 }
 
-/// Checks a plan before anything is deleted or created: every local source
-/// must exist, and, when `target` exists (only then does `--force` delete
-/// it), no local source may be reached through an entry inside `target`.
+/// Checks a plan before anything is deleted or created. Every local source
+/// must exist, and a directory source must be the package's project
+/// ([`check_project`]); these run whatever `roots` holds. Then, for each
+/// root that exists (an env `--force` would delete, a source `migrate
+/// --delete-source` would remove), no local source may be reached through
+/// an entry inside it.
 ///
 /// # Errors
 ///
-/// [`ScoopError::PackageSourceMissing`] or
+/// [`ScoopError::PackageSourceMissing`],
+/// [`ScoopError::PackageSourceNotAProject`] or
 /// [`ScoopError::PackageSourceInsideTarget`].
-pub fn preflight(plan: &InstallPlan, target: &Path) -> Result<()> {
-    let target = if target.try_exists()? {
-        Some(std::fs::canonicalize(target)?)
-    } else {
-        None
-    };
+pub fn preflight(plan: &InstallPlan, roots: &[&Path]) -> Result<()> {
+    let mut existing = Vec::new();
+    for root in roots {
+        if root.try_exists()? {
+            existing.push(std::fs::canonicalize(root)?);
+        }
+    }
     for source in plan.local_sources() {
         let visited =
             resolve_visiting(&source.path).map_err(|_| ScoopError::PackageSourceMissing {
                 package: source.package.clone(),
                 path: source.path.clone(),
             })?;
-        let Some(target) = &target else { continue };
-        for entry in &visited {
-            #[cfg(unix)]
-            let inside = is_within_by_id(entry, target)?;
-            #[cfg(not(unix))]
-            let inside = is_within_by_name(entry, target)?;
-            if inside {
-                return Err(ScoopError::PackageSourceInsideTarget {
+        if source.project {
+            check_project(&source.package, &source.path).map_err(|reason| {
+                ScoopError::PackageSourceNotAProject {
                     package: source.package.clone(),
                     path: source.path.clone(),
-                    target: target.clone(),
-                });
+                    reason,
+                }
+            })?;
+        }
+        for root in &existing {
+            for entry in &visited {
+                if is_within(entry, root)? {
+                    return Err(ScoopError::PackageSourceInsideTarget {
+                        package: source.package.clone(),
+                        path: source.path.clone(),
+                        target: root.clone(),
+                    });
+                }
             }
         }
     }
     Ok(())
+}
+
+/// Whether uv would build `dir` as `package`: it needs a `pyproject.toml`
+/// or a `setup.py` there (uv's own refusal otherwise, measured), and a
+/// `pyproject.toml` that names a project statically (PEP 621 forbids a
+/// dynamic name) must name this one. An old src-layout `.egg-link` points
+/// at `src/`, which has neither file. A `setup.py`-only project cannot be
+/// checked by name.
+fn check_project(package: &str, dir: &Path) -> std::result::Result<(), String> {
+    let pyproject = dir.join("pyproject.toml");
+    let has_pyproject = pyproject.is_file();
+    if !has_pyproject && !dir.join("setup.py").is_file() {
+        return Err(t!("packages.no_project_file").to_string());
+    }
+    if !has_pyproject {
+        return Ok(());
+    }
+    let text = std::fs::read_to_string(&pyproject).map_err(|e| e.to_string())?;
+    let doc: toml::Table = toml::from_str(&text)
+        .map_err(|e| t!("packages.pyproject_unreadable", error = e.message()).to_string())?;
+    let name = doc
+        .get("project")
+        .and_then(|p| p.get("name"))
+        .and_then(|n| n.as_str());
+    match name {
+        Some(name) if canonical_name(name) != canonical_name(package) => {
+            Err(t!("packages.pyproject_names_another", name = name).to_string())
+        }
+        _ => Ok(()),
+    }
+}
+
+/// Whether `entry` is `target` or lies under it: by device and inode on
+/// Unix, by canonical name elsewhere (see the two helpers).
+///
+/// # Errors
+///
+/// Reading `target`'s metadata, or (elsewhere) canonicalizing either path.
+pub(crate) fn is_within(entry: &Path, target: &Path) -> std::io::Result<bool> {
+    #[cfg(unix)]
+    return is_within_by_id(entry, target);
+    #[cfg(not(unix))]
+    return is_within_by_name(entry, target);
 }
 
 /// Whether `entry` is `target` or lies under it, compared by device and
@@ -1228,9 +1338,25 @@ pub fn prepare_install(
     from: &str,
     target: &Path,
 ) -> Result<InstallPlan> {
+    prepare_install_with(&crate::uv::UvClient::new()?, packages, from, &[target])
+}
+
+/// [`prepare_install`] with a uv client the caller already has, and any
+/// number of directories that may be removed (`roots`): an env `--force`
+/// replaces, a source `migrate --delete-source` removes.
+///
+/// # Errors
+///
+/// As [`InstallPlan::build`], [`preflight`] and [`check_hash_support`].
+pub fn prepare_install_with(
+    uv: &crate::uv::UvClient,
+    packages: &[InstalledPackage],
+    from: &str,
+    roots: &[&Path],
+) -> Result<InstallPlan> {
     let plan = InstallPlan::build(packages, from)?;
-    preflight(&plan, target)?;
-    check_hash_support(&plan, || crate::uv::UvClient::new()?.version())?;
+    preflight(&plan, roots)?;
+    check_hash_support(&plan, || uv.version())?;
     Ok(plan)
 }
 
@@ -1248,6 +1374,21 @@ const MAX_SYMLINK_EXPANSIONS: usize = 40;
 /// A relative path, a missing entry, or more than
 /// [`MAX_SYMLINK_EXPANSIONS`] symlinks.
 pub(crate) fn resolve_visiting(path: &Path) -> std::io::Result<Vec<PathBuf>> {
+    resolve(path, false)
+}
+
+/// [`resolve_visiting`] for a path that may not exist yet: it stops at the
+/// first missing entry and returns what it visited up to there, so the
+/// existing part of a prospective path is walked like any other.
+///
+/// # Errors
+///
+/// A relative path, or more than [`MAX_SYMLINK_EXPANSIONS`] symlinks.
+pub(crate) fn resolve_visiting_existing(path: &Path) -> std::io::Result<Vec<PathBuf>> {
+    resolve(path, true)
+}
+
+fn resolve(path: &Path, stop_at_missing: bool) -> std::io::Result<Vec<PathBuf>> {
     use std::io::{Error, ErrorKind};
     if !path.is_absolute() {
         return Err(Error::new(ErrorKind::InvalidInput, "relative path"));
@@ -1263,7 +1404,11 @@ pub(crate) fn resolve_visiting(path: &Path) -> std::io::Result<Vec<PathBuf>> {
             continue;
         }
         let next = resolved.join(&part);
-        let meta = std::fs::symlink_metadata(&next)?;
+        let meta = match std::fs::symlink_metadata(&next) {
+            Ok(meta) => meta,
+            Err(e) if stop_at_missing && e.kind() == ErrorKind::NotFound => break,
+            Err(e) => return Err(e),
+        };
         visited.push(next.clone());
         if meta.file_type().is_symlink() {
             expanded.push(next.clone());

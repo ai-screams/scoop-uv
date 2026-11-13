@@ -536,7 +536,9 @@ the container: nextest builds the debug `scuv` binary with the tests, and
 `SCUV_ENTRYPOINT_BUILD=0` stops the entrypoint's own release build. It
 then checks with `docker/scripts/check_fixture.py` that
 `scuv migrate list --json` finds that image's fixture env ready to
-migrate.
+migrate, and that `scuv migrate @env <fixture> --dry-run --json` reads its
+packages and their origins with no failure: the only place a real conda,
+pyenv or virtualenvwrapper env is read.
 
 ## Benchmarks (Criterion)
 

@@ -156,7 +156,9 @@ jobs:
         # image's fixture env, ready, with a working interpreter: the
         # migration tests build their own fake trees and `migrate list`
         # exits 0 on an empty result, so nothing else would notice a
-        # broken fixture.
+        # broken fixture. It also dry-runs `migrate @env` on the fixture, so
+        # reading a real conda / pyenv / virtualenvwrapper env's packages and
+        # origins is exercised somewhere.
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
@@ -172,5 +174,5 @@ jobs:
               set -o pipefail &&
               cargo nextest run --profile ci --run-ignored all &&
               ./target/debug/scuv migrate list --json |
-                python3 docker/scripts/check_fixture.py ${{ matrix.fixture }} ${{ matrix.source-type }} ${{ matrix.python }}
+                python3 docker/scripts/check_fixture.py ${{ matrix.fixture }} ${{ matrix.source-type }} ${{ matrix.python }} ./target/debug/scuv
             "

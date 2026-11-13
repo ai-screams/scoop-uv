@@ -181,6 +181,7 @@ impl ExportSchema {
                 name: p.name.clone(),
                 version: p.version.clone(),
                 origin: p.source.clone(),
+                installer: None,
             })
             .collect()
     }
@@ -206,6 +207,7 @@ mod tests {
             name: name.to_string(),
             version: version.to_string(),
             origin,
+            installer: None,
         }
     }
 

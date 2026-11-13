@@ -161,7 +161,6 @@ impl ScoopError {
             | Self::CondaEnvNotFound { .. }
             | Self::SourceEnvNotFound { .. }
             | Self::CorruptedEnvironment { .. }
-            | Self::PackageExtractionFailed { .. }
             | Self::MigrationFailed { .. }
             | Self::MigrationNameConflict { .. }
             | Self::InvalidPythonPath { .. }
@@ -176,6 +175,7 @@ impl ScoopError {
             | Self::ConfirmationUnavailable { .. }
             | Self::PackageOriginsUnreadable { .. }
             | Self::PackageSourceMissing { .. }
+            | Self::PackageSourceNotAProject { .. }
             | Self::PackageSourceInsideTarget { .. }
             | Self::PackageHashUnenforced { .. } => ErrorRenderPolicy::Default,
         }

@@ -367,7 +367,6 @@ pub enum ScoopError {
     CondaEnvNotFound { name: String },
     SourceEnvNotFound { name: String },
     CorruptedEnvironment { name: String, reason: String },
-    PackageExtractionFailed { reason: String },
     MigrationFailed { reason: String },
     MigrationNameConflict { name: String, existing: PathBuf },
 
@@ -382,7 +381,7 @@ pub enum ScoopError {
     // including UnsupportedLanguage, SelfUpdateFailed, NoActiveEnvironment, ExecutableNotFound,
     // ManifestNotFound, InvalidExportFile, UnsupportedExportVersion,
     // VerifyFailed, DoctorFindings, ConfirmationUnavailable, PackageOriginsUnreadable,
-    // PackageSourceMissing, PackageSourceInsideTarget, PackageHashUnenforced,
+    // PackageSourceMissing, PackageSourceNotAProject, PackageSourceInsideTarget, PackageHashUnenforced,
     // MigrationSourcesNotFound, MigrationBatchFailed and DiffMismatch.
 }
 

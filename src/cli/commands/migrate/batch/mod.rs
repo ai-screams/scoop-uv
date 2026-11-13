@@ -131,7 +131,13 @@ fn migrate_all_with(
             failed: Vec::new(),
         }
     } else {
-        run::run_batch(output, opts, &migratable)?
+        // Every env found but not migrated: its packages may live in a
+        // source or target this batch would remove.
+        let others: Vec<&crate::core::migrate::SourceEnvironment> = environments
+            .iter()
+            .filter(|env| !migratable.iter().any(|m| std::ptr::eq(*m, *env)))
+            .collect();
+        run::run_batch(output, opts, &migratable, &others)?
     };
     // The summary's total counts them, as it did when the migrator refused
     // them; a declined plan attempted none of the others.
