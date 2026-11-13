@@ -14130,7 +14130,9 @@ msgid ""
 "binary with the tests, and `SCUV_ENTRYPOINT_BUILD=0` stops the entrypoint's "
 "own release build. It then checks with `docker/scripts/check_fixture.py` "
 "that `scuv migrate list --json` finds that image's fixture env ready to "
-"migrate."
+"migrate, and that `scuv migrate @env <fixture> --dry-run --json` reads its "
+"packages and their origins with no failure: the only place a real conda, "
+"pyenv or virtualenvwrapper env is read."
 msgstr ""
 "CI는 `.github/workflows/integration-test.yml`의 strategy.matrix로 세 가지를 "
 "병렬 실행하며, 소스별로 BuildKit 캐시 범위를 나눕니다(`cache-from/"
@@ -14139,81 +14141,83 @@ msgstr ""
 "`scuv` 바이너리를 빌드하고, `SCUV_ENTRYPOINT_BUILD=0`이 entrypoint 자체의 "
 "release 빌드를 막습니다. 이어서 `docker/scripts/check_fixture.py`로 `scuv "
 "migrate list --json`이 그 이미지의 fixture 환경을 마이그레이션 가능한 상태로 "
-"찾는지 확인합니다."
+"찾는지, 그리고 `scuv migrate @env <fixture> --dry-run --json`이 그 패키지와 "
+"출처를 실패 없이 읽는지 확인합니다. 실제 conda, pyenv, virtualenvwrapper 환경"
+"을 읽는 곳은 여기뿐입니다."
 
-#: src/development/testing.md:541
+#: src/development/testing.md:543
 msgid "Benchmarks (Criterion)"
 msgstr "벤치마크 (Criterion)"
 
-#: src/development/testing.md:543
+#: src/development/testing.md:545
 msgid "Three bench binaries live in `benches/`:"
 msgstr "`benches/`에 세 개의 벤치 바이너리가 있습니다:"
 
-#: src/development/testing.md:545
+#: src/development/testing.md:547
 msgid "Binary"
 msgstr "바이너리"
 
-#: src/development/testing.md:545
+#: src/development/testing.md:547
 msgid "Targets"
 msgstr "대상"
 
-#: src/development/testing.md:547
+#: src/development/testing.md:549
 msgid "`parsing`"
 msgstr "`parsing`"
 
-#: src/development/testing.md:547
+#: src/development/testing.md:549
 msgid "clap parse, TOML manifest, JSON `uv python list`"
 msgstr "clap 파싱, TOML 매니페스트, JSON `uv python list`"
 
-#: src/development/testing.md:548
+#: src/development/testing.md:550
 msgid "`validation`"
 msgstr "`validation`"
 
-#: src/development/testing.md:548
+#: src/development/testing.md:550
 msgid "`is_valid_env_name` across 6 representative inputs"
 msgstr "6가지 대표 입력에 대한 `is_valid_env_name`"
 
-#: src/development/testing.md:549 src/development/ci-cd.md:72
+#: src/development/testing.md:551 src/development/ci-cd.md:72
 msgid "`path_lookup`"
 msgstr "`path_lookup`"
 
-#: src/development/testing.md:549
+#: src/development/testing.md:551
 msgid "`find_executable_in` hit + miss"
 msgstr "`find_executable_in` 히트 + 미스"
 
-#: src/development/testing.md:551
+#: src/development/testing.md:553
 msgid "Local workflow"
 msgstr "로컬 워크플로우"
 
-#: src/development/testing.md:554
+#: src/development/testing.md:556
 msgid "# Run all benches once (no baseline diffing)\n"
 msgstr "# Run all benches once (no baseline diffing)\n"
 
-#: src/development/testing.md:556
+#: src/development/testing.md:558
 msgid "# Save current results as a named baseline (default: \"main\")\n"
 msgstr "# Save current results as a named baseline (default: \"main\")\n"
 
-#: src/development/testing.md:558
+#: src/development/testing.md:560
 msgid "# saves as \"main\"\n"
 msgstr "# saves as \"main\"\n"
 
-#: src/development/testing.md:559
+#: src/development/testing.md:561
 msgid "# saves as \"before-X\"\n"
 msgstr "# saves as \"before-X\"\n"
 
-#: src/development/testing.md:560
+#: src/development/testing.md:562
 msgid "# Compare current results against a saved baseline\n"
 msgstr "# Compare current results against a saved baseline\n"
 
-#: src/development/testing.md:562
+#: src/development/testing.md:564
 msgid "# vs \"main\"\n"
 msgstr "# vs \"main\"\n"
 
-#: src/development/testing.md:564
+#: src/development/testing.md:566
 msgid "# Run all benches inside Docker (reproducible)\n"
 msgstr "# Run all benches inside Docker (reproducible)\n"
 
-#: src/development/testing.md:569
+#: src/development/testing.md:571
 msgid ""
 "Criterion writes HTML reports to `target/criterion/report/index.html` for "
 "visual diffing."
@@ -14221,33 +14225,33 @@ msgstr ""
 "Criterion은 HTML 보고서를 `target/criterion/report/index.html`에 작성하여 시"
 "각적 비교를 지원합니다."
 
-#: src/development/testing.md:572
+#: src/development/testing.md:574
 msgid "CI regression gate"
 msgstr "CI 회귀 게이트"
 
-#: src/development/testing.md:574
+#: src/development/testing.md:576
 msgid "`.github/workflows/bench.yml` runs every PR and push:"
 msgstr "`.github/workflows/bench.yml`은 모든 PR과 푸시에서 실행됩니다:"
 
-#: src/development/testing.md:576
+#: src/development/testing.md:578
 msgid ""
 "On `main`: results are pushed to the `gh-pages` branch as the new baseline."
 msgstr "`main`에서: 결과가 새 기준선으로 `gh-pages` 브랜치에 푸시됩니다."
 
-#: src/development/testing.md:578
+#: src/development/testing.md:580
 msgid "On PRs: results are compared against that baseline."
 msgstr "PR에서: 결과가 해당 기준선과 비교됩니다."
 
-#: src/development/testing.md:579
+#: src/development/testing.md:581
 msgid "**CPU benches (`parsing`, `validation`)**: alert and fail past 250%"
 msgstr "**CPU 벤치(`parsing`, `validation`)**: 250%를 넘으면 경고하고 실패"
 
-#: src/development/testing.md:580
+#: src/development/testing.md:582
 msgid "**Filesystem bench (`path_lookup`)**: alert past 500%, never fails"
 msgstr ""
 "**파일 시스템 벤치(`path_lookup`)**: 500%를 넘으면 경고하며 실패하지 않음"
 
-#: src/development/testing.md:582
+#: src/development/testing.md:584
 msgid ""
 "Thresholds account for GitHub-hosted runner variance (10-30% per-bench noise "
 "is normal on shared CPU). Tighten by running on a self-hosted runner with "
