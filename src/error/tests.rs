@@ -1173,6 +1173,11 @@ fn every_variant() -> Vec<ScoopError> {
             package: "pkg-abi".into(),
             path: PathBuf::from("/p/abj"),
         },
+        ScoopError::PackageSourceNotAProject {
+            package: "pkg-abq".into(),
+            path: PathBuf::from("/p/abr"),
+            reason: "why-abs".into(),
+        },
         ScoopError::PackageSourceInsideTarget {
             package: "pkg-abk".into(),
             path: PathBuf::from("/p/abl"),
@@ -1237,6 +1242,7 @@ fn every_variant_is_listed(e: &ScoopError) {
         | ScoopError::ConfirmationUnavailable { .. }
         | ScoopError::PackageOriginsUnreadable { .. }
         | ScoopError::PackageSourceMissing { .. }
+        | ScoopError::PackageSourceNotAProject { .. }
         | ScoopError::PackageSourceInsideTarget { .. }
         | ScoopError::PackageHashUnenforced { .. }
         | ScoopError::MigrationSourcesNotFound { .. }

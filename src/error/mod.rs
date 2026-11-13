@@ -163,6 +163,16 @@ pub enum ScoopError {
     /// before anything is deleted or created).
     PackageSourceMissing { package: String, path: PathBuf },
 
+    /// A package installs from a local directory that uv would not build
+    /// as that package: no `pyproject.toml` or `setup.py`, or a
+    /// `pyproject.toml` naming another project (checked before anything is
+    /// deleted or created).
+    PackageSourceNotAProject {
+        package: String,
+        path: PathBuf,
+        reason: String,
+    },
+
     /// A package's local source is reached through `target`, the env
     /// `--force` would delete first, so replacing it would remove the
     /// source.

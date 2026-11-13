@@ -176,6 +176,7 @@ impl ScoopError {
             | Self::ConfirmationUnavailable { .. }
             | Self::PackageOriginsUnreadable { .. }
             | Self::PackageSourceMissing { .. }
+            | Self::PackageSourceNotAProject { .. }
             | Self::PackageSourceInsideTarget { .. }
             | Self::PackageHashUnenforced { .. } => ErrorRenderPolicy::Default,
         }

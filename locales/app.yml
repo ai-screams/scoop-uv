@@ -1540,6 +1540,13 @@ error.package_source_missing:
   ja: "'%{package}' のインストール元 %{path} が存在しません"
   es: "'%{package}' se instala desde %{path}, que no existe"
 
+error.package_source_not_a_project:
+  en: "'%{package}' installs from %{path}, which uv would not build as that package: %{reason}"
+  ko: "'%{package}'의 설치 경로 %{path}를 uv가 그 패키지로 빌드하지 않음: %{reason}"
+  pt-BR: "'%{package}' é instalado de %{path}, que o uv não construiria como esse pacote: %{reason}"
+  ja: "'%{package}' のインストール元 %{path} は uv がそのパッケージとしてビルドできません: %{reason}"
+  es: "'%{package}' se instala desde %{path}, que uv no construiría como ese paquete: %{reason}"
+
 error.package_source_inside_target:
   en: "'%{package}' installs from %{path}, which depends on %{target}: replacing that env would remove its source"
   ko: "'%{package}'의 설치 경로가 %{target} 안을 거쳐서(%{path}) 그 env를 바꾸면 소스가 지워짐"
@@ -2694,6 +2701,34 @@ packages.ambiguous:
   pt-BR: "%{package} %{version} está instalado mais de uma vez com origens diferentes"
   ja: "%{package} %{version} が異なる出所で複数回インストールされています"
   es: "%{package} %{version} está instalado más de una vez con orígenes distintos"
+
+packages.installer_ambiguous:
+  en: "%{package} %{version} is installed more than once by different installers"
+  ko: "%{package} %{version}: 설치 도구가 다른 설치가 여러 개 있음"
+  pt-BR: "%{package} %{version} está instalado mais de uma vez por instaladores diferentes"
+  ja: "%{package} %{version} が異なるインストーラーで複数回インストールされています"
+  es: "%{package} %{version} está instalado más de una vez por instaladores distintos"
+
+packages.no_project_file:
+  en: "it has no pyproject.toml or setup.py"
+  ko: "pyproject.toml도 setup.py도 없음"
+  pt-BR: "não tem pyproject.toml nem setup.py"
+  ja: "pyproject.toml も setup.py もありません"
+  es: "no tiene pyproject.toml ni setup.py"
+
+packages.pyproject_unreadable:
+  en: "its pyproject.toml does not parse: %{error}"
+  ko: "pyproject.toml을 읽지 못함: %{error}"
+  pt-BR: "o pyproject.toml não pôde ser lido: %{error}"
+  ja: "pyproject.toml を解析できません: %{error}"
+  es: "su pyproject.toml no se puede leer: %{error}"
+
+packages.pyproject_names_another:
+  en: "its pyproject.toml names the project %{name}"
+  ko: "pyproject.toml의 프로젝트 이름이 %{name}"
+  pt-BR: "o pyproject.toml nomeia o projeto %{name}"
+  ja: "pyproject.toml のプロジェクト名が %{name} です"
+  es: "su pyproject.toml nombra el proyecto %{name}"
 
 packages.editable_without_origin:
   en: "uv reports %{package} as editable, but it has no editable origin recorded"

@@ -208,6 +208,18 @@ impl ScoopError {
                 path = path.display()
             )
             .to_string(),
+            Self::PackageSourceNotAProject {
+                package,
+                path,
+                reason,
+            } => t!(
+                "error.package_source_not_a_project",
+                locale = locale,
+                package = package,
+                path = path.display(),
+                reason = reason
+            )
+            .to_string(),
             Self::PackageSourceInsideTarget {
                 package,
                 path,

@@ -52,6 +52,7 @@ impl ScoopError {
             Self::ConfirmationUnavailable { .. } => "CONFIRMATION_UNAVAILABLE",
             Self::PackageOriginsUnreadable { .. } => "PACKAGE_ORIGINS_UNREADABLE",
             Self::PackageSourceMissing { .. } => "PACKAGE_SOURCE_MISSING",
+            Self::PackageSourceNotAProject { .. } => "PACKAGE_SOURCE_NOT_A_PROJECT",
             Self::PackageSourceInsideTarget { .. } => "PACKAGE_SOURCE_INSIDE_TARGET",
             Self::PackageHashUnenforced { .. } => "PACKAGE_HASH_UNENFORCED",
             Self::MigrationSourcesNotFound { .. } => "MIGRATE_SOURCES_NOT_FOUND",

@@ -269,6 +269,7 @@ mod tests {
         fn installs_an_editable_package_from_its_path() {
             let work = tempfile::TempDir::new().unwrap();
             let proj = std::fs::canonicalize(work.path()).unwrap();
+            std::fs::write(proj.join("setup.py"), "").unwrap();
             run(&[], |home, uv| {
                 let packages = format!(
                     r#"[{{"name":"six","version":"1.16.0","source":null}},{{"name":"p","version":"1","source":{{"url":"file://{}","dir_info":{{"editable":true}}}}}}]"#,
