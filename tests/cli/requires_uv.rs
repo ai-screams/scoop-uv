@@ -403,8 +403,8 @@ fn import_never_installs_a_hashed_origin_archive_unchecked() {
             .arg("-o")
             .arg(&dist),
     );
-    // The wheel, not whatever else `uv build` writes there (newer uv adds a
-    // `.gitignore`), and directory order is not fixed.
+    // The wheel, not whatever else `uv build` writes there (uv 0.5.19 and
+    // 0.12 both add a `.gitignore`), and directory order is not fixed.
     let wheel = std::fs::read_dir(&dist)
         .unwrap()
         .map(|entry| entry.unwrap().path())

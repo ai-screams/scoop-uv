@@ -106,9 +106,9 @@ fn migrate_all_environments_with_corrupted_envs() {
 
 #[test]
 #[serial]
-fn migrate_all_environments_dry_run_propagates_pip_failure() {
-    // create_mock_pyenv_env builds a directory skeleton WITHOUT a real
-    // pip binary, so the migrator's package-extraction step fails.
+fn migrate_all_environments_dry_run_propagates_unreadable_packages() {
+    // create_mock_pyenv_env's `bin/python` is an empty file that uv cannot
+    // query, so reading the env's packages (`uv pip list`) fails.
     // Pre-Inc4 this was silently swallowed (Ok regardless). Now it
     // correctly surfaces as MigrationBatchFailed so users (and CI)
     // learn the dry-run would fail in production.
@@ -135,7 +135,8 @@ fn migrate_all_environments_dry_run_propagates_pip_failure() {
 }
 
 /// `migrate all --allow-eol` plans an EOL env instead of skipping it. The
-/// mock env has no pip, so the dry run then fails on that env. Fails if the
+/// mock env's `bin/python` cannot be queried, so reading its packages fails
+/// and the dry run then fails on that env. Fails if the
 /// batch plans with `--force` alone: the EOL env is skipped and the batch
 /// succeeds with nothing to migrate.
 #[test]
@@ -170,8 +171,8 @@ fn migrate_all_environments_allow_eol_plans_eol_envs() {
 #[test]
 #[serial]
 fn migrate_all_environments_json_emits_failure_envelope() {
-    // Mock env has no pip → migrator returns extraction error → JSON
-    // failure envelope is emitted on stdout BEFORE the Err returns.
+    // Mock env's `bin/python` cannot be queried → reading its packages
+    // fails → JSON failure envelope is emitted on stdout BEFORE the Err returns.
     // The Quiet render policy on MigrationBatchFailed then prevents
     // main.rs from appending the generic `error:` prefix.
     with_full_migrate_env(|_scoop, pyenv| {

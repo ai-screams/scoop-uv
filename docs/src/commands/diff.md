@@ -10,7 +10,7 @@ something breaks.
 ```bash
 scuv diff <env-a> <env-b>                   # human table, exit 0
 scuv diff <env-a> <env-b> --json            # machine-readable
-scuv diff <env-a> <env-b> --strict          # exit 1 if any diff
+scuv diff <env-a> <env-b> --strict          # exit 1 if any diff (created_at counts)
 scuv diff <env-a> <env-b> --packages-only   # skip metadata section
 scuv diff <env-a> <env-b> --metadata-only   # skip package enumeration
 ```
@@ -71,9 +71,15 @@ catchall exit `1` path; `--strict` is not required for those.
 ### Identical envs
 
 ```bash
-$ scuv diff webapp webapp-mirror
+$ scuv diff webapp webapp-twin --packages-only
 • Environments are identical
 ```
+
+Separately created envs normally differ in `created_at` (each env's
+metadata records when it was made), so without `--packages-only` the
+metadata section reports at least that one change
+(`webapp-twin` here is a `scuv clone` of `webapp`). Comparing an env with
+itself prints the same single line.
 
 ### Mixed differences
 
@@ -108,9 +114,13 @@ stays empty unless `--json` is set.
 ### CI gate (fail the build on drift)
 
 ```bash
-scuv diff baseline production --strict
-# exits 1 if baseline and production diverge
+scuv diff baseline production --packages-only --strict
+# exits 1 if the Python or the packages differ
 ```
+
+Without `--packages-only`, `--strict` also counts the metadata, and
+separately created envs normally differ in `created_at`, so the gate would
+fail even when the packages match.
 
 ## JSON output
 
@@ -119,6 +129,8 @@ scuv diff baseline production --strict
 the top-level wrapper differs. An error that stops the comparison (an
 env that does not exist, unreadable metadata) prints the generic error
 envelope instead: `status`, `command` and `error`, with no `data`.
+The success and `--strict` envelopes are printed on a single line
+(formatted below for reading); the generic error envelope is indented.
 
 ### Success envelope (default exit 0)
 

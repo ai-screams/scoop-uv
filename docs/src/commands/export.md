@@ -46,12 +46,12 @@ version `2`; `scuv import` reads `1` and `2`.
     "created_at": "2026-05-29T12:34:56.762998+00:00"
   },
   "packages": [
-    { "name": "pytest", "version": "8.0.0", "source": null },
     {
       "name": "mylib",
       "version": "0.3.0",
       "source": { "url": "file:///home/me/src/mylib", "dir_info": { "editable": true } }
     },
+    { "name": "six", "version": "1.17.0", "source": null },
     {
       "name": "tool",
       "version": "1.2.0",
@@ -65,6 +65,8 @@ version `2`; `scuv import` reads `1` and `2`.
 ```
 
 Field notes:
+- `packages` lists every installed package, dependencies included, sorted
+  by name.
 - `environment.python` is the version recorded in the env's metadata, which
   comes from `version_info` in the env's `pyvenv.cfg`. Current uv writes the
   minor version there (`3.12`); envs made with `--python-path` pointing at an
@@ -90,6 +92,16 @@ A local `file://` source is an absolute path on the machine that exported
 it. Importing on another machine needs the same path there; scuv checks
 before creating anything and names the package whose path is missing. The
 export does not contain the source code itself.
+
+When the project lives somewhere else on the new machine, change that
+package's `source.url` to the new place of the directory it names, written
+the way export writes it: `file://` and the absolute path with forward
+slashes, with `#`, `?` and `%` written as `%23`, `%3F` and `%25`
+(`file:///home/me/code/mylib`, or `file:///C:/code/mylib` on Windows; a
+space can stay as typed). An editable package cannot come from a path with
+a `#` at all (see [`scuv import`](import.md#behaviour)). A `subdirectory`
+in the same `source` stays relative to that directory. Then import again. scuv reports one
+missing path at a time, so repeat for each local package it names.
 
 Version 1 files (scuv 0.21 and older) have no `source`; importing one
 reinstalls every package from the registry, as before. scuv 0.21 and older

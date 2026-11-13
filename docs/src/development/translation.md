@@ -36,7 +36,7 @@ create.success:
 
 **Important:**
 
-- Add translations to all 402 keys
+- Add translations to all 403 keys
 - Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc.
 - Preserve special characters: `→`, quotes, backticks
 
@@ -117,7 +117,7 @@ SCUV_LANG={lang} ./target/debug/scuv lang
 
 **Required files in PR:**
 
-- [ ] `locales/app.yml` - All 402 keys translated
+- [ ] `locales/app.yml` - All 403 keys translated
 - [ ] `src/i18n.rs` - Language registered in SUPPORTED_LANGS
 - [ ] `tests/i18n_completeness.rs` - Language added to LOCALES
 - [ ] `src/shell/scripts/*_completion.*` (all four shells) - Completion lists updated
@@ -342,7 +342,7 @@ All languages must have ALL keys. Missing keys fall back to English.
 
 Before submitting PR:
 
-- [ ] All 402 keys translated
+- [ ] All 403 keys translated
 - [ ] All placeholders preserved (`%{name}`, `%{version}`, etc.)
 - [ ] Language registered in SUPPORTED_LANGS
 - [ ] Language added to LOCALES in `tests/i18n_completeness.rs`

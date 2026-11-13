@@ -2,7 +2,7 @@
 //!
 //! The flow lives here; each step has its own module:
 //! - [`plan`] decides which environments migrate, conflict or are skipped,
-//! - [`run`] migrates them (in parallel when it helps),
+//! - [`run`] migrates them one at a time,
 //! - [`report`] prints the preview, the summary and the JSON envelope.
 
 mod plan;
