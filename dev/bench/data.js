@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794473766945,
+  "lastUpdate": 1794533373998,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12646,6 +12646,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/max_length",
             "value": 170,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b7d9f71d8fbb80be156d31c0fa941675029c51ac",
+          "message": "Merge pull request #280 from ai-screams/release-plz-2026-11-12T08-45-55Z\n\nchore: release v0.22.0",
+          "timestamp": "2026-11-13T10:25:10+09:00",
+          "tree_id": "fabbf6e4c87d6d0ed5238158baaa378440070f5d",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/b7d9f71d8fbb80be156d31c0fa941675029c51ac"
+        },
+        "date": 1794533373327,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 68661,
+            "range": "± 1751",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 82208,
+            "range": "± 6110",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 2380,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 550,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 73,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 78,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 84,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 70,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 28,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 160,
             "range": "± 0",
             "unit": "ns/iter"
           }
