@@ -103,9 +103,6 @@ pub enum ScoopError {
     /// Corrupted environment
     CorruptedEnvironment { name: String, reason: String },
 
-    /// Package extraction failed
-    PackageExtractionFailed { reason: String },
-
     /// Migration failed
     MigrationFailed { reason: String },
 

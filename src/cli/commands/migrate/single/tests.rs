@@ -22,9 +22,13 @@ fn create_test_result(
         python_version: "3.12.0".to_string(),
         packages_migrated,
         packages_failed,
+        packages_excluded: Vec::new(),
+        packages_from_conda: Vec::new(),
+        packages_added: Vec::new(),
         dry_run,
         path: PathBuf::from(format!("/home/test/.scoop/virtualenvs/{}", name)),
         source_deleted: false,
+        source_kept_reason: None,
         actual_python_version: "3.12.0".to_string(),
     }
 }
@@ -121,9 +125,13 @@ fn migration_result_roundtrip_boundary_values() {
         python_version: "3.12.0".to_string(),
         packages_migrated: 0,
         packages_failed: vec![],
+        packages_excluded: Vec::new(),
+        packages_from_conda: Vec::new(),
+        packages_added: Vec::new(),
         dry_run: false,
         path: PathBuf::from("/test/zero"),
         source_deleted: false,
+        source_kept_reason: None,
         actual_python_version: "3.12.0".to_string(),
     };
 
@@ -137,9 +145,13 @@ fn migration_result_roundtrip_boundary_values() {
         python_version: "3.12.0".to_string(),
         packages_migrated: usize::MAX,
         packages_failed: vec![],
+        packages_excluded: Vec::new(),
+        packages_from_conda: Vec::new(),
+        packages_added: Vec::new(),
         dry_run: false,
         path: PathBuf::from("/test/max"),
         source_deleted: false,
+        source_kept_reason: None,
         actual_python_version: "3.12.0".to_string(),
     };
 
@@ -166,9 +178,13 @@ fn migration_result_roundtrip_path_traversal_in_name() {
             python_version: "3.12.0".to_string(),
             packages_migrated: 1,
             packages_failed: vec![],
+            packages_excluded: Vec::new(),
+            packages_from_conda: Vec::new(),
+            packages_added: Vec::new(),
             dry_run: false,
             path: PathBuf::from("/test/path"),
             source_deleted: false,
+            source_kept_reason: None,
             actual_python_version: "3.12.0".to_string(),
         };
 
@@ -190,9 +206,13 @@ fn migration_result_roundtrip_many_failed_packages() {
         python_version: "3.12.0".to_string(),
         packages_migrated: 500,
         packages_failed: many_packages.clone(),
+        packages_excluded: Vec::new(),
+        packages_from_conda: Vec::new(),
+        packages_added: Vec::new(),
         dry_run: false,
         path: PathBuf::from("/test/large"),
         source_deleted: false,
+        source_kept_reason: None,
         actual_python_version: "3.12.0".to_string(),
     };
 
@@ -222,9 +242,13 @@ fn migration_result_roundtrip_special_chars_in_packages() {
         python_version: "3.12.0".to_string(),
         packages_migrated: 10,
         packages_failed: special_packages.clone(),
+        packages_excluded: Vec::new(),
+        packages_from_conda: Vec::new(),
+        packages_added: Vec::new(),
         dry_run: false,
         path: PathBuf::from("/test/special"),
         source_deleted: false,
+        source_kept_reason: None,
         actual_python_version: "3.12.0".to_string(),
     };
 
@@ -245,9 +269,13 @@ fn migration_result_roundtrip_empty_strings() {
         python_version: String::new(),
         packages_migrated: 0,
         packages_failed: vec![String::new(), String::new()],
+        packages_excluded: Vec::new(),
+        packages_from_conda: Vec::new(),
+        packages_added: Vec::new(),
         dry_run: false,
         path: PathBuf::from(""),
         source_deleted: false,
+        source_kept_reason: None,
         actual_python_version: String::new(),
     };
 

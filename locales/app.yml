@@ -655,11 +655,165 @@ migrate.failed_packages:
   es: "  Paquetes fallidos (%{count}):"
 
 migrate.source_kept:
-  en: "Kept the source of '%{name}': not every package was migrated"
-  ko: "'%{name}'의 원본을 남겼습니다. 옮기지 못한 패키지가 있습니다"
-  pt-BR: "A origem de '%{name}' foi mantida: nem todos os pacotes foram migrados"
-  ja: "'%{name}' の移行元を残しました。移行できなかったパッケージがあります"
-  es: "Se conservó el origen de '%{name}': no se migraron todos los paquetes"
+  en: "Kept the source of '%{name}': %{reason}"
+  ko: "'%{name}'의 원본을 남겼습니다: %{reason}"
+  pt-BR: "A origem de '%{name}' foi mantida: %{reason}"
+  ja: "'%{name}' の移行元を残しました: %{reason}"
+  es: "Se conservó el origen de '%{name}': %{reason}"
+
+migrate.kept_failed:
+  en: "not every package was migrated"
+  ko: "옮기지 못한 패키지가 있음"
+  pt-BR: "nem todos os pacotes foram migrados"
+  ja: "移行できなかったパッケージがあります"
+  es: "no se migraron todos los paquetes"
+
+migrate.kept_conda:
+  en: "a conda environment also holds packages migrate does not move (native libraries, conda builds)"
+  ko: "conda 환경에는 migrate가 옮기지 않는 패키지(네이티브 라이브러리, conda 빌드)도 있음"
+  pt-BR: "um ambiente conda também tem pacotes que o migrate não move (bibliotecas nativas, builds do conda)"
+  ja: "conda 環境には migrate が移さないパッケージ(ネイティブライブラリ、conda ビルド)もあります"
+  es: "un entorno conda también contiene paquetes que migrate no mueve (bibliotecas nativas, builds de conda)"
+
+migrate.kept_depends:
+  en: "%{what} depends on it"
+  ko: "%{what}가 여기에 의존함"
+  pt-BR: "%{what} depende dele"
+  ja: "%{what} がこれに依存しています"
+  es: "%{what} depende de él"
+
+migrate.kept_unplanned:
+  en: "another environment migrate found could not be read, so its packages may depend on this one"
+  ko: "migrate가 찾은 다른 환경을 읽지 못해 그 패키지가 여기에 의존할 수 있음"
+  pt-BR: "outro ambiente encontrado pelo migrate não pôde ser lido, então seus pacotes podem depender deste"
+  ja: "migrate が見つけた別の環境を読めず、そのパッケージがここに依存している可能性があります"
+  es: "no se pudo leer otro entorno que migrate encontró, y sus paquetes pueden depender de este"
+
+migrate.replace_blocked:
+  en: "replacing %{target} would break %{what}"
+  ko: "%{target}를 바꾸면 %{what}가 깨짐"
+  pt-BR: "substituir %{target} quebraria %{what}"
+  ja: "%{target} を置き換えると %{what} が壊れます"
+  es: "reemplazar %{target} rompería %{what}"
+
+migrate.replace_unplanned:
+  en: "replacing %{target} is not safe: another environment migrate found could not be read, and its packages may live there"
+  ko: "%{target}를 바꾸는 것은 안전하지 않음: migrate가 찾은 다른 환경을 읽지 못했고 그 패키지가 그 안에 있을 수 있음"
+  pt-BR: "substituir %{target} não é seguro: outro ambiente encontrado pelo migrate não pôde ser lido e seus pacotes podem estar lá"
+  ja: "%{target} の置き換えは安全ではありません。migrate が見つけた別の環境を読めず、そのパッケージがそこにある可能性があります"
+  es: "reemplazar %{target} no es seguro: no se pudo leer otro entorno que migrate encontró y sus paquetes pueden estar allí"
+
+migrate.paths_overlap:
+  en: "the source %{source} and the target %{target} overlap: one is inside the other"
+  ko: "원본 %{source}와 대상 %{target}가 겹침: 한쪽이 다른 쪽 안에 있음"
+  pt-BR: "a origem %{source} e o destino %{target} se sobrepõem: um está dentro do outro"
+  ja: "移行元 %{source} と移行先 %{target} が重なっています。一方が他方の中にあります"
+  es: "el origen %{source} y el destino %{target} se solapan: uno está dentro del otro"
+
+migrate.survivor_env_dir:
+  en: "the scuv environment directory"
+  ko: "scuv 환경 디렉터리"
+  pt-BR: "o diretório de ambientes do scuv"
+  ja: "scuv の環境ディレクトリ"
+  es: "el directorio de entornos de scuv"
+
+migrate.survivor_source:
+  en: "the source of '%{name}'"
+  ko: "'%{name}'의 원본"
+  pt-BR: "a origem de '%{name}'"
+  ja: "'%{name}' の移行元"
+  es: "el origen de '%{name}'"
+
+migrate.survivor_source_python:
+  en: "the Python of '%{name}'"
+  ko: "'%{name}'의 Python"
+  pt-BR: "o Python de '%{name}'"
+  ja: "'%{name}' の Python"
+  es: "el Python de '%{name}'"
+
+migrate.survivor_target_dir:
+  en: "the way to the new environment '%{name}'"
+  ko: "새 환경 '%{name}'로 가는 경로"
+  pt-BR: "o caminho para o novo ambiente '%{name}'"
+  ja: "新しい環境 '%{name}' への経路"
+  es: "el camino al nuevo entorno '%{name}'"
+
+migrate.survivor_package:
+  en: "package '%{package}' of '%{name}'"
+  ko: "'%{name}'의 패키지 '%{package}'"
+  pt-BR: "o pacote '%{package}' de '%{name}'"
+  ja: "'%{name}' のパッケージ '%{package}'"
+  es: "el paquete '%{package}' de '%{name}'"
+
+migrate.survivor_new_python:
+  en: "the Python of the new environment '%{name}'"
+  ko: "새 환경 '%{name}'의 Python"
+  pt-BR: "o Python do novo ambiente '%{name}'"
+  ja: "新しい環境 '%{name}' の Python"
+  es: "el Python del nuevo entorno '%{name}'"
+
+migrate.failed_install:
+  en: "%{package} (did not install)"
+  ko: "%{package} (설치 실패)"
+  pt-BR: "%{package} (não foi instalado)"
+  ja: "%{package} (インストール失敗)"
+  es: "%{package} (no se instaló)"
+
+migrate.failed_missing:
+  en: "%{package} (not in the new environment)"
+  ko: "%{package} (새 환경에 없음)"
+  pt-BR: "%{package} (ausente no novo ambiente)"
+  ja: "%{package} (新しい環境にありません)"
+  es: "%{package} (no está en el nuevo entorno)"
+
+migrate.failed_version:
+  en: "%{package} (installed %{version})"
+  ko: "%{package} (%{version} 설치됨)"
+  pt-BR: "%{package} (instalado %{version})"
+  ja: "%{package} (%{version} がインストールされました)"
+  es: "%{package} (se instaló %{version})"
+
+migrate.failed_origin:
+  en: "%{package} (installed from %{origin})"
+  ko: "%{package} (%{origin}에서 설치됨)"
+  pt-BR: "%{package} (instalado de %{origin})"
+  ja: "%{package} (%{origin} からインストールされました)"
+  es: "%{package} (se instaló desde %{origin})"
+
+migrate.from_registry:
+  en: "the registry"
+  ko: "레지스트리"
+  pt-BR: "o registro"
+  ja: "レジストリ"
+  es: "el registro"
+
+migrate.verify_failed:
+  en: "the new environment does not match the source: %{packages}"
+  ko: "새 환경이 원본과 다름: %{packages}"
+  pt-BR: "o novo ambiente não corresponde à origem: %{packages}"
+  ja: "新しい環境が移行元と一致しません: %{packages}"
+  es: "el nuevo entorno no coincide con el origen: %{packages}"
+
+migrate.excluded:
+  en: "Not moved: %{name} %{version} (an installer; scuv environments have none)"
+  ko: "옮기지 않음: %{name} %{version} (설치 도구, scuv 환경에는 없음)"
+  pt-BR: "Não movido: %{name} %{version} (um instalador; ambientes scuv não têm)"
+  ja: "移さないもの: %{name} %{version} (インストーラー。scuv の環境にはありません)"
+  es: "No movido: %{name} %{version} (un instalador; los entornos scuv no lo tienen)"
+
+migrate.from_conda:
+  en: "Installed from the registry instead of conda: %{count} package(s)"
+  ko: "conda 대신 레지스트리에서 설치: 패키지 %{count}개"
+  pt-BR: "Instalados do registro em vez do conda: %{count} pacote(s)"
+  ja: "conda の代わりにレジストリからインストール: パッケージ %{count} 個"
+  es: "Instalados desde el registro en lugar de conda: %{count} paquete(s)"
+
+migrate.added:
+  en: "Added as dependencies (not in the source): %{count} package(s)"
+  ko: "의존성으로 추가됨(원본에 없음): 패키지 %{count}개"
+  pt-BR: "Adicionados como dependências (ausentes na origem): %{count} pacote(s)"
+  ja: "依存関係として追加(移行元にはなし): パッケージ %{count} 個"
+  es: "Añadidos como dependencias (no estaban en el origen): %{count} paquete(s)"
 
 migrate.dry_run_hint:
   en: "→ Run without --dry-run to migrate"
@@ -1051,12 +1205,6 @@ error.corrupted_environment:
   ja: "'%{name}' が破損しています: %{reason}"
   es: "'%{name}' está dañado: %{reason}"
 
-error.package_extraction_failed:
-  en: "Couldn't extract packages: %{reason}"
-  ko: "패키지 추출 실패: %{reason}"
-  pt-BR: "Não foi possível extrair pacotes: %{reason}"
-  ja: "パッケージを抽出できませんでした: %{reason}"
-  es: "No se pudieron extraer los paquetes: %{reason}"
 
 error.migration_failed:
   en: "Migration failed: %{reason} (rolled back)"
@@ -1774,12 +1922,6 @@ migrate.eol_refused_hint:
   ja: "Python %{version} はサポートが終了しています。それでも移行するには --allow-eol を使用してください。"
   es: "Python %{version} ha llegado al fin de su ciclo de vida. Usar --allow-eol para migrar de todos modos."
 
-migrate.package_install_failed:
-  en: "Failed to install package: %{spec}"
-  ko: "패키지 설치 실패: %{spec}"
-  pt-BR: "Falha ao instalar o pacote: %{spec}"
-  ja: "パッケージのインストールに失敗: %{spec}"
-  es: "Fallo al instalar el paquete: %{spec}"
 
 migrate.plan_header:
   en: "Found %{count} environment(s) to migrate:"

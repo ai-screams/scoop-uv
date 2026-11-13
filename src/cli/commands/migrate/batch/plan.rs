@@ -45,14 +45,12 @@ pub(super) fn partition_envs<'a>(
     // environment that already exists on disk (see
     // `core::migrate::common::check_name_conflict`), so two sources offering
     // the same name — pyenv `web` and conda `web`, say — both arrive here as
-    // `Ready`. They then migrate in parallel (`par_iter` in `run.rs`) to the same
-    // path, and `create_target_env` decides what happens by whichever thread
-    // wins the race: without `--force` the loser reports `VirtualenvExists`;
-    // with it, the loser calls `remove_dir_all` on the winner's environment
-    // mid-install, and the winner's `RollbackGuard` can then delete the
-    // replacement. Combined with `--delete-source` that destroys one of the
-    // two source environments for good, while the summary reports both as
-    // migrated.
+    // `Ready`, and both would migrate to the same path: without `--force` the
+    // second reports `VirtualenvExists`; with it, the second replaces the
+    // first's freshly migrated environment. Combined with `--delete-source`
+    // that destroys one of the two source environments for good, while the
+    // summary reports both as migrated. (When batches still ran in parallel
+    // the two raced to the same path, which was worse.)
     //
     // `force` deliberately does not override this. `--force` means "overwrite
     // the environment that is already there", and for a collision inside one
@@ -233,8 +231,8 @@ mod tests {
     /// Two sources offering the same name must not both be migratable.
     ///
     /// `check_name_conflict` only sees environments already on disk, so both
-    /// arrive as `Ready`; without the batch-level guard they would race
-    /// `par_iter` to the same target path.
+    /// arrive as `Ready`; without the batch-level guard both would migrate
+    /// to the same target path.
     #[test]
     fn partition_rejects_duplicate_name_within_batch() {
         let envs = vec![

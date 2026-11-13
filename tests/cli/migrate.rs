@@ -137,19 +137,10 @@ fn migrate_all_without_a_terminal_names_yes() {
     assert!(!fixture.scoop_home.join("virtualenvs/web").exists());
 }
 
-/// [`fake_pyenv_env_with`] plus a `pip` that freezes nothing, so a dry run
-/// gets past package extraction without a real interpreter.
-#[cfg(unix)]
-fn fake_pyenv_env_with_pip(root: &std::path::Path, name: &str, version: &str) {
-    use std::os::unix::fs::PermissionsExt;
-    fake_pyenv_env_with(root, name, version);
-    let pip = root.join(format!("versions/{version}/envs/{name}/bin/pip"));
-    std::fs::write(&pip, "#!/bin/sh\nexit 0\n").unwrap();
-    std::fs::set_permissions(&pip, std::fs::Permissions::from_mode(0o755)).unwrap();
-}
-
 /// Runs `scuv` with `args` against `pyenv` in language `lang` and returns
-/// (exit code, stdout, stderr).
+/// (exit code, stdout, stderr). A fake `uv` comes first on `PATH`: its
+/// `pip list` reports no packages, so a dry run gets past reading the
+/// source without a real interpreter.
 #[cfg(unix)]
 fn migrate_in(
     fixture: &TestFixture,
@@ -157,8 +148,15 @@ fn migrate_in(
     lang: &str,
     args: &[&str],
 ) -> (Option<i32>, String, String) {
+    let uv = fake_uv_dir();
+    let path = format!(
+        "{}:{}",
+        uv.path().display(),
+        std::env::var("PATH").unwrap_or_default()
+    );
     let out = scoop_cmd(&fixture.scoop_home)
         .args(args)
+        .env("PATH", path)
         .env("PYENV_ROOT", pyenv)
         .env("HOME", fixture.temp_dir.path())
         .env("SCUV_LANG", lang)
@@ -236,7 +234,7 @@ fn migrate_list_eol_hint_follows_the_language() {
 fn migrate_all_preview_follows_the_language_and_json_reasons_do_not() {
     let fixture = TestFixture::new();
     let pyenv = fixture.temp_dir.path().join("pyenv");
-    fake_pyenv_env_with_pip(&pyenv, "web", "3.12.14");
+    fake_pyenv_env_with(&pyenv, "web", "3.12.14");
     fake_pyenv_env_with(&pyenv, "old", "3.10.14");
     let args = ["migrate", "all", "--source", "pyenv", "--dry-run", "--yes"];
 

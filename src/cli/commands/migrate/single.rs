@@ -17,6 +17,39 @@ use super::conflict::{
 use super::scan::find_environment_by_name;
 use super::types::MigrateExecuteOptions;
 
+/// The lines every result shows after its package count: what was not
+/// moved, what conda's builds became, what failed, what was added.
+pub(super) fn print_package_notes(output: &Output, result: &MigrationResult) {
+    for excluded in &result.packages_excluded {
+        output.info(&t!(
+            "migrate.excluded",
+            name = &excluded.name,
+            version = &excluded.version
+        ));
+    }
+    if !result.packages_from_conda.is_empty() {
+        output.info(&t!(
+            "migrate.from_conda",
+            count = result.packages_from_conda.len()
+        ));
+    }
+    if !result.packages_failed.is_empty() {
+        output.warn(&t!(
+            "migrate.failed_packages",
+            count = result.packages_failed.len()
+        ));
+        for pkg in &result.packages_failed {
+            output.info(&format!("    - {}", pkg));
+        }
+    }
+    if !result.packages_added.is_empty() {
+        output.info(&t!("migrate.added", count = result.packages_added.len()));
+        for pkg in &result.packages_added {
+            output.info(&format!("    - {}", pkg));
+        }
+    }
+}
+
 /// Print migration result in human-readable format.
 pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run: bool) {
     if dry_run {
@@ -28,16 +61,7 @@ pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run
         ));
         output.info(&t!("migrate.python", version = &result.python_version));
         output.info(&t!("migrate.packages", count = result.packages_migrated));
-
-        if !result.packages_failed.is_empty() {
-            output.warn(&t!(
-                "migrate.failed_packages",
-                count = result.packages_failed.len()
-            ));
-            for pkg in &result.packages_failed {
-                output.info(&format!("    - {}", pkg));
-            }
-        }
+        print_package_notes(output, result);
 
         output.info("");
         output.info(&t!("migrate.dry_run_hint"));
@@ -49,16 +73,7 @@ pub fn print_migration_result(output: &Output, result: &MigrationResult, dry_run
         ));
         output.info(&t!("migrate.python", version = &result.python_version));
         output.info(&t!("migrate.packages", count = result.packages_migrated));
-
-        if !result.packages_failed.is_empty() {
-            output.warn(&t!(
-                "migrate.failed_packages",
-                count = result.packages_failed.len()
-            ));
-            for pkg in &result.packages_failed {
-                output.info(&format!("    - {}", pkg));
-            }
-        }
+        print_package_notes(output, result);
 
         output.info("");
         output.info(&t!("migrate.activate_hint", name = &result.name));
@@ -104,7 +119,11 @@ pub fn migrate_environment(
     }
     print_migration_result(output, &result, opts.dry_run);
     if opts.kept_source(&result) {
-        output.warn(&t!("migrate.source_kept", name = name));
+        let reason = result
+            .source_kept_reason
+            .clone()
+            .unwrap_or_else(|| t!("migrate.kept_failed").to_string());
+        output.warn(&t!("migrate.source_kept", name = name, reason = reason));
     }
     Ok(())
 }

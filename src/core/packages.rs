@@ -1377,6 +1377,17 @@ pub(crate) fn resolve_visiting(path: &Path) -> std::io::Result<Vec<PathBuf>> {
     resolve(path, false)
 }
 
+/// [`resolve_visiting`] for a path that may not exist yet: it stops at the
+/// first missing entry and returns what it visited up to there, so the
+/// existing part of a prospective path is walked like any other.
+///
+/// # Errors
+///
+/// A relative path, or more than [`MAX_SYMLINK_EXPANSIONS`] symlinks.
+pub(crate) fn resolve_visiting_existing(path: &Path) -> std::io::Result<Vec<PathBuf>> {
+    resolve(path, true)
+}
+
 fn resolve(path: &Path, stop_at_missing: bool) -> std::io::Result<Vec<PathBuf>> {
     use std::io::{Error, ErrorKind};
     if !path.is_absolute() {

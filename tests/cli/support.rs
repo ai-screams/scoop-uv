@@ -84,7 +84,7 @@ pub(crate) fn fake_uv_dir() -> TempDir {
     let uv = dir.path().join("uv");
     std::fs::write(
         &uv,
-        "#!/bin/sh\ncase \"$1 $2\" in\n  \"--version \"*) echo \"uv 0.12.22\" ;;\n  \"python list\") echo \"[]\" ;;\n  \"cache prune\") ;;\n  *) echo \"fake uv: unsupported: $*\" >&2; exit 2 ;;\nesac\n",
+        "#!/bin/sh\ncase \"$1 $2\" in\n  \"--version \"*) echo \"uv 0.12.22\" ;;\n  \"python list\") echo \"[]\" ;;\n  \"pip list\") echo \"[]\" ;;\n  \"cache prune\") ;;\n  *) echo \"fake uv: unsupported: $*\" >&2; exit 2 ;;\nesac\n",
     )
     .unwrap();
     std::fs::set_permissions(&uv, std::fs::Permissions::from_mode(0o755)).unwrap();

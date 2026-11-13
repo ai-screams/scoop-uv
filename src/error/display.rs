@@ -122,12 +122,6 @@ impl ScoopError {
                 reason = reason
             )
             .to_string(),
-            Self::PackageExtractionFailed { reason } => t!(
-                "error.package_extraction_failed",
-                locale = locale,
-                reason = reason
-            )
-            .to_string(),
             Self::MigrationFailed { reason } => {
                 t!("error.migration_failed", locale = locale, reason = reason).to_string()
             }

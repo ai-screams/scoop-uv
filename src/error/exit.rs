@@ -161,7 +161,6 @@ impl ScoopError {
             | Self::CondaEnvNotFound { .. }
             | Self::SourceEnvNotFound { .. }
             | Self::CorruptedEnvironment { .. }
-            | Self::PackageExtractionFailed { .. }
             | Self::MigrationFailed { .. }
             | Self::MigrationNameConflict { .. }
             | Self::InvalidPythonPath { .. }

@@ -634,9 +634,17 @@ impl FakeUv {
         // `version_info = $FAKE_UV_VENV_VERSION_INFO` only when that is set.
         // `FAKE_UV_PIP_LIST_FAILS` makes `pip list` exit 2, and
         // `FAKE_UV_PIP_LIST_JSON` replaces what it lists (default: six
-        // 1.16.0). `FAKE_UV_VERSION` replaces the `--version` number.
+        // 1.16.0), and a `uv-pip-list.json` beside an env's `bin/` replaces
+        // it for that env (`--python <env>/bin/python`). `venv <path>` writes
+        // that file from `FAKE_UV_TARGET_PIP_LIST_JSON` and a `bin/python`
+        // answering the origin query with `FAKE_UV_TARGET_ORIGINS`, each only
+        // when set (`FAKE_UV_VENV_FAILS` makes it fail after making the
+        // directory), and `home = $FAKE_UV_VENV_HOME` into pyvenv.cfg when
+        // that is set. `FAKE_UV_VERSION` replaces the `--version` number.
         // `pip install` also writes each argument on its own line
-        // (`install_args`). `pip install`
+        // (`install_args`), and leaves an `installed-<spec>` file in the env
+        // for each `name==version` it is given, failing or not, as a real
+        // failed install can leave files behind. `pip install`
         // logs its arguments and exits 1 when any of them equals
         // `FAKE_UV_PIP_INSTALL_FAILS`, or `FAKE_UV_PIP_INSTALL_FAILS` is `all`.
         let json = format!("[{}]", entries.join(","));
@@ -649,9 +657,9 @@ case "$1 $2" in
   "python list") echo "$*" >> "{d}/list.log"; [ -n "$FAKE_UV_LIST_FAILS" ] && {{ echo "error: fake list failure" >&2; exit 2; }}; printf '%s\n' '{json}' ;;
   "python uninstall") [ -n "$FAKE_UV_UNINSTALL_FAILS" ] && [ "$FAKE_UV_UNINSTALL_FAILS" != after ] && exit 1; echo "$3" >> "{d}/uninstalled.log"; /bin/rm -rf "{d}/py/cpython-$3-"* "{d}/py/cpython-$3."*-*; [ "$FAKE_UV_UNINSTALL_FAILS" != after ] ;;
   "python dir") echo "{d}/py" ;;
-  "pip list") echo "$*" >> "{d}/pip.log"; [ -n "$FAKE_UV_PIP_LIST_FAILS" ] && {{ echo "error: fake pip list failure" >&2; exit 2; }}; l="$FAKE_UV_PIP_LIST_JSON"; [ -z "$l" ] && l='[{{"name":"six","version":"1.16.0"}}]'; printf '%s\n' "$l" ;;
-  "pip install") echo "$*" >> "{d}/pip.log"; for a in "$@"; do printf '%s\n' "$a"; done >> "{d}/install-args.log"; echo "<end>" >> "{d}/install-args.log"; [ "$FAKE_UV_PIP_INSTALL_FAILS" = all ] && exit 1; for a in "$@"; do [ -n "$FAKE_UV_PIP_INSTALL_FAILS" ] && [ "$a" = "$FAKE_UV_PIP_INSTALL_FAILS" ] && exit 1; done; exit 0 ;;
-  "venv "*) echo "$*" >> "{d}/venv.log"; /bin/mkdir -p "$2/bin" || exit 1; : > "$2/pyvenv.cfg"; [ -n "$FAKE_UV_VENV_VERSION_INFO" ] && echo "version_info = $FAKE_UV_VENV_VERSION_INFO" >> "$2/pyvenv.cfg"; exit 0 ;;
+  "pip list") echo "$*" >> "{d}/pip.log"; [ -n "$FAKE_UV_PIP_LIST_FAILS" ] && {{ echo "error: fake pip list failure" >&2; exit 2; }}; py=""; prev=""; for a in "$@"; do [ "$prev" = "--python" ] && py="$a"; prev="$a"; done; own="${{py%/bin/python}}/uv-pip-list.json"; if [ -n "$py" ] && [ -f "$own" ]; then while IFS= read -r line || [ -n "$line" ]; do printf '%s\n' "$line"; done < "$own"; exit 0; fi; l="$FAKE_UV_PIP_LIST_JSON"; [ -z "$l" ] && l='[{{"name":"six","version":"1.16.0"}}]'; printf '%s\n' "$l" ;;
+  "pip install") echo "$*" >> "{d}/pip.log"; for a in "$@"; do printf '%s\n' "$a"; done >> "{d}/install-args.log"; echo "<end>" >> "{d}/install-args.log"; py=""; prev=""; for a in "$@"; do [ "$prev" = "--python" ] && py="$a"; prev="$a"; done; if [ -n "$py" ]; then for a in "$@"; do case "$a" in -*|*/*|pip|install|"$py") ;; *) : > "${{py%/bin/python}}/installed-$a" 2>/dev/null ;; esac; done; fi; [ "$FAKE_UV_PIP_INSTALL_FAILS" = all ] && exit 1; for a in "$@"; do [ -n "$FAKE_UV_PIP_INSTALL_FAILS" ] && [ "$a" = "$FAKE_UV_PIP_INSTALL_FAILS" ] && exit 1; done; exit 0 ;;
+  "venv "*) echo "$*" >> "{d}/venv.log"; /bin/mkdir -p "$2/bin" || exit 1; : > "$2/pyvenv.cfg"; [ -n "$FAKE_UV_VENV_FAILS" ] && {{ echo "error: fake venv failure" >&2; exit 1; }}; [ -n "$FAKE_UV_VENV_VERSION_INFO" ] && echo "version_info = $FAKE_UV_VENV_VERSION_INFO" >> "$2/pyvenv.cfg"; [ -n "$FAKE_UV_VENV_HOME" ] && echo "home = $FAKE_UV_VENV_HOME" >> "$2/pyvenv.cfg"; [ -n "$FAKE_UV_TARGET_PIP_LIST_JSON" ] && printf '%s\n' "$FAKE_UV_TARGET_PIP_LIST_JSON" > "$2/uv-pip-list.json"; if [ -n "$FAKE_UV_TARGET_ORIGINS" ]; then printf '#!/bin/sh\nprintf "%%s\\n" '"'"'SCUV_ORIGINS:%s'"'"'\n' "$FAKE_UV_TARGET_ORIGINS" > "$2/bin/python"; /bin/chmod 755 "$2/bin/python"; fi; exit 0 ;;
   "cache prune") ;;
   *) echo "fake uv: unsupported: $*" >&2; exit 2 ;;
 esac

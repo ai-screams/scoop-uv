@@ -1,15 +1,14 @@
-//! Running a planned batch: one migration per environment, in parallel when
-//! that helps, with a progress bar on a terminal.
+//! Running a planned batch: every environment prepared and checked first,
+//! then migrated one at a time (a removal can then never interleave with
+//! another env's creation), with source deletions made at the end.
 
 use std::io::IsTerminal;
-use std::sync::Mutex;
 
 use indicatif::{ProgressBar, ProgressStyle};
-use rayon::prelude::*;
 use rust_i18n::t;
 
-use crate::core::migrate::{MigrateOptions, MigrationResult, Migrator, SourceEnvironment};
-use crate::error::Result;
+use crate::core::migrate::{MigrationResult, Migrator, Prepared, SourceEnvironment};
+use crate::error::{Result, ScoopError};
 use crate::output::Output;
 
 use super::super::types::{MigrateExecuteOptions, MigrateFailure};
@@ -21,13 +20,16 @@ pub(super) struct BatchOutcome {
 }
 
 /// Migrates every environment in `migratable` and collects the results.
+/// `others` are the envs found but not migrated (skipped, conflicting, an
+/// invalid name): their packages must survive what the batch deletes.
 ///
 /// Per-environment failures land in [`BatchOutcome::failed`]; only a failure
-/// to set up the migrator itself returns `Err`.
+/// to set up the migrator or the checks returns `Err`.
 pub(super) fn run_batch(
     output: &Output,
     opts: &MigrateExecuteOptions,
     migratable: &[&SourceEnvironment],
+    others: &[&SourceEnvironment],
 ) -> Result<BatchOutcome> {
     // The migrator is set up first: failing here aborts the batch before
     // anything is printed.
@@ -42,106 +44,125 @@ pub(super) fn run_batch(
         }
     }
 
-    let run = BatchRun {
+    let options = opts.migrate_options(opts.force, None);
+    let progress = progress_bar(
         output,
         opts,
-        migrator,
-        options: opts.migrate_options(opts.force, None),
-        progress: progress_bar(
-            output,
-            opts,
-            migratable.len(),
-            std::io::stderr().is_terminal(),
-        ),
-        migrated: Mutex::new(Vec::new()),
-        failed: Mutex::new(Vec::new()),
-    };
-
-    // Parallelise only when there's a real win: dry-run does no I/O work
-    // (sequential gives cleaner, deterministic preview output) and a single
-    // env has nothing to parallelise.
-    if opts.dry_run || migratable.len() <= 1 {
-        migratable.iter().for_each(|env| run.migrate_one(env));
-    } else {
-        migratable.par_iter().for_each(|env| run.migrate_one(env));
+        migratable.len(),
+        std::io::stderr().is_terminal(),
+    );
+    let plan = migrator.plan_batch(migratable, others, &options)?;
+    let mut failed = Vec::new();
+    for (source, e) in &plan.failed {
+        report_failure(output, opts, progress.as_ref(), &source.name, e);
+        failed.push(failure(source, e));
+        if let Some(pb) = &progress {
+            pb.inc(1);
+        }
     }
 
-    if let Some(pb) = &run.progress {
+    let (mut results, run_failed) = migrator.execute_batch(
+        &plan,
+        &options,
+        |env| announce(output, opts, progress.as_ref(), &env.source.name),
+        |env, outcome| {
+            match outcome {
+                Ok(result) => report_success(output, opts, progress.as_ref(), result),
+                Err(e) => report_failure(output, opts, progress.as_ref(), &env.source.name, e),
+            }
+            if let Some(pb) = &progress {
+                pb.inc(1);
+            }
+        },
+    )?;
+    failed.extend(run_failed.iter().map(|(source, e)| failure(source, e)));
+
+    if !opts.dry_run {
+        let all: Vec<&Prepared> = plan.ready.iter().collect();
+        let mut done: Vec<(usize, &mut MigrationResult)> =
+            results.iter_mut().map(|(i, r)| (*i, r)).collect();
+        migrator.finish_deletion(&all, &plan.extra, &mut done)?;
+        for (_, result) in &results {
+            report_kept(output, opts, progress.as_ref(), result);
+        }
+    }
+
+    if let Some(pb) = &progress {
         pb.finish_with_message(t!("migrate.progress_done").to_string());
     }
 
-    let mut migrated = run.migrated.into_inner().expect("results lock poisoned");
-    let mut failed = run.failed.into_inner().expect("failures lock poisoned");
-    // Sort by env name so the summary and JSON output are deterministic
-    // regardless of which worker thread finished first. This is NOT the
-    // original scan order (scan sorts by source type then name) — across
-    // source types or with duplicate names the two orders diverge, and
-    // alphabetic-by-name is the cheaper, more useful default for a
-    // user-facing summary.
+    let mut migrated: Vec<MigrationResult> = results.into_iter().map(|(_, r)| r).collect();
+    // Sort by env name so the summary and JSON output are deterministic.
+    // This is NOT the original scan order (scan sorts by source type then
+    // name) — across source types or with duplicate names the two orders
+    // diverge, and alphabetic-by-name is the cheaper, more useful default
+    // for a user-facing summary.
     migrated.sort_by(|a, b| a.name.cmp(&b.name));
     failed.sort_by(|a, b| a.name.cmp(&b.name));
 
     Ok(BatchOutcome { migrated, failed })
 }
 
-/// What every per-environment migration in one batch shares.
-///
-/// The result lists are behind a `Mutex` so parallel workers can append;
-/// the sequential path (dry-run / single env) goes through the same locks
-/// for uniformity — uncontended, so a few ns per env. `indicatif`
-/// serialises println/inc internally, and each `output` call is one
-/// `eprintln!`, atomic at the line level.
-struct BatchRun<'a> {
-    output: &'a Output,
-    opts: &'a MigrateExecuteOptions,
-    migrator: Migrator,
-    options: MigrateOptions,
-    progress: Option<ProgressBar>,
-    migrated: Mutex<Vec<MigrationResult>>,
-    failed: Mutex<Vec<MigrateFailure>>,
+/// One environment's failure as the batch report records it.
+fn failure(source: &SourceEnvironment, e: &ScoopError) -> MigrateFailure {
+    MigrateFailure {
+        name: source.name.clone(),
+        source_type: source.source_type,
+        error_code: e.code(),
+        error: e.to_string(),
+    }
 }
 
-impl BatchRun<'_> {
-    /// Migrates one environment and records the result.
-    fn migrate_one(&self, env: &SourceEnvironment) {
-        let (output, opts, progress) = (self.output, self.opts, self.progress.as_ref());
-        if let Some(pb) = progress {
-            pb.set_message(t!("migrate.batch_item", name = &env.name).to_string());
-        } else if !opts.json {
-            output.info("");
-            output.info(&t!("migrate.batch_item", name = &env.name));
-        }
+/// The line that names the environment about to migrate.
+fn announce(
+    output: &Output,
+    opts: &MigrateExecuteOptions,
+    progress: Option<&ProgressBar>,
+    name: &str,
+) {
+    if let Some(pb) = progress {
+        pb.set_message(t!("migrate.batch_item", name = name).to_string());
+    } else if !opts.json {
+        output.info("");
+        output.info(&t!("migrate.batch_item", name = name));
+    }
+}
 
-        match self.migrator.migrate(env, &self.options) {
-            Ok(result) => {
-                report_success(output, opts, progress, &result);
-                self.migrated
-                    .lock()
-                    .expect("results lock poisoned")
-                    .push(result);
-            }
-            Err(e) => {
-                let msg = e.to_string();
-                if let Some(pb) = progress {
-                    pb.println(progress_failed_line(&env.name, &msg));
-                } else if !opts.json {
-                    output.error(&t!("migrate.batch_item_failed", error = msg.clone()));
-                }
-                self.failed
-                    .lock()
-                    .expect("failures lock poisoned")
-                    .push(MigrateFailure {
-                        name: env.name.clone(),
-                        source_type: env.source_type,
-                        error_code: e.code(),
-                        error: msg,
-                    });
-            }
-        }
+/// Prints one environment's failure.
+fn report_failure(
+    output: &Output,
+    opts: &MigrateExecuteOptions,
+    progress: Option<&ProgressBar>,
+    name: &str,
+    e: &ScoopError,
+) {
+    let msg = e.to_string();
+    if let Some(pb) = progress {
+        pb.println(progress_failed_line(name, &msg));
+    } else if !opts.json {
+        output.error(&t!("migrate.batch_item_failed", error = msg));
+    }
+}
 
-        if let Some(pb) = progress {
-            pb.inc(1);
-        }
+/// Prints that `--delete-source` kept a source, with why (known only
+/// once every env ran).
+fn report_kept(
+    output: &Output,
+    opts: &MigrateExecuteOptions,
+    progress: Option<&ProgressBar>,
+    result: &MigrationResult,
+) {
+    if !opts.kept_source(result) || opts.json {
+        return;
+    }
+    let reason = result
+        .source_kept_reason
+        .clone()
+        .unwrap_or_else(|| t!("migrate.kept_failed").to_string());
+    let line = t!("migrate.source_kept", name = &result.name, reason = reason).to_string();
+    match progress {
+        Some(pb) => pb.println(format!("  ⚠ {line}")),
+        None => output.warn(&line),
     }
 }
 
@@ -180,12 +201,6 @@ fn report_success(
         for line in progress_success_lines(result) {
             pb.println(line);
         }
-        if opts.kept_source(result) {
-            pb.println(format!(
-                "  ⚠ {}",
-                t!("migrate.source_kept", name = &result.name)
-            ));
-        }
         return;
     }
     if opts.json {
@@ -201,15 +216,7 @@ fn report_success(
         output.success(&t!("migrate.batch_item_success", name = &result.name));
         output.info(&t!("migrate.packages", count = result.packages_migrated));
     }
-    if !result.packages_failed.is_empty() {
-        output.warn(&t!(
-            "migrate.failed_packages",
-            count = result.packages_failed.len()
-        ));
-    }
-    if opts.kept_source(result) {
-        output.warn(&t!("migrate.source_kept", name = &result.name));
-    }
+    super::super::single::print_package_notes(output, result);
 }
 
 /// The progress-bar line for one environment that failed.
@@ -236,6 +243,33 @@ fn progress_success_lines(result: &MigrationResult) -> Vec<String> {
             )
             .to_string(),
         );
+    }
+    // What changed on the way, as single-env output says it: pip left out,
+    // conda's builds from the registry, dependencies added.
+    for excluded in &result.packages_excluded {
+        lines.push(format!(
+            "  {}",
+            t!(
+                "migrate.excluded",
+                name = &excluded.name,
+                version = &excluded.version
+            )
+        ));
+    }
+    if !result.packages_from_conda.is_empty() {
+        lines.push(format!(
+            "  {}",
+            t!(
+                "migrate.from_conda",
+                count = result.packages_from_conda.len()
+            )
+        ));
+    }
+    if !result.packages_added.is_empty() {
+        lines.push(format!(
+            "  {}",
+            t!("migrate.added", count = result.packages_added.len())
+        ));
     }
     lines
 }
@@ -269,10 +303,14 @@ mod tests {
             name: "web".to_string(),
             packages_migrated: 3,
             packages_failed: Vec::new(),
+            packages_excluded: Vec::new(),
+            packages_from_conda: Vec::new(),
+            packages_added: Vec::new(),
             python_version: "3.12".to_string(),
             dry_run: false,
             path: std::path::PathBuf::from("/v/web"),
             source_deleted: false,
+            source_kept_reason: None,
             actual_python_version: "3.12".to_string(),
         };
         rust_i18n::set_locale("en");
@@ -296,6 +334,39 @@ mod tests {
         );
         assert_eq!(progress_failed_line("web", "boom"), "✗ 'web' 실패: boom");
     }
+    /// The bar also says what changed on the way: pip left out, conda's
+    /// builds from the registry, dependencies added. Fails if a batch run
+    /// hides a conda substitution behind a success line.
+    #[test]
+    #[serial_test::serial]
+    fn progress_lines_report_what_changed() {
+        let _locale = crate::test_utils::LocaleGuard::capture();
+        rust_i18n::set_locale("en");
+        let result = MigrationResult {
+            name: "web".to_string(),
+            packages_migrated: 2,
+            packages_failed: Vec::new(),
+            packages_excluded: vec![crate::core::migrate::ExcludedPackage {
+                name: "pip".to_string(),
+                version: "24.0".to_string(),
+                reason: "installer".to_string(),
+            }],
+            packages_from_conda: vec!["numpy".to_string()],
+            packages_added: vec!["idna==3.4".to_string()],
+            python_version: "3.12".to_string(),
+            dry_run: false,
+            path: std::path::PathBuf::from("/v/web"),
+            source_deleted: false,
+            source_kept_reason: None,
+            actual_python_version: "3.12".to_string(),
+        };
+        let lines = progress_success_lines(&result);
+        assert_eq!(lines.len(), 4, "{lines:?}");
+        assert!(lines[1].contains("pip 24.0"), "{lines:?}");
+        assert!(lines[2].contains("instead of conda: 1"), "{lines:?}");
+        assert!(lines[3].contains("dependencies"), "{lines:?}");
+    }
+
     use crate::output::Colors;
 
     /// No bar without a terminal on stderr: a hidden bar would swallow the

@@ -35,7 +35,6 @@ impl ScoopError {
             Self::CondaEnvNotFound { .. } => "SOURCE_CONDA_ENV_NOT_FOUND",
             Self::SourceEnvNotFound { .. } => "SOURCE_ENV_NOT_FOUND",
             Self::CorruptedEnvironment { .. } => "MIGRATE_CORRUPTED",
-            Self::PackageExtractionFailed { .. } => "MIGRATE_EXTRACTION_FAILED",
             Self::MigrationFailed { .. } => "MIGRATE_FAILED",
             Self::MigrationNameConflict { .. } => "MIGRATE_NAME_CONFLICT",
             Self::InvalidPythonPath { .. } => "PYTHON_INVALID_PATH",
