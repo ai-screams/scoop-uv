@@ -73,7 +73,7 @@ pub(crate) fn fixture_with_active_env() -> TestFixture {
 }
 
 /// A directory holding a fake `uv` (unix): `--version`, an empty
-/// `python list` and `cache prune`. Put it first on PATH so commands get
+/// `python list` and `pip list`, and `cache prune`. Put it first on PATH so commands get
 /// past their uv lookup without a real uv. Mirrors `test_utils::FakeUv`,
 /// which the lib tests use; integration tests cannot reach that module.
 #[cfg(unix)]
