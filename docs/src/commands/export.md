@@ -79,7 +79,9 @@ Field notes:
   for a VCS checkout (pinned to `commit_id`), `archive_info` for a wheel or
   sdist URL (with its hashes, when recorded). `null` means no direct origin
   was recorded, which is usually a registry install; it does not say which
-  index.
+  index. An editable install made with an old pip (`setup.py develop`, an
+  `.egg-link`) records no origin; scuv writes a `dir_info` one for it from
+  the project location uv reports.
 - scuv reads origins by running the env's own Python (3.8 or later) with
   `importlib.metadata`. The env's site hooks run as part of that, as they do
   whenever the env's Python starts.

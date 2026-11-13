@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: src/SUMMARY.md:1 src/python-management.md:312
+#: src/SUMMARY.md:1 src/python-management.md:313
 msgid "Summary"
 msgstr "목차"
 
@@ -33,7 +33,7 @@ msgid "Quick Start"
 msgstr "빠른 시작"
 
 #: src/SUMMARY.md:11 src/shell-integration.md:1
-#: src/development/contributing.md:136 src/api.md:461 src/llms.md:170
+#: src/development/contributing.md:136 src/api.md:460 src/llms.md:170
 msgid "Shell Integration"
 msgstr "셸 통합"
 
@@ -217,8 +217,8 @@ msgstr "LLM 레퍼런스"
 #: src/commands/install.md:60 src/commands/uninstall.md:25
 #: src/commands/doctor.md:58 src/commands/info.md:92 src/commands/status.md:112
 #: src/commands/which.md:36 src/commands/run.md:43 src/commands/sync.md:67
-#: src/commands/import.md:67 src/commands/clone.md:59
-#: src/commands/migrate.md:161 src/commands/gc.md:101 src/commands/prune.md:25
+#: src/commands/import.md:71 src/commands/clone.md:60
+#: src/commands/migrate.md:213 src/commands/gc.md:101 src/commands/prune.md:25
 #: src/commands/verify.md:50 src/commands/diff.md:69 src/commands/lang.md:52
 #: src/commands/self.md:28 src/commands/init.md:45 src/commands/shell.md:53
 #: src/commands/completions.md:17 src/examples.md:1
@@ -525,7 +525,7 @@ msgstr "설치 확인"
 msgid "# scuv 0.22.0\n"
 msgstr "# scuv 0.22.0\n"
 
-#: src/installation.md:62 src/python-management.md:177
+#: src/installation.md:62 src/python-management.md:178
 #: src/development/testing.md:431 src/development/code-quality.md:434
 msgid "Troubleshooting"
 msgstr "문제 해결"
@@ -722,8 +722,8 @@ msgstr "자주 쓰는 명령어"
 msgid "Task"
 msgstr "작업"
 
-#: src/quick-start.md:97 src/commands/index.md:7 src/commands/migrate.md:395
-#: src/commands/verify.md:42 src/api.md:729 src/llms.md:19
+#: src/quick-start.md:97 src/commands/index.md:7 src/commands/migrate.md:454
+#: src/commands/verify.md:42 src/api.md:728 src/llms.md:19
 msgid "Command"
 msgstr "명령어"
 
@@ -958,8 +958,8 @@ msgid "Set by"
 msgstr "설정 방법"
 
 #: src/shell-integration.md:122 src/shell-integration.md:151
-#: src/commands/which.md:49 src/commands/sync.md:118 src/commands/export.md:107
-#: src/commands/import.md:103 src/commands/clone.md:94 src/api.md:729
+#: src/commands/which.md:49 src/commands/sync.md:118 src/commands/export.md:109
+#: src/commands/import.md:107 src/commands/clone.md:95 src/api.md:728
 msgid "1"
 msgstr "1"
 
@@ -971,7 +971,7 @@ msgstr "`SCUV_VERSION` 환경 변수"
 msgid "`scuv shell`"
 msgstr "`scuv shell`"
 
-#: src/shell-integration.md:123 src/api.md:729
+#: src/shell-integration.md:123 src/api.md:728
 msgid "2"
 msgstr "2"
 
@@ -984,7 +984,7 @@ msgid "`scuv use` (walks parent directories)"
 msgstr "`scuv use` (부모 디렉터리를 순서대로 탐색)"
 
 #: src/shell-integration.md:124 src/shell-integration.md:207
-#: src/commands/export.md:108 src/commands/clone.md:95 src/api.md:729
+#: src/commands/export.md:110 src/commands/clone.md:96 src/api.md:728
 msgid "3"
 msgstr "3"
 
@@ -1035,7 +1035,7 @@ msgstr "변수"
 #: src/commands/sync.md:14 src/commands/export.md:16 src/commands/export.md:22
 #: src/commands/import.md:14 src/commands/import.md:20 src/commands/clone.md:14
 #: src/commands/clone.md:21 src/commands/migrate.md:20
-#: src/commands/migrate.md:69 src/commands/gc.md:94 src/commands/prune.md:21
+#: src/commands/migrate.md:121 src/commands/gc.md:94 src/commands/prune.md:21
 #: src/commands/diff.md:44 src/commands/lang.md:23 src/commands/lang.md:29
 #: src/commands/self.md:13 src/commands/init.md:13 src/commands/shell.md:21
 #: src/commands/shell.md:27 src/commands/completions.md:13
@@ -1218,8 +1218,8 @@ msgid "# Only check current directory (fastest)\n"
 msgstr "# 현재 디렉터리만 확인 (가장 빠름)\n"
 
 #: src/shell-integration.md:210 src/commands/which.md:48
-#: src/commands/sync.md:117 src/commands/export.md:106
-#: src/commands/import.md:102 src/commands/clone.md:93 src/api.md:729
+#: src/commands/sync.md:117 src/commands/export.md:108
+#: src/commands/import.md:106 src/commands/clone.md:94 src/api.md:728
 msgid "0"
 msgstr "0"
 
@@ -1643,14 +1643,26 @@ msgstr ""
 "을 탐색합니다"
 
 #: src/python-management.md:169
+msgid ""
+"Reads each package and where it came from (registry, editable or local "
+"directory, archive, git), with no `pip` needed in the source"
+msgstr ""
+"각 패키지와 그 출처(레지스트리, editable 또는 로컬 디렉터리, 아카이브, git)"
+"를 읽습니다. 소스에 `pip`가 없어도 됩니다"
+
+#: src/python-management.md:170
 msgid "Creates a new scuv environment with the same Python version"
 msgstr "동일한 Python 버전으로 새 scuv 환경을 생성합니다"
 
-#: src/python-management.md:170
-msgid "Reinstalls packages using uv for improved performance"
-msgstr "성능 향상을 위해 uv를 사용하여 패키지를 재설치합니다"
-
 #: src/python-management.md:171
+msgid ""
+"Reinstalls every package from where it came (pip excepted, and conda's "
+"builds from the registry) with uv, and checks the result"
+msgstr ""
+"모든 패키지를 원래 출처에서 uv로 다시 설치하고(pip는 제외, conda 빌드는 레지"
+"스트리에서) 결과를 확인합니다"
+
+#: src/python-management.md:172
 msgid ""
 "Preserves originals by default (use `--delete-source` to remove source envs "
 "after success)"
@@ -1658,51 +1670,47 @@ msgstr ""
 "기본적으로 원본을 보존합니다 (성공 후 소스 환경을 삭제하려면 `--delete-"
 "source` 사용)"
 
-#: src/python-management.md:173
+#: src/python-management.md:174
 msgid ""
-"`scuv migrate all` runs migrations in parallel across CPU cores via [rayon]"
-"(https://crates.io/crates/rayon) — typically 4-8× faster than sequential. "
-"Single-env (`migrate @env`) and `--dry-run` stay sequential for predictable "
-"output."
+"`scuv migrate all` migrates one environment at a time, after reading and "
+"checking all of them."
 msgstr ""
-"`scuv migrate all`은 [rayon](https://crates.io/crates/rayon)을 통해 CPU 코어 "
-"전체에 걸쳐 병렬로 마이그레이션을 실행합니다. 일반적으로 순차 실행보다 4~8배 "
-"빠릅니다. 단일 환경(`migrate @env`)과 `--dry-run`은 예측 가능한 출력을 위해 "
-"순차적으로 실행됩니다."
+"`scuv migrate all`은 모든 환경을 읽고 검사한 뒤 한 번에 하나씩 마이그레이션합"
+"니다."
 
-#: src/python-management.md:175
+#: src/python-management.md:176
 msgid "See [migrate command](commands/migrate.md) for details."
 msgstr "자세한 내용은 [migrate 명령어](commands/migrate.md)를 참조하세요."
 
-#: src/python-management.md:179
+#: src/python-management.md:180
 msgid "Python version not found"
 msgstr "Python 버전을 찾을 수 없음"
 
-#: src/python-management.md:182
+#: src/python-management.md:183
 msgid "# uv fails: No interpreter found for Python 3.14\n"
 msgstr "# uv 실패: No interpreter found for Python 3.14\n"
 
-#: src/python-management.md:184
+#: src/python-management.md:185
 msgid "# Solution 1: Install it via scuv\n"
 msgstr "# 해결 방법 1: scuv로 설치\n"
 
-#: src/python-management.md:187
+#: src/python-management.md:188
 msgid "# Solution 2: Check what's available\n"
 msgstr "# 해결 방법 2: 사용 가능한 버전 확인\n"
 
-#: src/python-management.md:193
+#: src/python-management.md:194
 msgid "Invalid custom Python path"
 msgstr "유효하지 않은 커스텀 Python 경로"
 
-#: src/python-management.md:196
+#: src/python-management.md:197
 msgid "# Example custom path flow\n"
 msgstr "# 커스텀 경로 사용 예시\n"
 
-#: src/python-management.md:198
+#: src/python-management.md:199
 msgid "# Verify the binary exists and runs\n"
 msgstr "# 바이너리가 존재하고 실행 가능한지 확인\n"
 
-#: src/python-management.md:203
+#: src/python-management.md:204
 msgid ""
 "If the path is invalid or not executable, provide a valid Python binary path "
 "and retry."
@@ -1710,67 +1718,67 @@ msgstr ""
 "경로가 유효하지 않거나 실행할 수 없는 경우, 유효한 Python 바이너리 경로를 입"
 "력하고 다시 시도하세요."
 
-#: src/python-management.md:205
+#: src/python-management.md:206
 msgid "Verify custom integration end-to-end"
 msgstr "커스텀 통합을 엔드-투-엔드로 검증하기"
 
-#: src/python-management.md:208
+#: src/python-management.md:209
 msgid "# 1) Confirm uv can see your interpreter (PATH-based flow)\n"
 msgstr "# 1) uv가 인터프리터를 인식할 수 있는지 확인 (PATH 기반 방식)\n"
 
-#: src/python-management.md:210
+#: src/python-management.md:211
 msgid "# 2) Confirm scuv recorded the interpreter path\n"
 msgstr "# 2) scuv가 인터프리터 경로를 기록했는지 확인\n"
 
-#: src/python-management.md:213
+#: src/python-management.md:214
 msgid "# 3) Diagnose broken links or metadata issues\n"
 msgstr "# 3) 깨진 링크나 메타데이터 문제 진단\n"
 
-#: src/python-management.md:218
+#: src/python-management.md:219
 msgid "Using a different Python than expected"
 msgstr "예상과 다른 Python이 사용되는 경우"
 
-#: src/python-management.md:221
+#: src/python-management.md:222
 msgid "# Check which Python uv would select for a version\n"
 msgstr "# 버전에 대해 uv가 선택할 Python 확인\n"
 
-#: src/python-management.md:222
+#: src/python-management.md:223
 msgid "# /opt/homebrew/bin/python3.12\n"
 msgstr "# /opt/homebrew/bin/python3.12\n"
 
-#: src/python-management.md:224
+#: src/python-management.md:225
 msgid "# Check all available 3.12 installations\n"
 msgstr "# 사용 가능한 3.12 설치 목록 전체 확인\n"
 
-#: src/python-management.md:226
+#: src/python-management.md:227
 msgid "# cpython-3.12.8    /opt/homebrew/bin/python3.12     (system)\n"
 msgstr "# cpython-3.12.8    /opt/homebrew/bin/python3.12     (system)\n"
 
-#: src/python-management.md:231
+#: src/python-management.md:232
 msgid "Verify environment's Python"
 msgstr "환경에서 사용하는 Python 확인"
 
-#: src/python-management.md:234
+#: src/python-management.md:235
 msgid "# Check what Python an environment uses\n"
 msgstr "# 환경이 사용하는 Python 확인\n"
 
-#: src/python-management.md:235
+#: src/python-management.md:236
 msgid "# Name:    myenv\n"
 msgstr "# Name:    myenv\n"
 
-#: src/python-management.md:237
+#: src/python-management.md:238
 msgid "# Path:    ~/.scuv/virtualenvs/myenv\n"
 msgstr "# Path:    ~/.scuv/virtualenvs/myenv\n"
 
-#: src/python-management.md:241
+#: src/python-management.md:242
 msgid "Removing Python Versions"
 msgstr "Python 버전 제거"
 
-#: src/python-management.md:243
+#: src/python-management.md:244
 msgid "Quick: Cascade removal (recommended)"
 msgstr "빠른 방법: 연쇄 제거 (권장)"
 
-#: src/python-management.md:245
+#: src/python-management.md:246
 msgid ""
 "Use `--cascade` to automatically remove all environments using a Python "
 "version:"
@@ -1778,104 +1786,104 @@ msgstr ""
 "`--cascade`를 사용하면 해당 Python 버전을 사용하는 모든 환경을 자동으로 제거"
 "합니다:"
 
-#: src/python-management.md:248
+#: src/python-management.md:249
 msgid "# Remove Python 3.12 and all environments using it\n"
 msgstr "# Python 3.12와 이를 사용하는 모든 환경 제거\n"
 
-#: src/python-management.md:250
+#: src/python-management.md:251
 msgid "# Skip confirmation prompt\n"
 msgstr "# 확인 프롬프트 건너뛰기\n"
 
-#: src/python-management.md:255
+#: src/python-management.md:256
 msgid "Preview affected environments"
 msgstr "영향받는 환경 미리 보기"
 
-#: src/python-management.md:257
+#: src/python-management.md:258
 msgid ""
 "Before uninstalling, you can check which environments would be affected:"
 msgstr "제거하기 전에 어떤 환경이 영향을 받는지 미리 확인할 수 있습니다:"
 
-#: src/python-management.md:260
+#: src/python-management.md:261
 msgid "# Filter environments by Python version\n"
 msgstr "# Python 버전으로 환경 필터링\n"
 
-#: src/python-management.md:261 src/python-management.md:272
+#: src/python-management.md:262 src/python-management.md:273
 msgid "#   myproject  3.12  ~/.scuv/virtualenvs/myproject\n"
 msgstr "#   myproject  3.12  ~/.scuv/virtualenvs/myproject\n"
 
-#: src/python-management.md:266
+#: src/python-management.md:267
 msgid "Manual workflow"
 msgstr "수동 작업 흐름"
 
-#: src/python-management.md:268 src/commands/uninstall.md:159
+#: src/python-management.md:269 src/commands/uninstall.md:159
 msgid "If you prefer manual control (without `--cascade`):"
 msgstr "`--cascade` 없이 직접 제어하고 싶은 경우:"
 
-#: src/python-management.md:271
+#: src/python-management.md:272
 msgid "# 1. Identify environments using the target Python version\n"
 msgstr "# 1. 대상 Python 버전을 사용하는 환경 파악\n"
 
-#: src/python-management.md:275
+#: src/python-management.md:276
 msgid "# 2. Remove or recreate affected environments\n"
 msgstr "# 2. 영향받는 환경 제거 또는 재생성\n"
 
-#: src/python-management.md:278
+#: src/python-management.md:279
 msgid "# Or recreate with a different version:\n"
 msgstr "# 또는 다른 버전으로 재생성:\n"
 
-#: src/python-management.md:281
+#: src/python-management.md:282
 msgid "# 3. Uninstall the Python version\n"
 msgstr "# 3. Python 버전 제거\n"
 
-#: src/python-management.md:284
+#: src/python-management.md:285
 msgid "# 4. Verify everything is clean\n"
 msgstr "# 4. 모든 것이 정리되었는지 확인\n"
 
-#: src/python-management.md:286
+#: src/python-management.md:287
 msgid "# Confirm Python removed\n"
 msgstr "# Python 제거 확인\n"
 
-#: src/python-management.md:287 src/commands/uninstall.md:199
+#: src/python-management.md:288 src/commands/uninstall.md:199
 msgid "# Check for broken environments\n"
 msgstr "# 깨진 환경 확인\n"
 
-#: src/python-management.md:290
+#: src/python-management.md:291
 msgid "Recovery from accidental uninstall"
 msgstr "실수로 제거한 경우 복구"
 
-#: src/python-management.md:292
+#: src/python-management.md:293
 msgid "If you uninstalled Python without cleaning up environments:"
 msgstr "환경 정리 없이 Python을 제거한 경우:"
 
-#: src/python-management.md:295 src/commands/uninstall.md:211
+#: src/python-management.md:296 src/commands/uninstall.md:211
 msgid "# Detect broken environments\n"
 msgstr "# 깨진 환경 감지\n"
 
-#: src/python-management.md:296 src/commands/doctor.md:95
+#: src/python-management.md:297 src/commands/doctor.md:95
 msgid "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 msgstr "# ✗ broken virtualenv: 'myproject' is corrupted\n"
 
-#: src/python-management.md:299 src/commands/uninstall.md:124
+#: src/python-management.md:300 src/commands/uninstall.md:124
 #: src/commands/uninstall.md:214 src/commands/uninstall.md:216
-#: src/commands/doctor.md:100 src/commands/migrate.md:191
+#: src/commands/doctor.md:100 src/commands/migrate.md:243
 msgid "'myproject'"
 msgstr "'myproject'"
 
-#: src/python-management.md:299 src/commands/uninstall.md:214
+#: src/python-management.md:300 src/commands/uninstall.md:214
 #: src/commands/uninstall.md:216 src/commands/doctor.md:100
 msgid "#   → scuv remove myproject && scuv create myproject <python-version>\n"
 msgstr ""
 "#   → scuv remove myproject && scuv create myproject <python-version>\n"
 
-#: src/python-management.md:301
+#: src/python-management.md:302
 msgid "# Fix by reinstalling the Python version\n"
 msgstr "# Python 버전을 재설치하여 수정\n"
 
-#: src/python-management.md:305
+#: src/python-management.md:306
 msgid "# Or remove the broken environments and start fresh\n"
 msgstr "# 또는 깨진 환경을 제거하고 새로 시작\n"
 
-#: src/python-management.md:310
+#: src/python-management.md:311
 msgid ""
 "See [uninstall command](commands/uninstall.md) and [doctor command](commands/"
 "doctor.md) for details."
@@ -1883,99 +1891,99 @@ msgstr ""
 "자세한 내용은 [uninstall 명령어](commands/uninstall.md)와 [doctor 명령어]"
 "(commands/doctor.md)를 참조하세요."
 
-#: src/python-management.md:314
+#: src/python-management.md:315
 msgid "Scenario"
 msgstr "시나리오"
 
-#: src/python-management.md:314
+#: src/python-management.md:315
 msgid "What to do"
 msgstr "방법"
 
-#: src/python-management.md:316
+#: src/python-management.md:317
 msgid "Standard Python version"
 msgstr "표준 Python 버전"
 
-#: src/python-management.md:316
+#: src/python-management.md:317
 msgid "`scuv install 3.12` then `scuv create myenv 3.12`"
 msgstr "`scuv install 3.12` then `scuv create myenv 3.12`"
 
-#: src/python-management.md:317
+#: src/python-management.md:318
 msgid "System Python (Homebrew, apt)"
 msgstr "시스템 Python (Homebrew, apt)"
 
-#: src/python-management.md:317
+#: src/python-management.md:318
 msgid "Just `scuv create myenv 3.12` — uv finds it automatically"
 msgstr "`scuv create myenv 3.12`만 실행하면 됩니다 — uv가 자동으로 찾아줍니다"
 
-#: src/python-management.md:318
+#: src/python-management.md:319
 msgid "Custom Python executable"
 msgstr "커스텀 Python 실행 파일"
 
-#: src/python-management.md:318
+#: src/python-management.md:319
 msgid "`scuv create myenv --python-path /path/to/python`"
 msgstr "`scuv create myenv --python-path /path/to/python`"
 
-#: src/python-management.md:319
+#: src/python-management.md:320
 msgid "Custom Python in non-standard path"
 msgstr "비표준 경로의 커스텀 Python"
 
-#: src/python-management.md:319
+#: src/python-management.md:320
 msgid "Add to `PATH`, then `scuv create myenv <version>`"
 msgstr "`PATH`에 추가한 후 `scuv create myenv <version>` 실행"
 
-#: src/python-management.md:320
+#: src/python-management.md:321
 msgid "PyPy or alternative interpreter"
 msgstr "PyPy 또는 대체 인터프리터"
 
-#: src/python-management.md:320
+#: src/python-management.md:321
 msgid "`scuv create myenv --python-path /opt/pypy/bin/pypy3`"
 msgstr "`scuv create myenv --python-path /opt/pypy/bin/pypy3`"
 
-#: src/python-management.md:321
+#: src/python-management.md:322
 msgid "Existing pyenv/conda environments"
 msgstr "기존 pyenv/conda 환경"
 
-#: src/python-management.md:321 src/llms.md:51
+#: src/python-management.md:322 src/llms.md:51
 msgid "`scuv migrate all`"
 msgstr "`scuv migrate all`"
 
-#: src/python-management.md:322
+#: src/python-management.md:323
 msgid "Shared Python installations"
 msgstr "공유 Python 설치"
 
-#: src/python-management.md:322
+#: src/python-management.md:323
 msgid "Set `UV_PYTHON_INSTALL_DIR`"
 msgstr "`UV_PYTHON_INSTALL_DIR` 설정"
 
-#: src/python-management.md:323
+#: src/python-management.md:324
 msgid "Force system-only Python"
 msgstr "시스템 Python만 강제 사용"
 
-#: src/python-management.md:323
+#: src/python-management.md:324
 msgid "Set `UV_PYTHON_PREFERENCE=only-system`"
 msgstr "`UV_PYTHON_PREFERENCE=only-system` 설정"
 
-#: src/python-management.md:324
+#: src/python-management.md:325
 msgid "Uninstall Python + cleanup envs"
 msgstr "Python 제거 + 환경 정리"
 
-#: src/python-management.md:324
+#: src/python-management.md:325
 msgid "`scuv uninstall 3.12 --cascade` (or manual workflow)"
 msgstr "`scuv uninstall 3.12 --cascade` (또는 수동 방식)"
 
-#: src/python-management.md:325
+#: src/python-management.md:326
 msgid "Find envs using a Python version"
 msgstr "Python 버전을 사용하는 환경 찾기"
 
-#: src/python-management.md:325
+#: src/python-management.md:326
 msgid "`scuv list --python-version 3.12`"
 msgstr "`scuv list --python-version 3.12`"
 
-#: src/python-management.md:326
+#: src/python-management.md:327
 msgid "Fix broken environments"
 msgstr "깨진 환경 수정"
 
-#: src/python-management.md:326
+#: src/python-management.md:327
 msgid "`scuv doctor --fix` (after reinstalling the Python version)"
 msgstr "`scuv doctor --fix` (Python 버전 재설치 후)"
 
@@ -2129,8 +2137,8 @@ msgstr "오래 유지; `gc`(먼저 dry-run), `verify`, 메타데이터(`last_use
 msgid "Extras"
 msgstr "그 밖의 기능"
 
-#: src/faq.md:38 src/commands/list.md:33 src/api.md:731 src/api.md:732
-#: src/api.md:734 src/api.md:735
+#: src/faq.md:38 src/commands/list.md:33 src/api.md:730 src/api.md:731
+#: src/api.md:733 src/api.md:734
 msgid "—"
 msgstr "—"
 
@@ -2350,7 +2358,7 @@ msgstr "# Option 4) 이 터미널에서만 임시 재정의 (파일 변경 없�
 msgid "# ...test...\n"
 msgstr "# ...test...\n"
 
-#: src/faq.md:158 src/commands/migrate.md:109
+#: src/faq.md:158 src/commands/migrate.md:161
 msgid "Notes:"
 msgstr "참고:"
 
@@ -3018,7 +3026,7 @@ msgstr "모든 명령에 사용 가능합니다:"
 #: src/commands/uninstall.md:19 src/commands/doctor.md:13
 #: src/commands/info.md:22 src/commands/which.md:20 src/commands/sync.md:14
 #: src/commands/export.md:22 src/commands/import.md:20 src/commands/clone.md:21
-#: src/commands/migrate.md:69 src/commands/gc.md:94 src/commands/prune.md:21
+#: src/commands/migrate.md:121 src/commands/gc.md:94 src/commands/prune.md:21
 #: src/commands/diff.md:44 src/commands/lang.md:29 src/commands/self.md:13
 #: src/commands/shell.md:27 src/commands/man.md:26
 msgid "Option"
@@ -3196,7 +3204,7 @@ msgstr "사용법"
 #: src/commands/uninstall.md:17 src/commands/doctor.md:11
 #: src/commands/info.md:20 src/commands/which.md:18 src/commands/sync.md:12
 #: src/commands/export.md:20 src/commands/import.md:18 src/commands/clone.md:19
-#: src/commands/migrate.md:67 src/commands/gc.md:92 src/commands/prune.md:19
+#: src/commands/migrate.md:119 src/commands/gc.md:92 src/commands/prune.md:19
 #: src/commands/diff.md:42 src/commands/lang.md:27 src/commands/self.md:11
 #: src/commands/shell.md:25 src/commands/man.md:24
 msgid "Options"
@@ -3239,7 +3247,7 @@ msgstr "이름만 출력 (스크립팅용); `--help`에서 숨겨짐"
 #: src/commands/uninstall.md:23 src/commands/doctor.md:16
 #: src/commands/info.md:26 src/commands/which.md:23 src/commands/sync.md:18
 #: src/commands/import.md:24 src/commands/clone.md:25
-#: src/commands/migrate.md:72 src/commands/gc.md:99 src/commands/prune.md:23
+#: src/commands/migrate.md:124 src/commands/gc.md:99 src/commands/prune.md:23
 #: src/commands/diff.md:46 src/commands/lang.md:33 src/commands/self.md:18
 #: src/commands/man.md:28
 msgid "`--json`"
@@ -4076,8 +4084,8 @@ msgstr "Python 버전을 설치합니다."
 msgid "`version`"
 msgstr "`version`"
 
-#: src/commands/install.md:15 src/commands/migrate.md:95
-#: src/commands/migrate.md:103 src/api.md:725
+#: src/commands/install.md:15 src/commands/migrate.md:147
+#: src/commands/migrate.md:155 src/api.md:724
 msgid "`3`"
 msgstr "`3`"
 
@@ -4480,10 +4488,10 @@ msgstr "# {\n"
 
 #: src/commands/uninstall.md:146 src/commands/info.md:63
 #: src/commands/status.md:83 src/commands/status.md:84 src/commands/sync.md:99
-#: src/commands/import.md:87 src/commands/clone.md:76
-#: src/commands/migrate.md:258 src/commands/migrate.md:269
-#: src/commands/migrate.md:277 src/commands/migrate.md:303
-#: src/commands/migrate.md:346 src/commands/gc.md:152 src/commands/verify.md:67
+#: src/commands/import.md:91 src/commands/clone.md:77
+#: src/commands/migrate.md:310 src/commands/migrate.md:321
+#: src/commands/migrate.md:329 src/commands/migrate.md:355
+#: src/commands/migrate.md:405 src/commands/gc.md:152 src/commands/verify.md:67
 #: src/commands/verify.md:76 src/commands/verify.md:77
 #: src/commands/verify.md:78 src/commands/verify.md:79
 #: src/commands/verify.md:80 src/commands/verify.md:81 src/commands/diff.md:127
@@ -4493,10 +4501,10 @@ msgid "\"status\""
 msgstr "\"status\""
 
 #: src/commands/uninstall.md:146 src/commands/info.md:63
-#: src/commands/status.md:83 src/commands/sync.md:99 src/commands/import.md:87
-#: src/commands/clone.md:76 src/commands/migrate.md:258
-#: src/commands/migrate.md:303 src/commands/migrate.md:321
-#: src/commands/migrate.md:374 src/commands/gc.md:152 src/commands/verify.md:67
+#: src/commands/status.md:83 src/commands/sync.md:99 src/commands/import.md:91
+#: src/commands/clone.md:77 src/commands/migrate.md:310
+#: src/commands/migrate.md:355 src/commands/migrate.md:378
+#: src/commands/migrate.md:433 src/commands/gc.md:152 src/commands/verify.md:67
 #: src/commands/diff.md:127 src/commands/lang.md:108 src/commands/self.md:48
 msgid "\"success\""
 msgstr "\"success\""
@@ -4506,9 +4514,9 @@ msgid "#   \"command\": \"uninstall\",\n"
 msgstr "#   \"command\": \"uninstall\",\n"
 
 #: src/commands/uninstall.md:148 src/commands/info.md:65
-#: src/commands/status.md:85 src/commands/sync.md:101 src/commands/import.md:89
-#: src/commands/clone.md:78 src/commands/migrate.md:260
-#: src/commands/migrate.md:305 src/commands/migrate.md:354
+#: src/commands/status.md:85 src/commands/sync.md:101 src/commands/import.md:93
+#: src/commands/clone.md:79 src/commands/migrate.md:312
+#: src/commands/migrate.md:357 src/commands/migrate.md:413
 #: src/commands/gc.md:154 src/commands/verify.md:69 src/commands/diff.md:129
 #: src/commands/diff.md:178 src/commands/lang.md:110 src/commands/self.md:50
 msgid "\"data\""
@@ -4524,8 +4532,8 @@ msgstr "\"removed_envs\""
 
 #: src/commands/uninstall.md:150 src/commands/info.md:66
 #: src/commands/sync.md:103 src/commands/export.md:44
-#: src/commands/migrate.md:264 src/commands/migrate.md:308
-#: src/commands/migrate.md:365 src/commands/migrate.md:369 src/api.md:155
+#: src/commands/migrate.md:316 src/commands/migrate.md:360
+#: src/commands/migrate.md:424 src/commands/migrate.md:428 src/api.md:155
 msgid "\"myproject\""
 msgstr "\"myproject\""
 
@@ -5058,16 +5066,16 @@ msgstr ""
 "activate` / `scuv run` / `scuv shell`이 이 값을 갱신합니다)에 대해 `never`로 "
 "표시되며, 디스크에 메타데이터가 전혀 없는 경우에는 행 자체가 생략됩니다."
 
-#: src/commands/info.md:55 src/commands/status.md:79 src/commands/import.md:83
-#: src/commands/clone.md:72 src/commands/migrate.md:243
+#: src/commands/info.md:55 src/commands/status.md:79 src/commands/import.md:87
+#: src/commands/clone.md:73 src/commands/migrate.md:295
 #: src/commands/lang.md:103 src/commands/self.md:44
 msgid "JSON Output"
 msgstr "JSON 출력"
 
 #: src/commands/info.md:64 src/commands/status.md:84 src/commands/sync.md:100
-#: src/commands/import.md:88 src/commands/clone.md:77
-#: src/commands/migrate.md:259 src/commands/migrate.md:304
-#: src/commands/migrate.md:347 src/commands/gc.md:153 src/commands/verify.md:68
+#: src/commands/import.md:92 src/commands/clone.md:78
+#: src/commands/migrate.md:311 src/commands/migrate.md:356
+#: src/commands/migrate.md:406 src/commands/gc.md:153 src/commands/verify.md:68
 #: src/commands/diff.md:128 src/commands/diff.md:170 src/commands/lang.md:109
 #: src/commands/self.md:49
 msgid "\"command\""
@@ -5081,12 +5089,12 @@ msgstr "\"info\""
 #: src/commands/info.md:79 src/commands/info.md:80 src/commands/info.md:81
 #: src/commands/status.md:87 src/commands/export.md:44
 #: src/commands/export.md:49 src/commands/export.md:51
-#: src/commands/export.md:56 src/commands/import.md:90
-#: src/commands/migrate.md:264 src/commands/migrate.md:272
-#: src/commands/migrate.md:308 src/commands/migrate.md:358
-#: src/commands/migrate.md:365 src/commands/migrate.md:369
-#: src/commands/gc.md:157 src/commands/gc.md:158 src/commands/gc.md:159
-#: src/commands/verify.md:72 src/commands/verify.md:76
+#: src/commands/export.md:56 src/commands/import.md:94
+#: src/commands/migrate.md:316 src/commands/migrate.md:324
+#: src/commands/migrate.md:360 src/commands/migrate.md:365
+#: src/commands/migrate.md:417 src/commands/migrate.md:424
+#: src/commands/migrate.md:428 src/commands/gc.md:157 src/commands/gc.md:158
+#: src/commands/gc.md:159 src/commands/verify.md:72 src/commands/verify.md:76
 #: src/commands/verify.md:77 src/commands/verify.md:78
 #: src/commands/verify.md:79 src/commands/verify.md:80
 #: src/commands/verify.md:81 src/commands/diff.md:135 src/commands/diff.md:136
@@ -5096,23 +5104,23 @@ msgid "\"name\""
 msgstr "\"name\""
 
 #: src/commands/info.md:67 src/commands/status.md:90 src/commands/sync.md:104
-#: src/commands/export.md:45 src/commands/import.md:91 src/commands/clone.md:81
+#: src/commands/export.md:45 src/commands/import.md:95 src/commands/clone.md:82
 #: src/commands/verify.md:74 src/commands/diff.md:133
 msgid "\"python\""
 msgstr "\"python\""
 
 #: src/commands/info.md:67 src/commands/status.md:90 src/commands/sync.md:104
-#: src/commands/export.md:45 src/commands/import.md:91 src/commands/clone.md:81
-#: src/commands/migrate.md:265 src/commands/migrate.md:309
-#: src/commands/migrate.md:315 src/commands/verify.md:74
+#: src/commands/export.md:45 src/commands/import.md:95 src/commands/clone.md:82
+#: src/commands/migrate.md:317 src/commands/migrate.md:361
+#: src/commands/migrate.md:372 src/commands/verify.md:74
 #: src/commands/diff.md:133 src/commands/diff.md:144 src/api.md:113
 #: src/api.md:156 src/development/testing.md:374
 msgid "\"3.12\""
 msgstr "\"3.12\""
 
-#: src/commands/info.md:68 src/commands/status.md:89 src/commands/clone.md:82
-#: src/commands/migrate.md:266 src/commands/migrate.md:274
-#: src/commands/migrate.md:313 src/commands/gc.md:157 src/commands/gc.md:158
+#: src/commands/info.md:68 src/commands/status.md:89 src/commands/clone.md:83
+#: src/commands/migrate.md:318 src/commands/migrate.md:326
+#: src/commands/migrate.md:370 src/commands/gc.md:157 src/commands/gc.md:158
 #: src/commands/gc.md:159
 msgid "\"path\""
 msgstr "\"path\""
@@ -5142,8 +5150,8 @@ msgstr "\"last_used\""
 msgid "\"2026-06-02T09:00:00.746201+00:00\""
 msgstr "\"2026-06-02T09:00:00.746201+00:00\""
 
-#: src/commands/info.md:72 src/commands/migrate.md:268
-#: src/commands/migrate.md:276
+#: src/commands/info.md:72 src/commands/migrate.md:320
+#: src/commands/migrate.md:328
 msgid "\"size_bytes\""
 msgstr "\"size_bytes\""
 
@@ -5160,8 +5168,8 @@ msgstr "\"8 MB\""
 msgid "\"packages\""
 msgstr "\"packages\""
 
-#: src/commands/info.md:75 src/commands/migrate.md:280
-#: src/commands/migrate.md:321 src/commands/migrate.md:374
+#: src/commands/info.md:75 src/commands/migrate.md:332
+#: src/commands/migrate.md:378 src/commands/migrate.md:433
 #: src/commands/verify.md:85
 msgid "\"total\""
 msgstr "\"total\""
@@ -5177,8 +5185,8 @@ msgstr "\"certifi\""
 #: src/commands/info.md:77 src/commands/info.md:78 src/commands/info.md:79
 #: src/commands/info.md:80 src/commands/info.md:81 src/commands/export.md:49
 #: src/commands/export.md:52 src/commands/export.md:57
-#: src/commands/migrate.md:277 src/commands/diff.md:135
-#: src/commands/diff.md:136
+#: src/commands/migrate.md:329 src/commands/migrate.md:365
+#: src/commands/diff.md:135 src/commands/diff.md:136
 msgid "\"version\""
 msgstr "\"version\""
 
@@ -5260,7 +5268,7 @@ msgstr "`status`는 다음 네 가지 상태 중 하나로 결정됩니다:"
 msgid "State"
 msgstr "상태"
 
-#: src/commands/status.md:17 src/commands/migrate.md:395
+#: src/commands/status.md:17 src/commands/migrate.md:454
 #: src/development/ci-cd.md:9
 msgid "Trigger"
 msgstr "트리거"
@@ -5318,8 +5326,8 @@ msgid "Value"
 msgstr "값"
 
 #: src/commands/status.md:31 src/commands/which.md:46 src/commands/sync.md:115
-#: src/commands/export.md:104 src/commands/import.md:100
-#: src/commands/clone.md:91 src/development/translation.md:256 src/api.md:720
+#: src/commands/export.md:106 src/commands/import.md:104
+#: src/commands/clone.md:92 src/development/translation.md:256 src/api.md:719
 msgid "Meaning"
 msgstr "의미"
 
@@ -5394,7 +5402,7 @@ msgstr "`none`이면 stderr에 힌트를 출력합니다:"
 msgid "\"state\""
 msgstr "\"state\""
 
-#: src/commands/status.md:87 src/commands/import.md:90 src/commands/clone.md:79
+#: src/commands/status.md:87 src/commands/import.md:94 src/commands/clone.md:80
 #: src/commands/verify.md:72 src/development/architecture.md:137 src/api.md:111
 #: src/api.md:113 src/api.md:117 src/development/testing.md:240
 #: src/development/testing.md:374
@@ -5403,7 +5411,7 @@ msgstr "\"myenv\""
 
 #: src/commands/status.md:88 src/commands/export.md:49
 #: src/commands/export.md:53 src/commands/export.md:58
-#: src/commands/import.md:93 src/commands/migrate.md:261
+#: src/commands/import.md:97 src/commands/migrate.md:313
 #: src/commands/diff.md:135 src/commands/diff.md:136
 msgid "\"source\""
 msgstr "\"source\""
@@ -5526,15 +5534,15 @@ msgid "# JSON: { exe, env, path }\n"
 msgstr "# JSON: { exe, env, path }\n"
 
 #: src/commands/which.md:44 src/commands/run.md:38 src/commands/sync.md:113
-#: src/commands/export.md:102 src/commands/import.md:98
-#: src/commands/clone.md:89
+#: src/commands/export.md:104 src/commands/import.md:102
+#: src/commands/clone.md:90
 msgid "Exit Codes"
 msgstr "종료 코드"
 
-#: src/commands/which.md:46 src/commands/sync.md:115 src/commands/export.md:104
-#: src/commands/import.md:100 src/commands/clone.md:91
-#: src/commands/migrate.md:90 src/commands/migrate.md:99
-#: src/commands/diff.md:60 src/commands/lang.md:37 src/api.md:720
+#: src/commands/which.md:46 src/commands/sync.md:115 src/commands/export.md:106
+#: src/commands/import.md:104 src/commands/clone.md:92
+#: src/commands/migrate.md:142 src/commands/migrate.md:151
+#: src/commands/diff.md:60 src/commands/lang.md:37 src/api.md:719
 msgid "Code"
 msgstr "코드"
 
@@ -5653,7 +5661,7 @@ msgstr "`--with <GROUP>`"
 msgid "Install an extra package group on top of `default` (repeatable)"
 msgstr "`default` 위에 추가 패키지 그룹을 설치합니다 (반복 가능)"
 
-#: src/commands/sync.md:17 src/commands/migrate.md:73
+#: src/commands/sync.md:17 src/commands/migrate.md:125
 msgid "`--dry-run`"
 msgstr "`--dry-run`"
 
@@ -5899,7 +5907,7 @@ msgstr "\"debugpy\""
 msgid "\"env_created\""
 msgstr "\"env_created\""
 
-#: src/commands/sync.md:108 src/commands/migrate.md:312 src/commands/gc.md:155
+#: src/commands/sync.md:108 src/commands/migrate.md:369 src/commands/gc.md:155
 msgid "\"dry_run\""
 msgstr "\"dry_run\""
 
@@ -6112,7 +6120,9 @@ msgid ""
 "for `uv pip install -e`), `vcs_info` for a VCS checkout (pinned to "
 "`commit_id`), `archive_info` for a wheel or sdist URL (with its hashes, when "
 "recorded). `null` means no direct origin was recorded, which is usually a "
-"registry install; it does not say which index."
+"registry install; it does not say which index. An editable install made with "
+"an old pip (`setup.py develop`, an `.egg-link`) records no origin; scuv "
+"writes a `dir_info` one for it from the project location uv reports."
 msgstr ""
 "`source`는 설치 도구가 `direct_url.json`에 기록한 패키지의 [PEP 610](https://"
 "packaging.python.org/en/latest/specifications/direct-url/) 출처입니다. 로컬 "
@@ -6120,9 +6130,11 @@ msgstr ""
 "아웃은 `vcs_info`(`commit_id`로 고정), wheel이나 sdist URL은 "
 "`archive_info`(기록된 경우 해시 포함)입니다. `null`은 직접 출처가 기록되지 않"
 "았다는 뜻으로, 보통 레지스트리에서 설치한 경우이지만 어느 인덱스인지는 알려 "
-"주지 않습니다."
+"주지 않습니다. 오래된 pip로 만든 editable 설치(`setup.py develop`, `.egg-"
+"link`)는 출처를 기록하지 않으므로, scuv는 uv가 알려 주는 프로젝트 위치로 "
+"`dir_info` 출처를 씁니다."
 
-#: src/commands/export.md:83
+#: src/commands/export.md:85
 msgid ""
 "scuv reads origins by running the env's own Python (3.8 or later) with "
 "`importlib.metadata`. The env's site hooks run as part of that, as they do "
@@ -6132,7 +6144,7 @@ msgstr ""
 "읽습니다. 그 과정에서 환경의 사이트 훅이 실행되는데, 환경의 Python이 시작될 "
 "때마다 실행되는 것과 같습니다."
 
-#: src/commands/export.md:87
+#: src/commands/export.md:89
 msgid ""
 "A local `file://` source is an absolute path on the machine that exported "
 "it. Importing on another machine needs the same path there; scuv checks "
@@ -6144,7 +6156,7 @@ msgstr ""
 "하고, 경로가 없는 패키지를 짚어 알려 줍니다. export 파일에는 소스 코드 자체"
 "가 들어 있지 않습니다."
 
-#: src/commands/export.md:92
+#: src/commands/export.md:94
 msgid ""
 "Version 1 files (scuv 0.21 and older) have no `source`; importing one "
 "reinstalls every package from the registry, as before. scuv 0.21 and older "
@@ -6154,7 +6166,7 @@ msgstr ""
 "전처럼 모든 패키지를 레지스트리에서 다시 설치합니다. scuv 0.21 이하는 버전 2 "
 "파일을 거부합니다."
 
-#: src/commands/export.md:96
+#: src/commands/export.md:98
 msgid ""
 "**Note:** The export schema intentionally does **not** include the "
 "`last_used` timestamp. `last_used` is local usage telemetry — it describes "
@@ -6168,11 +6180,11 @@ msgstr ""
 "`last_used` 없이 새로 시작하며, 해당 필드는 새 환경이 로컬에서 처음 활성화될 "
 "때 채워집니다."
 
-#: src/commands/export.md:106
+#: src/commands/export.md:108
 msgid "Export written successfully (or printed to stdout)"
 msgstr "내보내기 완료 (또는 stdout에 출력됨)"
 
-#: src/commands/export.md:107
+#: src/commands/export.md:109
 msgid ""
 "Env not found, listing its packages with uv failed, reading their origins "
 "failed (`PACKAGE_ORIGINS_UNREADABLE`), or writing the destination file failed"
@@ -6180,12 +6192,12 @@ msgstr ""
 "환경을 찾을 수 없거나, uv로 패키지 목록을 가져오지 못했거나, 패키지 출처를 읽"
 "지 못했거나(`PACKAGE_ORIGINS_UNREADABLE`), 대상 파일 쓰기에 실패했습니다"
 
-#: src/commands/export.md:108
+#: src/commands/export.md:110
 msgid ""
 "The env has no readable metadata, so there is no Python version to record"
 msgstr "환경에 읽을 수 있는 메타데이터가 없어 기록할 Python 버전이 없습니다"
 
-#: src/commands/export.md:110
+#: src/commands/export.md:112
 msgid ""
 "scuv writes nothing when listing the packages or reading their origins "
 "fails; it never exports an empty package list, or a package without the "
@@ -6198,16 +6210,16 @@ msgstr ""
 "는 일은 없습니다. 다만 셸 리다이렉트(`scuv export myenv > myenv.json`)는 scuv"
 "가 실행되기 전에 파일을 만들거나 비웁니다."
 
-#: src/commands/export.md:116 src/commands/import.md:105
-#: src/commands/clone.md:97
+#: src/commands/export.md:118 src/commands/import.md:109
+#: src/commands/clone.md:98
 msgid "See Also"
 msgstr "참고 항목"
 
-#: src/commands/export.md:118
+#: src/commands/export.md:120
 msgid "[`scuv import`](import.md) — reverse operation"
 msgstr "[`scuv import`](import.md) — 역방향 작업"
 
-#: src/commands/export.md:119
+#: src/commands/export.md:121
 msgid "[`scuv sync`](sync.md) — declarative manifest with looser pinning"
 msgstr "[`scuv sync`](sync.md) — 느슨한 고정이 가능한 선언적 매니페스트"
 
@@ -6272,6 +6284,18 @@ msgstr ""
 
 #: src/commands/import.md:35
 msgid ""
+"a local directory is that package's project: it has a `pyproject.toml` or "
+"`setup.py`, and a static `[project] name` in the `pyproject.toml`, when "
+"there is one, is the package's (`PACKAGE_SOURCE_NOT_A_PROJECT`). An old src-"
+"layout editable points at `src/`, which has neither;"
+msgstr ""
+"로컬 디렉터리는 그 패키지의 프로젝트여야 합니다. `pyproject.toml`이나 "
+"`setup.py`가 있어야 하고, `pyproject.toml`에 정적 `[project] name`이 있으면 "
+"그 패키지의 이름이어야 합니다(`PACKAGE_SOURCE_NOT_A_PROJECT`). 오래된 src 레"
+"이아웃 editable은 둘 다 없는 `src/`를 가리킵니다."
+
+#: src/commands/import.md:39
+msgid ""
 "with `--force` over an existing env, no local source lives inside that env "
 "or is reached through it, symlinks included "
 "(`PACKAGE_SOURCE_INSIDE_TARGET`), since deleting the env would remove it;"
@@ -6280,7 +6304,7 @@ msgstr ""
 "포함해 그 환경을 거쳐 가면 안 됩니다(`PACKAGE_SOURCE_INSIDE_TARGET`). 환경을 "
 "지우면 출처도 함께 지워지기 때문입니다."
 
-#: src/commands/import.md:39
+#: src/commands/import.md:43
 msgid ""
 "an archive with a recorded hash needs uv 0.11.29 or later, the first release "
 "that checks a URL's `#sha256=` (`PACKAGE_HASH_UNENFORCED`)."
@@ -6288,7 +6312,7 @@ msgstr ""
 "해시가 기록된 아카이브에는 uv 0.11.29 이상이 필요합니다. URL의 `#sha256=`를 "
 "확인하는 첫 릴리스입니다(`PACKAGE_HASH_UNENFORCED`)."
 
-#: src/commands/import.md:41
+#: src/commands/import.md:45
 msgid ""
 "an origin uv would not reproduce is refused (`PACKAGE_ORIGINS_UNREADABLE`): "
 "an archive whose recorded hashes include no sha256, sha384 or sha512, a "
@@ -6313,7 +6337,7 @@ msgstr ""
 "`git_lfs` 선택자입니다. 아카이브 URL의 `#fragment`에 든 해시는 uv가 기록하는 "
 "자리이므로 기록된 해시로 봅니다."
 
-#: src/commands/import.md:53
+#: src/commands/import.md:57
 msgid ""
 "If the target env already exists: errors out unless `--force` is set, in "
 "which case the existing env is removed first."
@@ -6321,7 +6345,7 @@ msgstr ""
 "대상 환경이 이미 존재하는 경우: `--force`가 설정되어 있지 않으면 오류가 발생"
 "하며, 설정된 경우에는 기존 환경을 먼저 제거합니다."
 
-#: src/commands/import.md:55
+#: src/commands/import.md:59
 msgid ""
 "Auto-installs the requested Python if it isn't already available via uv "
 "(matches the ergonomics of [`scuv sync`](sync.md))."
@@ -6329,7 +6353,7 @@ msgstr ""
 "uv를 통해 요청한 Python을 아직 사용할 수 없는 경우 자동으로 설치합니다"
 "([`scuv sync`](sync.md)와 동일한 사용성)."
 
-#: src/commands/import.md:57
+#: src/commands/import.md:61
 msgid ""
 "Creates the env, then installs every package in one `uv pip install`: "
 "`name==version` when no origin is recorded (all of a version 1 file), `--"
@@ -6348,43 +6372,43 @@ msgstr ""
 "실패하면 이번 import가 만든 환경을 다시 지우고 설치 오류를 보고합니다. 4단계"
 "에서 `--force`로 지운 환경은 되돌리지 않습니다."
 
-#: src/commands/import.md:70
+#: src/commands/import.md:74
 msgid "# Plain file -> recreates with the schema's original name\n"
 msgstr "# 일반 파일 -> 스키마의 원래 이름으로 재생성\n"
 
-#: src/commands/import.md:72
+#: src/commands/import.md:76
 msgid "# Pipe from a sibling machine\n"
 msgstr "# 다른 머신에서 파이프로 전달\n"
 
-#: src/commands/import.md:74
+#: src/commands/import.md:78
 msgid "'scuv export myenv'"
 msgstr "'scuv export myenv'"
 
-#: src/commands/import.md:75
+#: src/commands/import.md:79
 msgid "# Rename on the fly + overwrite if it already exists\n"
 msgstr "# 즉석 이름 변경 + 이미 존재하면 덮어쓰기\n"
 
-#: src/commands/import.md:78
+#: src/commands/import.md:82
 msgid "# Machine-readable summary for CI\n"
 msgstr "# CI용 기계 가독 요약\n"
 
-#: src/commands/import.md:88
+#: src/commands/import.md:92
 msgid "\"import\""
 msgstr "\"import\""
 
-#: src/commands/import.md:92
+#: src/commands/import.md:96
 msgid "\"packages_installed\""
 msgstr "\"packages_installed\""
 
-#: src/commands/import.md:93
+#: src/commands/import.md:97
 msgid "\"myenv.json\""
 msgstr "\"myenv.json\""
 
-#: src/commands/import.md:102
+#: src/commands/import.md:106
 msgid "Imported successfully"
 msgstr "가져오기 완료"
 
-#: src/commands/import.md:103
+#: src/commands/import.md:107
 msgid ""
 "Invalid file, unsupported schema version, invalid name, env existed without "
 "`--force`, a package source that is missing or inside the env being "
@@ -6395,11 +6419,11 @@ msgstr ""
 "미 존재, 없거나 교체될 환경 안에 있는 패키지 출처, 해시를 확인할 수 없는 uv에"
 "서의 해시 기록 아카이브, 또는 패키지 설치 실패"
 
-#: src/commands/import.md:107
+#: src/commands/import.md:111
 msgid "[`scuv export`](export.md) — produce the input file"
 msgstr "[`scuv export`](export.md) — 입력 파일 생성"
 
-#: src/commands/import.md:108
+#: src/commands/import.md:112
 msgid ""
 "[`scuv sync`](sync.md) — for declarative `.scuv.toml`\\-driven workflows"
 msgstr ""
@@ -6484,17 +6508,19 @@ msgstr ""
 
 #: src/commands/clone.md:42
 msgid ""
-"Checks that every package can be put back: each local source path exists, "
-"none lies inside `<DST>` or is reached through it when `--force` would "
-"delete it, and a hashed archive has a uv (0.11.29+) that checks the hash. "
-"See [`scuv import`](import.md#behaviour) for the error codes."
+"Checks that every package can be put back: each local source path exists (a "
+"directory being that package's project), none lies inside `<DST>` or is "
+"reached through it when `--force` would delete it, and a hashed archive has "
+"a uv (0.11.29+) that checks the hash. See [`scuv import`]"
+"(import.md#behaviour) for the error codes."
 msgstr ""
 "모든 패키지를 다시 설치할 수 있는지 확인합니다. 각 로컬 출처 경로가 존재해야 "
-"하고, `--force`가 `<DST>`를 지울 때 그 안에 있거나 그것을 거쳐 가면 안 되며, "
-"해시가 기록된 아카이브에는 해시를 확인하는 uv(0.11.29+)가 필요합니다. 오류 코"
-"드는 [`scuv import`](import.md#동작-방식)를 참고하세요."
+"하고(디렉터리는 그 패키지의 프로젝트), `--force`가 `<DST>`를 지울 때 그 안에 "
+"있거나 그것을 거쳐 가면 안 되며, 해시가 기록된 아카이브에는 해시를 확인하는 "
+"uv(0.11.29+)가 필요합니다. 오류 코드는 [`scuv import`](import.md#동작-방식)"
+"를 참고하세요."
 
-#: src/commands/clone.md:46
+#: src/commands/clone.md:47
 msgid ""
 "Only now does `--force` remove the existing `<DST>`, so a source that cannot "
 "be cloned leaves it in place."
@@ -6502,7 +6528,7 @@ msgstr ""
 "이 단계에서야 `--force`가 기존 `<DST>`를 제거합니다. 그래서 복제할 수 없는 소"
 "스라면 `<DST>`는 그대로 남습니다."
 
-#: src/commands/clone.md:48
+#: src/commands/clone.md:49
 msgid ""
 "Creates `<DST>` at the same Python version and installs the packages in one "
 "`uv pip install`, each from where it came: `name==version` from the "
@@ -6519,7 +6545,7 @@ msgstr ""
 "에 실패하면 scuv는 방금 만든 `<DST>`를 지우고(최선 노력) 설치 오류를 보고합니"
 "다."
 
-#: src/commands/clone.md:56
+#: src/commands/clone.md:57
 msgid ""
 "`--force` is not transactional: once step 7 has removed the old `<DST>`, a "
 "failure in step 8 does not bring it back."
@@ -6527,51 +6553,51 @@ msgstr ""
 "`--force`는 트랜잭션이 아닙니다. 7단계에서 기존 `<DST>`를 지운 뒤에는 8단계"
 "가 실패해도 되돌리지 않습니다."
 
-#: src/commands/clone.md:62
+#: src/commands/clone.md:63
 msgid "# Full copy\n"
 msgstr "# 전체 복사\n"
 
-#: src/commands/clone.md:64
+#: src/commands/clone.md:65
 msgid "# Just the shell, no packages\n"
 msgstr "# shell만, 패키지 없음\n"
 
-#: src/commands/clone.md:67
+#: src/commands/clone.md:68
 msgid "# Replace an existing clone\n"
 msgstr "# 기존 복제본 교체\n"
 
-#: src/commands/clone.md:77
+#: src/commands/clone.md:78
 msgid "\"clone\""
 msgstr "\"clone\""
 
-#: src/commands/clone.md:79
+#: src/commands/clone.md:80
 msgid "\"src\""
 msgstr "\"src\""
 
-#: src/commands/clone.md:80
+#: src/commands/clone.md:81
 msgid "\"dst\""
 msgstr "\"dst\""
 
-#: src/commands/clone.md:80
+#: src/commands/clone.md:81
 msgid "\"myenv-experiment\""
 msgstr "\"myenv-experiment\""
 
-#: src/commands/clone.md:82
+#: src/commands/clone.md:83
 msgid "\"/Users/me/.scuv/virtualenvs/myenv-experiment\""
 msgstr "\"/Users/me/.scuv/virtualenvs/myenv-experiment\""
 
-#: src/commands/clone.md:83
+#: src/commands/clone.md:84
 msgid "\"packages_copied\""
 msgstr "\"packages_copied\""
 
-#: src/commands/clone.md:84
+#: src/commands/clone.md:85
 msgid "\"packages_skipped\""
 msgstr "\"packages_skipped\""
 
-#: src/commands/clone.md:93
+#: src/commands/clone.md:94
 msgid "Cloned successfully"
 msgstr "복제 완료"
 
-#: src/commands/clone.md:94
+#: src/commands/clone.md:95
 msgid ""
 "Invalid dst name, self-clone, src missing, dst exists without `--force`, a "
 "package origin that cannot be read or put back, or a uv failure (listing, "
@@ -6580,11 +6606,11 @@ msgstr ""
 "잘못된 dst 이름, 자기 자신 복제, src 없음, `--force` 없이 dst 존재, 읽거나 다"
 "시 설치할 수 없는 패키지 출처, 또는 uv 실패(목록, 생성, 설치)"
 
-#: src/commands/clone.md:95
+#: src/commands/clone.md:96
 msgid "src is corrupted (no readable metadata)"
 msgstr "src 손상됨 (읽을 수 있는 메타데이터 없음)"
 
-#: src/commands/clone.md:99
+#: src/commands/clone.md:100
 msgid ""
 "[`scuv export`](export.md) / [`scuv import`](import.md) — portable JSON for "
 "cross-machine duplication"
@@ -6592,7 +6618,7 @@ msgstr ""
 "[`scuv export`](export.md) / [`scuv import`](import.md) — 머신 간 복제를 위"
 "한 이식 가능한 JSON"
 
-#: src/commands/clone.md:101
+#: src/commands/clone.md:102
 msgid ""
 "[`scuv create --force`](create.md) — recreate from scratch with a specific "
 "Python version"
@@ -6619,7 +6645,7 @@ msgstr "# 단일 환경 마이그레이션\n"
 msgid "Subcommands"
 msgstr "서브커맨드"
 
-#: src/commands/migrate.md:20 src/commands/migrate.md:69
+#: src/commands/migrate.md:20 src/commands/migrate.md:121
 msgid "Subcommand"
 msgstr "서브커맨드"
 
@@ -6682,10 +6708,160 @@ msgid ""
 msgstr ""
 
 #: src/commands/migrate.md:34
+msgid "What moves"
+msgstr "옮기는 것"
+
+#: src/commands/migrate.md:36
+msgid ""
+"scuv reads the source's packages the way `scuv clone` and `scuv export` do: "
+"uv lists them, and the source's own Python reports where each came from (its "
+"[PEP 610](https://packaging.python.org/en/latest/specifications/direct-url/) "
+"`direct_url.json`). The source needs no `pip`. Each package is put back from "
+"there:"
+msgstr ""
+"scuv는 `scuv clone`, `scuv export`와 같은 방식으로 소스의 패키지를 읽습니다. "
+"uv가 목록을 만들고, 소스 자신의 Python이 각 패키지의 출처([PEP 610](https://"
+"packaging.python.org/en/latest/specifications/direct-url/) `direct_url.json`)"
+"를 알려 줍니다. 소스에 `pip`가 없어도 됩니다. 각 패키지는 그 출처에서 다시 설"
+"치됩니다."
+
+#: src/commands/migrate.md:42
+msgid "Installed from"
+msgstr "설치 출처"
+
+#: src/commands/migrate.md:42
+msgid "Reinstalled as"
+msgstr "다시 설치하는 형태"
+
+#: src/commands/migrate.md:44
+msgid "the registry (no recorded origin)"
+msgstr "레지스트리(기록된 출처 없음)"
+
+#: src/commands/migrate.md:44
+msgid "`name==version`"
+msgstr "`name==version`"
+
+#: src/commands/migrate.md:45
+msgid "an editable directory"
+msgstr "editable 디렉터리"
+
+#: src/commands/migrate.md:45
+msgid ""
+"`--editable <path>` (an old `setup.py develop` install, which records no "
+"origin, is read from where uv reports it)"
+msgstr ""
+"`--editable <path>` (출처를 기록하지 않는 오래된 `setup.py develop` 설치는 uv"
+"가 알려 주는 위치에서 읽음)"
+
+#: src/commands/migrate.md:46
+msgid "a directory"
+msgstr "디렉터리"
+
+#: src/commands/migrate.md:46
+msgid "`name @ file://<path>`"
+msgstr "`name @ file://<path>`"
+
+#: src/commands/migrate.md:47
+msgid "a wheel or sdist URL"
+msgstr "wheel이나 sdist URL"
+
+#: src/commands/migrate.md:47
+msgid "`name @ <url>`, with its strongest recorded hash"
+msgstr "`name @ <url>`, 기록된 가장 강한 해시 포함"
+
+#: src/commands/migrate.md:48
+msgid "a git checkout"
+msgstr "git 체크아웃"
+
+#: src/commands/migrate.md:48
+msgid "`name @ git+<url>@<commit>`"
+msgstr "`name @ git+<url>@<commit>`"
+
+#: src/commands/migrate.md:50
+msgid "Three kinds of package are treated differently:"
+msgstr "세 종류의 패키지는 다르게 다룹니다."
+
+#: src/commands/migrate.md:52
+msgid ""
+"`pip` is not moved: scuv environments carry no installer. It is reported in "
+"`packages_excluded` and does not count as a failure. `setuptools` and "
+"`wheel` move like any other package (some packages use `pkg_resources` "
+"without declaring it)."
+msgstr ""
+"`pip`는 옮기지 않습니다. scuv 환경에는 설치 도구가 없기 때문입니다. "
+"`packages_excluded`에 보고되며 실패로 세지 않습니다. `setuptools`와 `wheel`"
+"은 다른 패키지처럼 옮깁니다(선언 없이 `pkg_resources`를 쓰는 패키지가 있습니"
+"다)."
+
+#: src/commands/migrate.md:56
+msgid ""
+"A package conda installed (its `INSTALLER` file says `conda`) records the "
+"directory conda built it in, which does not exist on your machine. scuv "
+"installs the registry release of the same name and version instead, and "
+"lists those packages in `packages_from_conda`. One that the registry does "
+"not have fails like any other package."
+msgstr ""
+"conda가 설치한 패키지(`INSTALLER` 파일이 `conda`)는 conda가 빌드한 디렉터리"
+"를 출처로 기록하는데, 그 디렉터리는 사용자 머신에 없습니다. scuv는 대신 같은 "
+"이름과 버전의 레지스트리 릴리스를 설치하고, 그런 패키지를 "
+"`packages_from_conda`에 나열합니다. 레지스트리에 없는 패키지는 다른 패키지처"
+"럼 실패로 처리됩니다."
+
+#: src/commands/migrate.md:61
+msgid ""
+"A source whose Python is older than 3.8 cannot report origins and is refused "
+"(`PACKAGE_ORIGINS_UNREADABLE`) before uv runs. Nothing is installed from the "
+"registry in place of what could not be read."
+msgstr ""
+"Python이 3.8보다 오래된 소스는 출처를 알려 줄 수 없으므로, uv를 실행하기 전"
+"에 거부합니다(`PACKAGE_ORIGINS_UNREADABLE`). 읽지 못한 패키지를 레지스트리에"
+"서 대신 설치하는 일은 없습니다."
+
+#: src/commands/migrate.md:65
+msgid ""
+"Before anything is created or replaced, every package must be one that can "
+"be put back: a local source that exists and is that package's project (a "
+"directory needs a `pyproject.toml` or `setup.py`, and a static `[project] "
+"name` in it, when there is one, must be the package's), none inside a target "
+"`--force` would replace, and a uv that checks recorded archive hashes "
+"(0.11.29 or later). Any of these failing fails that environment, in a dry "
+"run too. So does a source whose directory and the new environment's overlap "
+"(one inside the other, for example `SCUV_HOME` inside the source)."
+msgstr ""
+"무엇을 만들거나 교체하기 전에, 모든 패키지가 다시 설치할 수 있는 것이어야 합"
+"니다. 로컬 출처는 존재하고 그 패키지의 프로젝트여야 하며(디렉터리에 "
+"`pyproject.toml`이나 `setup.py`가 있고, 거기에 정적 `[project] name`이 있으"
+"면 그 패키지의 이름이어야 함), `--force`가 교체할 대상 안에 있으면 안 되고, "
+"기록된 아카이브 해시를 확인하는 uv(0.11.29 이상)가 필요합니다. 이 중 하나라"
+"도 어긋나면 그 환경은 실패하며, dry run에서도 마찬가지입니다. 소스 디렉터리"
+"와 새 환경이 겹치는 경우(한쪽이 다른 쪽 안에 있는 경우, 예를 들어 `SCUV_HOME`"
+"이 소스 안에 있는 경우)도 실패합니다."
+
+#: src/commands/migrate.md:75
+msgid ""
+"The packages are then installed in one `uv pip install`. When that fails, "
+"each package is tried on its own (without dependencies) to find the ones "
+"that do not install, and the environment is rebuilt with the rest, so it "
+"holds no leftovers of the failed attempt. Afterwards scuv reads the new "
+"environment back and compares each package's name, version and origin with "
+"the source; one that differs is a failure (`packages_failed`), and a package "
+"the source did not have (a dependency the install added) is listed in "
+"`packages_added`. `--strict` turns any install or verification failure into "
+"a failed migration and removes the new environment."
+msgstr ""
+"그다음 패키지를 `uv pip install` 한 번으로 설치합니다. 실패하면 설치되지 않"
+"는 패키지를 찾으려고 각 패키지를 따로(의존성 없이) 시도하고, 나머지로 환경을 "
+"다시 만들어 실패한 시도의 흔적이 남지 않게 합니다. 그 뒤 scuv는 새 환경을 다"
+"시 읽어 각 패키지의 이름, 버전, 출처를 소스와 비교합니다. 다른 것은 실패"
+"(`packages_failed`)이고, 소스에 없던 패키지(설치가 더한 의존성)는 "
+"`packages_added`에 나열됩니다. `--strict`는 설치나 확인에서 하나라도 실패하"
+"면 마이그레이션을 실패로 처리하고 새 환경을 지웁니다."
+
+#: src/commands/migrate.md:85
 msgid "End-of-life Python"
 msgstr "지원이 끝난(EOL) Python"
 
-#: src/commands/migrate.md:36
+#: src/commands/migrate.md:87
 msgid ""
 "scuv treats an env as end of life (EOL) when its Python is 2.x or 3.10 and "
 "earlier. 3.9 reached end of life on 2025-10-31 and 3.10 on 2026-10-01, "
@@ -6699,16 +6875,16 @@ msgstr ""
 "가 없고 이름 충돌도 없는 소스 환경이라면, `--allow-eol`과 `--force`가 모두 없"
 "을 때:"
 
-#: src/commands/migrate.md:42
+#: src/commands/migrate.md:93
 msgid "`migrate list` marks the env `⚠` with `(Python 3.10.14 is EOL)`."
 msgstr ""
 "`migrate list`는 그 환경을 `⚠`와 `(Python 3.10.14 is EOL)`로 표시합니다."
 
-#: src/commands/migrate.md:43
+#: src/commands/migrate.md:94
 msgid "`migrate @env <name>` refuses it and exits `2`."
 msgstr "`migrate @env <name>`은 옮기지 않고 `2`로 종료합니다."
 
-#: src/commands/migrate.md:44
+#: src/commands/migrate.md:95
 msgid ""
 "`migrate all` skips it and still exits `0` when nothing else failed, so "
 "check `migrate list` (or the `skipped` array in `--json`) to see what was "
@@ -6718,7 +6894,7 @@ msgstr ""
 "니다. 무엇이 남았는지는 `migrate list`(또는 `--json`의 `skipped` 배열)로 확인"
 "하세요."
 
-#: src/commands/migrate.md:47
+#: src/commands/migrate.md:98
 msgid ""
 "Other states come first. A name conflict is reported as a conflict (and "
 "fails `migrate all` with exit `2`), and a corrupted source is reported as "
@@ -6741,19 +6917,21 @@ msgstr ""
 "상태, 대상 이름, 이미 있는 대상)를 하므로, 미리 보기가 성공하면 실제 실행도 "
 "받아들입니다."
 
-#: src/commands/migrate.md:59
+#: src/commands/migrate.md:110
 msgid ""
 "`--allow-eol` lets such an env migrate and changes nothing else: a name "
 "conflict still stops it. `--force` allows EOL envs too, but it also "
 "overwrites a scuv env of the same name. Up to scuv 0.19.0 `--force` was the "
-"only way through."
+"only way through. Neither helps a Python older than 3.8: its package origins "
+"cannot be read, so it is refused (see [What moves](#what-moves))."
 msgstr ""
 "`--allow-eol`은 이런 환경을 마이그레이션하게 할 뿐 다른 것은 바꾸지 않습니"
 "다. 이름이 충돌하면 여전히 멈춥니다. `--force`도 EOL 환경을 허용하지만, 같은 "
 "이름의 scuv 환경을 덮어쓰기도 합니다. scuv 0.19.0까지는 `--force`만이 방법이"
-"었습니다."
+"었습니다. 3.8보다 오래된 Python은 둘 다 소용없습니다. 패키지 출처를 읽을 수 "
+"없어 거부됩니다([옮기는 것](#옮기는-것) 참고)."
 
-#: src/commands/migrate.md:64
+#: src/commands/migrate.md:116
 msgid ""
 "Released versions up to 0.18.0 used a cutoff of 3.8, so 3.9 and 3.10 envs "
 "migrated without `--force`."
@@ -6761,92 +6939,99 @@ msgstr ""
 "0.18.0까지 배포된 버전은 기준이 3.8이어서 3.9·3.10 환경이 `--force` 없이 옮겨"
 "졌습니다."
 
-#: src/commands/migrate.md:71
+#: src/commands/migrate.md:123
 msgid "`--source <pyenv\\|virtualenvwrapper\\|conda>`"
 msgstr "`--source <pyenv\\|virtualenvwrapper\\|conda>`"
 
-#: src/commands/migrate.md:71 src/commands/migrate.md:72
+#: src/commands/migrate.md:123 src/commands/migrate.md:124
 msgid "all subcommands"
 msgstr "모든 서브커맨드"
 
-#: src/commands/migrate.md:71
+#: src/commands/migrate.md:123
 msgid "Restrict to a single source tool"
 msgstr "단일 소스 도구로 제한합니다"
 
-#: src/commands/migrate.md:72
+#: src/commands/migrate.md:124
 msgid "Machine-readable output (see [JSON Output](#json-output))"
 msgstr "기계 가독 출력 (참고: [JSON 출력](#json-output))"
 
-#: src/commands/migrate.md:73 src/commands/migrate.md:74
-#: src/commands/migrate.md:75 src/commands/migrate.md:76
-#: src/commands/migrate.md:77 src/commands/migrate.md:78
+#: src/commands/migrate.md:125 src/commands/migrate.md:126
+#: src/commands/migrate.md:127 src/commands/migrate.md:128
+#: src/commands/migrate.md:129 src/commands/migrate.md:130
 msgid "`@env`, `all`"
 msgstr "`@env`, `all`"
 
-#: src/commands/migrate.md:73
+#: src/commands/migrate.md:125
 msgid "Preview without making changes"
 msgstr "변경 없이 미리 보기"
 
-#: src/commands/migrate.md:74 src/commands/self.md:15
+#: src/commands/migrate.md:126 src/commands/self.md:15
 msgid "`--force`"
 msgstr "`--force`"
 
-#: src/commands/migrate.md:74
+#: src/commands/migrate.md:126
 msgid "Overwrite existing scuv env with the same name; bypass EOL Python guard"
 msgstr ""
 "동일한 이름의 기존 scuv 환경을 덮어씁니다; EOL Python 가드를 우회합니다"
 
-#: src/commands/migrate.md:75
+#: src/commands/migrate.md:127
 msgid "`--allow-eol`"
 msgstr "`--allow-eol`"
 
-#: src/commands/migrate.md:75
+#: src/commands/migrate.md:127
 msgid "Migrate envs whose Python is end of life; overwrites nothing"
 msgstr ""
 "Python 지원이 끝난 환경도 마이그레이션합니다. 아무것도 덮어쓰지 않습니다"
 
-#: src/commands/migrate.md:76
+#: src/commands/migrate.md:128
 msgid "`--yes`"
 msgstr "`--yes`"
 
-#: src/commands/migrate.md:76
+#: src/commands/migrate.md:128
 msgid "Skip the interactive confirmation prompt"
 msgstr "대화형 확인 프롬프트를 건너뜁니다"
 
-#: src/commands/migrate.md:77 src/commands/diff.md:47
+#: src/commands/migrate.md:129 src/commands/diff.md:47
 msgid "`--strict`"
 msgstr "`--strict`"
 
-#: src/commands/migrate.md:77
+#: src/commands/migrate.md:129
 msgid ""
-"Fail on the first package install error inside an env (default: keep going)"
-msgstr "환경 내 첫 번째 패키지 설치 오류에서 실패합니다(기본값: 계속 진행)"
+"Fail an env when any of its packages does not install or verify, removing "
+"its new env (default: migrate the rest and report them)"
+msgstr ""
+"패키지 중 하나라도 설치나 확인에 실패하면 그 환경을 실패로 처리하고 새 환경"
+"을 지웁니다(기본값: 나머지를 마이그레이션하고 실패를 보고)"
 
-#: src/commands/migrate.md:78
+#: src/commands/migrate.md:130
 msgid "`--delete-source`"
 msgstr "`--delete-source`"
 
-#: src/commands/migrate.md:78
-msgid "Remove the source env after a migration that moved every package"
-msgstr "모든 패키지를 옮긴 마이그레이션 뒤에 소스 환경을 제거합니다"
+#: src/commands/migrate.md:130
+msgid ""
+"Remove the source env after a migration that moved every package (see "
+"[Deleting the source](#deleting-the-source))"
+msgstr ""
+"모든 패키지를 옮긴 마이그레이션 뒤에 소스 환경을 제거합니다([소스 삭제](#소"
+"스-삭제) 참고)"
 
-#: src/commands/migrate.md:79
+#: src/commands/migrate.md:131
 msgid "`--rename <new-name>`"
 msgstr "`--rename <new-name>`"
 
-#: src/commands/migrate.md:79 src/commands/migrate.md:80
+#: src/commands/migrate.md:131 src/commands/migrate.md:132
 msgid "`@env`"
 msgstr "`@env`"
 
-#: src/commands/migrate.md:79
+#: src/commands/migrate.md:131
 msgid "Migrate under a different name"
 msgstr "다른 이름으로 마이그레이션합니다"
 
-#: src/commands/migrate.md:80
+#: src/commands/migrate.md:132
 msgid "`--auto-rename`"
 msgstr "`--auto-rename`"
 
-#: src/commands/migrate.md:80
+#: src/commands/migrate.md:132
 msgid ""
 "On name conflict, migrate under `<name>-pyenv` automatically (conflicts with "
 "`--force`)"
@@ -6854,18 +7039,19 @@ msgstr ""
 "이름 충돌 시 `<name>-pyenv` 이름으로 자동 마이그레이션합니다(`--force`와 충"
 "돌)"
 
-#: src/commands/migrate.md:82
+#: src/commands/migrate.md:134
 msgid ""
 "Global flags (`--quiet`, `--color`, `--no-color`) apply to all subcommands."
 msgstr ""
 "전역 플래그(`--quiet`, `--color`, `--no-color`)는 모든 서브커맨드에 적용됩니"
 "다."
 
-#: src/commands/migrate.md:84 src/commands/verify.md:36 src/commands/diff.md:56
+#: src/commands/migrate.md:136 src/commands/verify.md:36
+#: src/commands/diff.md:56
 msgid "Exit codes"
 msgstr "종료 코드"
 
-#: src/commands/migrate.md:86
+#: src/commands/migrate.md:138
 msgid ""
 "`scuv migrate` follows the [layered exit-code contract](../api.md#process-"
 "exit-codes). The mapping differs slightly between `migrate all` (which "
@@ -6876,21 +7062,21 @@ msgstr ""
 "릅니다. 환경을 반복하기 전에 버킷으로 분류하는 `migrate all`과 단일 환경 경로"
 "(`@env`, `list`) 사이에 매핑이 약간 다릅니다."
 
-#: src/commands/migrate.md:88 src/commands/migrate.md:397
+#: src/commands/migrate.md:140 src/commands/migrate.md:456
 msgid "`migrate all`"
 msgstr "`migrate all`"
 
-#: src/commands/migrate.md:90 src/commands/migrate.md:99
+#: src/commands/migrate.md:142 src/commands/migrate.md:151
 #: src/commands/diff.md:60
 msgid "Returned when"
 msgstr "반환 조건"
 
-#: src/commands/migrate.md:92 src/commands/migrate.md:101
-#: src/commands/diff.md:62 src/api.md:722
+#: src/commands/migrate.md:144 src/commands/migrate.md:153
+#: src/commands/diff.md:62 src/api.md:721
 msgid "`0`"
 msgstr "`0`"
 
-#: src/commands/migrate.md:92
+#: src/commands/migrate.md:144
 msgid ""
 "(a) all envs migrated, (b) no envs found but source tools are installed, or "
 "(c) only non-conflict skips occurred (EOL / corrupted envs in the skipped "
@@ -6900,11 +7086,11 @@ msgstr ""
 "어 있음, 또는 (c) 충돌 없는 건너뜀만 발생(건너뛴 버킷의 EOL / 손상된 환경, 사"
 "전 점검 이름 충돌 없음, 환경별 실패 없음)"
 
-#: src/commands/migrate.md:93 src/commands/diff.md:63 src/api.md:723
+#: src/commands/migrate.md:145 src/commands/diff.md:63 src/api.md:722
 msgid "`1`"
 msgstr "`1`"
 
-#: src/commands/migrate.md:93
+#: src/commands/migrate.md:145
 msgid ""
 "Confirmation was needed (no `--yes`, `--json` or `--dry-run`) but stderr is "
 "not a terminal to ask on: `CONFIRMATION_UNAVAILABLE`, naming `--yes`. "
@@ -6914,11 +7100,11 @@ msgstr ""
 "이 아님: `CONFIRMATION_UNAVAILABLE`, `--yes`를 안내합니다. 아무것도 옮기지 않"
 "습니다"
 
-#: src/commands/migrate.md:94 src/commands/migrate.md:102 src/api.md:724
+#: src/commands/migrate.md:146 src/commands/migrate.md:154 src/api.md:723
 msgid "`2`"
 msgstr "`2`"
 
-#: src/commands/migrate.md:94
+#: src/commands/migrate.md:146
 msgid ""
 "At least one per-env failure **or** at least one preflight name conflict "
 "without `--force`, **or** two sources offering the same env name in one "
@@ -6934,7 +7120,7 @@ msgstr ""
 "source`가 없으면 `@env`가 이미 마이그레이션된 환경을 찾습니다). "
 "`MigrationBatchFailed`를 통해 반환됩니다"
 
-#: src/commands/migrate.md:95
+#: src/commands/migrate.md:147
 msgid ""
 "No source tool (pyenv / virtualenvwrapper / conda) is detected on the "
 "system. Returned via `MigrationSourcesNotFound`"
@@ -6942,12 +7128,12 @@ msgstr ""
 "시스템에서 소스 도구(pyenv / virtualenvwrapper / conda)가 감지되지 않았습니"
 "다. `MigrationSourcesNotFound`를 통해 반환됩니다"
 
-#: src/commands/migrate.md:97 src/commands/migrate.md:398
-#: src/commands/migrate.md:399 src/commands/migrate.md:400
+#: src/commands/migrate.md:149 src/commands/migrate.md:457
+#: src/commands/migrate.md:458 src/commands/migrate.md:459
 msgid "`migrate @env <name>`"
 msgstr "`migrate @env <name>`"
 
-#: src/commands/migrate.md:101
+#: src/commands/migrate.md:153
 msgid ""
 "The env migrated successfully (or the user chose `Skip` at the interactive "
 "conflict prompt)"
@@ -6955,7 +7141,7 @@ msgstr ""
 "환경이 성공적으로 마이그레이션되었습니다(또는 사용자가 대화형 충돌 프롬프트에"
 "서 `Skip`을 선택했습니다)"
 
-#: src/commands/migrate.md:102
+#: src/commands/migrate.md:154
 msgid ""
 "`MigrationNameConflict` (env exists in scuv home, `--force` not set, and `--"
 "yes`, `--json` or a non-terminal stderr skips the prompt) **or** "
@@ -6967,7 +7153,7 @@ msgstr ""
 "`MigrationFailed`(예: 요청된 환경의 Python이 EOL이고 `--allow-eol`과 `--"
 "force` 모두 미설정)"
 
-#: src/commands/migrate.md:103
+#: src/commands/migrate.md:155
 msgid ""
 "The named source env was not found in the requested source "
 "(`PyenvEnvNotFound`, `VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **or** "
@@ -6977,11 +7163,11 @@ msgstr ""
 "`VenvWrapperEnvNotFound`, `CondaEnvNotFound`) **또는** 소스 환경이 "
 "`CorruptedEnvironment`입니다"
 
-#: src/commands/migrate.md:105
+#: src/commands/migrate.md:157
 msgid "`migrate list`"
 msgstr "`migrate list`"
 
-#: src/commands/migrate.md:107
+#: src/commands/migrate.md:159
 msgid ""
 "Exit `0` is informational. A source whose scan fails is left out of the list "
 "instead of failing the command, so exit `0` does not prove that every source "
@@ -6990,7 +7176,7 @@ msgstr ""
 "종료 코드 `0`은 정보성입니다. 스캔에 실패한 소스는 명령을 실패시키지 않고 목"
 "록에서 빠지므로, `0`이 모든 소스를 읽었다는 뜻은 아닙니다."
 
-#: src/commands/migrate.md:111
+#: src/commands/migrate.md:163
 msgid ""
 "Before v0.14, `migrate all` always exited `0` regardless of per-env outcome. "
 "CI gates need `0.14+` to distinguish success from a batch where some envs "
@@ -7000,7 +7186,7 @@ msgstr ""
 "니다. 일부 환경이 실패한 배치와 성공을 구별하려면 CI 게이트에서 `0.14+` 이상"
 "이 필요합니다."
 
-#: src/commands/migrate.md:112
+#: src/commands/migrate.md:164
 msgid ""
 "When `migrate all` returns `MigrationBatchFailed`, the human summary and "
 "JSON envelope are already on stdout/stderr; `main.rs` suppresses the global "
@@ -7010,11 +7196,11 @@ msgstr ""
 "과 JSON 봉투는 이미 stdout/stderr에 출력됩니다. `main.rs`는 중복 노이즈를 방"
 "지하기 위해 전역 `error:` 접두사를 억제합니다."
 
-#: src/commands/migrate.md:114
+#: src/commands/migrate.md:166
 msgid "\\--force vs --auto-rename (single env, `@env`)"
 msgstr "\\--force vs --auto-rename (단일 환경, `@env`)"
 
-#: src/commands/migrate.md:116
+#: src/commands/migrate.md:168
 msgid ""
 "The two flags are mutually exclusive (`clap`\\-enforced via `conflicts_with "
 "= \"force\"`). For `migrate all` only `--force` is available; conflicts "
@@ -7024,56 +7210,60 @@ msgstr ""
 "제됩니다). `migrate all`에서는 `--force`만 사용 가능하며, `--force` 없는 충돌"
 "은 exit-2 계약에 포함됩니다."
 
-#: src/commands/migrate.md:121
+#: src/commands/migrate.md:173
 msgid "`--force` (recommended for guaranteed resolution)"
 msgstr "`--force` (확실한 해결을 위해 권장)"
 
-#: src/commands/migrate.md:123
+#: src/commands/migrate.md:175
 msgid "Status of source env"
 msgstr "소스 환경 상태"
 
-#: src/commands/migrate.md:123
+#: src/commands/migrate.md:175
 msgid "With `--force`"
 msgstr "`--force` 사용 시"
 
-#: src/commands/migrate.md:125
+#: src/commands/migrate.md:177
 msgid "Ready"
 msgstr "준비됨"
 
-#: src/commands/migrate.md:125
+#: src/commands/migrate.md:177
 msgid "Migrated normally"
 msgstr "정상적으로 마이그레이션됨"
 
-#: src/commands/migrate.md:126
+#: src/commands/migrate.md:178
 msgid "Name conflict with an existing scuv env"
 msgstr "기존 scuv 환경과 이름 충돌"
 
-#: src/commands/migrate.md:126
+#: src/commands/migrate.md:178
 msgid "The existing scuv env is overwritten in place"
 msgstr "기존 scuv 환경이 제자리에서 덮어씌워집니다"
 
-#: src/commands/migrate.md:127
-msgid "EOL Python version (e.g. 2.7, 3.10)"
-msgstr "EOL Python 버전 (예: 2.7, 3.10)"
+#: src/commands/migrate.md:179
+msgid "EOL Python version (e.g. 3.9, 3.10)"
+msgstr "EOL Python 버전 (예: 3.9, 3.10)"
 
-#: src/commands/migrate.md:127
-msgid "Migrated anyway (the EOL guard is intentionally bypassed)"
-msgstr "어쨌든 마이그레이션됩니다(EOL 가드가 의도적으로 우회됨)"
+#: src/commands/migrate.md:179
+msgid ""
+"Migrated anyway (the EOL guard is intentionally bypassed); below 3.8 still "
+"refused, since package origins cannot be read there"
+msgstr ""
+"어쨌든 마이그레이션됩니다(EOL 가드가 의도적으로 우회됨). 3.8 미만은 패키지 출"
+"처를 읽을 수 없어 여전히 거부됩니다"
 
-#: src/commands/migrate.md:128
+#: src/commands/migrate.md:180
 msgid "Corrupted source env"
 msgstr "손상된 소스 환경"
 
-#: src/commands/migrate.md:128
+#: src/commands/migrate.md:180
 msgid "**Not bypassed** — still returns `CorruptedEnvironment` (exit 3)"
 msgstr ""
 "**우회되지 않음** — 여전히 `CorruptedEnvironment`를 반환합니다(종료 코드 3)"
 
-#: src/commands/migrate.md:130
+#: src/commands/migrate.md:182
 msgid "`--auto-rename` (name-conflict only)"
 msgstr "`--auto-rename` (이름 충돌 시에만)"
 
-#: src/commands/migrate.md:132
+#: src/commands/migrate.md:184
 msgid ""
 "`--auto-rename` is a convenience for the pure name-conflict case: when a "
 "scuv env with the same name already exists, the migration proceeds under an "
@@ -7085,11 +7275,11 @@ msgstr ""
 "다. EOL / 손상 등 **다른 상태는 재정의하지 않으며**, 기존 scuv 환경을 삭제하"
 "거나 덮어쓰지도 **않습니다**."
 
-#: src/commands/migrate.md:142 src/commands/migrate.md:144
+#: src/commands/migrate.md:194 src/commands/migrate.md:196
 msgid "'myproject-pyenv'"
 msgstr "'myproject-pyenv'"
 
-#: src/commands/migrate.md:152
+#: src/commands/migrate.md:204
 msgid ""
 "The generated name is `<name>-pyenv` for every source, including "
 "`virtualenvwrapper` and `conda`. When that name is taken as well, scuv picks "
@@ -7099,7 +7289,7 @@ msgstr ""
 "pyenv`입니다. 그 이름도 이미 사용 중이면 scuv가 비어 있는 첫 번호 이름"
 "(`myproject-1`, `myproject-2` 순서)을 고릅니다."
 
-#: src/commands/migrate.md:156
+#: src/commands/migrate.md:208
 msgid ""
 "The EOL guard still applies to a renamed env. When the source env both "
 "conflicts by name and runs an end-of-life Python, `--auto-rename` stops with "
@@ -7111,11 +7301,11 @@ msgstr ""
 "<version> is end-of-life. Use --allow-eol to migrate anyway.`를 출력하고 멈춥"
 "니다(exit 2)."
 
-#: src/commands/migrate.md:163
+#: src/commands/migrate.md:215
 msgid "List Migratable Environments"
 msgstr "마이그레이션 가능한 환경 목록"
 
-#: src/commands/migrate.md:178
+#: src/commands/migrate.md:230
 msgid ""
 "Each env line starts with `✓` when it is ready to migrate, `⚠` for a name "
 "conflict or an end-of-life Python (followed by the reason, such as `(Python "
@@ -7128,15 +7318,15 @@ msgstr ""
 "은 이유가 붙음), 환경이 손상되었으면 `✗`로 시작합니다. 그룹으로 묶인 환경 줄"
 "은 stdout으로, `•`, `✓ Found` 줄은 stderr로 출력됩니다."
 
-#: src/commands/migrate.md:184
+#: src/commands/migrate.md:236
 msgid "Migrate Single Environment"
 msgstr "단일 환경 마이그레이션"
 
-#: src/commands/migrate.md:199
+#: src/commands/migrate.md:251
 msgid "Migrate All"
 msgstr "전체 마이그레이션"
 
-#: src/commands/migrate.md:214
+#: src/commands/migrate.md:266
 msgid ""
 "When some envs fail or conflict, the summary names them and the command "
 "exits 2:"
@@ -7144,15 +7334,15 @@ msgstr ""
 "일부 환경이 실패하거나 충돌하면 요약에 그 이름이 표시되고 커맨드는 exit 2로 "
 "종료합니다:"
 
-#: src/commands/migrate.md:234
+#: src/commands/migrate.md:286
 msgid "CI gate (fail the build on batch failure)"
 msgstr "CI 게이트 (배치 실패 시 빌드 실패)"
 
-#: src/commands/migrate.md:237
+#: src/commands/migrate.md:289
 msgid "# Exits 2 if any env failed or a name conflict was skipped.\n"
 msgstr "# Exits 2 if any env failed or a name conflict was skipped.\n"
 
-#: src/commands/migrate.md:238
+#: src/commands/migrate.md:290
 msgid ""
 "# EOL envs are skipped without changing the exit code; add --allow-eol to "
 "migrate them.\n"
@@ -7160,7 +7350,7 @@ msgstr ""
 "# EOL 환경은 건너뛰어도 종료 코드가 바뀌지 않습니다. 옮기려면 --allow-eol을 "
 "붙입니다.\n"
 
-#: src/commands/migrate.md:245
+#: src/commands/migrate.md:297
 msgid ""
 "All three subcommands accept `--json`. The envelope follows scuv's standard "
 "shape: `{status, command, data}` on success; `{status: \"error\", command, "
@@ -7172,11 +7362,11 @@ msgstr ""
 "한 실패 경로의 경우 `{status: \"error\", command, error: { code, "
 "message, ... }, data}` 형태를 사용합니다."
 
-#: src/commands/migrate.md:250
+#: src/commands/migrate.md:302
 msgid "`migrate list --json`"
 msgstr "`migrate list --json`"
 
-#: src/commands/migrate.md:252
+#: src/commands/migrate.md:304
 msgid ""
 "`data` carries the requested `source` filter string (`\"pyenv\"`, "
 "`\"virtualenvwrapper\"`, `\"conda\"`, or `\"all\"`), the full `environments` "
@@ -7186,76 +7376,76 @@ msgstr ""
 "`\"conda\"`, 또는 `\"all\"`), 전체 `environments` 배열, 그리고 상태별로 분류"
 "된 `summary`가 포함됩니다."
 
-#: src/commands/migrate.md:259
+#: src/commands/migrate.md:311
 msgid "\"migrate list\""
 msgstr "\"migrate list\""
 
-#: src/commands/migrate.md:261
+#: src/commands/migrate.md:313
 msgid "\"all\""
 msgstr "\"all\""
 
-#: src/commands/migrate.md:262
+#: src/commands/migrate.md:314
 msgid "\"environments\""
 msgstr "\"environments\""
 
-#: src/commands/migrate.md:265 src/commands/migrate.md:273
-#: src/commands/migrate.md:309 src/commands/diff.md:144 src/api.md:156
+#: src/commands/migrate.md:317 src/commands/migrate.md:325
+#: src/commands/migrate.md:361 src/commands/diff.md:144 src/api.md:156
 msgid "\"python_version\""
 msgstr "\"python_version\""
 
-#: src/commands/migrate.md:266
+#: src/commands/migrate.md:318
 msgid "\"/home/u/.virtualenvs/myproject\""
 msgstr "\"/home/u/.virtualenvs/myproject\""
 
-#: src/commands/migrate.md:267 src/commands/migrate.md:275
-#: src/commands/migrate.md:359 src/commands/migrate.md:370
+#: src/commands/migrate.md:319 src/commands/migrate.md:327
+#: src/commands/migrate.md:418 src/commands/migrate.md:429
 msgid "\"source_type\""
 msgstr "\"source_type\""
 
-#: src/commands/migrate.md:267 src/commands/migrate.md:275
-#: src/commands/migrate.md:359 src/commands/migrate.md:370
+#: src/commands/migrate.md:319 src/commands/migrate.md:327
+#: src/commands/migrate.md:418 src/commands/migrate.md:429
 msgid "\"virtualenv_wrapper\""
 msgstr "\"virtualenv_wrapper\""
 
-#: src/commands/migrate.md:269 src/commands/migrate.md:280
+#: src/commands/migrate.md:321 src/commands/migrate.md:332
 msgid "\"ready\""
 msgstr "\"ready\""
 
-#: src/commands/migrate.md:272
+#: src/commands/migrate.md:324
 msgid "\"oldenv\""
 msgstr "\"oldenv\""
 
-#: src/commands/migrate.md:273 src/commands/migrate.md:277
+#: src/commands/migrate.md:325 src/commands/migrate.md:329
 msgid "\"3.7.17\""
 msgstr "\"3.7.17\""
 
-#: src/commands/migrate.md:274
+#: src/commands/migrate.md:326
 msgid "\"/home/u/.virtualenvs/oldenv\""
 msgstr "\"/home/u/.virtualenvs/oldenv\""
 
-#: src/commands/migrate.md:277
+#: src/commands/migrate.md:329
 msgid "\"python_eol\""
 msgstr "\"python_eol\""
 
-#: src/commands/migrate.md:280 src/commands/migrate.md:321
-#: src/commands/migrate.md:374 src/commands/verify.md:85
+#: src/commands/migrate.md:332 src/commands/migrate.md:378
+#: src/commands/migrate.md:433 src/commands/verify.md:85
 #: src/commands/diff.md:149
 msgid "\"summary\""
 msgstr "\"summary\""
 
-#: src/commands/migrate.md:280
+#: src/commands/migrate.md:332
 msgid "\"conflict\""
 msgstr "\"conflict\""
 
-#: src/commands/migrate.md:280
+#: src/commands/migrate.md:332
 msgid "\"eol\""
 msgstr "\"eol\""
 
-#: src/commands/migrate.md:280
+#: src/commands/migrate.md:332
 msgid "\"corrupted\""
 msgstr "\"corrupted\""
 
-#: src/commands/migrate.md:285
+#: src/commands/migrate.md:337
 msgid ""
 "The `status` field is an object whose own `status` key names the state: "
 "`{\"status\": \"ready\"}`, `{\"status\": \"name_conflict\", \"existing\": "
@@ -7273,11 +7463,11 @@ msgstr ""
 "니다. `size_bytes`는 환경 안 일반 파일 크기의 합이며, `migrate list`를 실행"
 "할 때 측정합니다."
 
-#: src/commands/migrate.md:292
+#: src/commands/migrate.md:344
 msgid "`migrate all --json` — success path"
 msgstr "`migrate all --json` — 성공 경로"
 
-#: src/commands/migrate.md:294
+#: src/commands/migrate.md:346
 msgid ""
 "`MigrateAllData` carries five top-level data keys. `conflicts[]` (new in "
 "0.14) is **additive** — name-conflict envs continue to appear in `skipped[]` "
@@ -7293,76 +7483,110 @@ msgstr ""
 "`conflicts[]`는 구조화된 뷰이므로, 소비자가 `skipped[]`의 로컬라이즈된 "
 "`reason` 문자열을 파싱하지 않고도 실패 유형별로 분기할 수 있습니다."
 
-#: src/commands/migrate.md:304 src/commands/migrate.md:347
+#: src/commands/migrate.md:356 src/commands/migrate.md:406
 msgid "\"migrate all\""
 msgstr "\"migrate all\""
 
-#: src/commands/migrate.md:306 src/commands/migrate.md:355
+#: src/commands/migrate.md:358 src/commands/migrate.md:414
 msgid "\"migrated\""
 msgstr "\"migrated\""
 
-#: src/commands/migrate.md:310
+#: src/commands/migrate.md:362
 msgid "\"packages_migrated\""
 msgstr "\"packages_migrated\""
 
-#: src/commands/migrate.md:311
+#: src/commands/migrate.md:363
 msgid "\"packages_failed\""
 msgstr "\"packages_failed\""
 
-#: src/commands/migrate.md:313 src/commands/migrate.md:371
+#: src/commands/migrate.md:364
+msgid "\"packages_excluded\""
+msgstr "\"packages_excluded\""
+
+#: src/commands/migrate.md:365
+msgid "\"pip\""
+msgstr "\"pip\""
+
+#: src/commands/migrate.md:365
+msgid "\"24.0\""
+msgstr "\"24.0\""
+
+#: src/commands/migrate.md:365 src/commands/migrate.md:424
+#: src/commands/gc.md:157 src/commands/gc.md:158 src/commands/gc.md:159
+msgid "\"reason\""
+msgstr "\"reason\""
+
+#: src/commands/migrate.md:365
+msgid "\"installer\""
+msgstr "\"installer\""
+
+#: src/commands/migrate.md:367
+msgid "\"packages_from_conda\""
+msgstr "\"packages_from_conda\""
+
+#: src/commands/migrate.md:368 src/commands/diff.md:152
+msgid "\"packages_added\""
+msgstr "\"packages_added\""
+
+#: src/commands/migrate.md:370 src/commands/migrate.md:430
 msgid "\"/home/u/.scuv/virtualenvs/myproject\""
 msgstr "\"/home/u/.scuv/virtualenvs/myproject\""
 
-#: src/commands/migrate.md:314
+#: src/commands/migrate.md:371
 msgid "\"source_deleted\""
 msgstr "\"source_deleted\""
 
-#: src/commands/migrate.md:315
+#: src/commands/migrate.md:372
 msgid "\"actual_python_version\""
 msgstr "\"actual_python_version\""
 
-#: src/commands/migrate.md:318 src/commands/migrate.md:321
-#: src/commands/migrate.md:356 src/commands/migrate.md:374
+#: src/commands/migrate.md:375 src/commands/migrate.md:378
+#: src/commands/migrate.md:415 src/commands/migrate.md:433
 msgid "\"failed\""
 msgstr "\"failed\""
 
-#: src/commands/migrate.md:319 src/commands/migrate.md:321
-#: src/commands/migrate.md:364 src/commands/migrate.md:374
+#: src/commands/migrate.md:376 src/commands/migrate.md:378
+#: src/commands/migrate.md:423 src/commands/migrate.md:433
 #: src/commands/self.md:53
 msgid "\"skipped\""
 msgstr "\"skipped\""
 
-#: src/commands/migrate.md:320 src/commands/migrate.md:367
+#: src/commands/migrate.md:377 src/commands/migrate.md:426
 msgid "\"conflicts\""
 msgstr "\"conflicts\""
 
-#: src/commands/migrate.md:326
+#: src/commands/migrate.md:383
 msgid ""
 "`actual_python_version` is the version the new env's `pyvenv.cfg` records. "
 "Current uv writes the minor (`3.12`) when it links the env to a minor "
 "version and the full version otherwise; a dry run, or a `pyvenv.cfg` without "
-"one, repeats the source's `python_version`. `packages_failed` lists packages "
-"that failed to install and `pip freeze` lines scuv could not parse; neither "
-"changes the exit code or the `success` count. `source_deleted` reflects "
-"whether `--delete-source` was honored for this env: scuv keeps the source "
-"when `packages_failed` is not empty, since those packages exist nowhere "
-"else. `dry_run` mirrors the flag the command was invoked with."
+"one, repeats the source's `python_version`. `packages_migrated` counts "
+"packages verified in the new env (for a dry run, packages planned). "
+"`packages_failed` lists packages that did not install or did not verify, "
+"each with what went wrong; it does not change the exit code or the `success` "
+"count. `packages_excluded` (pip), `packages_from_conda` and `packages_added` "
+"are described in [What moves](#what-moves). `source_deleted` reflects "
+"whether `--delete-source` was honored for this env, and `source_kept_reason` "
+"(present only when it was not) says why. `dry_run` mirrors the flag the "
+"command was invoked with."
 msgstr ""
 "`actual_python_version`은 새 환경의 `pyvenv.cfg`가 기록한 버전입니다. 현재 uv"
 "는 환경을 minor 버전에 연결하면 minor(`3.12`)를, 그렇지 않으면 전체 버전을 씁"
 "니다. dry run이거나 `pyvenv.cfg`에 버전이 없으면 소스의 `python_version`을 그"
-"대로 씁니다. `packages_failed`에는 설치에 실패한 패키지와 scuv가 해석하지 못"
-"한 `pip freeze` 줄이 들어가며, 둘 다 종료 코드나 `success` 수를 바꾸지 않습니"
-"다. `source_deleted`는 이 환경에 `--delete-source`가 적용됐는지를 나타냅니"
-"다. `packages_failed`가 비어 있지 않으면 그 패키지는 다른 어디에도 없으므로 "
-"scuv는 소스를 남깁니다. `dry_run`은 명령을 실행할 때 준 플래그를 그대로 반영"
-"합니다."
+"대로 씁니다. `packages_migrated`는 새 환경에서 확인된 패키지 수입니다(dry run"
+"에서는 계획된 패키지 수). `packages_failed`는 설치나 확인에 실패한 패키지를 "
+"무엇이 잘못됐는지와 함께 나열하며, 종료 코드나 `success` 수를 바꾸지 않습니"
+"다. `packages_excluded`(pip), `packages_from_conda`, `packages_added`는 [옮기"
+"는 것](#옮기는-것)에서 설명합니다. `source_deleted`는 이 환경에 `--delete-"
+"source`가 적용됐는지를 나타내고, `source_kept_reason`(적용되지 않았을 때만 있"
+"음)이 그 이유를 알려 줍니다. `dry_run`은 명령을 실행할 때 준 플래그를 그대로 "
+"반영합니다."
 
-#: src/commands/migrate.md:337
+#: src/commands/migrate.md:396
 msgid "`migrate all --json` — failure path (exit 2)"
 msgstr "`migrate all --json` — 실패 경로 (exit 2)"
 
-#: src/commands/migrate.md:339
+#: src/commands/migrate.md:398
 msgid ""
 "Returned when at least one per-env failure occurred, or at least one "
 "preflight name conflict was detected without `--force`. The envelope embeds "
@@ -7372,74 +7596,71 @@ msgstr ""
 "돌이 하나 이상 감지된 경우 반환됩니다. envelope에 전체 데이터 뷰가 포함되므"
 "로, 실패 측에서도 세부 정보를 잃지 않습니다."
 
-#: src/commands/migrate.md:346 src/commands/migrate.md:348
-#: src/commands/migrate.md:361 src/commands/diff.md:169
+#: src/commands/migrate.md:405 src/commands/migrate.md:407
+#: src/commands/migrate.md:420 src/commands/diff.md:169
 #: src/commands/diff.md:171
 msgid "\"error\""
 msgstr "\"error\""
 
-#: src/commands/migrate.md:349 src/commands/diff.md:172
+#: src/commands/migrate.md:408 src/commands/diff.md:172
 msgid "\"code\""
 msgstr "\"code\""
 
-#: src/commands/migrate.md:349
+#: src/commands/migrate.md:408
 msgid "\"MIGRATE_BATCH_FAILED\""
 msgstr "\"MIGRATE_BATCH_FAILED\""
 
-#: src/commands/migrate.md:350 src/commands/diff.md:173
+#: src/commands/migrate.md:409 src/commands/diff.md:173
 msgid "\"message\""
 msgstr "\"message\""
 
-#: src/commands/migrate.md:350
+#: src/commands/migrate.md:409
 msgid "\"Migration finished with 1 failure(s) and 1 name conflict(s)\""
 msgstr "\"Migration finished with 1 failure(s) and 1 name conflict(s)\""
 
-#: src/commands/migrate.md:351
+#: src/commands/migrate.md:410
 msgid "\"failed_count\""
 msgstr "\"failed_count\""
 
-#: src/commands/migrate.md:352
+#: src/commands/migrate.md:411
 msgid "\"conflict_count\""
 msgstr "\"conflict_count\""
 
-#: src/commands/migrate.md:358
+#: src/commands/migrate.md:417
 msgid "\"brokenpip\""
 msgstr "\"brokenpip\""
 
-#: src/commands/migrate.md:360
+#: src/commands/migrate.md:419
 msgid "\"error_code\""
 msgstr "\"error_code\""
 
-#: src/commands/migrate.md:360
-msgid "\"MIGRATE_EXTRACTION_FAILED\""
-msgstr "\"MIGRATE_EXTRACTION_FAILED\""
+#: src/commands/migrate.md:419
+msgid "\"PACKAGE_ORIGINS_UNREADABLE\""
+msgstr "\"PACKAGE_ORIGINS_UNREADABLE\""
 
-#: src/commands/migrate.md:361
+#: src/commands/migrate.md:420
 msgid ""
-"\"Couldn't extract packages: pip not found at /home/u/.virtualenvs/brokenpip/"
-"bin/pip\""
+"\"Could not read where the packages in /home/u/.virtualenvs/brokenpip came "
+"from: reading package origins needs Python 3.8 or later, and the env has "
+"Python 3.7.17\""
 msgstr ""
-"\"Couldn't extract packages: pip not found at /home/u/.virtualenvs/brokenpip/"
-"bin/pip\""
+"\"Could not read where the packages in /home/u/.virtualenvs/brokenpip came "
+"from: reading package origins needs Python 3.8 or later, and the env has "
+"Python 3.7.17\""
 
-#: src/commands/migrate.md:365 src/commands/gc.md:157 src/commands/gc.md:158
-#: src/commands/gc.md:159
-msgid "\"reason\""
-msgstr "\"reason\""
-
-#: src/commands/migrate.md:365
+#: src/commands/migrate.md:424
 msgid "\"name conflict (use --force)\""
 msgstr "\"name conflict (use --force)\""
 
-#: src/commands/migrate.md:371
+#: src/commands/migrate.md:430
 msgid "\"existing\""
 msgstr "\"existing\""
 
-#: src/commands/migrate.md:379
+#: src/commands/migrate.md:438
 msgid "Per-env failure objects carry two additive fields:"
 msgstr "환경별 실패 객체에는 두 가지 추가 필드가 있습니다:"
 
-#: src/commands/migrate.md:381
+#: src/commands/migrate.md:440
 msgid ""
 "`source_type` (`\"pyenv\"`, `\"virtualenv_wrapper\"`, `\"conda\"`) — origin "
 "tool."
@@ -7447,23 +7668,23 @@ msgstr ""
 "`source_type` (`\"pyenv\"`, `\"virtualenv_wrapper\"`, `\"conda\"`) — 원본 도"
 "구."
 
-#: src/commands/migrate.md:382
+#: src/commands/migrate.md:441
 msgid ""
 "`error_code` — the stable `ScoopError::code()` constant (e.g. "
-"`\"MIGRATE_EXTRACTION_FAILED\"`, `\"MIGRATE_NAME_CONFLICT\"`, "
+"`\"PACKAGE_ORIGINS_UNREADABLE\"`, `\"MIGRATE_NAME_CONFLICT\"`, "
 "`\"UV_COMMAND_FAILED\"`). Scripts branch on this instead of parsing `error` "
 "(which is localized)."
 msgstr ""
 "`error_code` — 안정적인 `ScoopError::code()` 상수(예: "
-"`\"MIGRATE_EXTRACTION_FAILED\"`, `\"MIGRATE_NAME_CONFLICT\"`, "
+"`\"PACKAGE_ORIGINS_UNREADABLE\"`, `\"MIGRATE_NAME_CONFLICT\"`, "
 "`\"UV_COMMAND_FAILED\"`)입니다. 로컬라이즈된 `error` 문자열을 파싱하는 대신, "
 "스크립트에서 이 값을 기반으로 분기할 수 있습니다."
 
-#: src/commands/migrate.md:387
+#: src/commands/migrate.md:446
 msgid "Exit-3 paths — the generic error envelope"
 msgstr "Exit-3 경로 — 일반 오류 envelope"
 
-#: src/commands/migrate.md:389
+#: src/commands/migrate.md:448
 msgid ""
 "Two distinct exit-3 cases exist. Under `--json` each prints the generic "
 "error envelope on stdout (`status`, `command`, and `error` with `code`, the "
@@ -7477,31 +7698,31 @@ msgstr ""
 "니다. `--json`이 없으면 메시지와 제안이 stderr에 텍스트로 나갑니다. 종료 코드"
 "는 어느 쪽이든 `3`입니다."
 
-#: src/commands/migrate.md:395
+#: src/commands/migrate.md:454
 msgid "Error variant"
 msgstr "오류 변형"
 
-#: src/commands/migrate.md:397
+#: src/commands/migrate.md:456
 msgid "`MigrationSourcesNotFound`"
 msgstr "`MigrationSourcesNotFound`"
 
-#: src/commands/migrate.md:397
+#: src/commands/migrate.md:456
 msgid "No source tool detected at all (pyenv / virtualenvwrapper / conda)"
 msgstr "소스 도구(pyenv / virtualenvwrapper / conda)가 전혀 감지되지 않음"
 
-#: src/commands/migrate.md:398
+#: src/commands/migrate.md:457
 msgid "`PyenvEnvNotFound` / `VenvWrapperEnvNotFound` / `CondaEnvNotFound`"
 msgstr "`PyenvEnvNotFound` / `VenvWrapperEnvNotFound` / `CondaEnvNotFound`"
 
-#: src/commands/migrate.md:398
+#: src/commands/migrate.md:457
 msgid "The named env isn't present in the source `--source` asked for"
 msgstr "`--source`로 지정한 소스에 해당 환경이 없음"
 
-#: src/commands/migrate.md:399
+#: src/commands/migrate.md:458
 msgid "`SourceEnvNotFound`"
 msgstr "`SourceEnvNotFound`"
 
-#: src/commands/migrate.md:399
+#: src/commands/migrate.md:458
 msgid ""
 "Without `--source`, no source has the named env (JSON code "
 "`SOURCE_ENV_NOT_FOUND`)"
@@ -7509,30 +7730,30 @@ msgstr ""
 "`--source` 없이 실행했는데 어느 소스에도 해당 환경이 없음 (JSON 코드 "
 "`SOURCE_ENV_NOT_FOUND`)"
 
-#: src/commands/migrate.md:400
+#: src/commands/migrate.md:459
 msgid "`CorruptedEnvironment`"
 msgstr "`CorruptedEnvironment`"
 
-#: src/commands/migrate.md:400
+#: src/commands/migrate.md:459
 msgid ""
 "The named env exists but its layout is broken (missing python, broken "
 "pyvenv.cfg, etc)"
 msgstr ""
 "지정한 환경은 존재하지만 레이아웃이 손상됨(Python 누락, pyvenv.cfg 손상 등)"
 
-#: src/commands/migrate.md:402
+#: src/commands/migrate.md:461
 msgid "Script template:"
 msgstr "스크립트 템플릿:"
 
-#: src/commands/migrate.md:408
+#: src/commands/migrate.md:467
 msgid "\"batch failure — read out.json for detail\""
 msgstr "\"batch failure — read out.json for detail\""
 
-#: src/commands/migrate.md:409
+#: src/commands/migrate.md:468
 msgid "\"no source tool or env: $(jq -r .error.code out.json)\""
 msgstr ""
 
-#: src/commands/migrate.md:413
+#: src/commands/migrate.md:472
 msgid ""
 "Only the exit-2 envelope (batch failure) carries the per-env `data`; the "
 "exit-3 envelope has `error` alone. Up to scuv 0.18.1 the exit-3 paths "
@@ -7542,40 +7763,115 @@ msgstr ""
 "`error`만 있습니다. scuv 0.18.1까지는 exit-3 경로가 `--json`이어도 stderr에 "
 "텍스트를 출력했고 stdout은 비어 있었습니다."
 
-#: src/commands/migrate.md:418
+#: src/commands/migrate.md:477
 msgid "Migration Process"
 msgstr "마이그레이션 프로세스"
 
-#: src/commands/migrate.md:420
+#: src/commands/migrate.md:479
 msgid "**Discovery**: Scans configured source paths for virtual environments"
 msgstr "**검색**: 가상 환경을 위해 설정된 소스 경로를 스캔합니다."
 
-#: src/commands/migrate.md:421
-msgid "**Extraction**: Identifies Python version and installed packages"
-msgstr "**추출**: Python 버전과 설치된 패키지를 식별합니다."
+#: src/commands/migrate.md:480
+msgid ""
+"**Reading**: Lists the source's packages and their origins (see [What moves]"
+"(#what-moves))"
+msgstr ""
+"**읽기**: 소스의 패키지와 그 출처를 읽습니다([옮기는 것](#옮기는-것) 참고)"
 
-#: src/commands/migrate.md:422
-msgid "**Recreation**: Creates new scuv environment with same Python version"
-msgstr "**재생성**: 동일한 Python 버전으로 새 scuv 환경을 생성합니다."
+#: src/commands/migrate.md:481
+msgid ""
+"**Checks**: Plans every package and checks what may be deleted, before "
+"anything changes"
+msgstr ""
+"**검사**: 모든 패키지를 계획하고, 무엇을 지워도 되는지 아무것도 바꾸기 전에 "
+"검사합니다"
 
-#: src/commands/migrate.md:423
-msgid "**Package Install**: Reinstalls packages using `uv pip install`"
-msgstr "**패키지 설치**: `uv pip install`을 사용해 패키지를 재설치합니다."
+#: src/commands/migrate.md:482
+msgid ""
+"**Recreation**: Creates the new scuv environment with the same Python version"
+msgstr "**재생성**: 동일한 Python 버전으로 새 scuv 환경을 생성합니다"
 
-#: src/commands/migrate.md:424
+#: src/commands/migrate.md:483
+msgid ""
+"**Package Install**: Reinstalls the packages with `uv pip install` and "
+"verifies the result"
+msgstr ""
+"**패키지 설치**: `uv pip install`로 패키지를 다시 설치하고 결과를 확인합니다"
+
+#: src/commands/migrate.md:484
 msgid ""
 "**Cleanup**: Originals are preserved by default; `--delete-source` removes "
-"them after a migration that moved every package"
+"them as described below"
 msgstr ""
-"**정리**: 원본은 기본적으로 보존됩니다. 모든 패키지를 옮긴 마이그레이션 뒤에 "
-"`--delete-source`를 사용하면 원본이 제거됩니다."
+"**정리**: 원본은 기본적으로 보존됩니다. `--delete-source`는 아래 설명대로 원"
+"본을 제거합니다"
 
-#: src/commands/migrate.md:426 src/commands/lang.md:139
+#: src/commands/migrate.md:486
+msgid "Deleting the source"
+msgstr "소스 삭제"
+
+#: src/commands/migrate.md:488
+msgid "`--delete-source` removes a source only when all of these hold:"
+msgstr "`--delete-source`는 다음을 모두 만족할 때만 소스를 제거합니다."
+
+#: src/commands/migrate.md:490
+msgid ""
+"every package migrated and verified (`packages_failed` is empty; a "
+"deliberately excluded pip does not count);"
+msgstr ""
+"모든 패키지가 옮겨지고 확인됨(`packages_failed`가 비어 있음. 의도적으로 제외"
+"한 pip는 세지 않음)"
+
+#: src/commands/migrate.md:492
+msgid ""
+"the source is not a conda environment: it also holds packages migrate does "
+"not move (native libraries, conda's own builds), so it is always kept;"
+msgstr ""
+"소스가 conda 환경이 아님. conda 환경에는 migrate가 옮기지 않는 패키지(네이티"
+"브 라이브러리, conda 자체 빌드)도 있으므로 항상 남깁니다"
+
+#: src/commands/migrate.md:495
+msgid ""
+"nothing that must keep working goes through the source: a local package "
+"source inside it (an editable project in the source directory, say), the "
+"Python another environment or the new one runs on (uv may have put a managed "
+"Python there), the way to the scuv environment directory, or another source "
+"reached through a link inside it."
+msgstr ""
+"계속 동작해야 하는 것이 소스를 거치지 않음. 소스 안의 로컬 패키지 출처(예: 소"
+"스 디렉터리 안의 editable 프로젝트), 다른 환경이나 새 환경이 쓰는 Python(uv"
+"가 관리 Python을 거기 두었을 수 있음), scuv 환경 디렉터리로 가는 경로, 소스 "
+"안의 링크로 닿는 다른 소스가 해당합니다."
+
+#: src/commands/migrate.md:501
+msgid ""
+"In `migrate all`, the environments found but not migrated (skipped, "
+"conflicting, or with a name scuv cannot take) count too: their packages are "
+"read and must survive. If any environment cannot be read, its packages are "
+"unknown, so that batch deletes no source and replaces no target."
+msgstr ""
+"`migrate all`에서는 찾았지만 마이그레이션하지 않는 환경(건너뛴 것, 충돌한 "
+"것, scuv가 쓸 수 없는 이름인 것)도 셉니다. 그 패키지를 읽어 살아남게 합니다. "
+"어느 환경이든 읽을 수 없으면 그 패키지를 알 수 없으므로, 그 batch는 소스를 지"
+"우지도 대상을 교체하지도 않습니다."
+
+#: src/commands/migrate.md:506
+msgid ""
+"When a source is kept, the output says why (`source_kept_reason` in JSON). "
+"The same check guards `--force`: replacing an existing scuv environment that "
+"something listed above goes through fails that environment before anything "
+"is removed."
+msgstr ""
+"소스를 남기면 출력에 이유가 나옵니다(JSON에서는 `source_kept_reason`). 같은 "
+"검사가 `--force`도 지킵니다. 위에 나열한 것이 거쳐 가는 기존 scuv 환경을 교체"
+"하려 하면, 아무것도 지우기 전에 그 환경이 실패합니다."
+
+#: src/commands/migrate.md:511 src/commands/lang.md:139
 #: src/development/architecture.md:439
 msgid "Notes"
 msgstr "참고 사항"
 
-#: src/commands/migrate.md:428
+#: src/commands/migrate.md:513
 msgid ""
 "Original environments are preserved by default; use `--delete-source` to "
 "remove sources after migration"
@@ -7583,47 +7879,47 @@ msgstr ""
 "원본 환경은 기본적으로 보존됩니다. 마이그레이션 후 소스를 제거하려면 `--"
 "delete-source`를 사용하세요."
 
-#: src/commands/migrate.md:429
-msgid "Package versions are preserved where possible"
-msgstr "가능한 경우 패키지 버전이 보존됩니다."
+#: src/commands/migrate.md:514
+msgid ""
+"Package versions and origins are preserved; see [What moves](#what-moves)"
+msgstr "패키지 버전과 출처가 보존됩니다. [옮기는 것](#옮기는-것)을 참고하세요"
 
-#: src/commands/migrate.md:430
+#: src/commands/migrate.md:515
 msgid ""
 "Migration creates fresh environments using `uv` for improved performance"
 msgstr "마이그레이션은 성능 향상을 위해 `uv`를 사용해 새 환경을 생성합니다."
 
-#: src/commands/migrate.md:432 src/development/code-quality.md:386
+#: src/commands/migrate.md:517 src/development/code-quality.md:386
 msgid "Performance"
 msgstr "성능"
 
-#: src/commands/migrate.md:434
+#: src/commands/migrate.md:519
 msgid ""
-"`scuv migrate all` fans out across all CPU cores via [rayon](https://docs.rs/"
-"rayon) when migrating more than one environment. The dominant cost (uv venv "
-"+ pip install per env) is I/O-bound on subprocesses, so wall-clock time "
-"scales close to linearly with core count."
+"`scuv migrate all` migrates one environment at a time, in order. Every "
+"environment is read and checked before the first one starts, and source "
+"deletions under `--delete-source` happen after the last one finishes, so no "
+"removal can interleave with another environment's creation (for example, "
+"with uv installing a Python inside a directory that is about to be "
+"replaced). uv still downloads and installs in parallel within each "
+"environment. Up to scuv 0.22 environments migrated in parallel."
 msgstr ""
-"`scuv migrate all`은 환경이 두 개 이상인 경우 [rayon](https://docs.rs/rayon)"
-"을 통해 모든 CPU 코어에 병렬로 작업을 분산합니다. 주된 비용(환경당 uv venv + "
-"pip install)은 서브프로세스의 I/O 바운드이므로, 처리 시간은 코어 수에 거의 선"
-"형적으로 비례합니다."
+"`scuv migrate all`은 환경을 순서대로 한 번에 하나씩 마이그레이션합니다. 첫 환"
+"경을 시작하기 전에 모든 환경을 읽고 검사하며, `--delete-source`에 따른 소스 "
+"삭제는 마지막 환경이 끝난 뒤에 하므로, 어떤 삭제도 다른 환경의 생성과 엇갈리"
+"지 않습니다(예: 곧 교체될 디렉터리 안에 uv가 Python을 설치하는 경우). 각 환"
+"경 안에서는 uv가 여전히 병렬로 내려받고 설치합니다. scuv 0.22까지는 환경을 병"
+"렬로 마이그레이션했습니다."
 
-#: src/commands/migrate.md:439
+#: src/commands/migrate.md:527
 msgid ""
-"`--dry-run` stays sequential — preview output is more useful when ordered. "
-"Progress lines may interleave when multiple envs finish close together. In "
-"the JSON summary, the `migrated[]` and `failed[]` arrays are sorted "
-"alphabetically by env name (so worker thread scheduling doesn't leak into "
-"the output). `skipped[]` and `conflicts[]` preserve the scan / partition "
-"order — which itself is deterministic (source-type then name; see "
-"`scan_all_environments`)."
+"In the JSON summary, the `migrated[]` and `failed[]` arrays are sorted "
+"alphabetically by env name. `skipped[]` and `conflicts[]` preserve the "
+"scan / partition order — which itself is deterministic (source-type then "
+"name; see `scan_all_environments`)."
 msgstr ""
-"`--dry-run`은 순차적으로 실행됩니다 — 정렬된 상태의 미리보기 출력이 더 유용하"
-"기 때문입니다. 여러 환경이 거의 동시에 완료되면 진행 상황 줄이 뒤섞일 수 있습"
-"니다. JSON 요약에서 `migrated[]`와 `failed[]` 배열은 환경 이름 기준으로 알파"
-"벳순 정렬됩니다(워커 스레드 스케줄링이 출력에 영향을 주지 않도록). "
-"`skipped[]`와 `conflicts[]`는 스캔/파티션 순서를 유지합니다 — 이 순서 자체는 "
-"결정론적입니다(소스 타입 → 이름 순; `scan_all_environments` 참조)."
+"JSON 요약에서 `migrated[]`와 `failed[]` 배열은 환경 이름 기준으로 알파벳순 정"
+"렬됩니다. `skipped[]`와 `conflicts[]`는 스캔/파티션 순서를 유지합니다 — 이 순"
+"서 자체는 결정론적입니다(소스 타입 → 이름 순; `scan_all_environments` 참조)."
 
 #: src/commands/gc.md:3
 msgid ""
@@ -8351,7 +8647,7 @@ msgstr "범위"
 msgid "Action"
 msgstr "동작"
 
-#: src/commands/verify.md:44 src/development/architecture.md:88 src/api.md:734
+#: src/commands/verify.md:44 src/development/architecture.md:88 src/api.md:733
 msgid "`doctor`"
 msgstr "`doctor`"
 
@@ -8367,7 +8663,7 @@ msgstr ""
 msgid "Diagnose + optional `--fix`"
 msgstr "진단 + 선택적 `--fix`"
 
-#: src/commands/verify.md:45 src/api.md:731
+#: src/commands/verify.md:45 src/api.md:730
 msgid "`verify`"
 msgstr "`verify`"
 
@@ -8825,10 +9121,6 @@ msgstr "\"differences\""
 #: src/commands/diff.md:151
 msgid "\"python_changed\""
 msgstr "\"python_changed\""
-
-#: src/commands/diff.md:152
-msgid "\"packages_added\""
-msgstr "\"packages_added\""
 
 #: src/commands/diff.md:153
 msgid "\"packages_removed\""
@@ -9764,7 +10056,7 @@ msgstr "**Hook 함수** - 디렉터리 변경 시 자동 활성화"
 msgid "**Completion function** - Tab completion"
 msgstr "**자동 완성 함수** - Tab 자동 완성"
 
-#: src/development/contributing.md:149 src/api.md:613
+#: src/development/contributing.md:149 src/api.md:612
 msgid "Adding a New Command"
 msgstr "새 명령 추가하기"
 
@@ -9782,7 +10074,7 @@ msgstr "// ...\n"
 msgid "Create handler in `src/cli/commands/my_command.rs`:"
 msgstr "`src/cli/commands/my_command.rs`에 핸들러를 생성합니다:"
 
-#: src/development/contributing.md:168 src/api.md:634
+#: src/development/contributing.md:168 src/api.md:633
 msgid "// Implementation\n"
 msgstr "// Implementation\n"
 
@@ -10003,8 +10295,8 @@ msgid "**Important:**"
 msgstr "**중요:**"
 
 #: src/development/translation.md:39
-msgid "Add translations to all 377 keys"
-msgstr "모든 377개 키에 번역을 추가합니다"
+msgid "Add translations to all 402 keys"
+msgstr "모든 402개 키에 번역을 추가합니다"
 
 #: src/development/translation.md:40
 msgid "Keep placeholder syntax exactly: `%{name}`, `%{version}`, etc."
@@ -10209,8 +10501,8 @@ msgid "**Required files in PR:**"
 msgstr "**PR에 필요한 파일:**"
 
 #: src/development/translation.md:120
-msgid "`locales/app.yml` - All 377 keys translated"
-msgstr "`locales/app.yml` - 377개 키 모두 번역"
+msgid "`locales/app.yml` - All 402 keys translated"
+msgstr "`locales/app.yml` - 402개 키 모두 번역"
 
 #: src/development/translation.md:121
 msgid "`src/i18n.rs` - Language registered in SUPPORTED_LANGS"
@@ -10352,7 +10644,7 @@ msgstr "\"Installing...\""
 msgid "Use progressive/ongoing form"
 msgstr "진행형을 사용합니다"
 
-#: src/development/translation.md:172 src/api.md:722
+#: src/development/translation.md:172 src/api.md:721
 msgid "Success"
 msgstr "완료"
 
@@ -10657,7 +10949,7 @@ msgid "Your language's term for file path"
 msgstr "해당 언어에서 파일 경로에 해당하는 표현"
 
 #: src/development/translation.md:247 src/development/translation.md:309
-#: src/api.md:734
+#: src/api.md:733
 msgid "error"
 msgstr "error"
 
@@ -10665,7 +10957,7 @@ msgstr "error"
 msgid "Your language's term for \"error\""
 msgstr "해당 언어에서 \"error\"에 해당하는 표현"
 
-#: src/development/translation.md:248 src/api.md:733 src/api.md:735
+#: src/development/translation.md:248 src/api.md:732 src/api.md:734
 msgid "success"
 msgstr "success"
 
@@ -10882,8 +11174,8 @@ msgid "Before submitting PR:"
 msgstr "PR 제출 전:"
 
 #: src/development/translation.md:345
-msgid "All 377 keys translated"
-msgstr "377개 키 전체 번역 완료"
+msgid "All 402 keys translated"
+msgstr "402개 키 전체 번역 완료"
 
 #: src/development/translation.md:346
 msgid "All placeholders preserved (`%{name}`, `%{version}`, etc.)"
@@ -10938,11 +11230,11 @@ msgstr "문서 번역 (mdBook)"
 
 #: src/development/docs-translation.md:3
 msgid ""
-"For translating CLI strings (the 377 keys in `locales/app.yml` consumed by "
+"For translating CLI strings (the 402 keys in `locales/app.yml` consumed by "
 "the Rust binary), see [translation](translation.md) instead. This page "
 "covers user-documentation translation only."
 msgstr ""
-"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 377개 키) 번역에 대"
+"CLI 문자열(Rust 바이너리에서 사용하는 `locales/app.yml`의 402개 키) 번역에 대"
 "해서는 [translation](translation.md)을 참고하세요. 이 페이지는 사용자 문서 번"
 "역만 다룹니다."
 
@@ -11591,8 +11883,8 @@ msgid "rayon"
 msgstr "rayon"
 
 #: src/development/architecture.md:361
-msgid "Parallel `scuv migrate all`"
-msgstr "`scuv migrate all` 병렬 실행"
+msgid "Parallel size measurement in `scuv migrate list`"
+msgstr "`scuv migrate list`의 병렬 크기 측정"
 
 #: src/development/architecture.md:362
 msgid "toml"
@@ -11668,7 +11960,7 @@ msgstr "`src/shell/mod.rs`의 `shell::detect_shell()`에 감지 로직 추가:"
 msgid "\"MYSHELL_VERSION\""
 msgstr "\"MYSHELL_VERSION\""
 
-#: src/development/architecture.md:401 src/api.md:675
+#: src/development/architecture.md:401 src/api.md:674
 msgid "// ... existing checks\n"
 msgstr "// ... 기존 검사 항목\n"
 
@@ -11798,13 +12090,16 @@ msgstr "스레드 안전성"
 
 #: src/development/architecture.md:449
 msgid ""
-"`migrate all` migrates environments in parallel (`rayon::par_iter`), and "
-"`migrate list` measures their sizes in parallel. Everything else runs on one "
-"thread."
+"`migrate list` measures environment sizes in parallel "
+"(`rayon::par_iter_mut`). Everything else runs on one thread, `migrate all` "
+"included: it migrates one environment at a time so that no removal (`--"
+"force`, a rebuild after a failed install, `--delete-source`) can interleave "
+"with another environment's creation."
 msgstr ""
-"`migrate all`은 환경을 병렬로 마이그레이션하고(`rayon::par_iter`), `migrate "
-"list`는 환경 크기를 병렬로 계산합니다. 나머지는 모두 한 스레드에서 실행됩니"
-"다."
+"`migrate list`는 환경 크기를 병렬로 측정합니다(`rayon::par_iter_mut`). 나머지"
+"는 모두 한 스레드에서 실행되며 `migrate all`도 마찬가지입니다. 어떤 삭제(`--"
+"force`, 실패한 설치 뒤의 재구성, `--delete-source`)도 다른 환경의 생성과 엇갈"
+"리지 않도록 환경을 하나씩 마이그레이션합니다."
 
 #: src/development/architecture.md:451
 msgid ""
@@ -11850,7 +12145,7 @@ msgid ""
 msgstr ""
 "**메타데이터 무결성:** JSON 파싱 오류는 패닉 없이 정상적으로 처리됩니다."
 
-#: src/development/architecture.md:460 src/api.md:683
+#: src/development/architecture.md:460 src/api.md:682
 msgid "Related Documentation"
 msgstr "관련 문서"
 
@@ -12264,11 +12559,11 @@ msgstr "// 상태 확인\n"
 msgid "**Example - Implementing a Custom Check:**"
 msgstr "**예시 - 커스텀 점검 구현:**"
 
-#: src/api.md:260 src/api.md:659
+#: src/api.md:260 src/api.md:658
 msgid "\"my_check\""
 msgstr "\"my_check\""
 
-#: src/api.md:264 src/api.md:663
+#: src/api.md:264 src/api.md:662
 msgid "\"My Custom Check\""
 msgstr "\"My Custom Check\""
 
@@ -12371,15 +12666,15 @@ msgstr "// CLI 에러\n"
 msgid "// Migration errors\n"
 msgstr "// 마이그레이션 에러\n"
 
-#: src/api.md:374
+#: src/api.md:373
 msgid "// Python path errors\n"
 msgstr "// Python 경로 에러\n"
 
-#: src/api.md:377
+#: src/api.md:376
 msgid "// Cascade errors\n"
 msgstr "// 연쇄 에러\n"
 
-#: src/api.md:381
+#: src/api.md:380
 msgid ""
 "// Abridged: 46 variants in total. See src/error/mod.rs for the full set,\n"
 "    // including UnsupportedLanguage, SelfUpdateFailed, NoActiveEnvironment, "
@@ -12387,8 +12682,8 @@ msgid ""
 "    // ManifestNotFound, InvalidExportFile, UnsupportedExportVersion,\n"
 "    // VerifyFailed, DoctorFindings, ConfirmationUnavailable, "
 "PackageOriginsUnreadable,\n"
-"    // PackageSourceMissing, PackageSourceInsideTarget, "
-"PackageHashUnenforced,\n"
+"    // PackageSourceMissing, PackageSourceNotAProject, "
+"PackageSourceInsideTarget, PackageHashUnenforced,\n"
 "    // MigrationSourcesNotFound, MigrationBatchFailed and DiffMismatch.\n"
 msgstr ""
 "// 일부만 표시: 전체 46개 variant. 전체 목록은 src/error/mod.rs를 참고하세"
@@ -12398,12 +12693,12 @@ msgstr ""
 "    // ManifestNotFound, InvalidExportFile, UnsupportedExportVersion,\n"
 "    // VerifyFailed, DoctorFindings, ConfirmationUnavailable, "
 "PackageOriginsUnreadable,\n"
-"    // PackageSourceMissing, PackageSourceInsideTarget, "
-"PackageHashUnenforced,\n"
+"    // PackageSourceMissing, PackageSourceNotAProject, "
+"PackageSourceInsideTarget, PackageHashUnenforced,\n"
 "    // MigrationSourcesNotFound, MigrationBatchFailed, DiffMismatch를 포함합"
 "니다.\n"
 
-#: src/api.md:390
+#: src/api.md:389
 msgid ""
 "/// Returns error code string (e.g., \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")\n"
@@ -12411,7 +12706,7 @@ msgstr ""
 "/// 에러 코드 문자열을 반환합니다 (예: \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")\n"
 
-#: src/api.md:393
+#: src/api.md:392
 msgid ""
 "/// Localized message in an explicit locale (bypasses the process-global\n"
 "    /// current locale). `Display` delegates to this with the current "
@@ -12421,12 +12716,12 @@ msgstr ""
 "    /// 현재 로케일을 우회합니다). `Display`는 현재 로케일로 이를 위임합니"
 "다.\n"
 
-#: src/api.md:397
+#: src/api.md:396
 msgid ""
 "/// Returns user-friendly suggestion in the current locale (if available)\n"
 msgstr "/// 현재 로케일에서 사용자 친화적인 제안을 반환합니다 (가능한 경우)\n"
 
-#: src/api.md:400
+#: src/api.md:399
 msgid ""
 "/// Locale-explicit sibling of `suggestion()` — useful for deterministic,\n"
 "    /// parallel tests that must not depend on the global locale.\n"
@@ -12434,7 +12729,7 @@ msgstr ""
 "/// `suggestion()`의 로케일 명시 버전 — 전역 로케일에 의존하지 않아야 하는\n"
 "    /// 결정적 병렬 테스트에 유용합니다.\n"
 
-#: src/api.md:404
+#: src/api.md:403
 msgid ""
 "/// Process exit code for this error (1 general, 2 migration failure,\n"
 "    /// 3 migration source problem)\n"
@@ -12442,7 +12737,7 @@ msgstr ""
 "/// 이 오류의 프로세스 종료 코드(1 일반, 2 마이그레이션 실패,\n"
 "    /// 3 마이그레이션 소스 문제)\n"
 
-#: src/api.md:410
+#: src/api.md:409
 msgid ""
 "The `*_in(locale)` accessors pass `locale =` to rust-i18n's `t!`, which "
 "bypasses the process-global current locale — this lets tests assert messages "
@@ -12452,52 +12747,52 @@ msgstr ""
 "프로세스 전역 현재 로케일을 우회합니다. 덕분에 테스트에서 `#[serial]` 없이도 "
 "메시지를 결정적으로 검증할 수 있습니다."
 
-#: src/api.md:414
+#: src/api.md:413
 msgid "**Error Code String Prefixes:**"
 msgstr "**에러 코드 문자열 접두사:**"
 
-#: src/api.md:415
+#: src/api.md:414
 msgid ""
 "`ENV_*` - Environment errors (e.g., `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)"
 msgstr "`ENV_*` - 환경 에러 (예: `ENV_NOT_FOUND`, `ENV_ALREADY_EXISTS`)"
 
-#: src/api.md:416
+#: src/api.md:415
 msgid "`PYTHON_*` - Python version errors (e.g., `PYTHON_NOT_INSTALLED`)"
 msgstr "`PYTHON_*` - Python 버전 에러 (예: `PYTHON_NOT_INSTALLED`)"
 
-#: src/api.md:417
+#: src/api.md:416
 msgid "`UV_*` - uv errors (e.g., `UV_NOT_INSTALLED`, `UV_COMMAND_FAILED`)"
 msgstr "`UV_*` - uv 에러 (예: `UV_NOT_INSTALLED`, `UV_COMMAND_FAILED`)"
 
-#: src/api.md:418
+#: src/api.md:417
 msgid "`IO_*` - Path/IO errors (e.g., `IO_ERROR`, `IO_PATH_ERROR`)"
 msgstr "`IO_*` - 경로/IO 에러 (예: `IO_ERROR`, `IO_PATH_ERROR`)"
 
-#: src/api.md:419
+#: src/api.md:418
 msgid "`CONFIG_*` - Config errors (e.g., `CONFIG_VERSION_FILE_NOT_FOUND`)"
 msgstr "`CONFIG_*` - 설정 에러 (예: `CONFIG_VERSION_FILE_NOT_FOUND`)"
 
-#: src/api.md:420
+#: src/api.md:419
 msgid "`SHELL_*` - Shell errors (e.g., `SHELL_NOT_SUPPORTED`)"
 msgstr "`SHELL_*` - Shell 에러 (예: `SHELL_NOT_SUPPORTED`)"
 
-#: src/api.md:421
+#: src/api.md:420
 msgid "`ARG_*` - CLI argument errors (e.g., `ARG_INVALID`)"
 msgstr "`ARG_*` - CLI 인수 에러 (예: `ARG_INVALID`)"
 
-#: src/api.md:422
+#: src/api.md:421
 msgid "`SOURCE_*` - Migration source errors (e.g., `SOURCE_PYENV_NOT_FOUND`)"
 msgstr "`SOURCE_*` - 마이그레이션 소스 에러 (예: `SOURCE_PYENV_NOT_FOUND`)"
 
-#: src/api.md:423
+#: src/api.md:422
 msgid "`MIGRATE_*` - Migration process errors (e.g., `MIGRATE_FAILED`)"
 msgstr "`MIGRATE_*` - 마이그레이션 프로세스 에러 (예: `MIGRATE_FAILED`)"
 
-#: src/api.md:424
+#: src/api.md:423
 msgid "`UNINSTALL_*` - Uninstall errors (e.g., `UNINSTALL_CASCADE_ABORTED`)"
 msgstr "`UNINSTALL_*` - 제거 에러 (예: `UNINSTALL_CASCADE_ABORTED`)"
 
-#: src/api.md:425
+#: src/api.md:424
 msgid ""
 "Plus `INTERNAL_*`, `LANG_*`, `SELF_*`, `NO_ACTIVE_ENV`, `EXE_*`, "
 "`MANIFEST_*`, `EXPORT_*`, `VERIFY_*` and `DIFF_*` — see `src/error/code.rs` "
@@ -12507,51 +12802,51 @@ msgstr ""
 "`MANIFEST_*`, `EXPORT_*`, `VERIFY_*`, `DIFF_*`가 있습니다 — 정확한 목록은 "
 "`src/error/code.rs`를 참고하세요"
 
-#: src/api.md:428
+#: src/api.md:427
 msgid "**Example Error Handling:**"
 msgstr "**에러 처리 예시:**"
 
-#: src/api.md:436
+#: src/api.md:435
 msgid "\"Must start with a letter\""
 msgstr "\"Must start with a letter\""
 
-#: src/api.md:440
+#: src/api.md:439
 msgid "// ... operation\n"
 msgstr "// ... 작업\n"
 
-#: src/api.md:444
+#: src/api.md:443
 msgid "// Usage\n"
 msgstr "// 사용 예시\n"
 
-#: src/api.md:446
+#: src/api.md:445
 msgid "\"123invalid\""
 msgstr "\"123invalid\""
 
-#: src/api.md:447
+#: src/api.md:446
 msgid "\"Success\""
 msgstr "\"Success\""
 
-#: src/api.md:449
+#: src/api.md:448
 msgid "\"Error: {}\""
 msgstr "\"Error: {}\""
 
-#: src/api.md:451
+#: src/api.md:450
 msgid "\"Suggestion: {}\""
 msgstr "\"Suggestion: {}\""
 
-#: src/api.md:453
+#: src/api.md:452
 msgid "\"Error code: {}\""
 msgstr "\"Error code: {}\""
 
-#: src/api.md:454
+#: src/api.md:453
 msgid "// Non-zero exit for error\n"
 msgstr "// 에러 시 0이 아닌 종료 코드\n"
 
-#: src/api.md:463
+#: src/api.md:462
 msgid "Shell Types (`shell/mod.rs`, re-exported as `cli::ShellType`)"
 msgstr "Shell 타입 (`shell/mod.rs`, `cli::ShellType`으로도 re-export)"
 
-#: src/api.md:472
+#: src/api.md:471
 msgid ""
 "// Note: ShellType is a plain enum without methods\n"
 "// Shell operations are handled by module-level functions:\n"
@@ -12569,75 +12864,75 @@ msgstr ""
 "// - shell::fish::init_script() -> &'static str\n"
 "// - shell::powershell::init_script() -> &'static str\n"
 
-#: src/api.md:482
+#: src/api.md:481
 msgid "**Auto-detection Priority:**"
 msgstr "**자동 감지 우선순위:**"
 
-#: src/api.md:483
+#: src/api.md:482
 msgid "`FISH_VERSION` → Fish"
 msgstr "`FISH_VERSION` → Fish"
 
-#: src/api.md:484
+#: src/api.md:483
 msgid "`PSModulePath` → PowerShell"
 msgstr "`PSModulePath` → PowerShell"
 
-#: src/api.md:485
+#: src/api.md:484
 msgid "`ZSH_VERSION` → Zsh"
 msgstr "`ZSH_VERSION` → Zsh"
 
-#: src/api.md:486
+#: src/api.md:485
 msgid "Default → Bash"
 msgstr "기본값 → Bash"
 
-#: src/api.md:490
+#: src/api.md:489
 msgid "Path Utilities (`paths.rs`)"
 msgstr "경로 유틸리티 (`paths.rs`)"
 
-#: src/api.md:493
+#: src/api.md:492
 msgid "/// Returns scuv home directory (SCUV_HOME or ~/.scuv)\n"
 msgstr "/// scuv 홈 디렉토리를 반환합니다 (SCUV_HOME 또는 ~/.scuv)\n"
 
-#: src/api.md:495
+#: src/api.md:494
 msgid "/// Returns virtualenvs directory\n"
 msgstr "/// virtualenvs 디렉토리를 반환합니다\n"
 
-#: src/api.md:498
+#: src/api.md:497
 msgid "/// Returns global version file path (~/.scuv/version)\n"
 msgstr "/// 전역 버전 파일 경로를 반환합니다 (~/.scuv/version)\n"
 
-#: src/api.md:501
+#: src/api.md:500
 msgid "/// Returns local version file path in the given directory\n"
 msgstr "/// 지정된 디렉토리의 로컬 버전 파일 경로를 반환합니다\n"
 
-#: src/api.md:508
+#: src/api.md:507
 msgid "Version Resolution (`core/version.rs`)"
 msgstr "버전 결정 (`core/version.rs`)"
 
-#: src/api.md:510
+#: src/api.md:509
 msgid "`VersionService`"
 msgstr "`VersionService`"
 
-#: src/api.md:512
+#: src/api.md:511
 msgid "Service for managing version files."
 msgstr "버전 파일을 관리하는 서비스입니다."
 
-#: src/api.md:518
+#: src/api.md:517
 msgid "/// Set the local version for a directory\n"
 msgstr "/// 디렉토리의 로컬 버전을 설정합니다\n"
 
-#: src/api.md:521
+#: src/api.md:520
 msgid "/// Set the global version\n"
 msgstr "/// 전역 버전을 설정합니다\n"
 
-#: src/api.md:524
+#: src/api.md:523
 msgid "/// Get the local version for a directory\n"
 msgstr "/// 디렉토리의 로컬 버전을 가져옵니다\n"
 
-#: src/api.md:527
+#: src/api.md:526
 msgid "/// Get the global version\n"
 msgstr "/// 전역 버전을 가져옵니다\n"
 
-#: src/api.md:530
+#: src/api.md:529
 msgid ""
 "/// Resolve the version for a directory (SCUV_VERSION -> local -> parent "
 "walk -> global)\n"
@@ -12645,23 +12940,23 @@ msgstr ""
 "/// 디렉토리의 버전을 결정합니다 (SCUV_VERSION → 로컬 → 상위 디렉토리 탐색 → "
 "전역)\n"
 
-#: src/api.md:533
+#: src/api.md:532
 msgid "/// Resolve from current directory\n"
 msgstr "/// 현재 디렉토리에서 결정합니다\n"
 
-#: src/api.md:536
+#: src/api.md:535
 msgid "/// Unset local version (removes .scuv-version)\n"
 msgstr "/// 로컬 버전을 해제합니다 (.scuv-version 제거)\n"
 
-#: src/api.md:539
+#: src/api.md:538
 msgid "/// Unset global version (removes ~/.scuv/version)\n"
 msgstr "/// 전역 버전을 해제합니다 (~/.scuv/version 제거)\n"
 
-#: src/api.md:544
+#: src/api.md:543
 msgid "**CLI Equivalent (User Workflow):**"
 msgstr "**동등한 CLI 명령어 (사용자 워크플로우):**"
 
-#: src/api.md:546
+#: src/api.md:545
 msgid ""
 "`VersionService::set_global()` is exposed by the `scuv use <name> --global` "
 "command. To set Python 3.11.0 as the global default in practice:"
@@ -12669,7 +12964,7 @@ msgstr ""
 "`VersionService::set_global()`은 `scuv use <name> --global` 명령어로 노출됩니"
 "다. 실제로 Python 3.11.0을 전역 기본값으로 설정하려면:"
 
-#: src/api.md:555
+#: src/api.md:554
 msgid ""
 "This writes `py311` to `~/.scuv/version`. The global value is used when no "
 "local `.scuv-version` or `SCUV_VERSION` override is present."
@@ -12677,86 +12972,86 @@ msgstr ""
 "이 명령어는 `py311`을 `~/.scuv/version`에 기록합니다. 로컬 `.scuv-version`이"
 "나 `SCUV_VERSION` 재정의가 없을 때 전역 값이 사용됩니다."
 
-#: src/api.md:558
+#: src/api.md:557
 msgid "**Resolution Priority Order:**"
 msgstr "**결정 우선순위 순서:**"
 
-#: src/api.md:559
+#: src/api.md:558
 msgid ""
 "`SCUV_VERSION` environment variable (checked first by "
 "`VersionService::resolve` itself)"
 msgstr ""
 "`SCUV_VERSION` 환경 변수 (`VersionService::resolve`가 가장 먼저 직접 확인)"
 
-#: src/api.md:560
+#: src/api.md:559
 msgid "`.scuv-version` in current directory"
 msgstr "현재 디렉토리의 `.scuv-version`"
 
-#: src/api.md:561
+#: src/api.md:560
 msgid "`.scuv-version` in parent directories (walks up)"
 msgstr "상위 디렉토리의 `.scuv-version` (상위로 탐색)"
 
-#: src/api.md:562 src/llms.md:168
+#: src/api.md:561 src/llms.md:168
 msgid "`~/.scuv/version` (global default)"
 msgstr "`~/.scuv/version` (전역 기본값)"
 
-#: src/api.md:564
+#: src/api.md:563
 msgid "**Note**: `.python-version` is not supported."
 msgstr "**참고**: `.python-version`은 지원되지 않습니다."
 
-#: src/api.md:568
+#: src/api.md:567
 msgid "Testing Patterns"
 msgstr "테스트 패턴"
 
-#: src/api.md:570
+#: src/api.md:569
 msgid "Property-Based Testing"
 msgstr "속성 기반 테스트"
 
-#: src/api.md:572
+#: src/api.md:571
 msgid "scuv uses `proptest` for property-based testing of critical logic:"
 msgstr "scuv는 중요 로직의 속성 기반 테스트를 위해 `proptest`를 사용합니다:"
 
-#: src/api.md:588
+#: src/api.md:587
 msgid "Integration Testing"
 msgstr "통합 테스트"
 
-#: src/api.md:590
+#: src/api.md:589
 msgid "Test files follow the pattern:"
 msgstr "테스트 파일은 다음 패턴을 따릅니다:"
 
-#: src/api.md:598
+#: src/api.md:597
 msgid "// Test setup\n"
 msgstr "// 테스트 설정\n"
 
-#: src/api.md:604
+#: src/api.md:603
 msgid "// Test logic\n"
 msgstr "// 테스트 로직\n"
 
-#: src/api.md:611
+#: src/api.md:610
 msgid "Extending scuv"
 msgstr "scuv 확장"
 
-#: src/api.md:615
+#: src/api.md:614
 msgid "**Define command in `cli/mod.rs`:**"
 msgstr "**`cli/mod.rs`에서 명령어 정의:**"
 
-#: src/api.md:619
+#: src/api.md:618
 msgid "// ... existing commands\n"
 msgstr "// ... 기존 명령어\n"
 
-#: src/api.md:621
+#: src/api.md:620
 msgid "\"Argument description\""
 msgstr "\"Argument description\""
 
-#: src/api.md:627
+#: src/api.md:626
 msgid "**Create handler in `cli/commands/`:**"
 msgstr "**`cli/commands/`에 핸들러 생성:**"
 
-#: src/api.md:629
+#: src/api.md:628
 msgid "// cli/commands/my_command.rs\n"
 msgstr "// cli/commands/my_command.rs\n"
 
-#: src/api.md:639
+#: src/api.md:638
 msgid ""
 "**Re-export in `cli/commands/mod.rs`, then add an arm to `dispatch()` in "
 "`main.rs`:**"
@@ -12764,27 +13059,27 @@ msgstr ""
 "**`cli/commands/mod.rs`에서 다시 내보내고 `main.rs`의 `dispatch()`에 arm을 추"
 "가합니다:**"
 
-#: src/api.md:641
+#: src/api.md:640
 msgid "// cli/commands/mod.rs\n"
 msgstr "// cli/commands/mod.rs\n"
 
-#: src/api.md:644
+#: src/api.md:643
 msgid "// main.rs\n"
 msgstr "// main.rs\n"
 
-#: src/api.md:651
+#: src/api.md:650
 msgid "Adding a New Health Check"
 msgstr "새 상태 점검 추가"
 
-#: src/api.md:654
+#: src/api.md:653
 msgid "// In core/doctor/checks/\n"
 msgstr "// core/doctor/checks/ 에서\n"
 
-#: src/api.md:667
+#: src/api.md:666
 msgid "// Check logic\n"
 msgstr "// 점검 로직\n"
 
-#: src/api.md:671
+#: src/api.md:670
 msgid ""
 "// Declare the file in core/doctor/checks/mod.rs and register it in "
 "default_checks()\n"
@@ -12792,79 +13087,79 @@ msgstr ""
 "// core/doctor/checks/mod.rs에 파일을 선언하고 default_checks()에 등록합니"
 "다\n"
 
-#: src/api.md:685
+#: src/api.md:684
 msgid ""
 "[Architecture](development/architecture.md) - System design and patterns"
 msgstr "[아키텍처](development/architecture.md) - 시스템 설계와 패턴"
 
-#: src/api.md:686
+#: src/api.md:685
 msgid "[Commands](commands/README.md) - CLI reference"
 msgstr "[명령어](commands/README.md) - CLI 참조"
 
-#: src/api.md:687
+#: src/api.md:686
 msgid "[Contributing](development/contributing.md) - Development guide"
 msgstr "[기여하기](development/contributing.md) - 개발 가이드"
 
-#: src/api.md:688
+#: src/api.md:687
 msgid "[Testing](development/testing.md) - Testing strategies"
 msgstr "[테스트](development/testing.md) - 테스트 전략"
 
-#: src/api.md:692
+#: src/api.md:691
 msgid "For AI/LLM Tools"
 msgstr "AI/LLM 도구를 위한 안내"
 
-#: src/api.md:694
+#: src/api.md:693
 msgid "When analyzing or modifying this codebase:"
 msgstr "이 코드베이스를 분석하거나 수정할 때:"
 
-#: src/api.md:696
+#: src/api.md:695
 msgid "**Use symbolic tools** for precise navigation:"
 msgstr "**심볼 도구를 활용하세요** — 정확한 탐색을 위해:"
 
-#: src/api.md:697
+#: src/api.md:696
 msgid "`find_symbol` to locate specific functions/types"
 msgstr "`find_symbol` — 특정 함수/타입 위치 파악"
 
-#: src/api.md:698
+#: src/api.md:697
 msgid "`find_referencing_symbols` to understand usage"
 msgstr "`find_referencing_symbols` — 사용처 파악"
 
-#: src/api.md:699
+#: src/api.md:698
 msgid "`get_symbols_overview` for module structure"
 msgstr "`get_symbols_overview` — 모듈 구조 파악"
 
-#: src/api.md:701
+#: src/api.md:700
 msgid "**Follow existing patterns**:"
 msgstr "**기존 패턴을 따르세요**:"
 
-#: src/api.md:702
+#: src/api.md:701
 msgid "Error handling: Always return `Result<T>` with `ScoopError`"
 msgstr "에러 처리: 항상 `ScoopError`와 함께 `Result<T>`를 반환합니다"
 
-#: src/api.md:703
+#: src/api.md:702
 msgid "Shell output: CLI outputs shell code, wrapper evals it"
 msgstr "Shell 출력: CLI가 shell 코드를 출력하면 래퍼가 eval로 실행합니다"
 
-#: src/api.md:704
+#: src/api.md:703
 msgid "Testing: Unit tests + integration tests + property tests"
 msgstr "테스트: 단위 테스트 + 통합 테스트 + 속성 테스트"
 
-#: src/api.md:705
+#: src/api.md:704
 msgid "i18n: Use `t!()` macro for all user-facing strings"
 msgstr "i18n: 사용자 대상 문자열에는 모두 `t!()` 매크로를 사용합니다"
 
-#: src/api.md:707
+#: src/api.md:706
 msgid "**Preserve conventions**:"
 msgstr "**관례를 유지하세요**:"
 
-#: src/api.md:708
+#: src/api.md:707
 msgid ""
 "Error codes are string constants (e.g., \"ENV_NOT_FOUND\", "
 "\"UV_COMMAND_FAILED\")"
 msgstr ""
 "에러 코드는 문자열 상수입니다 (예: \"ENV_NOT_FOUND\", \"UV_COMMAND_FAILED\")"
 
-#: src/api.md:709
+#: src/api.md:708
 msgid ""
 "Process exit codes follow a layered contract (see **Process exit codes** "
 "below)"
@@ -12872,7 +13167,7 @@ msgstr ""
 "프로세스 종료 코드는 계층적 계약을 따릅니다 (아래 **프로세스 종료 코드** 참"
 "조)"
 
-#: src/api.md:710
+#: src/api.md:709
 msgid ""
 "Path handling via `paths.rs` utilities (cross-platform — Unix `bin/` vs "
 "Windows `Scripts/`)"
@@ -12880,15 +13175,15 @@ msgstr ""
 "경로 처리는 `paths.rs` 유틸리티를 통해 수행합니다 (크로스 플랫폼 — Unix `bin/"
 "` vs Windows `Scripts/`)"
 
-#: src/api.md:711
+#: src/api.md:710
 msgid "Shell detection via `shell::detect_shell()` function"
 msgstr "Shell 감지는 `shell::detect_shell()` 함수를 통해 수행합니다"
 
-#: src/api.md:713
+#: src/api.md:712
 msgid "Process exit codes"
 msgstr "프로세스 종료 코드"
 
-#: src/api.md:715
+#: src/api.md:714
 msgid ""
 "scuv centralises exit-code policy in `src/error/exit.rs` via "
 "`ScoopError::exit_code()`. Commands that already render their own report "
@@ -12900,13 +13195,13 @@ msgstr ""
 "`ErrorRenderPolicy::Quiet`를 선택하여 `main.rs`가 중복 `error:` 줄을 추가하"
 "지 않도록 합니다."
 
-#: src/api.md:723
+#: src/api.md:722
 msgid ""
 "Generic failure or semantic finding (verify failed, generic operational "
 "error)"
 msgstr "일반적인 실패 또는 의미론적 결과 (verify 실패, 일반 작업 오류)"
 
-#: src/api.md:724
+#: src/api.md:723
 msgid ""
 "Migration failure / `MigrationNameConflict` (and reserved for future probe/"
 "tool failures)"
@@ -12914,73 +13209,73 @@ msgstr ""
 "마이그레이션 실패 / `MigrationNameConflict` (및 향후 프로브/도구 실패를 위한 "
 "예약)"
 
-#: src/api.md:725
+#: src/api.md:724
 msgid ""
 "Migration source-discovery error (pyenv/conda/venvwrapper missing or "
 "corrupted)"
 msgstr "마이그레이션 소스 검색 오류 (pyenv/conda/venvwrapper 없음 또는 손상됨)"
 
-#: src/api.md:727
+#: src/api.md:726
 msgid "Per-command exit code table:"
 msgstr "명령어별 종료 코드 표:"
 
-#: src/api.md:731
+#: src/api.md:730
 msgid "report completed (informational)"
 msgstr "보고 완료 (정보성)"
 
-#: src/api.md:731
+#: src/api.md:730
 msgid "an error stopped the run"
 msgstr "오류로 실행이 중단됨"
 
-#: src/api.md:732
+#: src/api.md:731
 msgid "`verify --strict`"
 msgstr "`verify --strict`"
 
-#: src/api.md:732
+#: src/api.md:731
 msgid "no Fail check (warnings pass)"
 msgstr "Fail 검사 없음 (경고는 통과)"
 
-#: src/api.md:732
+#: src/api.md:731
 msgid "any Fail check, or an error stopped the run"
 msgstr "Fail 검사가 하나라도 있거나, 오류로 실행이 중단됨"
 
-#: src/api.md:733
+#: src/api.md:732
 msgid "`migrate @env` / `migrate all`"
 msgstr "`migrate @env` / `migrate all`"
 
-#: src/api.md:733
+#: src/api.md:732
 msgid "other errors (e.g. uv not found)"
 msgstr "그 밖의 오류 (예: uv를 찾을 수 없음)"
 
-#: src/api.md:733
+#: src/api.md:732
 msgid "failure / conflict"
 msgstr "실패 / 충돌"
 
-#: src/api.md:733
+#: src/api.md:732
 msgid "source tool or env not found, or source env corrupted"
 msgstr "소스 도구나 환경을 찾을 수 없거나, 소스 환경이 손상됨"
 
-#: src/api.md:734
+#: src/api.md:733
 msgid "clean"
 msgstr "정상"
 
-#: src/api.md:734
+#: src/api.md:733
 msgid "warning"
 msgstr "경고"
 
-#: src/api.md:735
+#: src/api.md:734
 msgid "Other commands"
 msgstr "기타 명령어"
 
-#: src/api.md:735
+#: src/api.md:734
 msgid "failure"
 msgstr "실패"
 
-#: src/api.md:735
+#: src/api.md:734
 msgid "corrupted environment (e.g. `clone` of an env without metadata)"
 msgstr "손상된 환경 (예: 메타데이터가 없는 환경의 `clone`)"
 
-#: src/api.md:737
+#: src/api.md:736
 msgid ""
 "`run` exits with the command's own exit code (128 + the signal number when a "
 "signal killed it), and with 1 when scuv cannot start it. A command-line "
@@ -12991,7 +13286,7 @@ msgstr ""
 "호). scuv가 명령을 시작하지 못하면 1입니다. 명령줄 파싱 오류(알 수 없는 플래"
 "그, 빠진 인자)는 명령이 실행되기 전에 clap이 2로 끝냅니다."
 
-#: src/api.md:741
+#: src/api.md:740
 msgid ""
 "Under `--json`, an error that reaches `main.rs` with "
 "`ErrorRenderPolicy::Default` is printed as one envelope on stdout instead of "
@@ -13006,27 +13301,27 @@ msgstr ""
 "으면 `suggestion`을 담은 `error`입니다. Quiet 오류나 이미 JSON을 출력한 명령"
 "은 아무것도 더하지 않습니다. 종료 코드는 어느 쪽이든 같습니다."
 
-#: src/api.md:747
+#: src/api.md:746
 msgid "**Documentation requirements**:"
 msgstr "**문서화 요구사항**:"
 
-#: src/api.md:748
+#: src/api.md:747
 msgid "All `pub fn` must have doc comments"
 msgstr "모든 `pub fn`에는 doc 주석이 있어야 합니다"
 
-#: src/api.md:749
+#: src/api.md:748
 msgid "Examples in doctests where applicable"
 msgstr "해당하는 경우 doctest에 예시 포함"
 
-#: src/api.md:750
+#: src/api.md:749
 msgid "Error conditions documented"
 msgstr "에러 조건 문서화"
 
-#: src/api.md:751
+#: src/api.md:750
 msgid "Shell integration changes require cross-shell testing"
 msgstr "Shell 통합 변경 사항은 크로스-shell 테스트가 필요합니다"
 
-#: src/api.md:755
+#: src/api.md:754
 msgid "**scuv Version:** 0.22.0"
 msgstr "**scuv 버전:** 0.22.0"
 
@@ -16388,8 +16683,8 @@ msgid "Migrate single environment"
 msgstr "단일 환경 마이그레이션"
 
 #: src/llms.md:51
-msgid "Migrate all environments (parallel via rayon since v0.11.0)"
-msgstr "모든 환경 마이그레이션 (v0.11.0부터 rayon을 통한 병렬 처리)"
+msgid "Migrate all environments, one at a time after checking all of them"
+msgstr "모든 환경을 모두 검사한 뒤 하나씩 마이그레이션"
 
 #: src/llms.md:52
 msgid "`scuv gc`"
@@ -16766,11 +17061,63 @@ msgstr ""
 msgid "Use scuv in CI pipelines"
 msgstr "CI 파이프라인에서 scuv 사용"
 
+#~ msgid "Reinstalls packages using uv for improved performance"
+#~ msgstr "성능 향상을 위해 uv를 사용하여 패키지를 재설치합니다"
+
+#~ msgid ""
+#~ "`scuv migrate all` runs migrations in parallel across CPU cores via "
+#~ "[rayon](https://crates.io/crates/rayon) — typically 4-8× faster than "
+#~ "sequential. Single-env (`migrate @env`) and `--dry-run` stay sequential "
+#~ "for predictable output."
+#~ msgstr ""
+#~ "`scuv migrate all`은 [rayon](https://crates.io/crates/rayon)을 통해 CPU 코"
+#~ "어 전체에 걸쳐 병렬로 마이그레이션을 실행합니다. 일반적으로 순차 실행보다 "
+#~ "4~8배 빠릅니다. 단일 환경(`migrate @env`)과 `--dry-run`은 예측 가능한 출력"
+#~ "을 위해 순차적으로 실행됩니다."
+
+#~ msgid ""
+#~ "Fail on the first package install error inside an env (default: keep "
+#~ "going)"
+#~ msgstr "환경 내 첫 번째 패키지 설치 오류에서 실패합니다(기본값: 계속 진행)"
+
+#~ msgid "\"MIGRATE_EXTRACTION_FAILED\""
+#~ msgstr "\"MIGRATE_EXTRACTION_FAILED\""
+
+#~ msgid ""
+#~ "\"Couldn't extract packages: pip not found at /home/u/.virtualenvs/"
+#~ "brokenpip/bin/pip\""
+#~ msgstr ""
+#~ "\"Couldn't extract packages: pip not found at /home/u/.virtualenvs/"
+#~ "brokenpip/bin/pip\""
+
+#~ msgid "**Extraction**: Identifies Python version and installed packages"
+#~ msgstr "**추출**: Python 버전과 설치된 패키지를 식별합니다."
+
+#~ msgid ""
+#~ "`scuv migrate all` fans out across all CPU cores via [rayon](https://"
+#~ "docs.rs/rayon) when migrating more than one environment. The dominant "
+#~ "cost (uv venv + pip install per env) is I/O-bound on subprocesses, so "
+#~ "wall-clock time scales close to linearly with core count."
+#~ msgstr ""
+#~ "`scuv migrate all`은 환경이 두 개 이상인 경우 [rayon](https://docs.rs/"
+#~ "rayon)을 통해 모든 CPU 코어에 병렬로 작업을 분산합니다. 주된 비용(환경당 "
+#~ "uv venv + pip install)은 서브프로세스의 I/O 바운드이므로, 처리 시간은 코"
+#~ "어 수에 거의 선형적으로 비례합니다."
+
+#~ msgid ""
+#~ "`migrate all` migrates environments in parallel (`rayon::par_iter`), and "
+#~ "`migrate list` measures their sizes in parallel. Everything else runs on "
+#~ "one thread."
+#~ msgstr ""
+#~ "`migrate all`은 환경을 병렬로 마이그레이션하고(`rayon::par_iter`), "
+#~ "`migrate list`는 환경 크기를 병렬로 계산합니다. 나머지는 모두 한 스레드에"
+#~ "서 실행됩니다."
+
+#~ msgid "Migrate all environments (parallel via rayon since v0.11.0)"
+#~ msgstr "모든 환경 마이그레이션 (v0.11.0부터 rayon을 통한 병렬 처리)"
+
 #~ msgid "\"1\""
 #~ msgstr "\"1\""
-
-#~ msgid "\"24.1.0\""
-#~ msgstr "\"24.1.0\""
 
 #~ msgid ""
 #~ "Creates the env, then `uv pip install`s every pinned package "

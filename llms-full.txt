@@ -114,7 +114,7 @@ Verify: `scuv --version`
 |---------|-------------|
 | `scuv migrate list` | Show environments to migrate |
 | `scuv migrate @env <name>` | Migrate a single environment (sequential) |
-| `scuv migrate all` | Migrate all environments (parallel via rayon since v0.11.0; results sorted by name for deterministic output) |
+| `scuv migrate all` | Migrate all environments, one at a time after reading and checking all of them (parallel from v0.11.0 to v0.22); results sorted by name for deterministic output |
 | `scuv migrate all --dry-run` | Preview without changes (sequential for predictable output) |
 
 Supported sources: pyenv-virtualenv, virtualenvwrapper, conda
@@ -183,7 +183,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 377 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 402 keys
 ```
 
 ### Design Principles
@@ -359,7 +359,7 @@ scuv clone myproject myproject-exp             # Duplicate in-place
 scuv clone myproject skeleton --no-packages    # Skeleton without packages
 ```
 
-The export schema is `EXPORT_SCHEMA_VERSION = "2"` (`core::export_schema`); import also reads `"1"`. Each package carries `source`: its PEP 610 origin (`direct_url.json`, read through the env's Python 3.8+ with `importlib.metadata`) or `null`. `from_json()` reads the version first, then the rest. clone, export and diff read packages with `core::packages::read_installed_packages`; clone and import put them back with `InstallPlan` (`name==version`, `--editable <path>`, `name @ <url>`, `name @ git+<url>@<commit>`) after `prepare_install` checks local sources and hash support, before any `--force` deletion. A failed import install removes the env it created. diff counts an origin-only change as a change.
+The export schema is `EXPORT_SCHEMA_VERSION = "2"` (`core::export_schema`); import also reads `"1"`. Each package carries `source`: its PEP 610 origin (`direct_url.json`, read through the env's Python 3.8+ with `importlib.metadata`) or `null`. `from_json()` reads the version first, then the rest. clone, export, diff and migrate read packages with `core::packages::read_installed_packages` (an `.egg-link` editable with no `direct_url.json` gets a `dir_info` origin from uv's project location); clone, import and migrate put them back with `InstallPlan` (`name==version`, `--editable <path>`, `name @ <url>`, `name @ git+<url>@<commit>`) after `prepare_install` checks local sources (existing, a directory being that package's project: `PACKAGE_SOURCE_NOT_A_PROJECT`) and hash support, before any `--force` deletion. migrate excludes pip, installs conda's builds (`INSTALLER` = `conda`) from the registry, refuses Python below 3.8, verifies the new env by name, version and origin, retries a failed install package by package in a rebuilt env, runs `migrate all` one env at a time, and under `--delete-source` keeps a conda source or one something still goes through (`core::migrate::deletion`). A failed import install removes the env it created. diff counts an origin-only change as a change.
 
 ---
 
@@ -666,7 +666,6 @@ pub enum ScoopError {
     CondaEnvNotFound { name: String },
     SourceEnvNotFound { name: String },
     CorruptedEnvironment { name: String, reason: String },
-    PackageExtractionFailed { reason: String },
     MigrationFailed { reason: String },
     MigrationNameConflict { name: String, existing: PathBuf },
 
@@ -689,8 +688,9 @@ pub enum ScoopError {
     VerifyFailed { issues: usize },                                  // scuv verify --strict
     DoctorFindings { errors: usize, warnings: usize },               // scuv doctor: exit 2 errors, 1 warnings
     ConfirmationUnavailable { flag: String },                        // remove / migrate all: no terminal to confirm on
-    PackageOriginsUnreadable { env: String, reason: String },        // clone/export/diff: origins unreadable or unmatched
+    PackageOriginsUnreadable { env: String, reason: String },        // clone/export/diff/migrate: origins unreadable or unmatched
     PackageSourceMissing { package: String, path: PathBuf },         // clone/import: local source gone
+    PackageSourceNotAProject { package: String, path: PathBuf, reason: String }, // directory uv would not build as that package
     PackageSourceInsideTarget { package: String, path: PathBuf, target: PathBuf }, // --force would delete the source
     PackageHashUnenforced { package: String, uv_version: String, required: String }, // hashed archive, uv < 0.11.29
     MigrationSourcesNotFound { requested: Option<String> },          // scuv migrate: no pyenv/conda/virtualenvwrapper

@@ -32,6 +32,10 @@ scuv import -    [--name <NEW_NAME>]                # read from stdin
 3. Checks that every package can be put back where it came from, before
    anything is deleted, installed or created:
    - every local source (`file://` path) exists (`PACKAGE_SOURCE_MISSING`);
+   - a local directory is that package's project: it has a `pyproject.toml`
+     or `setup.py`, and a static `[project] name` in the `pyproject.toml`,
+     when there is one, is the package's (`PACKAGE_SOURCE_NOT_A_PROJECT`). An old src-layout editable points at
+     `src/`, which has neither;
    - with `--force` over an existing env, no local source lives inside that
      env or is reached through it, symlinks included
      (`PACKAGE_SOURCE_INSIDE_TARGET`), since deleting the env would remove

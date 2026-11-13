@@ -48,7 +48,7 @@ All virtualenvs are stored in `~/.scuv/virtualenvs/`. Override with `SCUV_HOME` 
 | `scuv lang [code]` | Get/set language (en, ko, ja, pt-BR, es) |
 | `scuv migrate list` | List migratable envs (pyenv, conda, virtualenvwrapper) |
 | `scuv migrate @env <name>` | Migrate single environment |
-| `scuv migrate all` | Migrate all environments (parallel via rayon since v0.11.0) |
+| `scuv migrate all` | Migrate all environments, one at a time after checking all of them |
 | `scuv gc` | Garbage-collect orphan virtualenvs (`--yes` to actually remove, `--aggressive` also for unused Pythons, `--older-than <n>d/w/y` flags stale envs by `last_used`; envs with no `last_used` are never matched) |
 | `scuv prune` | Prune the uv cache (`uv cache prune` wrapper) |
 | `scuv verify [NAME]` | Per-env health diagnosis — 6 checks (metadata, python binary, pyvenv.cfg, activate, exec, manifest drift); `--strict` exits 1 on issues |

@@ -166,11 +166,12 @@ scuv migrate all
 
 The migration process:
 1. Discovers environments from pyenv (`$PYENV_ROOT/versions`, default `~/.pyenv/versions`), conda (`envs/` under `$CONDA_PREFIX`, `~/.conda`, `~/anaconda3`, `~/miniconda3` and `~/miniforge3`), or virtualenvwrapper (`$WORKON_HOME`)
-2. Creates a new scuv environment with the same Python version
-3. Reinstalls packages using uv for improved performance
-4. Preserves originals by default (use `--delete-source` to remove source envs after success)
+2. Reads each package and where it came from (registry, editable or local directory, archive, git), with no `pip` needed in the source
+3. Creates a new scuv environment with the same Python version
+4. Reinstalls every package from where it came (pip excepted, and conda's builds from the registry) with uv, and checks the result
+5. Preserves originals by default (use `--delete-source` to remove source envs after success)
 
-`scuv migrate all` runs migrations in parallel across CPU cores via [rayon](https://crates.io/crates/rayon) — typically 4-8× faster than sequential. Single-env (`migrate @env`) and `--dry-run` stay sequential for predictable output.
+`scuv migrate all` migrates one environment at a time, after reading and checking all of them.
 
 See [migrate command](commands/migrate.md) for details.
 

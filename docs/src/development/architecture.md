@@ -358,7 +358,7 @@ graph TD
 | rust-i18n | Internationalization (en, ko, ja, pt-BR, es) |
 | sys-locale | System locale detection |
 | chrono | Timestamp generation |
-| rayon | Parallel `scuv migrate all` |
+| rayon | Parallel size measurement in `scuv migrate list` |
 | toml | `.scuv.toml` manifest parsing (`scuv sync`) |
 | clap_mangen | Man page generation (`scuv man`) |
 
@@ -446,7 +446,7 @@ See [API Reference - Adding a New Health Check](../api.md#adding-a-new-health-ch
 
 ## Thread Safety
 
-`migrate all` migrates environments in parallel (`rayon::par_iter`), and `migrate list` measures their sizes in parallel. Everything else runs on one thread.
+`migrate list` measures environment sizes in parallel (`rayon::par_iter_mut`). Everything else runs on one thread, `migrate all` included: it migrates one environment at a time so that no removal (`--force`, a rebuild after a failed install, `--delete-source`) can interleave with another environment's creation.
 
 **File locking:** Not implemented. Assumes single user on single machine. Concurrent operations (e.g., two terminals creating the same env) may result in race conditions.
 
