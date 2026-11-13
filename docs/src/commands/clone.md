@@ -44,6 +44,9 @@ scuv clone <SRC> <DST> [--no-packages] [--force] [--json]
    `<DST>` or is reached through it when `--force`
    would delete it, and a hashed archive has a uv (0.11.29+) that checks
    the hash. See [`scuv import`](import.md#behaviour) for the error codes.
+   When a project has moved since it was installed, reinstall it into
+   `<SRC>` from its new place first
+   (`uv pip install --python <SRC python> [-e] <new path>`).
 7. Only now does `--force` remove the existing `<DST>`, so a source that
    cannot be cloned leaves it in place.
 8. Creates `<DST>` at the same Python version and installs the packages in

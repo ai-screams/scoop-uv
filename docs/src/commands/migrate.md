@@ -70,7 +70,10 @@ inside a target `--force` would replace, and a
 uv that checks recorded archive hashes (0.11.29 or later). Any of these
 failing fails that environment, in a dry run too. So does a source whose
 directory and the new environment's overlap (one inside the other, for
-example `SCUV_HOME` inside the source).
+example `SCUV_HOME` inside the source). When a local project has moved
+since it was installed, reinstall it into the source from its new place
+(`uv pip install --python <source python> [-e] <new path>`) and migrate
+again.
 
 The packages are then installed in one `uv pip install`. When that fails,
 each package is tried on its own (without dependencies) to find the ones
@@ -197,6 +200,7 @@ $ scuv migrate @env myproject --auto-rename --yes
 •   Path: ~/.scuv/virtualenvs/myproject-pyenv
 •   Python: 3.12
 •   Packages: 1
+• Not moved: pip 26.3 (an installer; scuv environments have none)
 •
 • → Activate: scuv use myproject-pyenv
 ```
@@ -244,6 +248,7 @@ $ scuv migrate @env myproject --yes
 •   Path: ~/.scuv/virtualenvs/myproject
 •   Python: 3.12
 •   Packages: 1
+• Not moved: pip 26.3 (an installer; scuv environments have none)
 •
 • → Activate: scuv use myproject
 ```
@@ -259,25 +264,43 @@ $ scuv migrate all --yes
 •
 • Starting batch migration...
 •
+• Migrating 'myproject'...
+✓   'myproject' migrated successfully
+•   Packages: 1
+• Not moved: pip 26.3 (an installer; scuv environments have none)
+•
+• Migrating 'webapp'...
+✓   'webapp' migrated successfully
+•   Packages: 4
+• Not moved: pip 26.3 (an installer; scuv environments have none)
+•
 • ────────────────────────────────────────
 ✓ Migration complete: 2/2 succeeded
 ```
 
+With stderr on a terminal (and without `--dry-run`, `--json` or
+`--quiet`), a progress bar takes the place of these lines, and each
+environment prints one summary line and its notes above it
+(`✓ 'myproject' migrated (1 packages)`, then `  Not moved: pip …`).
+
 When some envs fail or conflict, the summary names them and the command
-exits 2:
+exits 2. Here `oldenv` runs Python 3.7, which `--allow-eol` lets through
+to the migration, where reading its packages fails; without the flag it
+is skipped as end-of-life instead:
 
 ```bash
-$ scuv migrate all --yes
+$ scuv migrate all --yes --allow-eol
 • Scanning all sources for environments...
 • Found 1 environment(s) to migrate:
-•   - brokenpip (Python 3.12)
+•   - oldenv (Python 3.7.17) (Python 3.7.17 EOL)
 ⚠ 1 environment(s) will be skipped (see summary)
 •
 • Starting batch migration...
+✗   Failed: Could not read where the packages in /home/u/.virtualenvs/oldenv came from: reading package origins needs Python 3.8 or later, and the env has Python 3.7.17
 •
 • ────────────────────────────────────────
 ✓ Migration complete: 0/1 succeeded
-⚠ Failed environments: brokenpip
+⚠ Failed environments: oldenv
 ⚠ 1 name conflict(s) skipped (use --force):
 ⚠   - myproject (virtualenvwrapper) conflicts with /home/u/.scuv/virtualenvs/myproject
 • → Pass --force to overwrite existing scuv environments
@@ -297,7 +320,9 @@ scuv migrate all --yes
 All three subcommands accept `--json`. The envelope follows scuv's standard
 shape: `{status, command, data}` on success; `{status: "error", command,
 error: { code, message, ... }, data}` on failure paths that already
-rendered structured data.
+rendered structured data. Depending on the outcome, `migrate all` prints
+its envelope on a single line or indented (formatted below for reading),
+so read it as JSON rather than line by line.
 
 ### `migrate list --json`
 
@@ -339,7 +364,13 @@ The `status` field is an object whose own `status` key names the state:
 `{"status": "python_eol", "version": "<version>"}`, or
 `{"status": "corrupted", "reason": "<reason>"}`. `source_type` is
 `"pyenv"`, `"virtualenv_wrapper"` or `"conda"`. `size_bytes` is the sum
-of the environment's regular file sizes, measured when `migrate list` runs.
+of the environment's regular file sizes (symlinks are not followed),
+measured when `migrate list` runs; for one env that is close to `du -sb`.
+conda hard-links package files from its package cache into each env, and
+envs built from the same packages share them, so each env counts them in
+full: two conda envs made with the same `python=3.12` report about 183 MB
+each, while `du -sb` on both together counts the second at about 89 MB.
+Removing one of them frees less than its `size_bytes`.
 
 ### `migrate all --json` — success path
 
@@ -398,7 +429,10 @@ the flag the command was invoked with.
 Returned when at least one per-env failure occurred, or at least one
 preflight name conflict was detected without `--force`. The envelope
 embeds the full data view so consumers don't lose detail on the
-failure side either.
+failure side either. This one is `migrate all --yes --allow-eol --json`
+over the envs of the example above; without `--allow-eol`, `oldenv` is in
+`skipped` with the reason `Python 3.7.17 is EOL (use --allow-eol)`, and
+`failed` is empty.
 
 ```json
 {
@@ -414,10 +448,10 @@ failure side either.
     "migrated": [],
     "failed": [
       {
-        "name": "brokenpip",
+        "name": "oldenv",
         "source_type": "virtualenv_wrapper",
         "error_code": "PACKAGE_ORIGINS_UNREADABLE",
-        "error": "Could not read where the packages in /home/u/.virtualenvs/brokenpip came from: reading package origins needs Python 3.8 or later, and the env has Python 3.7.17"
+        "error": "Could not read where the packages in /home/u/.virtualenvs/oldenv came from: reading package origins needs Python 3.8 or later, and the env has Python 3.7.17"
       }
     ],
     "skipped": [

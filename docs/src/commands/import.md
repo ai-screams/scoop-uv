@@ -31,7 +31,9 @@ scuv import -    [--name <NEW_NAME>]                # read from stdin
 2. Applies `--name` override (if any) and validates the resulting name.
 3. Checks that every package can be put back where it came from, before
    anything is deleted, installed or created:
-   - every local source (`file://` path) exists (`PACKAGE_SOURCE_MISSING`);
+   - every local source (`file://` path) exists (`PACKAGE_SOURCE_MISSING`;
+     the hint says how to point the package at where its project is now, see
+     [`scuv export`](export.md#schema));
    - a local directory is that package's project: it has a `pyproject.toml`
      or `setup.py`, and a static `[project] name` in the `pyproject.toml`,
      when there is one, is the package's (`PACKAGE_SOURCE_NOT_A_PROJECT`). An old src-layout editable points at
