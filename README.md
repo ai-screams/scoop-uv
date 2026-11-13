@@ -471,9 +471,15 @@ SCUV_VERSION (env)  →  "Override for this shell session" (set by scuv shell)
 |-----------------------------|------------------------------------------|
 | `scuv migrate list`        | Show environments to migrate             |
 | `scuv migrate @env <name>` | Migrate a single environment             |
-| `scuv migrate all`         | Migrate all environments (parallel)      |
+| `scuv migrate all`         | Migrate all environments, one at a time  |
 
 > **Supported sources:** pyenv-virtualenv, virtualenvwrapper, conda
+
+> **What moves:** every package is reinstalled from where it came from (the registry, an editable checkout, a local
+> directory, a URL or a git commit) and checked in the new environment. `pip` stays behind, since scuv environments
+> carry no installer; packages conda installed come from the registry at the same version; a source older than
+> Python 3.8 is refused. `--delete-source` never removes a conda env, and keeps a source something still needs. See the
+> [Migration Guide](https://ai-scream.ai/scoop-uv/commands/migrate.html#what-moves).
 
 > Flags: `--source {pyenv|virtualenvwrapper|conda}`, `--dry-run`, `--force`, `--allow-eol`, `--yes`, `--strict`, `--delete-source`, `--json`; `@env` also `--rename`/`--auto-rename`.
 
@@ -610,6 +616,7 @@ src/
 │   ├── metadata   # Virtualenv metadata (JSON)
 │   ├── virtualenv # Virtualenv entity
 │   ├── doctor     # Health diagnostics
+│   ├── packages   # Installed packages and their origins (clone, export, import, diff, migrate)
 │   └── migrate/   # Migration (pyenv, conda, venvwrapper)
 ├── shell/         # 🐚 Shell integration (bash, zsh, fish, powershell)
 ├── uv/            # ⚡ uv CLI wrapper
