@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794550795804,
+  "lastUpdate": 1794550797338,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -16633,6 +16633,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 919,
             "range": "± 20",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "651b7d4140ed42ff6b65a5ffc7d386640f84c5d9",
+          "message": "Merge pull request #282 from ai-screams/fix/migrate-package-origins\n\nfix(migrate): reinstall packages from where they came from",
+          "timestamp": "2026-11-13T15:07:05+09:00",
+          "tree_id": "8ab664af274b27dcd010fb7040de30985c3cf80b",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/651b7d4140ed42ff6b65a5ffc7d386640f84c5d9"
+        },
+        "date": 1794550797244,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1336,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 919,
+            "range": "± 2",
             "unit": "ns/iter"
           }
         ]
