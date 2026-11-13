@@ -403,12 +403,13 @@ fn import_never_installs_a_hashed_origin_archive_unchecked() {
             .arg("-o")
             .arg(&dist),
     );
+    // The wheel, not whatever else `uv build` writes there (newer uv adds a
+    // `.gitignore`), and directory order is not fixed.
     let wheel = std::fs::read_dir(&dist)
         .unwrap()
-        .next()
-        .unwrap()
-        .unwrap()
-        .path();
+        .map(|entry| entry.unwrap().path())
+        .find(|path| path.extension().is_some_and(|e| e == "whl"))
+        .expect("uv build wrote a wheel");
     let file = fixture.temp_dir.path().join("whl.json");
     std::fs::write(
         &file,
