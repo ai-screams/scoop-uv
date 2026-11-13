@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794580296671,
+  "lastUpdate": 1794580298616,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -16873,6 +16873,42 @@ window.BENCHMARK_DATA = {
             "name": "find_executable_in_miss",
             "value": 920,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b275904c209c3293389f77cb1e20557691b6b56c",
+          "message": "Merge pull request #283 from ai-screams/fix/package-source-missing-hint\n\nfix(packages): say how to recover when a local package source is missing",
+          "timestamp": "2026-11-13T23:27:40+09:00",
+          "tree_id": "cb932192bc6458521c96789f549e39870e785140",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/b275904c209c3293389f77cb1e20557691b6b56c"
+        },
+        "date": 1794580298520,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "find_executable_in_hit",
+            "value": 1328,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "find_executable_in_miss",
+            "value": 918,
+            "range": "± 10",
             "unit": "ns/iter"
           }
         ]
