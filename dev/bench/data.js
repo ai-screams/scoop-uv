@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794533376130,
+  "lastUpdate": 1794550795804,
   "repoUrl": "https://github.com/ai-screams/scoop-uv",
   "entries": {
     "scoop-uv benchmarks": [
@@ -12718,6 +12718,90 @@ window.BENCHMARK_DATA = {
           {
             "name": "is_valid_env_name/version_like_reject",
             "value": 70,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/reserved_reject",
+            "value": 28,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/max_length",
+            "value": 160,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hanyul.ryu@hanyul.xyz",
+            "name": "Pignu",
+            "username": "pignuante"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "651b7d4140ed42ff6b65a5ffc7d386640f84c5d9",
+          "message": "Merge pull request #282 from ai-screams/fix/migrate-package-origins\n\nfix(migrate): reinstall packages from where they came from",
+          "timestamp": "2026-11-13T15:07:05+09:00",
+          "tree_id": "8ab664af274b27dcd010fb7040de30985c3cf80b",
+          "url": "https://github.com/ai-screams/scoop-uv/commit/651b7d4140ed42ff6b65a5ffc7d386640f84c5d9"
+        },
+        "date": 1794550794945,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "clap_parse_create",
+            "value": 68236,
+            "range": "± 658",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "clap_parse_migrate_all",
+            "value": 81987,
+            "range": "± 556",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "toml_parse_scoop_manifest",
+            "value": 2318,
+            "range": "± 22",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "json_parse_uv_python_list",
+            "value": 555,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/typical",
+            "value": 73,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/hyphenated",
+            "value": 78,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/digit_start_reject",
+            "value": 84,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_valid_env_name/version_like_reject",
+            "value": 75,
             "range": "± 0",
             "unit": "ns/iter"
           },
