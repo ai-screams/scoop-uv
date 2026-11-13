@@ -91,6 +91,14 @@ impl ScoopError {
                 )
                 .to_string(),
             ),
+            Self::PackageSourceMissing { package, .. } => Some(
+                t!(
+                    "suggestion.package_source_missing",
+                    locale = locale,
+                    package = package
+                )
+                .to_string(),
+            ),
             Self::MigrationSourcesNotFound { .. } => {
                 Some(t!("suggestion.migration_sources_not_found", locale = locale).to_string())
             }
@@ -142,6 +150,26 @@ mod tests {
                 !s.is_empty(),
                 "locale {locale} returned empty suggestion: {s:?}"
             );
+        }
+    }
+
+    /// A missing local source names the package and both ways out: the
+    /// export file's `source.url` (import) and a reinstall into the source
+    /// env (clone, migrate). Fails if the arm is deleted (`None`), or if a
+    /// locale drops the package name or either way out.
+    #[test]
+    fn package_source_missing_says_how_to_point_at_the_new_place() {
+        let err = ScoopError::PackageSourceMissing {
+            package: "mylib".to_string(),
+            path: std::path::PathBuf::from("/gone/mylib"),
+        };
+        for locale in ["en", "ko", "ja", "pt-BR", "es"] {
+            let s = err
+                .suggestion_in(locale)
+                .unwrap_or_else(|| panic!("locale {locale} returned None"));
+            assert!(s.contains("'mylib'"), "{locale}: {s}");
+            assert!(s.contains("`source.url`"), "{locale}: {s}");
+            assert!(s.contains("uv pip install --python"), "{locale}: {s}");
         }
     }
 }

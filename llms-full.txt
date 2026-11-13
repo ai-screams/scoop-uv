@@ -183,7 +183,7 @@ src/
 └── config.rs      # Config management (~/.scuv/config.json)
 
 locales/
-└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 402 keys
+└── app.yml        # Translation strings (en, ko, ja, pt-BR, es) — 403 keys
 ```
 
 ### Design Principles
@@ -689,7 +689,7 @@ pub enum ScoopError {
     DoctorFindings { errors: usize, warnings: usize },               // scuv doctor: exit 2 errors, 1 warnings
     ConfirmationUnavailable { flag: String },                        // remove / migrate all: no terminal to confirm on
     PackageOriginsUnreadable { env: String, reason: String },        // clone/export/diff/migrate: origins unreadable or unmatched
-    PackageSourceMissing { package: String, path: PathBuf },         // clone/import: local source gone
+    PackageSourceMissing { package: String, path: PathBuf },         // clone/import/migrate: local source gone
     PackageSourceNotAProject { package: String, path: PathBuf, reason: String }, // directory uv would not build as that package
     PackageSourceInsideTarget { package: String, path: PathBuf, target: PathBuf }, // --force would delete the source
     PackageHashUnenforced { package: String, uv_version: String, required: String }, // hashed archive, uv < 0.11.29

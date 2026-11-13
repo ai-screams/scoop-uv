@@ -1688,6 +1688,13 @@ error.package_source_missing:
   ja: "'%{package}' のインストール元 %{path} が存在しません"
   es: "'%{package}' se instala desde %{path}, que no existe"
 
+suggestion.package_source_missing:
+  en: "→ Put '%{package}' back at that path, or install it from where it is now: for `scuv import`, change its `source.url` in the export file; for clone or migrate, reinstall it into the source env (`uv pip install --python <source python> [-e] <new path>`). Other local packages are checked after this one"
+  ko: "→ '%{package}'을(를) 그 경로에 되돌려 두거나 지금 있는 곳에서 설치되게 하세요. `scuv import`라면 내보내기 파일에서 그 패키지의 `source.url`을 고치고, clone이나 migrate라면 원본 env에 새 위치로 다시 설치하세요(`uv pip install --python <원본 python> [-e] <새 경로>`). 다른 로컬 패키지는 이 패키지 다음에 검사합니다"
+  pt-BR: "→ Coloque '%{package}' de volta nesse caminho ou instale-o de onde está agora: no `scuv import`, altere o `source.url` dele no arquivo de exportação; no clone ou migrate, reinstale-o no ambiente de origem (`uv pip install --python <python de origem> [-e] <novo caminho>`). Os outros pacotes locais são verificados depois deste"
+  ja: "→ '%{package}' を元のパスに戻すか、今ある場所からインストールされるようにしてください。`scuv import` ではエクスポートファイルのそのパッケージの `source.url` を書き換え、clone や migrate では元の環境に新しい場所から再インストールしてください (`uv pip install --python <元の python> [-e] <新しいパス>`)。他のローカルパッケージはこのパッケージの後に確認されます"
+  es: "→ Volver a poner '%{package}' en esa ruta, o instalarlo desde donde está ahora: en `scuv import`, cambiar su `source.url` en el archivo de exportación; en clone o migrate, reinstalarlo en el entorno de origen (`uv pip install --python <python de origen> [-e] <nueva ruta>`). Los demás paquetes locales se comprueban después de este"
+
 error.package_source_not_a_project:
   en: "'%{package}' installs from %{path}, which uv would not build as that package: %{reason}"
   ko: "'%{package}'의 설치 경로 %{path}를 uv가 그 패키지로 빌드하지 않음: %{reason}"
