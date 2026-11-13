@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Language**: Rust (Edition 2024, MSRV 1.89)
 - **License**: MIT OR Apache-2.0
-- **Version**: scuv 0.21.0 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
+- **Version**: scuv 0.22.0 (command renamed `scoop` → `scuv` in 0.15.0; crate/repo stay `scoop-uv`)
 - **Tests**: lib unit, `tests/cli/` integration, i18n parity and doctests; 0 clippy warnings. `cargo test -- --list` gives the counts
 - **Doc drift guard**: `python3 scripts/check-doc-references.py` (CI Lint job) verifies MSRV, version samples, reserved names and key counts in README/CONTRIBUTING/llms.txt/llms-full.txt/docs against the code. Run it after editing any of those.
 - **CI/CD design**: `docs/src/development/ci-cd.md` documents what each workflow guards, the cross-cutting decisions (concurrency, cache keys, gate-vs-track), the failure modes that shaped them, and the known gaps.
