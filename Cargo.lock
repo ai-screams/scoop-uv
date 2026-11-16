@@ -1465,7 +1465,7 @@ dependencies = [
  "serde-saphyr",
  "serde_json",
  "serial_test",
- "syn 2.0.119",
+ "syn 3.0.10",
  "sys-locale",
  "tempfile",
  "thiserror",
